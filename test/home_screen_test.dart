@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pet_companion/app.dart';
+
+import 'helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -10,16 +9,13 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  Future<void> pumpApp(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-    tester.view.devicePixelRatio = 3;
-    addTearDown(tester.view.reset);
-    await tester.pumpWidget(const ProviderScope(child: PetCompanionApp()));
-    await tester.pumpAndSettle();
+  Future<void> pumpHome(WidgetTester tester) async {
+    await pumpApp(tester);
+    await signInAsDemo(tester);
   }
 
   testWidgets('home shows Kelly with her dashboard', (tester) async {
-    await pumpApp(tester);
+    await pumpHome(tester);
 
     expect(find.text('Pet Companion'), findsOneWidget);
     expect(find.text('Kelly'), findsNWidgets(2)); // selector pill + hero name
@@ -35,7 +31,7 @@ void main() {
   });
 
   testWidgets('tapping Soya switches the dashboard', (tester) async {
-    await pumpApp(tester);
+    await pumpHome(tester);
 
     await tester.tap(find.text('Soya'));
     await tester.pumpAndSettle();
@@ -47,7 +43,7 @@ void main() {
   });
 
   testWidgets('bottom navigation switches tabs', (tester) async {
-    await pumpApp(tester);
+    await pumpHome(tester);
 
     await tester.tap(find.text('Store'));
     await tester.pumpAndSettle();

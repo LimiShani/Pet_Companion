@@ -9,6 +9,9 @@ abstract final class AppColors {
   static const coral = Color(0xFFEC6A48);
   static const coralDeep = Color(0xFFCC603E);
 
+  /// Buttons and links: deep enough for white or small text to pass 4.5:1.
+  static const coralDark = Color(0xFFC4502F);
+
   /// Info pills, activity card, icon discs.
   static const yellow = Color(0xFFFFD98B);
 

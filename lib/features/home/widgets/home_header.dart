@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/auth_controller.dart';
 import '../../../state/pets_provider.dart';
+import '../../auth/widgets/account_sheet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -16,6 +18,7 @@ class HomeHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final pets = ref.watch(petsProvider);
     final selectedId = ref.watch(selectedPetIdProvider);
+    final user = ref.watch(authControllerProvider).value;
 
     return ColoredBox(
       color: AppColors.coral,
@@ -49,7 +52,10 @@ class HomeHeader extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  _AccountAvatar(initial: 'A', onTap: () {}),
+                  _AccountAvatar(
+                    initial: user?.initial ?? '?',
+                    onTap: user == null ? null : () => AccountSheet.show(context, user),
+                  ),
                 ],
               ),
               const SizedBox(height: 14),
@@ -92,7 +98,7 @@ class _AccountAvatar extends StatelessWidget {
   const _AccountAvatar({required this.initial, required this.onTap});
 
   final String initial;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

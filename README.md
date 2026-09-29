@@ -19,18 +19,27 @@ flutter analyze
 flutter test
 ```
 
+## Signing in
+
+Accounts are in-memory for now (`lib/auth/fake_auth_repository.dart`), so
+nothing persists across restarts. A demo account is seeded there; its
+credentials are the `demoEmail` / `demoPassword` constants in that file.
+Creating an account from the sign-up screen also works within a session.
+
 ## Layout
 
 ```
 lib/
   main.dart                 entry point (ProviderScope)
   app.dart                  MaterialApp.router + theme
+  auth/                     AppUser, AuthRepository (+ in-memory fake), AuthController, validators
   theme/                    palette, spacing, type scale, ThemeData
   models/                   Pet, FeedingStatus, ActivityStatus, HealthEvent
   state/                    Riverpod providers (pets, selected pet)
-  navigation/               go_router with a 4-tab StatefulShellRoute
+  navigation/               go_router: auth redirects + a 4-tab StatefulShellRoute
   widgets/                  bottom nav, placeholder screen
   features/
+    auth/                   splash, login, sign-up, account sheet (sign out)
     home/                   dashboard (header, hero, feeding/activity/health cards)
     health/ community/ store/   placeholder tabs
 assets/images/              pet photo + illustrated card icons
