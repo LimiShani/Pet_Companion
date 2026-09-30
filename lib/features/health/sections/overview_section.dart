@@ -1,10 +1,11 @@
-import '../../pets/pets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../pets/pets.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../emergency/contact_actions.dart';
@@ -94,6 +95,8 @@ class OverviewSection extends ConsumerWidget {
       if (lastRecord == null || o.observedAt.isAfter(lastRecord)) lastRecord = o.observedAt;
     }
     final medicines = data.plan.activeMedications(now);
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -101,10 +104,10 @@ class OverviewSection extends ConsumerWidget {
         _PetSummary(
           pet: pet,
           status: nothingDue
-              ? 'No scheduled care due'
+              ? l10n.overviewNoCareDue
               : lastRecord == null
               ? null
-              : 'Last record ${formatDate(lastRecord)}',
+              : l10n.overviewLastRecord(format.date(lastRecord)),
         ),
         // The reminder brings its own top gap, so it leaves none when hidden.
         if (reminder != null) reminder!,
@@ -165,6 +168,7 @@ class _PetSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final format = HealthFormat.of(context);
     return HealthCard(
       key: const Key('overview-pet'),
       onTap: () => HealthProfileScreen.open(context, pet),
@@ -187,16 +191,16 @@ class _PetSummary extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                TypedText(
                   pet.name,
                   style: AppText.cardTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(petLine(pet), style: AppText.secondary.copyWith(color: AppColors.brown)),
+                Text(format.petLine(pet), style: AppText.secondary.copyWith(color: AppColors.brown)),
                 if (status != null) Text(status!, style: AppText.secondary.copyWith(color: AppColors.brown)),
                 Text(
-                  'Health profile',
+                  format.l10n.healthProfile,
                   style: AppText.secondary.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
                 ),
               ],
@@ -229,6 +233,8 @@ class _ComingUp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final divider = Divider(height: 16, thickness: 1, color: AppColors.white.withValues(alpha: 0.55));
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final e = entry;
     final r = record;
     final rows = <Widget>[
@@ -236,7 +242,7 @@ class _ComingUp extends StatelessWidget {
         _ComingUpRow(
           icon: careKindIcon(e.item.kind),
           title: e.item.title,
-          detail: 'Today · ${formatTimeOfDay(e.item.time)}',
+          detail: l10n.dayAndTime(format.common.commonToday, format.timeOfDay(e.item.time)),
           trailing: e.item.isMedication && actions.onRecordDose != null
               ? FilledButton(
                   key: const Key('overview-record-dose'),
@@ -246,7 +252,7 @@ class _ComingUp extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     textStyle: AppText.button(14),
                   ),
-                  child: const Text('Record'),
+                  child: Text(l10n.recordDose),
                 )
               : null,
           onTap: onSchedule,
@@ -255,10 +261,7 @@ class _ComingUp extends StatelessWidget {
         _ComingUpRow(
           icon: recordKindIcon(r.kind),
           title: r.title,
-          detail: [
-            '${formatRelativeDay(r.scheduledAt, now)} · ${formatTime(r.scheduledAt)}',
-            if (r.clinic.isNotEmpty) r.clinic,
-          ].join(' · '),
+          detail: format.dots([format.relativeDayTime(r.scheduledAt, now), r.clinic]),
           onTap: actions.onOpenRecord == null ? onSchedule : () => actions.onOpenRecord!(r),
         ),
       if (reviewCount > 0)
@@ -269,12 +272,7 @@ class _ComingUp extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 40),
             child: Row(
               children: [
-                Expanded(
-                  child: Text(
-                    reviewCount == 1 ? '1 reminder needs review' : '$reviewCount reminders need review',
-                    style: AppText.secondary,
-                  ),
-                ),
+                Expanded(child: Text(l10n.remindersNeedReview(reviewCount), style: AppText.secondary)),
                 const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.ink),
               ],
             ),
@@ -293,9 +291,12 @@ class _ComingUp extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text('Coming up', style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
+                child: Text(
+                  l10n.comingUp,
+                  style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800),
+                ),
               ),
-              HealthLink('Schedule', onPressed: onSchedule, color: AppColors.ink),
+              HealthLink(l10n.sectionSchedule, onPressed: onSchedule, color: AppColors.ink),
             ],
           ),
           for (var i = 0; i < rows.length; i++) ...[if (i > 0) divider, rows[i]],
@@ -328,7 +329,7 @@ class _ComingUpRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  TypedText(title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
                   Text(detail, style: AppText.secondary),
                 ],
               ),
@@ -348,12 +349,13 @@ class _QuickActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     final buttons = [
       if (actions.onQuickLog != null)
         _QuickAction(
           key: const Key('overview-quick-log'),
           icon: Icons.add_rounded,
-          label: 'Quick log',
+          label: l10n.quickLog,
           primary: true,
           onTap: actions.onQuickLog!,
         ),
@@ -361,14 +363,14 @@ class _QuickActions extends StatelessWidget {
         _QuickAction(
           key: const Key('overview-add-record'),
           icon: Icons.note_add_rounded,
-          label: 'Add record',
+          label: l10n.addRecord,
           onTap: actions.onAddRecord!,
         ),
       if (actions.onShare != null)
         _QuickAction(
           key: const Key('overview-share'),
           icon: Icons.ios_share_rounded,
-          label: 'Share',
+          label: context.l10n.commonShare,
           onTap: actions.onShare!,
         ),
     ];
@@ -433,16 +435,19 @@ class _VetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vet = vets.regular ?? vets.emergency;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     if (vet == null) {
       return HealthPromptCard(
         key: const Key('overview-add-vet'),
         icon: Icons.add_call,
-        title: "Add ${pet.name}'s vet",
-        message: 'Phone and address, ready for an emergency',
+        title: l10n.addPetsVet(pet.name),
+        message: l10n.vetPromptNote,
         onTap: () => showVetPicker(context, petId: pet.id),
       );
     }
-    final detail = [if (vet.hasAddress) vet.address, if (vet.hasPhone) vet.phone].join(' · ');
+    // The address as typed, the phone number left to right.
+    final detail = format.dots([if (vet.hasAddress) vet.address, if (vet.hasPhone) format.ltrInLine(vet.phone)]);
     return HealthCard(
       key: const Key('overview-vet'),
       padding: const EdgeInsetsDirectional.only(start: 16, end: 12, top: 6, bottom: 14),
@@ -451,8 +456,8 @@ class _VetCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Vet', style: AppText.cardTitle)),
-              HealthLink('Details', onPressed: () => VetsScreen.open(context, pet)),
+              Expanded(child: Text(l10n.vet, style: AppText.cardTitle)),
+              HealthLink(l10n.details, onPressed: () => VetsScreen.open(context, pet)),
             ],
           ),
           Row(
@@ -463,7 +468,7 @@ class _VetCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(vet.name, style: AppText.cardTitle),
+                    TypedText(vet.name, style: AppText.cardTitle),
                     if (detail.isNotEmpty) Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
                   ],
                 ),
@@ -496,6 +501,8 @@ class _MedicinesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       key: const Key('overview-medicines'),
       child: Column(
@@ -503,15 +510,15 @@ class _MedicinesCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Medicines', style: AppText.cardTitle)),
-              HealthTag('${medicines.length} active', highlight: true),
+              Expanded(child: Text(l10n.medicines, style: AppText.cardTitle)),
+              HealthTag(l10n.medicinesActive(medicines.length), highlight: true),
             ],
           ),
           for (final m in medicines)
             InkWell(
               onTap: actions.onOpenMedicine == null ? null : () => actions.onOpenMedicine!(m),
               child: Padding(
-                padding: const EdgeInsets.only(top: 10),
+                padding: const EdgeInsetsDirectional.only(top: 10),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -521,10 +528,10 @@ class _MedicinesCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(m.displayName, style: AppText.cardTitle),
-                          if (m.instructionLine.isNotEmpty)
-                            Text(m.instructionLine, style: AppText.secondary.copyWith(color: AppColors.brown)),
-                          Text(_lastDose(m), style: AppText.secondary.copyWith(color: AppColors.brown)),
+                          TypedText(m.displayName, style: AppText.cardTitle),
+                          if (format.instructions(m).isNotEmpty)
+                            Text(format.instructions(m), style: AppText.secondary.copyWith(color: AppColors.brown)),
+                          Text(_lastDose(format, m), style: AppText.secondary.copyWith(color: AppColors.brown)),
                         ],
                       ),
                     ),
@@ -537,10 +544,16 @@ class _MedicinesCard extends StatelessWidget {
     );
   }
 
-  String _lastDose(Medication m) {
+  String _lastDose(HealthFormat format, Medication m) {
+    final l10n = format.l10n;
     final at = plan.lastDose(m.id)?.doneAt;
-    if (at == null) return 'No dose recorded yet';
-    return 'Last recorded dose: ${formatRelativeDay(at, now).toLowerCase()} ${formatTime(at)}';
+    if (at == null) return l10n.noDoseYet;
+    final time = format.time(at);
+    return switch (dateOnly(at).difference(dateOnly(now)).inDays) {
+      0 => l10n.lastDoseToday(time),
+      -1 => l10n.lastDoseYesterday(time),
+      _ => l10n.lastDoseOn(format.weekdayDate(at), time),
+    };
   }
 }
 
@@ -553,13 +566,14 @@ class _WeightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final latest = weights.last;
     final previous = weights.length > 1 ? weights[weights.length - 2] : null;
-    final detail = previous == null
-        ? formatDate(latest.observedAt)
-        : '${formatDate(latest.observedAt)} · '
-              '${formatWeightChange(previous.value!, latest.value!, grams: grams)} since ${formatDate(previous.observedAt)}';
-    final shown = formatWeight(latest.value!, grams: grams).split(' ');
+    final detail = format.dots([
+      format.date(latest.observedAt),
+      if (previous != null) format.weightChangeSince(previous.value!, latest.value!, previous.observedAt, grams: grams),
+    ]);
 
     return HealthCard(
       key: const Key('overview-weight'),
@@ -569,8 +583,8 @@ class _WeightCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Expanded(child: Text('Weight', style: AppText.cardTitle)),
-              HealthLink('Insights', onPressed: onInsights),
+              Expanded(child: Text(l10n.weight, style: AppText.cardTitle)),
+              HealthLink(l10n.sectionInsights, onPressed: onInsights),
             ],
           ),
           Row(
@@ -582,11 +596,11 @@ class _WeightCard extends StatelessWidget {
                   children: [
                     Text.rich(
                       TextSpan(
-                        text: shown.first,
+                        text: format.weightNumber(latest.value!, grams: grams),
                         style: AppText.metric,
                         children: [
                           TextSpan(
-                            text: ' ${shown.last}',
+                            text: ' ${format.weightUnit(grams: grams)}',
                             style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                           ),
                         ],
@@ -603,7 +617,7 @@ class _WeightCard extends StatelessWidget {
                   points: [for (final w in weights) TrendPoint(w.observedAt, w.value!)],
                   height: 56,
                   showGuides: false,
-                  semanticsLabel: 'Small weight chart',
+                  semanticsLabel: l10n.smallWeightChart,
                 ),
               ),
             ],
@@ -625,12 +639,13 @@ class _RecordsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int count(RecordKind kind) => history.where((r) => r.kind == kind).length;
+    final l10n = context.healthL10n;
     return HealthCard(
       key: const Key('overview-records'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Medical records', style: AppText.cardTitle),
+          Text(l10n.medicalRecords, style: AppText.cardTitle),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,7 +653,7 @@ class _RecordsCard extends StatelessWidget {
               Expanded(
                 child: _CountTile(
                   count: count(RecordKind.vaccination),
-                  label: 'Vaccinations',
+                  label: l10n.vaccinations,
                   onTap: () => onKind(RecordKind.vaccination),
                 ),
               ),
@@ -646,13 +661,13 @@ class _RecordsCard extends StatelessWidget {
               Expanded(
                 child: _CountTile(
                   count: count(RecordKind.checkup),
-                  label: 'Vet visits',
+                  label: l10n.vetVisits,
                   onTap: () => onKind(RecordKind.checkup),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _CountTile(count: documents, label: 'Documents', onTap: onDocuments),
+                child: _CountTile(count: documents, label: l10n.documents, onTap: onDocuments),
               ),
             ],
           ),
@@ -673,7 +688,7 @@ class _CountTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: '$count $label',
+      label: context.healthL10n.countAndLabel(count, label),
       excludeSemantics: true,
       child: Material(
         color: AppColors.cream,
@@ -712,29 +727,30 @@ class _GettingStarted extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     final steps = [
       if (actions.onAddDocument != null)
         HealthPromptStep(
           key: const Key('start-document'),
           icon: Icons.description_rounded,
-          title: 'Add a document you already have',
-          message: 'A photo or PDF of the vaccination booklet or a vet letter',
+          title: l10n.startDocument,
+          message: l10n.startDocumentNote,
           onTap: actions.onAddDocument!,
         ),
       if (actions.onAddAppointment != null)
         HealthPromptStep(
           key: const Key('start-appointment'),
           icon: Icons.event_rounded,
-          title: 'Enter an upcoming appointment',
-          message: 'So it shows under Coming up',
+          title: l10n.startAppointment,
+          message: l10n.startAppointmentNote,
           onTap: actions.onAddAppointment!,
         ),
       if (actions.onAddMedicine != null)
         HealthPromptStep(
           key: const Key('start-medicine'),
           icon: Icons.medication_rounded,
-          title: 'Create a medicine reminder',
-          message: "With the vet's instructions and the times",
+          title: l10n.startMedicine,
+          message: l10n.startMedicineNote,
           onTap: actions.onAddMedicine!,
         ),
     ];
@@ -742,11 +758,8 @@ class _GettingStarted extends StatelessWidget {
       key: const Key('getting-started'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const HealthSectionTitle('Start with one thing'),
-        Text(
-          "No need to enter ${pet.name}'s whole history. Add things as they come up.",
-          style: AppText.body.copyWith(color: AppColors.brown),
-        ),
+        HealthSectionTitle(l10n.startWithOneThing),
+        Text(l10n.startNote(pet.name), style: AppText.body.copyWith(color: AppColors.brown)),
         for (final step in steps) ...[const SizedBox(height: 10), step],
       ],
     );
