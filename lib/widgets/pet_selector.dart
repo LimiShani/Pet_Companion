@@ -16,10 +16,18 @@ import '../theme/app_theme.dart';
 /// Each pill shows the pet's picture and, while an essential is missing, a
 /// small dot. A long press on a pill opens that pet's profile.
 class PetSelector extends ConsumerWidget {
-  const PetSelector({super.key, this.onAdd});
+  const PetSelector({super.key, this.onAdd, this.trailing, this.highlightSelected = true});
 
   /// When set, a dashed "+" button is shown after the pills.
   final VoidCallback? onAdd;
+
+  /// An extra pill after the pets, for a choice that is not a pet (the
+  /// Store's "All animals"). The caller draws it and handles its taps.
+  final Widget? trailing;
+
+  /// With `false` no pet pill is drawn as selected, for when [trailing] is
+  /// the current choice. Tapping a pet still selects it.
+  final bool highlightSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,7 +45,7 @@ class PetSelector extends ConsumerWidget {
               children: [
                 _PetPill(
                   pet: pet,
-                  selected: pet.id == selectedId,
+                  selected: highlightSelected && pet.id == selectedId,
                   onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
                   // A long press opens the pet's profile, where a missing
                   // essential (the dot) is answered.
@@ -54,6 +62,7 @@ class PetSelector extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
           ],
+          if (trailing != null) ...[trailing!, const SizedBox(width: 8)],
           if (onAdd != null) _AddPetButton(onTap: onAdd!),
         ],
       ),
