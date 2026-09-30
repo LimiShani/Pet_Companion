@@ -27,12 +27,13 @@ class PetDocumentsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final data = ref.watch(petHealthDataProvider(pet.id));
     final value = data.value;
+    final l10n = context.healthL10n;
 
     Widget body;
     if (value == null) {
       body = data.hasError
           ? HealthLoadError(
-              title: context.healthL10n.loadFailedDocuments,
+              title: l10n.loadFailedDocuments,
               error: data.error!,
               onRetry: () => refreshHealth(ref, pet.id),
             )
@@ -43,11 +44,7 @@ class PetDocumentsScreen extends ConsumerWidget {
           if (value.documentsOf(record.id).isNotEmpty) record,
       ]..sort((a, b) => b.when.compareTo(a.when));
       body = records.isEmpty
-          ? const EmptyState(
-              icon: Icons.description_rounded,
-              title: 'No documents yet',
-              message: 'Photos and PDFs you attach to a record show here.',
-            )
+          ? EmptyState(icon: Icons.description_rounded, title: l10n.noDocumentsYet, message: l10n.noDocumentsNote)
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -55,17 +52,17 @@ class PetDocumentsScreen extends ConsumerWidget {
                   _RecordHeading(record: record),
                   for (final document in value.documentsOf(record.id))
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
+                      padding: const EdgeInsetsDirectional.only(bottom: 8),
                       child: DocumentRow(document: document),
                     ),
                 ],
                 const SizedBox(height: 4),
-                const FinePrint('A photo opens full screen; a PDF opens in the phone\'s viewer.'),
+                FinePrint(l10n.documentsFinePrint),
               ],
             );
     }
 
-    return HealthPage(petId: pet.id, title: "${pet.name}'s documents", child: body);
+    return HealthPage(petId: pet.id, title: l10n.petsDocuments(pet.name), child: body);
   }
 }
 
@@ -79,7 +76,7 @@ class _RecordHeading extends StatelessWidget {
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 10, bottom: 6, start: 2),
       child: Text(
-        '${record.title} · ${formatDate(record.when)}',
+        HealthFormat.of(context).dots([record.title, HealthFormat.of(context).date(record.when)]),
         style: AppText.label.copyWith(color: AppColors.brown),
       ),
     );

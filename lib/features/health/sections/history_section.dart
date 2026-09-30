@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../records/record_detail_screen.dart';
 import '../records/record_form_screen.dart';
 import '../state/health_providers.dart';
@@ -53,6 +55,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
       if (next.query != _search.text) _search.text = next.query;
     });
     final controller = ref.read(historyFilterProvider.notifier);
+    final l10n = context.healthL10n;
 
     final history = historyRecords(data.records);
     final files = <String, int>{};
@@ -61,15 +64,16 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
     }
     final shown = [
       for (final r in history)
-        if (filter.matches(r, hasFiles: files.containsKey(r.id))) r,
+        // The search also finds a record by what the screen calls its kind.
+        if (filter.matches(r, hasFiles: files.containsKey(r.id), kindName: l10n.recordKind(r.kind))) r,
     ];
 
     if (history.isEmpty) {
       return EmptyState(
         icon: Icons.history_rounded,
-        title: 'No records yet',
-        message: "Vet visits, vaccinations, treatments and documents will build ${pet.name}'s history here.",
-        actionLabel: 'Add a record',
+        title: l10n.historyEmpty,
+        message: l10n.historyEmptyNote(pet.name),
+        actionLabel: l10n.addARecord,
         onAction: () => openRecordForm(context, pet),
       );
     }
@@ -89,7 +93,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
           onChanged: controller.search,
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
-            hintText: "Search ${pet.name}'s records",
+            hintText: l10n.searchRecords(pet.name),
             prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
             suffixIcon: filter.query.isEmpty
                 ? null
@@ -98,7 +102,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
                       _search.clear();
                       controller.search('');
                     },
-                    tooltip: 'Clear the search',
+                    tooltip: l10n.clearSearch,
                     icon: const Icon(Icons.close_rounded),
                     color: AppColors.brown,
                   ),
@@ -111,20 +115,20 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
             children: [
               _FilterChip(
                 chipKey: const Key('filter-all'),
-                label: 'All',
+                label: l10n.filterAll,
                 selected: filter.kind == null && !filter.documentsOnly,
                 onSelected: controller.showAll,
               ),
               for (final kind in kinds)
                 _FilterChip(
                   chipKey: ValueKey('filter-${kind.name}'),
-                  label: kind.plural,
+                  label: l10n.recordKinds(kind),
                   selected: filter.kind == kind,
                   onSelected: () => controller.showKind(kind),
                 ),
               _FilterChip(
                 chipKey: const Key('filter-documents'),
-                label: 'Documents',
+                label: l10n.documents,
                 selected: filter.documentsOnly,
                 onSelected: controller.showDocuments,
               ),
@@ -135,22 +139,20 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
           children: [
             Expanded(
               child: Text(
-                filter.isEmpty
-                    ? (history.length == 1 ? '1 record' : '${history.length} records')
-                    : '${shown.length} of ${history.length} records',
+                filter.isEmpty ? l10n.recordsCount(history.length) : l10n.recordsShown(shown.length, history.length),
                 key: const Key('history-count'),
                 style: AppText.secondary.copyWith(color: AppColors.brown),
               ),
             ),
-            HealthLink('Add record', icon: Icons.add_rounded, onPressed: () => openRecordForm(context, pet)),
+            HealthLink(l10n.addRecord, icon: Icons.add_rounded, onPressed: () => openRecordForm(context, pet)),
           ],
         ),
         if (shown.isEmpty)
           EmptyState(
             icon: Icons.search_off_rounded,
-            title: 'Nothing matches',
-            message: 'No record fits this search and filter.',
-            actionLabel: 'Show all records',
+            title: l10n.nothingMatches,
+            message: l10n.nothingMatchesNote,
+            actionLabel: l10n.showAllRecords,
             onAction: () {
               _search.clear();
               controller.clear();
@@ -172,7 +174,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
         widgets.add(
           Padding(
             padding: EdgeInsetsDirectional.only(top: widgets.isEmpty ? 0 : 10, bottom: 8, start: 2),
-            child: Text(formatMonth(month), style: AppText.label.copyWith(color: AppColors.brown)),
+            child: Text(HealthFormat.of(context).month(month), style: AppText.label.copyWith(color: AppColors.brown)),
           ),
         );
       }
@@ -223,7 +225,9 @@ class _RecordCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final line = [record.kind.label, formatDate(record.when), if (record.clinic.isNotEmpty) record.clinic].join(' · ');
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final line = format.dots([l10n.recordKind(record.kind), format.date(record.when), record.clinic]);
     final note = record.notes.trim().split('\n').first;
     final due = record.nextDueOn;
     final cost = record.costAmount;
@@ -241,33 +245,33 @@ class _RecordCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(record.title, style: AppText.cardTitle),
+                TypedText(record.title, style: AppText.cardTitle),
                 Text(line, style: AppText.secondary.copyWith(color: AppColors.brown)),
                 if (note.isNotEmpty)
                   Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: Text(note, style: AppText.secondary, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    padding: const EdgeInsetsDirectional.only(top: 2),
+                    child: TypedText(note, style: AppText.secondary, maxLines: 2, overflow: TextOverflow.ellipsis),
                   ),
                 if (due != null || files > 0 || cost != null)
                   Padding(
-                    padding: const EdgeInsets.only(top: 6),
+                    padding: const EdgeInsetsDirectional.only(top: 6),
                     child: Wrap(
                       spacing: 6,
                       runSpacing: 4,
                       children: [
-                        if (due != null) HealthTag('Next due ${formatDate(due)}', icon: Icons.event_repeat_rounded),
+                        if (due != null) HealthTag(l10n.nextDue(format.date(due)), icon: Icons.event_repeat_rounded),
                         if (cost != null)
                           Semantics(
-                            label: 'Cost ${formatMoney(cost, record.costCurrency)}',
+                            label: l10n.costSemantics(format.money(cost, record.costCurrency)),
                             excludeSemantics: true,
                             child: HealthTag(
-                              formatMoney(cost, record.costCurrency),
+                              format.money(cost, record.costCurrency),
                               key: ValueKey('cost-${record.id}'),
                             ),
                           ),
                         if (files > 0)
                           Semantics(
-                            label: files == 1 ? '1 attachment' : '$files attachments',
+                            label: l10n.attachmentsCount(files),
                             excludeSemantics: true,
                             child: HealthTag('$files', icon: Icons.attach_file_rounded),
                           ),

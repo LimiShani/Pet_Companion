@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../config/app_config.dart';
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
@@ -10,6 +11,7 @@ import '../../../widgets/primary_button.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'attachments.dart';
@@ -58,7 +60,10 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   final _pending = <PickedFile>[];
   final _previews = <PickedFile, Future<Uint8List>>{};
   bool _saving = false;
-  String? _error;
+
+  /// What is wrong: a message of the form, or what saving threw (worded
+  /// when it is shown).
+  Object? _error;
 
   bool get _editing => widget.record != null;
   String get _petId => widget.pet.id;
@@ -109,13 +114,13 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       firstDate: DateTime(now.year - 30),
       lastDate: DateTime(now.year + 10, 12, 31),
       currentDate: now,
-      helpText: 'Date',
+      helpText: context.healthL10n.fieldDate,
     );
     if (picked != null && mounted) setState(() => _day = dateOnly(picked));
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time, helpText: 'Time');
+    final picked = await showTimePicker(context: context, initialTime: _time, helpText: context.healthL10n.fieldTime);
     if (picked != null && mounted) setState(() => _time = picked);
   }
 
@@ -129,7 +134,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       firstDate: first,
       lastDate: DateTime(now.year + 20, 12, 31),
       currentDate: now,
-      helpText: 'Next due date, from your vet',
+      helpText: context.healthL10n.nextDueHelp,
     );
     if (picked != null && mounted) setState(() => _nextDue = dateOnly(picked));
   }
@@ -145,22 +150,22 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     try {
       await ref.read(healthDocumentsProvider(_petId).notifier).add(record.id, file);
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   Future<void> _removeDocument(HealthDocument document) async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Remove this file?',
-      message: '"${document.fileName}" will be removed from the record.',
-      confirmLabel: 'Remove',
+      title: context.healthL10n.removeFileTitle,
+      message: context.healthL10n.removeFileMessage(document.fileName),
+      confirmLabel: context.healthL10n.remove,
     );
     if (!confirmed || !mounted) return;
     try {
       await ref.read(healthDocumentsProvider(_petId).notifier).remove(document);
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -169,7 +174,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     final ahead = _ahead;
     final nextDue = _kind.hasNextDue && !ahead ? _nextDue : null;
     if (nextDue != null && !nextDue.isAfter(_day)) {
-      setState(() => _error = 'The next due date should be after the date given.');
+      setState(() => _error = context.healthL10n.validNextDueAfter);
       return;
     }
     setState(() {
@@ -197,24 +202,24 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               costCurrency: _currency,
             ),
           );
-      String? fileProblem;
+      Object? fileProblem;
       for (final file in _pending) {
         try {
           await ref.read(healthDocumentsProvider(_petId).notifier).add(saved.id, file);
         } catch (error) {
-          fileProblem = healthErrorMessage(error);
+          fileProblem = error;
         }
       }
       if (!mounted) return;
       if (fileProblem != null) {
-        showHealthSnack(context, 'The record is saved, but a file was not attached. $fileProblem');
+        showHealthSnack(context, context.healthL10n.savedButFileNotAttached(healthErrorOf(context, fileProblem)));
       }
       Navigator.of(context).pop(saved);
     } catch (error) {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -224,8 +229,8 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     final record = widget.record!;
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete this record?',
-      message: '"${record.title}" and its attachments will be removed. This cannot be undone.',
+      title: context.healthL10n.deleteRecordTitle,
+      message: context.healthL10n.deleteRecordMessage(record.title),
     );
     if (!confirmed || !mounted) return;
     setState(() => _saving = true);
@@ -236,7 +241,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -254,19 +259,22 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               if (d.recordId == record.id) d,
           ];
     final given = _kind.hasNextDue || _kind == RecordKind.medicine;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final error = _error;
 
     return HealthPage(
       petId: _petId,
       title: _editing
-          ? 'Edit record'
+          ? l10n.editRecord
           : widget.planned
-          ? 'New appointment'
-          : 'New record',
+          ? l10n.newAppointment
+          : l10n.newRecord,
       actions: [
         if (_editing)
           CoralHeaderAction(
             icon: Icons.delete_outline_rounded,
-            tooltip: 'Delete record',
+            tooltip: l10n.deleteRecord,
             onPressed: _saving ? null : _delete,
           ),
       ],
@@ -275,7 +283,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FormLabel('What kind of record?'),
+            FormLabel(l10n.whatKindOfRecord),
             Wrap(
               spacing: 8,
               runSpacing: 4,
@@ -283,23 +291,23 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
                 for (final kind in kinds)
                   ChoiceChip(
                     key: ValueKey('kind-${kind.name}'),
-                    label: Text(kind.label),
+                    label: Text(l10n.recordKind(kind)),
                     selected: kind == _kind,
                     onSelected: (_) => setState(() => _kind = kind),
                   ),
               ],
             ),
-            const FormLabel('Details'),
+            FormLabel(l10n.details),
             TextFormField(
               key: const Key('record-title'),
               controller: _title,
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Title'),
+              decoration: InputDecoration(labelText: l10n.fieldTitle),
               validator: (value) {
                 final v = value?.trim() ?? '';
-                if (v.isEmpty) return 'Give the record a title.';
-                if (v.length > 120) return 'Keep the title under 120 characters.';
+                if (v.isEmpty) return l10n.validRecordTitle;
+                if (v.length > 120) return l10n.validTitleTooLong(120);
                 return null;
               },
             ),
@@ -310,7 +318,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
                 controller: _product,
                 textCapitalization: TextCapitalization.sentences,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: 'Product (optional)'),
+                decoration: InputDecoration(labelText: l10n.productOptional),
               ),
             ],
             const SizedBox(height: 10),
@@ -318,41 +326,35 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               key: const Key('record-date'),
               icon: Icons.event_rounded,
               label: ahead
-                  ? 'Planned for'
+                  ? l10n.plannedFor
                   : given
-                  ? 'Date given'
-                  : 'Date',
-              value: formatDate(_day),
+                  ? l10n.dateGiven
+                  : l10n.fieldDate,
+              value: format.date(_day),
               onTap: _pickDay,
             ),
             const SizedBox(height: 10),
             PickerTile(
               key: const Key('record-time'),
               icon: Icons.schedule_rounded,
-              label: 'Time',
-              value: formatTimeOfDay(_time),
+              label: l10n.fieldTime,
+              value: format.timeOfDay(_time),
               onTap: _pickTime,
             ),
-            if (ahead) ...[
-              const SizedBox(height: 6),
-              const FinePrint(
-                'This date is still ahead, so it is saved as an upcoming item in the Schedule.',
-                center: false,
-              ),
-            ],
+            if (ahead) ...[const SizedBox(height: 6), FinePrint(l10n.recordAheadNote, center: false)],
             if (_kind.hasNextDue && !ahead) ...[
               const SizedBox(height: 10),
               PickerTile(
                 key: const Key('record-next-due'),
                 icon: Icons.event_repeat_rounded,
-                label: 'Next due (optional)',
-                value: _nextDue == null ? 'Not set' : formatDate(_nextDue!),
+                label: l10n.nextDueOptional,
+                value: _nextDue == null ? l10n.notSet : format.date(_nextDue!),
                 placeholder: _nextDue == null,
                 onTap: _pickNextDue,
                 onClear: _nextDue == null ? null : () => setState(() => _nextDue = null),
               ),
               const SizedBox(height: 6),
-              const FinePrint('Enter the date your vet gave you. It will appear in the Schedule.', center: false),
+              FinePrint(l10n.nextDueNote, center: false),
             ],
             const SizedBox(height: 10),
             TextFormField(
@@ -360,7 +362,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               controller: _clinic,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Vet or clinic (optional)'),
+              decoration: InputDecoration(labelText: l10n.vetOrClinicOptional),
             ),
             const SizedBox(height: 10),
             TextFormField(
@@ -369,23 +371,21 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
               textInputAction: TextInputAction.next,
+              // An amount: left to right on every screen, beside its sign.
+              textDirection: TextDirection.ltr,
+              textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
               decoration: InputDecoration(
-                labelText: ahead ? 'Expected cost (optional)' : 'Cost (optional)',
+                labelText: ahead ? l10n.expectedCostOptional : l10n.costOptional,
                 prefixText: '${currencySymbol(_currency)} ',
               ),
               validator: (value) {
                 final v = value?.trim() ?? '';
                 if (v.isEmpty) return null;
-                return parseMoney(v) == null ? 'Enter an amount, like 120 or 89.90.' : null;
+                return parseMoney(v) == null ? l10n.validAmount : null;
               },
             ),
             const SizedBox(height: 6),
-            FinePrint(
-              ahead
-                  ? 'What you expect to pay. It stays with your records and is left out of anything you share with a vet.'
-                  : 'What you paid. It stays with your records and is left out of anything you share with a vet.',
-              center: false,
-            ),
+            FinePrint(ahead ? l10n.costNoteExpected : l10n.costNotePaid, center: false),
             const SizedBox(height: 10),
             TextFormField(
               key: const Key('record-notes'),
@@ -393,18 +393,18 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               minLines: 2,
               maxLines: 6,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes (optional)', hintText: 'Anything worth remembering'),
-              validator: (value) => (value?.length ?? 0) > 4000 ? 'Please keep the notes shorter.' : null,
+              decoration: InputDecoration(labelText: l10n.notesOptional, hintText: l10n.notesHint),
+              validator: (value) => (value?.length ?? 0) > 4000 ? l10n.validNotesTooLong : null,
             ),
-            const FormLabel('Attachments'),
+            FormLabel(l10n.attachments),
             for (final document in documents)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsetsDirectional.only(bottom: 8),
                 child: DocumentRow(document: document, onRemove: () => _removeDocument(document)),
               ),
             for (final file in _pending)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsetsDirectional.only(bottom: 8),
                 child: AttachmentRow(
                   name: file.name,
                   sizeBytes: file.bytes.length,
@@ -418,14 +418,17 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               onPressed: _saving ? null : _attach,
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
               icon: const Icon(Icons.attach_file_rounded),
-              label: const Text('Add a photo or PDF'),
+              label: Text(l10n.addPhotoOrPdf),
             ),
-            if (_error != null) ...[
+            if (error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+              Text(
+                error is String ? error : format.error(error),
+                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 22),
-            PrimaryButton(label: 'Save record', loading: _saving, onPressed: _save),
+            PrimaryButton(label: l10n.saveRecord, loading: _saving, onPressed: _save),
           ],
         ),
       ),

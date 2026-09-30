@@ -9,6 +9,7 @@ import '../../../widgets/coral_header.dart';
 import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../share/share_actions.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
@@ -48,26 +49,23 @@ class RecordDetailScreen extends ConsumerWidget {
       if (!left.any((r) => r.id == recordId)) Navigator.of(context).pop();
     }
 
+    final l10n = context.healthL10n;
     return HealthPage(
       petId: pet.id,
-      title: 'Record',
+      title: l10n.record,
       actions: [
-        if (current != null) CoralHeaderAction(icon: Icons.edit_rounded, tooltip: 'Edit record', onPressed: edit),
+        if (current != null) CoralHeaderAction(icon: Icons.edit_rounded, tooltip: l10n.editRecord, onPressed: edit),
       ],
       child: current == null
           ? records.isLoading
                 ? const HealthLoading()
                 : records.hasError
                 ? HealthLoadError(
-                    title: context.healthL10n.loadFailedRecord,
+                    title: l10n.loadFailedRecord,
                     error: records.error!,
                     onRetry: () => ref.invalidate(healthRecordsProvider(pet.id)),
                   )
-                : const EmptyState(
-                    icon: Icons.sticky_note_2_rounded,
-                    title: 'This record is gone',
-                    message: 'It was deleted.',
-                  )
+                : EmptyState(icon: Icons.sticky_note_2_rounded, title: l10n.recordGone, message: l10n.recordGoneNote)
           : _Detail(
               pet: pet,
               record: current,
@@ -96,9 +94,9 @@ class _Detail extends ConsumerWidget {
     if (file == null) return;
     try {
       await ref.read(healthDocumentsProvider(pet.id).notifier).add(record.id, file);
-      if (context.mounted) showHealthSnack(context, '${file.name} is attached.');
+      if (context.mounted) showHealthSnack(context, context.healthL10n.fileAttached(file.name));
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -108,44 +106,37 @@ class _Detail extends ConsumerWidget {
       await ref
           .read(healthRecordsProvider(pet.id).notifier)
           .setDone(record, record.scheduledAt.isAfter(now) ? now : record.scheduledAt);
-      if (context.mounted) showHealthSnack(context, 'Moved to the History.');
+      if (context.mounted) showHealthSnack(context, context.healthL10n.movedToHistory);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final given = record.kind.hasNextDue || record.kind == RecordKind.medicine;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final inScheduleTag = Padding(
+      padding: const EdgeInsetsDirectional.only(top: 4),
+      child: HealthTag(l10n.inTheSchedule, highlight: true),
+    );
     final rows = <Widget>[
       if (record.isDone)
-        LabeledValue(given ? 'Date given' : 'Date', formatDateTime(record.when))
+        LabeledValue(given ? l10n.dateGiven : l10n.fieldDate, format.dateTime(record.when))
       else
-        LabeledValue(
-          'Planned for',
-          formatDateTime(record.scheduledAt),
-          trailing: const Padding(
-            padding: EdgeInsets.only(top: 4),
-            child: HealthTag('In the Schedule', highlight: true),
-          ),
-        ),
+        LabeledValue(l10n.plannedFor, format.dateTime(record.scheduledAt), trailing: inScheduleTag),
       if (record.nextDueOn != null)
-        LabeledValue(
-          'Next due (from the vet)',
-          formatDate(record.nextDueOn!),
-          trailing: inSchedule
-              ? const Padding(padding: EdgeInsets.only(top: 4), child: HealthTag('In the Schedule', highlight: true))
-              : null,
-        ),
-      if (record.productName.isNotEmpty) LabeledValue('Product', record.productName),
-      if (record.clinic.isNotEmpty) LabeledValue('Vet or clinic', record.clinic),
+        LabeledValue(l10n.nextDueFromVet, format.date(record.nextDueOn!), trailing: inSchedule ? inScheduleTag : null),
+      if (record.productName.isNotEmpty) LabeledValue(l10n.product, record.productName),
+      if (record.clinic.isNotEmpty) LabeledValue(l10n.vetOrClinic, record.clinic),
       if (record.costAmount != null)
         LabeledValue(
-          record.isDone ? 'Cost' : 'Expected cost',
-          formatMoney(record.costAmount!, record.costCurrency),
+          record.isDone ? l10n.cost : l10n.expectedCost,
+          format.money(record.costAmount!, record.costCurrency),
           key: const Key('record-cost-row'),
         ),
-      if (record.notes.isNotEmpty) LabeledValue('Notes', record.notes),
+      if (record.notes.isNotEmpty) LabeledValue(l10n.notes, record.notes),
     ];
 
     return Column(
@@ -161,8 +152,11 @@ class _Detail extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(record.title, style: AppText.petName.copyWith(fontSize: 20)),
-                  Text('${record.kind.label} · ${pet.name}', style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  TypedText(record.title, style: AppText.petName.copyWith(fontSize: 20)),
+                  Text(
+                    format.dots([l10n.recordKind(record.kind), pet.name]),
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
                 ],
               ),
             ),
@@ -184,22 +178,19 @@ class _Detail extends ConsumerWidget {
             onPressed: () => _markDone(context, ref),
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
             icon: const Icon(Icons.check_rounded),
-            label: const Text('Mark as done'),
+            label: Text(l10n.markAsDone),
           ),
         ],
         const SizedBox(height: 8),
-        HealthSectionTitle('Attachments', count: documents.isEmpty ? null : documents.length),
+        HealthSectionTitle(l10n.attachments, count: documents.isEmpty ? null : documents.length),
         if (documents.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text(
-              'No photos or PDFs yet. A photo opens full screen; a PDF opens in the phone\'s viewer.',
-              style: AppText.secondary.copyWith(color: AppColors.brown),
-            ),
+            padding: const EdgeInsetsDirectional.only(bottom: 8),
+            child: Text(l10n.noAttachmentsNote, style: AppText.secondary.copyWith(color: AppColors.brown)),
           ),
         for (final document in documents)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsetsDirectional.only(bottom: 8),
             child: DocumentRow(document: document),
           ),
         OutlinedButton.icon(
@@ -207,7 +198,7 @@ class _Detail extends ConsumerWidget {
           onPressed: () => _attach(context, ref),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
           icon: const Icon(Icons.attach_file_rounded),
-          label: const Text('Add a photo or PDF'),
+          label: Text(l10n.addPhotoOrPdf),
         ),
         const SizedBox(height: 10),
         OutlinedButton.icon(
@@ -215,10 +206,10 @@ class _Detail extends ConsumerWidget {
           onPressed: () => shareRecord(context, pet, record),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
           icon: const Icon(Icons.ios_share_rounded),
-          label: const Text('Share this record'),
+          label: Text(l10n.shareThisRecord),
         ),
         const SizedBox(height: 12),
-        const FinePrint('Delete is inside Edit, and always asks first.'),
+        FinePrint(l10n.deleteInsideEdit),
       ],
     );
   }
