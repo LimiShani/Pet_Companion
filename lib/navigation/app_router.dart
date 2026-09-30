@@ -9,7 +9,9 @@ import '../features/auth/splash_screen.dart';
 import '../features/community/community_routes.dart';
 import '../features/health/health_routes.dart';
 import '../features/home/home_screen.dart';
+import '../features/pets/pets_routes.dart';
 import '../features/store/store_routes.dart';
+import '../state/pets_provider.dart';
 import '../widgets/app_bottom_nav.dart';
 
 abstract final class AppRoutes {
@@ -30,6 +32,8 @@ abstract final class AppRoutes {
 final routerProvider = Provider<GoRouter>((ref) {
   final refresh = _RouterRefresh();
   ref.listen(authControllerProvider, (_, _) => refresh.ping());
+  // The first-pet gate: loading, failed, no pet yet, or ready for the tabs.
+  ref.listen(petsGateProvider, (_, _) => refresh.ping());
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
@@ -52,12 +56,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: storeRoutes),
         ],
       ),
+      // The first-pet welcome, the add-a-pet flow, the pet profile and "My
+      // pets": full screen, beside the tabs (see pets_routes.dart).
+      ...petsRoutes,
     ],
   );
 });
 
 /// Sends signed-out users to the login screen, signed-in users away from
-/// it, and everyone to the splash while the session is still loading.
+/// it, and everyone to the splash while the session is still loading. A
+/// signed-in owner reaches the tabs once their pets are loaded and there is
+/// at least one; until then the first-pet welcome is all they can open.
 String? _redirect(Ref ref, String location) {
   final auth = ref.read(authControllerProvider);
   final restoring = auth.isLoading && !auth.hasValue && !auth.hasError;
@@ -65,8 +74,18 @@ String? _redirect(Ref ref, String location) {
 
   final signedIn = auth.value != null;
   if (!signedIn) return AppRoutes.isPublic(location) ? null : AppRoutes.login;
-  if (AppRoutes.isPublic(location) || location == AppRoutes.splash) return AppRoutes.home;
-  return null;
+
+  switch (ref.read(petsGateProvider)) {
+    case PetsGate.loading:
+      return location == AppRoutes.splash ? null : AppRoutes.splash;
+    case PetsGate.failed:
+      return location == PetsRoutes.welcome ? null : PetsRoutes.welcome;
+    case PetsGate.empty:
+      return PetsRoutes.openWithoutPets(location) ? null : PetsRoutes.welcome;
+    case PetsGate.ready:
+      final leave = AppRoutes.isPublic(location) || location == AppRoutes.splash || location == PetsRoutes.welcome;
+      return leave ? AppRoutes.home : null;
+  }
 }
 
 class _RouterRefresh extends ChangeNotifier {

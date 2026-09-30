@@ -58,7 +58,7 @@ void main() {
     expect(find.text('Welcome back'), findsOneWidget);
   });
 
-  testWidgets('sign up creates an account and lands on home', (tester) async {
+  testWidgets('sign up creates an account and lands on the first-pet welcome', (tester) async {
     await pumpApp(tester);
 
     await tester.tap(find.text('Create an account'));
@@ -72,8 +72,11 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Feeding'), findsOneWidget);
-    expect(find.text('L'), findsOneWidget);
+    // A new account has no pet yet: the first-pet welcome stands in for
+    // the tabs until one is added.
+    expect(find.text('Welcome, Limor'), findsOneWidget);
+    expect(find.text('Add my first pet'), findsOneWidget);
+    expect(find.text('Feeding'), findsNothing);
   });
 
   testWidgets('sign up rejects an email that is already registered', (tester) async {
