@@ -6,6 +6,12 @@
 /// ```
 ///
 /// Everything runs on providers, so tests use Health's in-memory fake.
+///
+/// Every piece speaks the language of the screen it is placed on (English
+/// or Hebrew, right to left), with no setup. A failure carries its reason
+/// (`HealthException.failure`); a screen words it with
+/// `healthErrorOf(context, error)`. `healthErrorMessage(error)` is the same
+/// in plain English, for logs.
 library;
 
 import 'package:flutter/material.dart';
@@ -17,7 +23,8 @@ import 'emergency_contacts.dart';
 import 'health_profile_form.dart';
 import 'vet_picker.dart';
 
-export '../data/health_models.dart' show HealthException, HealthProfile, KitItem, Vet, VetRole;
+export '../data/health_models.dart' show HealthException, HealthFailure, HealthProfile, KitItem, Vet, VetRole;
+export '../health_strings.dart' show healthErrorOf, healthErrorText;
 // The emergency kit: `ref.watch(emergencyKitProvider(petId))` gives how many
 // items are ready (`ready`) out of how many apply to the pet (`total`).
 export '../state/emergency_kit.dart' show EmergencyKit, KitEntry, emergencyKitProvider;

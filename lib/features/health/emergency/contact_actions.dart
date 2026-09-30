@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../health_format.dart';
 import '../widgets/health_widgets.dart';
 import 'contact_launcher.dart';
 import 'emergency_message.dart';
 
 /// Runs [launch]; when the phone could not open the other app, says so and
-/// offers to copy [copyText] instead.
+/// offers to copy [copyText] instead. [copyIsNumber]: [copyText] is a phone
+/// number, which reads left to right on every screen.
 Future<bool> launchOrExplain(
   BuildContext context, {
   required Future<bool> Function() launch,
   required String problem,
   required String copyLabel,
   required String copyText,
+  bool copyIsNumber = false,
 }) async {
   final opened = await launch();
   if (opened || !context.mounted) return opened;
@@ -23,7 +27,13 @@ Future<bool> launchOrExplain(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(problem),
-      content: SelectableText(copyText),
+      content: SelectableText(
+        copyText,
+        textDirection: copyIsNumber
+            ? TextDirection.ltr
+            : directionOfText(copyText, fallback: Directionality.of(context)),
+        textAlign: TextAlign.start,
+      ),
       actions: [
         TextButton(
           onPressed: () {
@@ -32,7 +42,7 @@ Future<bool> launchOrExplain(
           },
           child: Text(copyLabel),
         ),
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Close')),
+        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.l10n.commonClose)),
       ],
     ),
   );
@@ -43,17 +53,18 @@ Future<bool> launchOrExplain(
 Future<bool> callContact(BuildContext context, WidgetRef ref, String phone) => launchOrExplain(
   context,
   launch: () => ref.read(contactLauncherProvider).call(phone),
-  problem: 'Could not open the phone app',
-  copyLabel: 'Copy number',
+  problem: context.healthL10n.couldNotOpenPhone,
+  copyLabel: context.healthL10n.copyNumber,
   copyText: phone,
+  copyIsNumber: true,
 );
 
 /// Opens the maps app on [address].
 Future<bool> openContactMap(BuildContext context, WidgetRef ref, String address) => launchOrExplain(
   context,
   launch: () => ref.read(contactLauncherProvider).openMap(address),
-  problem: 'Could not open the maps app',
-  copyLabel: 'Copy address',
+  problem: context.healthL10n.couldNotOpenMaps,
+  copyLabel: context.healthL10n.copyAddress,
   copyText: address,
 );
 
@@ -98,6 +109,7 @@ class ContactActionButtons extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final number = phone;
     final place = address;
+    final l10n = context.healthL10n;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -108,7 +120,7 @@ class ContactActionButtons extends ConsumerWidget {
             style: _filled,
             onPressed: () => callContact(context, ref, number),
             icon: const Icon(Icons.call_rounded, size: 18),
-            label: const Text('Call'),
+            label: Text(l10n.actionCall),
           ),
           OutlinedButton.icon(
             key: ValueKey('message-$tag'),
@@ -121,7 +133,7 @@ class ContactActionButtons extends ConsumerWidget {
               onWhatsApp: onWhatsApp,
             ),
             icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
-            label: const Text('Message'),
+            label: Text(l10n.actionMessage),
           ),
         ] else if (onAddPhone != null)
           OutlinedButton.icon(
@@ -129,7 +141,7 @@ class ContactActionButtons extends ConsumerWidget {
             style: _outlined,
             onPressed: onAddPhone,
             icon: const Icon(Icons.add_call, size: 18),
-            label: const Text('Add a phone number'),
+            label: Text(l10n.addPhoneNumber),
           ),
         if (place != null)
           OutlinedButton.icon(
@@ -137,7 +149,7 @@ class ContactActionButtons extends ConsumerWidget {
             style: _outlined,
             onPressed: () => openContactMap(context, ref, place),
             icon: const Icon(Icons.place_rounded, size: 18),
-            label: const Text('Map'),
+            label: Text(l10n.actionMap),
           ),
       ],
     );
@@ -190,9 +202,14 @@ class EmergencyContactCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(role, style: AppText.label.copyWith(color: AppColors.brown)),
-                    Text(name, style: AppText.cardTitle),
-                    if (phone != null) Text(phone!, style: AppText.secondary.copyWith(color: AppColors.brown)),
-                    if (detail != null) Text(detail!, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                    TypedText(name, style: AppText.cardTitle),
+                    // A phone number reads left to right on every screen.
+                    if (phone != null)
+                      Text(
+                        HealthFormat.of(context).ltrInLine(phone!),
+                        style: AppText.secondary.copyWith(color: AppColors.brown),
+                      ),
+                    if (detail != null) TypedText(detail!, style: AppText.secondary.copyWith(color: AppColors.brown)),
                   ],
                 ),
               ),

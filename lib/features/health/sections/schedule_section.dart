@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../records/record_detail_screen.dart';
 import '../records/record_form_screen.dart';
 import '../schedule/medicine_form_screen.dart';
@@ -37,8 +39,9 @@ class _AddSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     Widget option(int value, String key, IconData icon, String title, String detail) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsetsDirectional.only(bottom: 8),
       child: HealthCard(
         key: ValueKey('add-$key'),
         onTap: () => Navigator.of(context).pop(value),
@@ -65,17 +68,11 @@ class _AddSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SheetTitle('Add to the schedule'),
+        SheetTitle(l10n.addToSchedule),
         const SizedBox(height: 12),
-        option(
-          0,
-          'appointment',
-          Icons.event_rounded,
-          'Appointment or due date',
-          'A vet visit, a vaccination, a treatment',
-        ),
-        option(1, 'medicine', Icons.medication_rounded, 'Medicine', "The vet's instructions and the reminder times"),
-        option(2, 'routine', Icons.restaurant_rounded, 'Routine', 'Feeding, walks, grooming, cleaning'),
+        option(0, 'appointment', Icons.event_rounded, l10n.addAppointment, l10n.addAppointmentNote),
+        option(1, 'medicine', Icons.medication_rounded, l10n.medicine, l10n.addMedicineNote),
+        option(2, 'routine', Icons.restaurant_rounded, l10n.routine, l10n.addRoutineNote),
       ],
     );
   }
@@ -96,13 +93,16 @@ class ScheduleSection extends ConsumerWidget {
     final plan = data.plan;
     final planned = upcomingRecords(data.records, now);
     final reviewRecords = recordsNeedingReview(data.records, now);
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final settings = SpeciesSettings.of(pet.species);
 
     if (plan.isEmpty && planned.isEmpty && reviewRecords.isEmpty) {
       return EmptyState(
         icon: Icons.event_available_rounded,
-        title: 'Nothing scheduled yet',
-        message: "Appointments, medicine reminders and daily routines for ${pet.name} will show here.",
-        actionLabel: 'Add to the schedule',
+        title: l10n.scheduleEmpty,
+        message: l10n.scheduleEmptyNote(pet.name),
+        actionLabel: l10n.addToSchedule,
         onAction: () => showScheduleAddSheet(context, pet),
       );
     }
@@ -143,10 +143,10 @@ class ScheduleSection extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HealthSectionTitle(
-          'Today',
-          detail: '· ${formatShortDay(now)}',
+          context.l10n.commonToday,
+          detail: l10n.sectionDetailDay(format.shortDay(now)),
           trailing: HealthLink(
-            'Add',
+            context.l10n.commonAdd,
             key: const Key('schedule-add'),
             icon: Icons.add_rounded,
             onPressed: () => showScheduleAddSheet(context, pet),
@@ -154,20 +154,20 @@ class ScheduleSection extends ConsumerWidget {
         ),
         if (today.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsetsDirectional.only(bottom: 8),
             child: Text(
-              answered.isEmpty ? 'Nothing is due today.' : 'Everything for today is answered.',
+              answered.isEmpty ? l10n.nothingDueToday : l10n.allAnsweredToday,
               style: AppText.body.copyWith(color: AppColors.brown),
             ),
           ),
         for (final (_, row) in today) ...[row, const SizedBox(height: 8)],
         if (answered.isNotEmpty) _DoneToday(pet: pet, entries: answered),
         const SizedBox(height: 8),
-        HealthSectionTitle('Upcoming', count: upcoming.isEmpty ? null : upcoming.length),
+        HealthSectionTitle(l10n.upcoming, count: upcoming.isEmpty ? null : upcoming.length),
         if (upcoming.isEmpty)
           Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Text('No appointments or due dates ahead.', style: AppText.body.copyWith(color: AppColors.brown)),
+            padding: const EdgeInsetsDirectional.only(bottom: 8),
+            child: Text(l10n.noUpcoming, style: AppText.body.copyWith(color: AppColors.brown)),
           ),
         for (final record in upcoming) ...[
           _PlannedRow(record: record, now: now, onTap: () => openRecordDetail(context, pet, record)),
@@ -175,21 +175,17 @@ class ScheduleSection extends ConsumerWidget {
         ],
         if (reviewEntries.isNotEmpty || reviewRecords.isNotEmpty) ...[
           const SizedBox(height: 8),
-          HealthSectionTitle('Needs review', count: reviewEntries.length + reviewRecords.length),
+          HealthSectionTitle(l10n.needsReview, count: reviewEntries.length + reviewRecords.length),
           for (final entry in reviewEntries) ...[_ReviewEntryRow(pet: pet, entry: entry), const SizedBox(height: 8)],
           for (final record in reviewRecords) ...[
             _ReviewRecordRow(pet: pet, record: record),
             const SizedBox(height: 8),
           ],
-          const FinePrint(
-            'No answer was recorded for these. Nothing is counted as missed; a medicine reminder leaves this list '
-            'after $needsReviewDays days.',
-            center: false,
-          ),
+          FinePrint(l10n.needsReviewNote(needsReviewDays), center: false),
         ],
         if (!plan.isEmpty) ...[
           const SizedBox(height: 16),
-          const HealthSectionTitle('Medicines and routines'),
+          HealthSectionTitle(l10n.medicinesAndRoutines),
           for (final medication in plan.medications) ...[
             _MedicineCard(pet: pet, medication: medication, plan: plan, now: now),
             const SizedBox(height: 8),
@@ -197,7 +193,8 @@ class ScheduleSection extends ConsumerWidget {
           for (final item in _routines(plan)) ...[
             _RoutineCard(
               item: item,
-              kindLabel: SpeciesSettings.of(pet.species).routineLabel(item.kind),
+              kindLabel: l10n.routineKind(settings, item.kind),
+              kindLabelInEnglish: settings.routineLabel(item.kind),
               onTap: () => openRoutineForm(context, pet, item: item),
             ),
             const SizedBox(height: 8),
@@ -218,10 +215,16 @@ class ScheduleSection extends ConsumerWidget {
           .read(carePlanProvider(pet.id).notifier)
           .record(item: entry.item, dueOn: entry.due, status: CareLogStatus.done);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 }
+
+/// Whether a routine's title already says its kind (in the language of the
+/// screen, or in English for one that was created in English): the kind is
+/// then not said twice.
+bool _namedAfterKind(String title, String kindLabel, String kindLabelInEnglish) =>
+    title.trim() == kindLabel || title.trim() == kindLabelInEnglish;
 
 /// A routine due today: ticked with one tap.
 class _RoutineRow extends StatelessWidget {
@@ -234,7 +237,9 @@ class _RoutineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = entry.item;
-    final kindLabel = SpeciesSettings.of(pet.species).routineLabel(item.kind);
+    final l10n = context.healthL10n;
+    final settings = SpeciesSettings.of(pet.species);
+    final kindLabel = l10n.routineKind(settings, item.kind);
     return HealthCard(
       key: ValueKey('today-${item.id}'),
       onTap: () => openRoutineForm(context, pet, item: item),
@@ -242,7 +247,7 @@ class _RoutineRow extends StatelessWidget {
       child: Row(
         children: [
           Semantics(
-            label: 'Mark ${item.title} as done',
+            label: l10n.markNamedAsDone(item.title),
             child: Checkbox(
               key: ValueKey('tick-${item.id}'),
               value: false,
@@ -254,15 +259,15 @@ class _RoutineRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: AppText.cardTitle),
+                TypedText(item.title, style: AppText.cardTitle),
                 // A routine named after its kind does not say it twice.
-                if (item.title.trim() != kindLabel)
+                if (!_namedAfterKind(item.title, kindLabel, settings.routineLabel(item.kind)))
                   Text(kindLabel, style: AppText.secondary.copyWith(color: AppColors.brown)),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text(formatTimeOfDay(item.time), style: AppText.cardTitle),
+          Text(HealthFormat.of(context).timeOfDay(item.time), style: AppText.cardTitle),
         ],
       ),
     );
@@ -281,6 +286,8 @@ class _MedicineRow extends StatelessWidget {
     final item = entry.item;
     final medication = entry.medication;
     final dose = medication?.dose.trim() ?? '';
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       key: ValueKey('today-${item.id}'),
       onTap: medication == null ? null : () => openMedicineForm(context, pet, medication: medication),
@@ -293,9 +300,9 @@ class _MedicineRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: AppText.cardTitle),
+                TypedText(item.title, style: AppText.cardTitle),
                 Text(
-                  [if (dose.isNotEmpty) dose, 'due ${formatTimeOfDay(item.time)}'].join(' · '),
+                  format.dots([dose, l10n.dueAt(format.timeOfDay(item.time))]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -310,7 +317,7 @@ class _MedicineRow extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               textStyle: AppText.button(14),
             ),
-            child: const Text('Record'),
+            child: Text(l10n.recordDose),
           ),
         ],
       ),
@@ -332,25 +339,37 @@ class _DoneToday extends ConsumerStatefulWidget {
 class _DoneTodayState extends ConsumerState<_DoneToday> {
   bool _open = false;
 
-  static String _line(ScheduleEntry entry) {
+  /// "Joint tablets given 08:05", "Breakfast 07:30": one answered reminder.
+  static String _line(HealthFormat format, ScheduleEntry entry) {
+    final l10n = format.l10n;
     final log = entry.log!;
-    if (entry.item.isMedication) return '${entry.item.title} ${doseStatusLabel(log).toLowerCase()}';
+    final title = entry.item.title;
+    if (entry.item.isMedication) {
+      return switch (log.status) {
+        CareLogStatus.done =>
+          log.doneAt == null ? l10n.doneLineGiven(title) : l10n.doneLineGivenAt(title, format.time(log.doneAt!)),
+        CareLogStatus.skipped => l10n.doneLineNotGiven(title),
+        CareLogStatus.unknown => l10n.doneLineNotSure(title),
+      };
+    }
     return log.status == CareLogStatus.done
-        ? '${entry.item.title} ${formatTimeOfDay(entry.item.time)}'
-        : '${entry.item.title} skipped';
+        ? l10n.doneLineAt(title, format.timeOfDay(entry.item.time))
+        : l10n.doneLineSkipped(title);
   }
 
   Future<void> _undo(ScheduleEntry entry) async {
     try {
       await ref.read(carePlanProvider(widget.pet.id).notifier).removeLog(entry.log!);
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final entries = widget.entries;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       key: const Key('done-today'),
       color: AppColors.sage,
@@ -367,10 +386,10 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Done today · ${entries.length}', style: AppText.cardTitle),
+                    Text(l10n.doneTodayCount(entries.length), style: AppText.cardTitle),
                     if (!_open)
                       Text(
-                        entries.map(_line).join(' · '),
+                        format.dots([for (final entry in entries) _line(format, entry)]),
                         style: AppText.secondary,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -385,9 +404,9 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
             for (final entry in entries)
               Row(
                 children: [
-                  Expanded(child: Text(_line(entry), style: AppText.secondary)),
+                  Expanded(child: Text(_line(format, entry), style: AppText.secondary)),
                   HealthLink(
-                    'Undo',
+                    l10n.undo,
                     key: ValueKey('undo-${entry.item.id}'),
                     color: AppColors.ink,
                     onPressed: () => _undo(entry),
@@ -413,13 +432,11 @@ class _PlannedRow extends StatelessWidget {
     final at = record.scheduledAt;
     // The day of a follow-up comes from the vet; its time means nothing.
     final followUp = record.followUpOf != null;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final detail = followUp
-        ? '${record.kind.label} · date given by the vet'
-        : [
-            record.kind.label,
-            '${dayName(at.weekday)} ${formatTime(at)}',
-            if (record.clinic.isNotEmpty) record.clinic,
-          ].join(' · ');
+        ? format.dots([l10n.recordKind(record.kind), l10n.dateGivenByVet])
+        : format.dots([l10n.recordKind(record.kind), format.weekdayTime(at), record.clinic]);
 
     return HealthCard(
       key: ValueKey('planned-${record.id}'),
@@ -428,7 +445,7 @@ class _PlannedRow extends StatelessWidget {
       child: Row(
         children: [
           Semantics(
-            label: formatDate(at),
+            label: format.date(at),
             excludeSemantics: true,
             child: Container(
               constraints: const BoxConstraints(minWidth: 52),
@@ -438,7 +455,7 @@ class _PlannedRow extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text('${at.day}', style: AppText.pillValue),
-                  Text(formatBadgeMonth(at, now), style: AppText.label),
+                  Text(format.badgeMonth(at, now), style: AppText.label),
                 ],
               ),
             ),
@@ -448,7 +465,7 @@ class _PlannedRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(followUp ? '${record.title} due' : record.title, style: AppText.cardTitle),
+                TypedText(followUp ? l10n.followUpDue(record.title) : record.title, style: AppText.cardTitle),
                 Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
               ],
             ),
@@ -491,13 +508,16 @@ class _ReviewEntryRow extends ConsumerWidget {
             doneAt: status == CareLogStatus.done ? entry.due : null,
           );
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tag = '${entry.item.id}-${formatDate(entry.due)}';
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    // Part of the keys below: the same in every language.
+    final tag = '${entry.item.id}-${format.date(entry.due)}';
     return HealthCard(
       key: ValueKey('review-$tag'),
       onTap: () => showRecordDoseSheet(context, pet, entry: entry),
@@ -514,9 +534,9 @@ class _ReviewEntryRow extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(entry.item.title, style: AppText.cardTitle),
+                    TypedText(entry.item.title, style: AppText.cardTitle),
                     Text(
-                      '${formatWeekdayDate(entry.due)} · ${formatTime(entry.due)} · no answer recorded',
+                      format.dots([format.weekdayDate(entry.due), format.time(entry.due), l10n.noAnswerRecorded]),
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                     ),
                   ],
@@ -533,19 +553,19 @@ class _ReviewEntryRow extends ConsumerWidget {
                 key: ValueKey('review-given-$tag'),
                 style: _smallFilled(),
                 onPressed: () => _answer(context, ref, CareLogStatus.done),
-                child: const Text('Given'),
+                child: Text(l10n.given),
               ),
               OutlinedButton(
                 key: ValueKey('review-not-given-$tag'),
                 style: _smallOutlined(),
                 onPressed: () => _answer(context, ref, CareLogStatus.skipped),
-                child: const Text('Not given'),
+                child: Text(l10n.notGiven),
               ),
               OutlinedButton(
                 key: ValueKey('review-not-sure-$tag'),
                 style: _smallOutlined(),
                 onPressed: () => _answer(context, ref, CareLogStatus.unknown),
-                child: const Text('Not sure'),
+                child: Text(l10n.notSure),
               ),
             ],
           ),
@@ -565,15 +585,17 @@ class _ReviewRecordRow extends ConsumerWidget {
   Future<void> _done(BuildContext context, WidgetRef ref) async {
     try {
       await ref.read(healthRecordsProvider(pet.id).notifier).setDone(record, record.scheduledAt);
-      if (context.mounted) showHealthSnack(context, 'Moved to the History.');
+      if (context.mounted) showHealthSnack(context, context.healthL10n.movedToHistory);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final at = record.scheduledAt;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       key: ValueKey('review-record-${record.id}'),
       onTap: () => openRecordDetail(context, pet, record),
@@ -590,9 +612,9 @@ class _ReviewRecordRow extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(record.title, style: AppText.cardTitle),
+                    TypedText(record.title, style: AppText.cardTitle),
                     Text(
-                      '${formatWeekdayDate(at)} · ${formatTime(at)} · not marked as done',
+                      format.dots([format.weekdayDate(at), format.time(at), l10n.notMarkedAsDone]),
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                     ),
                   ],
@@ -609,13 +631,13 @@ class _ReviewRecordRow extends ConsumerWidget {
                 key: ValueKey('review-done-${record.id}'),
                 style: _smallFilled(),
                 onPressed: () => _done(context, ref),
-                child: const Text('It happened'),
+                child: Text(l10n.itHappened),
               ),
               OutlinedButton(
                 key: ValueKey('review-change-${record.id}'),
                 style: _smallOutlined(),
                 onPressed: () => openRecordForm(context, pet, record: record),
-                child: const Text('Change or delete'),
+                child: Text(l10n.changeOrDelete),
               ),
             ],
           ),
@@ -625,8 +647,9 @@ class _ReviewRecordRow extends ConsumerWidget {
   }
 }
 
-/// A medicine in the care plan: its instructions and reminder times.
-class _MedicineCard extends StatelessWidget {
+/// A medicine in the care plan: its instructions and reminder times. The
+/// days of its reminders are said in the owner's week.
+class _MedicineCard extends ConsumerWidget {
   const _MedicineCard({required this.pet, required this.medication, required this.plan, required this.now});
 
   final Pet pet;
@@ -635,13 +658,20 @@ class _MedicineCard extends StatelessWidget {
   final DateTime now;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final week = ref.watch(weekSettingsProvider);
     final items = plan.itemsOf(medication.id);
     final asNeeded = items.isEmpty;
     final active = medication.isActiveOn(now);
+    final instructions = format.instructions(medication);
     final reminders = asNeeded
-        ? 'Only when needed'
-        : '${items.map((i) => formatTimeOfDay(i.time)).join(', ')} · ${formatDays(items.first.days)}';
+        ? l10n.onlyWhenNeeded
+        : format.dots([
+            format.commas([for (final item in items) format.timeOfDay(item.time)]),
+            format.days(items.first.days, week),
+          ]);
     final ends = medication.endsOn;
     final starts = medication.startsOn;
 
@@ -657,19 +687,19 @@ class _MedicineCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(medication.displayName, style: AppText.cardTitle),
-                if (medication.instructionLine.isNotEmpty)
-                  Text(medication.instructionLine, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                TypedText(medication.displayName, style: AppText.cardTitle),
+                if (instructions.isNotEmpty)
+                  Text(instructions, style: AppText.secondary.copyWith(color: AppColors.brown)),
                 Text(reminders, style: AppText.secondary.copyWith(color: AppColors.brown)),
                 if (!active)
                   Padding(
-                    padding: const EdgeInsets.only(top: 4),
+                    padding: const EdgeInsetsDirectional.only(top: 4),
                     child: HealthTag(
                       ends != null && dateOnly(now).isAfter(ends)
-                          ? 'Ended ${formatDate(ends)}'
+                          ? l10n.medicineEnded(format.date(ends))
                           : starts != null
-                          ? 'Starts ${formatDate(starts)}'
-                          : 'Not active',
+                          ? l10n.medicineStarts(format.date(starts))
+                          : l10n.medicineNotActive,
                     ),
                   ),
               ],
@@ -681,7 +711,7 @@ class _MedicineCard extends StatelessWidget {
               key: ValueKey('record-as-needed-${medication.id}'),
               style: _smallOutlined(),
               onPressed: () => showRecordDoseSheet(context, pet, medication: medication),
-              child: const Text('Record'),
+              child: Text(l10n.recordDose),
             )
           else
             const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
@@ -691,18 +721,26 @@ class _MedicineCard extends StatelessWidget {
   }
 }
 
-/// A routine in the care plan.
-class _RoutineCard extends StatelessWidget {
-  const _RoutineCard({required this.item, required this.kindLabel, required this.onTap});
+/// A routine in the care plan. Its days are said in the owner's week.
+class _RoutineCard extends ConsumerWidget {
+  const _RoutineCard({
+    required this.item,
+    required this.kindLabel,
+    required this.kindLabelInEnglish,
+    required this.onTap,
+  });
 
   final CarePlanItem item;
 
   /// What the routine's kind is called for this pet's species.
   final String kindLabel;
+  final String kindLabelInEnglish;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final format = HealthFormat.of(context);
+    final week = ref.watch(weekSettingsProvider);
     return HealthCard(
       key: ValueKey('routine-${item.id}'),
       onTap: onTap,
@@ -715,17 +753,18 @@ class _RoutineCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(item.title, style: AppText.cardTitle),
+                TypedText(item.title, style: AppText.cardTitle),
                 Text(
-                  [
+                  format.dots([
                     // A routine named after its kind does not say it twice.
-                    if (item.title.trim() != kindLabel) kindLabel,
-                    formatTimeOfDay(item.time),
-                    formatDays(item.days),
-                  ].join(' · '),
+                    if (!_namedAfterKind(item.title, kindLabel, kindLabelInEnglish)) kindLabel,
+                    format.timeOfDay(item.time),
+                    format.days(item.days, week),
+                  ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
-                if (!item.active) const Padding(padding: EdgeInsets.only(top: 4), child: HealthTag('Paused')),
+                if (!item.active)
+                  Padding(padding: const EdgeInsetsDirectional.only(top: 4), child: HealthTag(format.l10n.paused)),
               ],
             ),
           ),

@@ -40,9 +40,11 @@ final healthRepositoryProvider = Provider<HealthRepository>(
       : FakeHealthRepository(now: ref.watch(healthClockProvider)),
 );
 
-/// User-facing text for a Health failure.
-String healthErrorMessage(Object error) =>
-    error is HealthException ? error.message : 'Something went wrong. Please try again.';
+/// A Health failure in plain English, for logs and for code that has no
+/// screen. On a screen use `healthErrorOf(context, error)` (or
+/// `healthErrorText` with the strings at hand), which says it in the app's
+/// language.
+String healthErrorMessage(Object error) => error is HealthException ? error.message : HealthFailure.unknown.english;
 
 // Riverpod retries failed providers on its own by default; Health shows the
 // failure with a "Try again" button instead.
@@ -50,11 +52,10 @@ Duration? _noRetry(int retryCount, Object error) => null;
 
 String? _watchUserId(Ref ref) => ref.watch(authControllerProvider.select((auth) => auth.value?.id));
 
-/// The name recorded next to a logged dose.
-String _userName(Ref ref) {
-  final name = ref.read(authControllerProvider).value?.displayName.trim() ?? '';
-  return name.isEmpty ? 'You' : name;
-}
+/// The name recorded next to a logged dose. Empty when the owner has no
+/// name in the app: the dose log then says "logged by you" in the language
+/// of the screen.
+String _userName(Ref ref) => ref.read(authControllerProvider).value?.displayName.trim() ?? '';
 
 Pet? _pet(Ref ref, String petId) {
   for (final pet in ref.read(petsProvider)) {
@@ -93,7 +94,9 @@ void _syncReminders(Ref ref, String petId, {CarePlan? plan, List<HealthRecord>? 
 // Which section of the tab is showing
 // ---------------------------------------------------------------------------
 
-/// The Health tab's four sections, in the order of the switcher.
+/// The Health tab's four sections, in the order of the switcher. [label] is
+/// the English name, for logs; the switcher takes its words from the
+/// strings files.
 enum HealthSection {
   overview('Overview'),
   schedule('Schedule'),
@@ -128,8 +131,10 @@ class HistoryFilter {
   bool get isEmpty => kind == null && !documentsOnly && query.trim().isEmpty;
 
   /// Whether [record] passes the filter. [hasFiles]: a photo or a PDF is
-  /// attached to it. The search looks at everything the owner typed.
-  bool matches(HealthRecord record, {required bool hasFiles}) {
+  /// attached to it. The search looks at everything the owner typed, and at
+  /// the name of the record's kind: its English name, and [kindName], what
+  /// the screen calls it.
+  bool matches(HealthRecord record, {required bool hasFiles, String kindName = ''}) {
     if (kind != null && record.kind != kind) return false;
     if (documentsOnly && !hasFiles && record.kind != RecordKind.document) return false;
     final words = query.trim().toLowerCase();
@@ -140,6 +145,7 @@ class HistoryFilter {
       record.clinic,
       record.productName,
       record.kind.label,
+      kindName,
     ].join(' | ').toLowerCase();
     return words.split(RegExp(r'\s+')).every(text.contains);
   }
@@ -286,8 +292,8 @@ class DocumentsController extends AsyncNotifier<List<HealthDocument>> {
   /// Attaches [file] to a record. Throws a [HealthException] when the file
   /// is not allowed or cannot be stored.
   Future<HealthDocument> add(String recordId, PickedFile file) async {
-    final problem = file.problem;
-    if (problem != null) throw HealthException(problem);
+    final problem = file.failure;
+    if (problem != null) throw HealthException.of(problem);
     final doc = await ref.read(healthRepositoryProvider).addDocument(petId: petId, recordId: recordId, file: file);
     if (ref.mounted) state = AsyncData([...?state.value, doc]);
     return doc;
@@ -712,7 +718,7 @@ final healthSummaryProvider = FutureProvider.autoDispose.family<HealthSummary, S
       return null;
     }),
   );
-  if (pet == null) throw const HealthException('That pet is no longer in your list.');
+  if (pet == null) throw HealthException.of(HealthFailure.petGone);
   final owner = ref.watch(authControllerProvider.select((auth) => auth.value?.displayName ?? ''));
   final today = ref.watch(healthClockProvider)();
 

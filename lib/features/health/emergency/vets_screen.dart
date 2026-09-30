@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
+import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
@@ -25,16 +28,17 @@ class VetsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final vets = ref.watch(petVetsProvider(pet.id));
+    final l10n = context.healthL10n;
 
     return HealthKeeper(
       petId: pet.id,
       child: HealthPage(
-        title: "${pet.name}'s vets",
+        title: l10n.petsVets(pet.name),
         child: vets.when(
           loading: () => const HealthLoading(),
           error: (error, _) => HealthLoadError(
-            what: 'the vets',
-            message: healthErrorMessage(error),
+            title: l10n.loadFailedVets,
+            error: error,
             onRetry: () {
               ref.invalidate(vetsProvider);
               ref.invalidate(healthProfileProvider(pet.id));
@@ -48,9 +52,9 @@ class VetsScreen extends ConsumerWidget {
                 _VetBlock(pet: pet, role: role, vet: data.of(role)),
                 const SizedBox(height: 16),
               ],
-              const FinePrint('Vets are saved once for your account, so your other pets can use the same ones.'),
+              FinePrint(l10n.vetsFinePrint),
               const SizedBox(height: 8),
-              const FinePrint(kSafetyLine),
+              FinePrint(l10n.safetyLine),
             ],
           ),
         ),
@@ -70,15 +74,16 @@ class _VetBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final current = vet;
     final tag = role.name;
+    final l10n = context.healthL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HealthSectionTitle(
-          role.label,
+          l10n.vetRole(role),
           trailing: current == null
               ? null
               : HealthLink(
-                  'Change',
+                  l10n.change,
                   key: ValueKey('change-vet-$tag'),
                   onPressed: () => showVetPicker(context, petId: pet.id, role: role),
                 ),
@@ -87,10 +92,8 @@ class _VetBlock extends StatelessWidget {
           HealthPromptCard(
             key: ValueKey('add-vet-$tag'),
             icon: role == VetRole.regular ? Icons.add_call : Icons.local_hospital_rounded,
-            title: role == VetRole.regular ? "Add ${pet.name}'s vet" : 'Add an emergency vet',
-            message: role == VetRole.regular
-                ? 'Phone and address, ready for an emergency'
-                : 'A 24-hour clinic for nights and weekends',
+            title: role == VetRole.regular ? l10n.addPetsVet(pet.name) : l10n.addEmergencyVet,
+            message: role == VetRole.regular ? l10n.vetPromptNote : l10n.emergencyVetPromptNote,
             onTap: () => showVetPicker(context, petId: pet.id, role: role),
           )
         else
@@ -103,7 +106,7 @@ class _VetBlock extends StatelessWidget {
                     IconDisc(role == VetRole.regular ? Icons.medical_services_rounded : Icons.local_hospital_rounded),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
+                      child: TypedText(
                         current.name,
                         style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800),
                       ),
@@ -111,7 +114,7 @@ class _VetBlock extends StatelessWidget {
                     IconButton(
                       key: ValueKey('edit-vet-$tag'),
                       onPressed: () => openVetForm(context, vet: current),
-                      tooltip: 'Edit ${current.name}',
+                      tooltip: l10n.editNamed(current.name),
                       icon: const Icon(Icons.edit_rounded, size: 20),
                       color: AppColors.coralDark,
                       constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
@@ -119,16 +122,18 @@ class _VetBlock extends StatelessWidget {
                   ],
                 ),
                 const Divider(height: 20),
-                if (current.hasAddress) LabeledValue('Address', current.address),
+                if (current.hasAddress) LabeledValue(l10n.fieldAddress, current.address),
                 LabeledValue(
-                  'Phone',
-                  current.hasPhone ? current.phone : 'Not added yet',
+                  l10n.fieldPhone,
+                  // A phone number reads left to right on every screen.
+                  current.hasPhone ? HealthFormat.of(context).ltrInLine(current.phone) : l10n.notAddedYet,
                   trailing: current.onWhatsApp && current.hasPhone
-                      ? const Padding(padding: EdgeInsets.only(top: 4), child: HealthTag('WhatsApp'))
+                      // The name of the app, the same in every language.
+                      ? const Padding(padding: EdgeInsetsDirectional.only(top: 4), child: HealthTag('WhatsApp'))
                       : null,
                 ),
-                if (current.openingHours.isNotEmpty) LabeledValue('Opening hours', current.openingHours),
-                if (current.notes.isNotEmpty) LabeledValue('Notes', current.notes),
+                if (current.openingHours.isNotEmpty) LabeledValue(l10n.openingHours, current.openingHours),
+                if (current.notes.isNotEmpty) LabeledValue(l10n.notes, current.notes),
                 const SizedBox(height: 8),
                 ContactActionButtons(
                   petId: pet.id,

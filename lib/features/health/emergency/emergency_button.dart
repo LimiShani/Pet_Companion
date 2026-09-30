@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../health_format.dart';
@@ -24,7 +25,6 @@ abstract final class EmergencyButtonStyle {
   /// The dot shown when no phone number is saved for the pet.
   static const dot = AppColors.yellow;
 
-  static const label = 'Emergency';
   static const icon = emergencyIcon;
   static const textStyle = TextStyle(fontSize: 13, fontWeight: FontWeight.w800);
 
@@ -76,7 +76,14 @@ class EmergencyButton extends ConsumerWidget {
     final contacts = showStatusDot ? ref.watch(emergencyContactsProvider(petId)) : null;
     final nothingToCall = contacts != null && contacts.hasValue && !contacts.hasError && !contacts.value!.hasPhone;
 
-    final label = petName == null ? 'Emergency contacts' : 'Emergency contacts for $petName';
+    final l10n = context.healthL10n;
+    final label = petName == null ? l10n.emergencyContacts : l10n.emergencyContactsFor(petName);
+    // What a screen reader says: the same, and that nothing can be called yet.
+    final spoken = !nothingToCall
+        ? label
+        : petName == null
+        ? l10n.emergencyContactsNoPhone
+        : l10n.emergencyContactsForNoPhone(petName);
     final pill = Container(
       height: EmergencyButtonStyle.pillHeight,
       constraints: const BoxConstraints(minWidth: EmergencyButtonStyle.pillHeight),
@@ -89,11 +96,7 @@ class EmergencyButton extends ConsumerWidget {
           Icon(EmergencyButtonStyle.icon, size: compact ? 22 : 18, color: foreground),
           if (!compact) ...[
             const SizedBox(width: 6),
-            Text(
-              EmergencyButtonStyle.label,
-              maxLines: 1,
-              style: EmergencyButtonStyle.textStyle.copyWith(color: foreground),
-            ),
+            Text(l10n.emergencyButton, maxLines: 1, style: EmergencyButtonStyle.textStyle.copyWith(color: foreground)),
           ],
         ],
       ),
@@ -101,14 +104,20 @@ class EmergencyButton extends ConsumerWidget {
 
     return HealthKeeper(
       petId: petId,
-      child: _button(context, label: label, pill: pill, nothingToCall: nothingToCall),
+      child: _button(context, label: label, spoken: spoken, pill: pill, nothingToCall: nothingToCall),
     );
   }
 
-  Widget _button(BuildContext context, {required String label, required Widget pill, required bool nothingToCall}) {
+  Widget _button(
+    BuildContext context, {
+    required String label,
+    required String spoken,
+    required Widget pill,
+    required bool nothingToCall,
+  }) {
     return Semantics(
       button: true,
-      label: nothingToCall ? '$label. No phone number saved yet' : label,
+      label: spoken,
       excludeSemantics: true,
       child: Tooltip(
         message: label,

@@ -3,12 +3,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../data/file_services.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 
@@ -30,14 +32,14 @@ Future<PickedFile?> pickAttachment(BuildContext context) async {
       _AttachmentSource.pdf => picker.pickPdf(),
     };
     if (file == null) return null;
-    final problem = file.problem;
+    final problem = file.failure;
     if (problem != null) {
-      if (context.mounted) showHealthSnack(context, problem);
+      if (context.mounted) showHealthSnack(context, context.healthL10n.failure(problem, context.l10n));
       return null;
     }
     return file;
   } catch (error) {
-    if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+    if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     return null;
   }
 }
@@ -47,8 +49,9 @@ class _AttachmentSourceSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     Widget option(_AttachmentSource source, IconData icon, String title, String detail) => Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsetsDirectional.only(bottom: 8),
       child: HealthCard(
         key: ValueKey('attach-${source.name}'),
         onTap: () => Navigator.of(context).pop(source),
@@ -75,11 +78,11 @@ class _AttachmentSourceSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        const SheetTitle('Add a photo or PDF', subtitle: 'A booklet page, a vet letter, a lab result. Up to 5 MB.'),
+        SheetTitle(l10n.addPhotoOrPdf, subtitle: l10n.attachSheetNote),
         const SizedBox(height: 12),
-        option(_AttachmentSource.camera, Icons.photo_camera_rounded, 'Take a photo', 'With the camera'),
-        option(_AttachmentSource.gallery, Icons.photo_library_rounded, 'Choose a photo', 'From your photos'),
-        option(_AttachmentSource.pdf, Icons.picture_as_pdf_rounded, 'Choose a PDF file', "From the phone's files"),
+        option(_AttachmentSource.camera, Icons.photo_camera_rounded, l10n.takeAPhoto, l10n.withTheCamera),
+        option(_AttachmentSource.gallery, Icons.photo_library_rounded, l10n.chooseAPhoto, l10n.fromYourPhotos),
+        option(_AttachmentSource.pdf, Icons.picture_as_pdf_rounded, l10n.chooseAPdf, l10n.fromPhoneFiles),
       ],
     );
   }
@@ -110,6 +113,8 @@ class AttachmentRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final source = bytes;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       onTap: onTap,
       radius: AppSpacing.fieldRadius,
@@ -132,9 +137,16 @@ class AttachmentRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(name, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                // A file name reads left to right, whatever the screen.
                 Text(
-                  '${isPdf ? 'PDF' : 'Photo'} · ${formatFileSize(sizeBytes)}',
+                  name,
+                  style: AppText.cardTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textDirection: directionOfText(name, fallback: TextDirection.ltr),
+                ),
+                Text(
+                  format.dots([isPdf ? l10n.fileKindPdf : l10n.fileKindPhoto, format.fileSize(sizeBytes)]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -143,7 +155,7 @@ class AttachmentRow extends StatelessWidget {
           if (onRemove != null)
             IconButton(
               onPressed: onRemove,
-              tooltip: 'Remove $name',
+              tooltip: l10n.removeNamed(name),
               icon: const Icon(Icons.close_rounded, size: 20),
               color: AppColors.brown,
               constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
@@ -250,9 +262,9 @@ Future<void> openDocument(BuildContext context, HealthDocument document) async {
     if (link != null && await sharer.openLink(link)) return;
     final bytes = await repo.documentBytes(document);
     final opened = await sharer.share(SharedFile(name: document.fileName, mimeType: document.mimeType, bytes: bytes));
-    if (!opened && context.mounted) showHealthSnack(context, 'Could not open that file on this device.');
+    if (!opened && context.mounted) showHealthSnack(context, context.healthL10n.couldNotOpenFile);
   } catch (error) {
-    if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+    if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
   }
 }
 
@@ -278,9 +290,9 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
       final shared = await ref
           .read(fileSharerProvider)
           .share(SharedFile(name: doc.fileName, mimeType: doc.mimeType, bytes: bytes));
-      if (!shared && mounted) showHealthSnack(context, 'Could not open the share sheet on this device.');
+      if (!shared && mounted) showHealthSnack(context, context.healthL10n.couldNotOpenShareSheet);
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -292,7 +304,13 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
           CoralHeader(
             title: widget.document.fileName,
             showBack: true,
-            actions: [CoralHeaderAction(icon: Icons.ios_share_rounded, tooltip: 'Share this photo', onPressed: _share)],
+            actions: [
+              CoralHeaderAction(
+                icon: Icons.ios_share_rounded,
+                tooltip: context.healthL10n.shareThisPhoto,
+                onPressed: _share,
+              ),
+            ],
           ),
           Expanded(
             child: FutureBuilder<Uint8List>(
@@ -300,8 +318,8 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return HealthLoadError(
-                    what: 'the photo',
-                    message: healthErrorMessage(snapshot.error!),
+                    title: context.healthL10n.loadFailedPhoto,
+                    error: snapshot.error!,
                     onRetry: () => setState(() => _bytes = _load()),
                   );
                 }

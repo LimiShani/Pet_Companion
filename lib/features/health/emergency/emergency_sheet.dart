@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
+import '../health_strings.dart';
 import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
@@ -63,9 +65,10 @@ Future<bool> callPrimaryEmergencyContact(BuildContext context, String petId) asy
   return launchOrExplain(
     context,
     launch: () => launcher.call(phone),
-    problem: 'Could not open the phone app',
-    copyLabel: 'Copy number',
+    problem: context.healthL10n.couldNotOpenPhone,
+    copyLabel: context.healthL10n.copyNumber,
     copyText: phone,
+    copyIsNumber: true,
   );
 }
 
@@ -78,6 +81,7 @@ class EmergencySheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final contacts = ref.watch(emergencyContactsProvider(pet.id));
+    final l10n = context.healthL10n;
 
     return HealthKeeper(
       petId: pet.id,
@@ -86,16 +90,13 @@ class EmergencySheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SheetTitle(
-            'Emergency · ${pet.name}',
-            subtitle: 'Call or message. You make the call or send the message yourself.',
-          ),
+          SheetTitle(l10n.emergencySheetTitle(pet.name), subtitle: l10n.emergencySheetSubtitle),
           const SizedBox(height: 12),
           contacts.when(
             loading: () => const HealthLoading(),
             error: (error, _) => HealthLoadError(
-              what: 'the contacts',
-              message: healthErrorMessage(error),
+              title: l10n.loadFailedContacts,
+              error: error,
               onRetry: () {
                 ref.invalidate(vetsProvider);
                 ref.invalidate(healthProfileProvider(pet.id));
@@ -109,7 +110,7 @@ class EmergencySheet extends ConsumerWidget {
                       EmergencyContactList(pet: pet, contacts: data),
                       Center(
                         child: HealthLink(
-                          "Open ${pet.name}'s Emergency card",
+                          l10n.openEmergencyCardOf(pet.name),
                           icon: Icons.chevron_right_rounded,
                           onPressed: () {
                             Navigator.of(context).pop();
@@ -126,7 +127,7 @@ class EmergencySheet extends ConsumerWidget {
           const SizedBox(height: 10),
           LostPetButton(pet: pet),
           const SizedBox(height: 8),
-          const FinePrint(kSafetyLine),
+          FinePrint(l10n.safetyLine),
         ],
       ),
     );
@@ -145,6 +146,7 @@ class EmergencyContactList extends StatelessWidget {
     final regular = contacts.regularVet;
     final emergency = contacts.emergencyVet;
     final person = contacts.contact;
+    final l10n = context.healthL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -152,7 +154,7 @@ class EmergencyContactList extends StatelessWidget {
           EmergencyContactCard(
             petId: pet.id,
             tag: 'regular',
-            role: VetRole.regular.label,
+            role: l10n.vetRole(VetRole.regular),
             name: regular.name,
             icon: Icons.medical_services_rounded,
             detail: regular.openingHours ?? regular.address,
@@ -167,7 +169,7 @@ class EmergencyContactList extends StatelessWidget {
           EmergencyContactCard(
             petId: pet.id,
             tag: 'emergency',
-            role: VetRole.emergency.label,
+            role: l10n.vetRole(VetRole.emergency),
             name: emergency.name,
             icon: Icons.local_hospital_rounded,
             detail: emergency.openingHours ?? emergency.address,
@@ -182,8 +184,9 @@ class EmergencyContactList extends StatelessWidget {
           EmergencyContactCard(
             petId: pet.id,
             tag: 'contact',
-            role: 'Emergency contact',
-            name: person.name,
+            role: l10n.emergencyContact,
+            // Only a phone number was given: the person has no name to show.
+            name: person.name.isEmpty ? l10n.emergencyContact : person.name,
             icon: Icons.person_rounded,
             phone: person.phone,
             onAddPhone: () => HealthProfileScreen.open(context, pet),
@@ -194,8 +197,8 @@ class EmergencyContactList extends StatelessWidget {
           HealthPromptCard(
             key: const Key('add-vet-prompt'),
             icon: Icons.add_call,
-            title: "Add ${pet.name}'s vet",
-            message: 'Phone and address, ready for an emergency',
+            title: l10n.addPetsVet(pet.name),
+            message: l10n.vetPromptNote,
             onTap: () => showVetPicker(context, petId: pet.id),
           ),
       ],
@@ -224,6 +227,7 @@ class NoVetPrompt extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final saved = ref.watch(vetsProvider).value ?? const <Vet>[];
+    final l10n = context.healthL10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -232,27 +236,27 @@ class NoVetPrompt extends ConsumerWidget {
           child: Container(
             width: 72,
             height: 72,
-            margin: const EdgeInsets.only(top: 4, bottom: 12),
+            margin: const EdgeInsetsDirectional.only(top: 4, bottom: 12),
             decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
             child: const Icon(Icons.add_call, size: 34, color: AppColors.coralDark),
           ),
         ),
         Text(
-          'No vet saved for ${pet.name} yet',
+          l10n.noVetSavedFor(pet.name),
           textAlign: TextAlign.center,
           style: AppText.cardTitle.copyWith(fontSize: 18),
         ),
         const SizedBox(height: 4),
         Text(
-          "Add the vet's phone now, so a call or a message is two taps away when you need it.",
+          l10n.noVetSavedNote,
           textAlign: TextAlign.center,
           style: AppText.body.copyWith(color: AppColors.brown),
         ),
         if (saved.isNotEmpty) ...[
-          const FormLabel('Use a vet you already saved'),
+          FormLabel(l10n.useSavedVet),
           for (final vet in saved)
             Padding(
-              padding: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsetsDirectional.only(bottom: 8),
               child: SavedVetRow(
                 vet: vet,
                 onUse: () => ref.read(healthProfileProvider(pet.id).notifier).setVet(VetRole.regular, vet.id),
@@ -265,7 +269,7 @@ class NoVetPrompt extends ConsumerWidget {
           onPressed: () => openVetForm(context, petId: pet.id, role: VetRole.regular),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
           icon: const Icon(Icons.add_rounded),
-          label: const Text('Add a new vet'),
+          label: Text(l10n.addNewVet),
         ),
       ],
     );

@@ -17,6 +17,7 @@ import 'package:pet_companion/features/health/share/health_pdf.dart';
 import 'package:pet_companion/features/health/share/health_report.dart';
 import 'package:pet_companion/features/health/share/lost_card_renderer.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
@@ -29,6 +30,20 @@ import '../helpers.dart';
 /// The instant every Health test runs at: the sample data's day, late
 /// afternoon (a Tuesday).
 final fixedNow = DateTime(2025, 6, 10, 17, 40);
+
+/// The two phone sizes the Hebrew layouts are checked at.
+const widePhone = Size(390, 844);
+const smallPhone = Size(320, 568);
+
+/// A harness whose app (or host page) speaks Hebrew, right to left.
+HealthHarness hebrewHealth({FakeHealthRepository? repository, List<Pet>? pets, WeekSettings? week}) =>
+    HealthHarness(repository: repository, pets: pets, language: AppLanguage.hebrew, week: week);
+
+/// The direction the widget found by [finder] is laid out in.
+TextDirection directionOf(WidgetTester tester, Finder finder) => Directionality.of(tester.element(finder.first));
+
+/// Whether [text] has a Hebrew letter.
+bool hasHebrew(String text) => RegExp('[\u0590-\u05FF]').hasMatch(text);
 
 /// A zero-latency copy of the sample data at [fixedNow].
 FakeHealthRepository fakeHealth({bool seeded = true}) =>
@@ -150,8 +165,13 @@ PickedFile hugePdf() =>
 
 /// Everything a Health test can swap out.
 class HealthHarness {
-  HealthHarness({FakeHealthRepository? repository, this.pets})
+  HealthHarness({FakeHealthRepository? repository, this.pets, this.language = AppLanguage.english, WeekSettings? week})
     : repository = repository ?? fakeHealth(),
+      settings = MemorySettingsStore({
+        languageSettingKey: ?language.code,
+        if (week != null) weekFirstDaySettingKey: '${week.firstDay}',
+        if (week != null) weekWeekdaysSettingKey: (week.weekdays.toList()..sort()).join(','),
+      }),
       launcher = RecordingContactLauncher(),
       scheduler = RecordingReminderScheduler(),
       picker = FakeAttachmentPicker(),
@@ -172,6 +192,20 @@ class HealthHarness {
   /// Replaces the shared sample pets (to test other species).
   final List<Pet>? pets;
 
+  /// The language the app (or the host page) is shown in.
+  final AppLanguage language;
+
+  /// The owner's saved choices: the language, and the week when one is given
+  /// (the Israeli week otherwise).
+  final MemorySettingsStore settings;
+
+  bool get isHebrew => language == AppLanguage.hebrew;
+  Locale get locale => isHebrew ? hebrewLocale : englishLocale;
+
+  /// The strings of [language], to find what the screen says.
+  HealthL10n get l10n => lookupHealthL10n(locale);
+  AppL10n get app => lookupAppL10n(locale);
+
   DateTime now = fixedNow;
 
   ProviderContainer container() {
@@ -182,6 +216,7 @@ class HealthHarness {
 
   List<Override> _overrides() => [
     authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
+    settingsStoreProvider.overrideWithValue(settings),
     healthClockProvider.overrideWithValue(() => now),
     healthRepositoryProvider.overrideWithValue(repository),
     contactLauncherProvider.overrideWithValue(launcher),
@@ -224,13 +259,14 @@ Future<HealthHarness> pumpHealth(
   await signInAsDemo(tester);
   tester.view.physicalSize = size * 3;
   await tester.pumpAndSettle();
-  if (openTab) await openHealthTab(tester);
+  if (openTab) await openHealthTab(tester, label: h.app.navHealth);
   return h;
 }
 
-/// Taps "Health" in the bottom bar.
-Future<void> openHealthTab(WidgetTester tester) async {
-  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Health')));
+/// Taps "Health" in the bottom bar ([label]: what the bar calls it in the
+/// language under test).
+Future<void> openHealthTab(WidgetTester tester, {String label = 'Health'}) async {
+  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text(label)));
   await tester.pumpAndSettle();
 }
 
@@ -268,7 +304,12 @@ Future<HealthHarness> pumpHealthHost(
       overrides: h._overrides(),
       child: MaterialApp(
         theme: AppTheme.light(),
-        builder: (context, app) => Directionality(textDirection: textDirection, child: app!),
+        // In Hebrew the host speaks Hebrew as the app does: its strings and,
+        // from them, the direction.
+        locale: h.isHebrew ? hebrewLocale : null,
+        supportedLocales: h.isHebrew ? appSupportedLocales : const [Locale('en', 'US')],
+        localizationsDelegates: h.isHebrew ? appLocalizationsDelegates : null,
+        builder: (context, app) => h.isHebrew ? app! : Directionality(textDirection: textDirection, child: app!),
         // [page]: the child is a whole screen and brings its own Scaffold.
         home: page
             ? child

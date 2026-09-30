@@ -46,7 +46,7 @@ class FakeHealthRepository implements HealthRepository {
 
   Future<void> _wait() async {
     await Future<void>.delayed(latency);
-    if (failing) throw const HealthException('Could not reach the server. Check your connection and try again.');
+    if (failing) throw HealthException.of(HealthFailure.offline);
   }
 
   // --------------------------------------------------------------- records
@@ -69,7 +69,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _records.indexWhere((r) => r.id == record.id);
-    if (index < 0) throw const HealthException('That record no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.recordGone);
     _records[index] = record;
     return record;
   }
@@ -104,8 +104,8 @@ class FakeHealthRepository implements HealthRepository {
     required PickedFile file,
   }) async {
     await _wait();
-    final problem = file.problem;
-    if (problem != null) throw HealthException(problem);
+    final problem = file.failure;
+    if (problem != null) throw HealthException.of(problem);
     final doc = HealthDocument(
       id: _id('d'),
       petId: petId,
@@ -130,7 +130,7 @@ class FakeHealthRepository implements HealthRepository {
   Future<Uint8List> documentBytes(HealthDocument document) async {
     await _wait();
     final bytes = _documentBytes[document.id];
-    if (bytes == null) throw const HealthException('That file is no longer available.');
+    if (bytes == null) throw HealthException.of(HealthFailure.fileGone);
     return bytes;
   }
 
@@ -168,7 +168,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _vets.indexWhere((v) => v.id == vet.id);
-    if (index < 0) throw const HealthException('That vet no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.vetGone);
     _vets[index] = vet;
     return vet;
   }
@@ -218,7 +218,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _medications.indexWhere((m) => m.id == medication.id);
-    if (index < 0) throw const HealthException('That medicine no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.medicineGone);
     _medications[index] = medication;
     return medication;
   }
@@ -249,7 +249,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _planItems.indexWhere((p) => p.id == item.id);
-    if (index < 0) throw const HealthException('That reminder no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.reminderGone);
     _planItems[index] = item;
     return item;
   }
@@ -283,7 +283,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _logs.indexWhere((l) => l.id == log.id);
-    if (index < 0) throw const HealthException('That entry no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.entryGone);
     _logs[index] = log;
     return log;
   }
@@ -314,7 +314,7 @@ class FakeHealthRepository implements HealthRepository {
       return stored;
     }
     final index = _observations.indexWhere((o) => o.id == observation.id);
-    if (index < 0) throw const HealthException('That entry no longer exists.');
+    if (index < 0) throw HealthException.of(HealthFailure.entryGone);
     _observations[index] = observation;
     return observation;
   }

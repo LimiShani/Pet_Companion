@@ -16,8 +16,11 @@
 /// records that are done count; an expected cost on a planned record does
 /// not. Readers never touch Health's repository or its tables.
 ///
-/// A load error is `AsyncError`; `healthErrorMessage(error)` gives text
-/// that is safe to show.
+/// A load error is `AsyncError`; `healthErrorOf(context, error)` gives
+/// text that is safe to show, in the language of the screen
+/// (`healthErrorMessage(error)` is the same in plain English, for logs).
+/// `HealthCostCategory.label` is an English name too; a screen says a
+/// category with `context.healthL10n.costCategory(category)`.
 library;
 
 export 'state/health_costs.dart'
@@ -29,4 +32,5 @@ export 'state/health_costs.dart'
         healthCostsByMonthProvider,
         healthCostsOf,
         healthCostsProvider;
+export 'health_strings.dart' show HealthWords, healthErrorOf, healthErrorText;
 export 'state/health_providers.dart' show healthErrorMessage;

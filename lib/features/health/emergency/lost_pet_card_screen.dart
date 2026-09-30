@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
@@ -9,6 +10,7 @@ import '../../../widgets/primary_button.dart';
 import '../data/file_services.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../share/lost_card_renderer.dart';
 import '../state/health_providers.dart';
 import '../state/lost_card.dart';
@@ -39,7 +41,7 @@ class LostPetButton extends StatelessWidget {
       onPressed: () => openLostPetCard(context, pet.id),
       style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
       icon: const Icon(Icons.travel_explore_rounded),
-      label: Text('${pet.name} is lost'),
+      label: Text(context.healthL10n.petIsLost(pet.name)),
     );
   }
 }
@@ -80,7 +82,10 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
   bool _filled = false;
   bool _filling = false;
   bool _busy = false;
-  String? _error;
+
+  /// What went wrong: a message of the page, or what was thrown (worded
+  /// when it is shown).
+  Object? _error;
 
   Pet get _pet => widget.pet;
   DateTime get _now => ref.read(healthClockProvider)();
@@ -129,17 +134,16 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
     _filling = false;
   }
 
-  static String? _phoneProblem(String? value) {
+  /// Whether [value] cannot be a phone number (an empty one is fine).
+  static bool _notAPhone(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return null;
+    if (v.isEmpty) return false;
     final digits = v.replaceAll(RegExp('[^0-9]'), '');
-    return digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v)
-        ? 'That does not look like a phone number.'
-        : null;
+    return digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v);
   }
 
   String get _typedPhone => _phone.text.trim();
-  bool get _phoneUsable => _typedPhone.isNotEmpty && _phoneProblem(_typedPhone) == null;
+  bool get _phoneUsable => _typedPhone.isNotEmpty && !_notAPhone(_typedPhone);
   bool get _confirmed => _phoneUsable && _confirmedPhone == _typedPhone;
 
   LostCardContent _content(HealthProfile? profile) => LostCardContent(
@@ -173,13 +177,13 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       firstDate: DateTime(now.year - 1),
       lastDate: now,
       currentDate: now,
-      helpText: 'Last seen',
+      helpText: context.healthL10n.lostWhenHelp,
     );
     if (day == null || !mounted) return;
     final time = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_lastSeen),
-      helpText: 'Around what time?',
+      helpText: context.healthL10n.lostTimeHelp,
     );
     if (!mounted) return;
     final picked = atTime(day, time ?? TimeOfDay.fromDateTime(_lastSeen));
@@ -192,7 +196,7 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       if (file == null || !mounted) return;
       setState(() => _chosenPhoto = MemoryImage(file.bytes));
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -209,7 +213,8 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       } catch (_) {}
       final renderer = ref.read(lostCardRendererProvider);
       final png = await renderer.png(_cardKey);
-      final title = LostCardWords.of(_language).heading(_pet.name);
+      // A file's title is plain text: no direction marks.
+      final title = stripBidiMarks(LostCardWords.of(_language).heading(_pet.name));
       final file = asPdf
           ? SharedFile(
               name: lostCardFileName(_pet.name, 'pdf'),
@@ -222,13 +227,13 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = shared ? null : 'Could not open the share sheet on this device.';
+        _error = shared ? null : context.healthL10n.couldNotOpenShareSheet;
       });
     } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -240,12 +245,12 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       await ref.read(lostCardProvider(_pet.id).notifier).save(_draft(foundAt: _now));
       if (!mounted) return;
       Navigator.of(context).pop();
-      showHealthSnack(context, 'Good news. The card is put away.');
+      showHealthSnack(context, context.healthL10n.lostGoodNews);
     } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -256,6 +261,9 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
     final saved = ref.watch(lostCardProvider(_pet.id));
     final profile = ref.watch(healthProfileProvider(_pet.id)).value;
     final now = ref.watch(healthClockProvider)();
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final error = _error;
 
     Widget body;
     if (saved.isLoading && !saved.hasValue) {
@@ -270,7 +278,7 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FormLabel('What goes on the card'),
+            FormLabel(l10n.lostCardSection),
             HealthCard(
               radius: AppSpacing.fieldRadius,
               padding: const EdgeInsetsDirectional.only(start: 10, end: 4, top: 8, bottom: 8),
@@ -297,20 +305,23 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(photo == null ? 'No photo on the card' : "${_pet.name}'s photo", style: AppText.cardTitle),
+                        Text(
+                          photo == null ? l10n.lostNoPhoto : l10n.lostPetsPhoto(_pet.name),
+                          style: AppText.cardTitle,
+                        ),
                         Text(
                           _chosenPhoto != null
-                              ? 'Chosen for this card only'
+                              ? l10n.lostPhotoChosen
                               : photo != null
-                              ? 'From the pet profile'
-                              : 'A recent, clear photo helps most',
+                              ? l10n.lostPhotoFromProfile
+                              : l10n.lostPhotoHint,
                           style: AppText.secondary.copyWith(color: AppColors.brown),
                         ),
                       ],
                     ),
                   ),
                   HealthLink(
-                    photo == null ? 'Add' : 'Change',
+                    photo == null ? context.l10n.commonAdd : l10n.change,
                     key: const Key('lost-change-photo'),
                     icon: Icons.photo_library_rounded,
                     onPressed: _busy ? null : _changePhoto,
@@ -327,8 +338,8 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               maxLength: 400,
               textCapitalization: TextCapitalization.sentences,
               decoration: InputDecoration(
-                labelText: 'Description',
-                hintText: 'Colour, size, collar, how ${_pet.name} behaves with strangers',
+                labelText: l10n.lostDescription,
+                hintText: l10n.lostDescriptionHint(_pet.name),
                 counterText: '',
               ),
             ),
@@ -338,13 +349,11 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               controller: _area,
               maxLength: 120,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Last seen: area', counterText: ''),
+              decoration: InputDecoration(labelText: l10n.lostArea, counterText: ''),
             ),
             const SizedBox(height: 6),
             FinePrint(
-              looksLikeExactAddress(_area.text)
-                  ? 'This looks like an exact address. A neighbourhood or a street corner is safer.'
-                  : 'A neighbourhood or a street corner is enough. Not your home address.',
+              looksLikeExactAddress(_area.text) ? l10n.lostAreaExact : l10n.lostAreaHint,
               key: const Key('lost-area-hint'),
               center: false,
             ),
@@ -352,8 +361,8 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
             PickerTile(
               key: const Key('lost-when'),
               icon: Icons.schedule_rounded,
-              label: 'Last seen: when',
-              value: '${formatRelativeDay(_lastSeen, now)} · ${formatTime(_lastSeen)}',
+              label: l10n.lostWhen,
+              value: format.relativeDayTime(_lastSeen, now),
               onTap: _pickWhen,
             ),
             const SizedBox(height: 10),
@@ -362,9 +371,12 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               controller: _phone,
               keyboardType: TextInputType.phone,
               maxLength: 40,
-              decoration: const InputDecoration(labelText: 'Your phone number', counterText: ''),
+              // A phone number: left to right on every screen.
+              textDirection: TextDirection.ltr,
+              textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
+              decoration: InputDecoration(labelText: l10n.lostYourPhone, counterText: ''),
               autovalidateMode: AutovalidateMode.onUserInteraction,
-              validator: _phoneProblem,
+              validator: (value) => _notAPhone(value) ? l10n.validPhone : null,
             ),
             const SizedBox(height: 10),
             TextFormField(
@@ -372,26 +384,22 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               controller: _extra,
               maxLength: 120,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(
-                labelText: 'Anything else (optional)',
-                hintText: 'For example: needs a daily medicine',
-                counterText: '',
-              ),
+              decoration: InputDecoration(labelText: l10n.lostExtra, hintText: l10n.lostExtraHint, counterText: ''),
             ),
-            const FormLabel('Language of the card'),
+            FormLabel(l10n.lostLanguage),
             Wrap(
               spacing: 8,
               children: [
                 for (final language in LostCardLanguage.values)
                   ChoiceChip(
                     key: ValueKey('lost-language-${language.code}'),
-                    label: Text(language.label),
+                    label: Text(lostCardLanguageName(language)),
                     selected: language == _language,
                     onSelected: (_) => setState(() => _language = language),
                   ),
               ],
             ),
-            const FormLabel('This is what will be shared'),
+            FormLabel(l10n.lostPreviewLabel),
             RepaintBoundary(
               key: _cardKey,
               child: LostCardView(key: const Key('lost-card-preview'), content: _content(profile), photo: photo),
@@ -409,20 +417,21 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
                     : null,
                 controlAffinity: ListTileControlAffinity.leading,
                 title: Text(
-                  _phoneUsable
-                      ? 'Show this phone number on the card: $_typedPhone'
-                      : 'Add your phone number, then confirm it here.',
+                  _phoneUsable ? l10n.lostShowPhone(format.ltrInLine(_typedPhone)) : l10n.lostAddPhoneFirst,
                   style: AppText.body.copyWith(color: AppColors.ink),
                 ),
               ),
             ),
-            if (_error != null) ...[
+            if (error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+              Text(
+                error is String ? error : format.error(error),
+                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 16),
             PrimaryButton(
-              label: 'Share as image',
+              label: l10n.shareAsImage,
               loading: _busy,
               onPressed: _confirmed ? () => _share(asPdf: false) : null,
             ),
@@ -432,27 +441,24 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               onPressed: _confirmed && !_busy ? () => _share(asPdf: true) : null,
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
               icon: const Icon(Icons.print_rounded),
-              label: const Text('Share as PDF to print'),
+              label: Text(l10n.shareAsPdf),
             ),
             if (active)
               Center(
                 child: HealthLink(
-                  '${_pet.name} is back home',
+                  l10n.petIsBackHome(_pet.name),
                   key: const Key('lost-back-home'),
                   icon: Icons.home_rounded,
                   onPressed: _busy ? null : _backHome,
                 ),
               ),
             const SizedBox(height: 12),
-            const FinePrint(
-              'Nothing is posted by the app. You choose where the card goes. The microchip number and your vet are '
-              'never on it.',
-            ),
+            FinePrint(l10n.lostFinePrint),
           ],
         ),
       );
     }
 
-    return HealthPage(petId: _pet.id, title: '${_pet.name} is lost', child: body);
+    return HealthPage(petId: _pet.id, title: l10n.petIsLost(_pet.name), child: body);
   }
 }

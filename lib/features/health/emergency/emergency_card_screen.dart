@@ -1,12 +1,13 @@
-import '../../pets/pets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
+import '../../pets/pets.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
 import '../share/share_actions.dart';
@@ -46,6 +47,7 @@ class EmergencyCardScreen extends ConsumerWidget {
     final summary = ref.watch(healthSummaryProvider(pet.id));
     final contacts = ref.watch(emergencyContactsProvider(pet.id));
     final onShare = this.onShare ?? (BuildContext context, HealthSummary _) => shareHealthSummary(context, pet);
+    final l10n = context.healthL10n;
 
     return HealthKeeper(
       petId: pet.id,
@@ -54,20 +56,20 @@ class EmergencyCardScreen extends ConsumerWidget {
         body: Column(
           children: [
             CoralHeader(
-              title: 'Emergency card',
+              title: l10n.emergencyCardTitle,
               showBack: true,
               actions: [
                 if (summary.hasValue)
                   CoralHeaderAction(
                     icon: Icons.ios_share_rounded,
-                    tooltip: 'Share summary',
+                    tooltip: l10n.shareSummary,
                     onPressed: () => onShare(context, summary.value!),
                   ),
               ],
             ),
             Expanded(
               child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
+                padding: EdgeInsetsDirectional.fromSTEB(
                   AppSpacing.screen,
                   16,
                   AppSpacing.screen,
@@ -76,8 +78,8 @@ class EmergencyCardScreen extends ConsumerWidget {
                 child: summary.when(
                   loading: () => const HealthLoading(),
                   error: (error, _) => HealthLoadError(
-                    what: 'the Emergency card',
-                    message: healthErrorMessage(error),
+                    title: l10n.loadFailedEmergencyCard,
+                    error: error,
                     onRetry: () => ref.invalidate(healthSummaryProvider(pet.id)),
                   ),
                   data: (data) => _Card(pet: pet, summary: data, contacts: contacts.value, onShare: onShare),
@@ -102,25 +104,28 @@ class _Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = summary.profile;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final grams = SpeciesSettings.of(pet.species).weightInGrams;
-    final line = [
-      petLine(pet),
-      if (summary.weightKg != null) formatWeight(summary.weightKg!, grams: grams),
-    ].join(' · ');
+    final line = format.dots([
+      format.petLine(pet),
+      if (summary.weightKg != null) format.weight(summary.weightKg!, grams: grams),
+    ]);
     final facts = <(String, String)>[
       if (profile.allergiesAnswered)
-        ('Allergies', profile.allergies.isEmpty ? 'None known' : profile.allergies.join(', ')),
+        (l10n.allergies, profile.allergies.isEmpty ? l10n.noneKnown : format.commas(profile.allergies)),
       if (profile.conditionsAnswered)
-        ('Conditions', profile.conditions.isEmpty ? 'None known' : profile.conditions.join(', ')),
+        (l10n.conditions, profile.conditions.isEmpty ? l10n.noneKnown : format.commas(profile.conditions)),
       if (summary.medications.isNotEmpty)
         (
-          'Active medicines',
-          summary.medications
-              .map((m) => m.instructionLine.isEmpty ? m.displayName : '${m.displayName} · ${m.instructionLine}')
-              .join('\n'),
+          l10n.activeMedicines,
+          [
+            for (final m in summary.medications) format.dots([m.displayName, format.instructions(m)]),
+          ].join('\n'),
         ),
-      if (profile.notes.trim().isNotEmpty) ('Notes', profile.notes.trim()),
+      if (profile.notes.trim().isNotEmpty) (l10n.notes, profile.notes.trim()),
     ];
+    final chip = profile.microchip.trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -149,7 +154,7 @@ class _Card extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(pet.name, style: AppText.petName.copyWith(fontSize: 20)),
+                        TypedText(pet.name, style: AppText.petName.copyWith(fontSize: 20)),
                         Text(line, style: AppText.secondary),
                       ],
                     ),
@@ -157,13 +162,14 @@ class _Card extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              Text('Microchip', style: AppText.label.copyWith(color: AppColors.brown)),
+              Text(l10n.microchip, style: AppText.label.copyWith(color: AppColors.brown)),
               Text(
-                profile.microchip.trim().isNotEmpty
-                    ? profile.microchip.trim()
+                // A microchip number reads left to right on every screen.
+                chip.isNotEmpty
+                    ? format.ltrInLine(chip)
                     : profile.notChipped
-                    ? 'Not chipped'
-                    : 'Not added yet',
+                    ? l10n.notChipped
+                    : l10n.notAddedYet,
                 style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: 0.5),
               ),
             ],
@@ -173,8 +179,8 @@ class _Card extends StatelessWidget {
         if (facts.isEmpty)
           HealthPromptCard(
             icon: Icons.fact_check_rounded,
-            title: 'Allergies and conditions',
-            message: 'Nothing saved yet. Tap to fill in the health profile.',
+            title: l10n.allergiesAndConditions,
+            message: l10n.nothingSavedTapProfile,
             onTap: () => HealthProfileScreen.open(context, pet),
           )
         else
@@ -200,26 +206,26 @@ class _Card extends StatelessWidget {
           onPressed: () => onShare(context, summary),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
           icon: const Icon(Icons.ios_share_rounded),
-          label: const Text('Share summary'),
+          label: Text(l10n.shareSummary),
         ),
         const SizedBox(height: 4),
         Wrap(
           alignment: WrapAlignment.center,
           children: [
             HealthLink(
-              "${pet.name}'s vets",
+              l10n.petsVets(pet.name),
               icon: Icons.medical_services_rounded,
               onPressed: () => VetsScreen.open(context, pet),
             ),
             HealthLink(
-              'Edit health profile',
+              l10n.editHealthProfile,
               icon: Icons.edit_rounded,
               onPressed: () => HealthProfileScreen.open(context, pet),
             ),
           ],
         ),
         const SizedBox(height: 8),
-        const FinePrint('You make the call or send the message yourself. $kSafetyLine'),
+        FinePrint(l10n.emergencyCardFinePrint),
       ],
     );
   }

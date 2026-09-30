@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'schedule_form_widgets.dart';
@@ -16,9 +18,6 @@ import 'schedule_form_widgets.dart';
 /// saved medicine, or `null` when the owner went back or deleted it.
 Future<Medication?> openMedicineForm(BuildContext context, Pet pet, {Medication? medication}) =>
     pushHealthPage<Medication>(context, MedicineFormScreen(pet: pet, medication: medication));
-
-/// The ways a medicine is given, offered as chips.
-const medicineRoutes = ['By mouth', 'On the skin', 'In the eye', 'In the ear', 'Injection', 'Other'];
 
 /// A medicine with the vet's instructions, stored exactly as typed, and
 /// its reminder times. Only the name is required; without reminder times
@@ -49,7 +48,10 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   var _times = <TimeOfDay>[];
   var _days = CarePlanItem.everyDay;
   bool _saving = false;
-  String? _error;
+
+  /// What is wrong: a message of the form, or what saving threw (worded
+  /// when it is shown).
+  Object? _error;
 
   bool get _editing => widget.medication != null;
   String get _petId => widget.pet.id;
@@ -86,7 +88,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       firstDate: DateTime(now.year - 20),
       lastDate: DateTime(now.year + 5, 12, 31),
       currentDate: now,
-      helpText: 'First day of the medicine',
+      helpText: context.healthL10n.firstDayOfMedicine,
     );
     if (picked != null && mounted) setState(() => _start = dateOnly(picked));
   }
@@ -105,7 +107,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       firstDate: first,
       lastDate: DateTime(now.year + 10, 12, 31),
       currentDate: now,
-      helpText: 'Last day of the medicine',
+      helpText: context.healthL10n.lastDayOfMedicine,
     );
     if (picked != null && mounted) setState(() => _end = dateOnly(picked));
   }
@@ -114,7 +116,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final picked = await showTimePicker(
       context: context,
       initialTime: _times.isEmpty ? const TimeOfDay(hour: 8, minute: 0) : const TimeOfDay(hour: 20, minute: 0),
-      helpText: 'Reminder time',
+      helpText: context.healthL10n.reminderTime,
     );
     if (picked == null || !mounted) return;
     setState(() {
@@ -131,11 +133,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final start = _start;
     final end = _end;
     if (start != null && end != null && end.isBefore(start)) {
-      setState(() => _error = 'The last day should not be before the first day.');
+      setState(() => _error = context.healthL10n.validLastBeforeFirst);
       return;
     }
     if (_times.isNotEmpty && _days.isEmpty) {
-      setState(() => _error = 'Choose at least one day for the reminders.');
+      setState(() => _error = context.healthL10n.validReminderDays);
       return;
     }
     setState(() {
@@ -168,7 +170,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -178,8 +180,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final medication = widget.medication!;
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete this medicine?',
-      message: '"${medication.name}", its reminders and its dose log will be removed. This cannot be undone.',
+      title: context.healthL10n.deleteMedicineTitle,
+      message: context.healthL10n.deleteMedicineMessage(medication.name),
     );
     if (!confirmed || !mounted) return;
     setState(() => _saving = true);
@@ -190,7 +192,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -199,6 +201,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   @override
   Widget build(BuildContext context) {
     final medication = widget.medication;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final error = _error;
     final routes = [...medicineRoutes, if (_route.isNotEmpty && !medicineRoutes.contains(_route)) _route];
     final logs = medication == null
         ? const <CareLog>[]
@@ -209,12 +214,12 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
 
     return HealthPage(
       petId: _petId,
-      title: _editing ? 'Edit medicine' : 'New medicine',
+      title: _editing ? l10n.editMedicine : l10n.newMedicine,
       actions: [
         if (_editing)
           CoralHeaderAction(
             icon: Icons.delete_outline_rounded,
-            tooltip: 'Delete medicine',
+            tooltip: l10n.deleteMedicine,
             onPressed: _saving ? null : _delete,
           ),
       ],
@@ -223,17 +228,17 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FormLabel("From the vet's instructions"),
+            FormLabel(l10n.fromVetInstructions),
             TextFormField(
               key: const Key('medicine-name'),
               controller: _name,
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: l10n.fieldName),
               validator: (value) {
                 final v = value?.trim() ?? '';
-                if (v.isEmpty) return 'Enter the name of the medicine.';
-                if (v.length > 120) return 'Keep the name under 120 characters.';
+                if (v.isEmpty) return l10n.validMedicineName;
+                if (v.length > 120) return l10n.validNameTooLong(120);
                 return null;
               },
             ),
@@ -242,16 +247,16 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               key: const Key('medicine-strength'),
               controller: _strength,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Strength (optional)', hintText: '50 mg'),
+              decoration: InputDecoration(labelText: l10n.strengthOptional, hintText: l10n.strengthHint),
             ),
             const SizedBox(height: 10),
             TextFormField(
               key: const Key('medicine-dose'),
               controller: _dose,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Dose (optional)', hintText: '1 tablet'),
+              decoration: InputDecoration(labelText: l10n.doseOptional, hintText: l10n.doseHint),
             ),
-            const FormLabel('How it is given'),
+            FormLabel(l10n.howItIsGiven),
             Wrap(
               spacing: 8,
               runSpacing: 4,
@@ -259,7 +264,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                 for (final route in routes)
                   ChoiceChip(
                     key: ValueKey('route-$route'),
-                    label: Text(route),
+                    label: Text(l10n.medicineRoute(route)),
                     selected: route == _route,
                     onSelected: (selected) => setState(() => _route = selected ? route : ''),
                   ),
@@ -271,14 +276,14 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               controller: _frequency,
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'How often (optional)', hintText: 'Twice a day, with food'),
+              decoration: InputDecoration(labelText: l10n.howOftenOptional, hintText: l10n.howOftenHint),
             ),
             const SizedBox(height: 10),
             PickerTile(
               key: const Key('medicine-start'),
               icon: Icons.event_rounded,
-              label: 'Start',
-              value: _start == null ? 'Not set' : formatDate(_start!),
+              label: l10n.fieldStart,
+              value: _start == null ? l10n.notSet : format.date(_start!),
               placeholder: _start == null,
               onTap: _pickStart,
             ),
@@ -286,8 +291,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
             PickerTile(
               key: const Key('medicine-end'),
               icon: Icons.event_busy_rounded,
-              label: 'End (optional)',
-              value: _end == null ? 'No end' : formatDate(_end!),
+              label: l10n.endOptional,
+              value: _end == null ? l10n.noEnd : format.date(_end!),
               placeholder: _end == null,
               onTap: _pickEnd,
               onClear: _end == null ? null : () => setState(() => _end = null),
@@ -297,9 +302,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               key: const Key('medicine-prescribed-by'),
               controller: _prescribedBy,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Prescribed by (optional)'),
+              decoration: InputDecoration(labelText: l10n.prescribedByOptional),
             ),
-            const FormLabel('Reminders'),
+            FormLabel(l10n.reminders),
             Wrap(
               spacing: 8,
               runSpacing: 4,
@@ -307,15 +312,15 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               children: [
                 for (final time in _times)
                   InputChip(
-                    key: ValueKey('time-${formatTimeOfDay(time)}'),
-                    label: Text(formatTimeOfDay(time)),
+                    key: ValueKey('time-${format.timeOfDay(time)}'),
+                    label: Text(format.timeOfDay(time)),
                     onDeleted: () => setState(() => _times = [..._times]..remove(time)),
-                    deleteButtonTooltipMessage: 'Remove ${formatTimeOfDay(time)}',
+                    deleteButtonTooltipMessage: l10n.removeNamed(format.timeOfDay(time)),
                   ),
                 ActionChip(
                   key: const Key('medicine-add-time'),
                   avatar: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Add a time'),
+                  label: Text(l10n.addATime),
                   onPressed: _addTime,
                 ),
               ],
@@ -325,29 +330,27 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               DaysPicker(days: _days, onChanged: (days) => setState(() => _days = days)),
             ],
             const SizedBox(height: 6),
-            FinePrint(
-              _times.isEmpty
-                  ? 'No reminder times: a medicine given only when needed.'
-                  : 'A reminder nobody answers waits under Needs review. It is never counted as missed.',
-              center: false,
-            ),
-            if (_error != null) ...[
+            FinePrint(_times.isEmpty ? l10n.medicineNoTimesNote : l10n.medicineReminderNote, center: false),
+            if (error != null) ...[
               const SizedBox(height: 12),
-              Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+              Text(
+                error is String ? error : format.error(error),
+                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+              ),
             ],
             const SizedBox(height: 22),
-            PrimaryButton(label: 'Save medicine', loading: _saving, onPressed: _save),
+            PrimaryButton(label: l10n.saveMedicine, loading: _saving, onPressed: _save),
             const SizedBox(height: 12),
-            const FinePrint('The app stores what you enter. It never suggests a dose.'),
+            FinePrint(l10n.medicineFinePrint),
             if (medication != null) ...[
               const SizedBox(height: 12),
-              HealthSectionTitle('Dose log', count: logs.isEmpty ? null : logs.length),
+              HealthSectionTitle(l10n.doseLog, count: logs.isEmpty ? null : logs.length),
               if (logs.isEmpty)
-                Text('No dose recorded yet.', style: AppText.secondary.copyWith(color: AppColors.brown))
+                Text(l10n.noDoseRecordedYet, style: AppText.secondary.copyWith(color: AppColors.brown))
               else
                 for (final log in logs.take(30))
                   Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsetsDirectional.only(bottom: 8),
                     child: _DoseLogRow(log: log),
                   ),
             ],
@@ -358,14 +361,6 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 }
 
-/// "Given 08:05", "Not given" or "Not sure", for the dose log and the
-/// Schedule's "Done today".
-String doseStatusLabel(CareLog log) => switch (log.status) {
-  CareLogStatus.done => log.doneAt == null ? 'Given' : 'Given ${formatTime(log.doneAt!)}',
-  CareLogStatus.skipped => 'Not given',
-  CareLogStatus.unknown => 'Not sure',
-};
-
 class _DoseLogRow extends StatelessWidget {
   const _DoseLogRow({required this.log});
 
@@ -375,13 +370,17 @@ class _DoseLogRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final due = log.dueTime;
     final by = log.loggedByName.trim();
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     return HealthCard(
       radius: AppSpacing.fieldRadius,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(switch (log.status) {
+          // The question mark reads the same in every language: it is never
+          // mirrored (see HealthIcon).
+          HealthIcon(switch (log.status) {
             CareLogStatus.done => Icons.check_circle_rounded,
             CareLogStatus.skipped => Icons.cancel_outlined,
             CareLogStatus.unknown => Icons.help_outline_rounded,
@@ -391,16 +390,18 @@ class _DoseLogRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(doseStatusLabel(log), style: AppText.cardTitle),
+                Text(format.doseStatus(log), style: AppText.cardTitle),
                 Text(
-                  [
-                    formatDate(log.dueOn),
-                    if (due != null) 'reminder ${formatTimeOfDay(due)}' else 'when needed',
-                    if (by.isNotEmpty) 'logged by $by',
-                  ].join(' · '),
+                  format.dots([
+                    format.date(log.dueOn),
+                    if (due != null) l10n.doseLogReminder(format.timeOfDay(due)) else l10n.doseLogWhenNeeded,
+                    // No name was stored (or, by an older version, the word
+                    // "You"): the owner's own entry.
+                    by.isEmpty || by == 'You' ? l10n.doseLoggedByYou : l10n.doseLoggedBy(by),
+                  ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
-                if (log.note.isNotEmpty) Text(log.note, style: AppText.secondary),
+                if (log.note.isNotEmpty) TypedText(log.note, style: AppText.secondary),
               ],
             ),
           ),

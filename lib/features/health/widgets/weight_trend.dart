@@ -14,6 +14,9 @@ class TrendPoint {
 /// measurements, a small marker on the latest one, and optional event
 /// markers (vet visits) along the bottom. It reads well with one point (a
 /// single marker) and two (a straight line).
+///
+/// Time runs left to right in every language, as on any chart: a Hebrew
+/// screen does not mirror it.
 class WeightTrendChart extends StatelessWidget {
   const WeightTrendChart({
     super.key,
@@ -35,7 +38,6 @@ class WeightTrendChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rtl = Directionality.of(context) == TextDirection.rtl;
     return Semantics(
       label: semanticsLabel,
       image: true,
@@ -43,7 +45,7 @@ class WeightTrendChart extends StatelessWidget {
         height: height,
         width: double.infinity,
         child: CustomPaint(
-          painter: WeightTrendPainter(points: points, events: events, showGuides: showGuides, rtl: rtl),
+          painter: WeightTrendPainter(points: points, events: events, showGuides: showGuides),
         ),
       ),
     );
@@ -51,12 +53,11 @@ class WeightTrendChart extends StatelessWidget {
 }
 
 class WeightTrendPainter extends CustomPainter {
-  WeightTrendPainter({required this.points, this.events = const [], this.showGuides = true, this.rtl = false});
+  WeightTrendPainter({required this.points, this.events = const [], this.showGuides = true});
 
   final List<TrendPoint> points;
   final List<DateTime> events;
   final bool showGuides;
-  final bool rtl;
 
   static const _markerRadius = 5.0;
   static const _eventSize = 4.0;
@@ -91,7 +92,7 @@ class WeightTrendPainter extends CustomPainter {
       // A flat series runs through the middle.
       final ty = max == min ? 0.5 : (max - p.value) / (max - min);
       final x = left + (right - left) * tx;
-      return Offset(rtl ? size.width - x : x, top + (bottom - top) * ty);
+      return Offset(x, top + (bottom - top) * ty);
     }
 
     return [for (var i = 0; i < points.length; i++) place(i)];
@@ -147,8 +148,7 @@ class WeightTrendPainter extends CustomPainter {
         for (final event in events) {
           final t = (event.millisecondsSinceEpoch - start) / span;
           if (t < 0 || t > 1) continue;
-          final x = pad + (size.width - pad * 2) * t;
-          final cx = rtl ? size.width - x : x;
+          final cx = pad + (size.width - pad * 2) * t;
           final diamond = Path()
             ..moveTo(cx, y - _eventSize)
             ..lineTo(cx + _eventSize, y)
@@ -163,8 +163,5 @@ class WeightTrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(WeightTrendPainter oldDelegate) =>
-      oldDelegate.points != points ||
-      oldDelegate.events != events ||
-      oldDelegate.showGuides != showGuides ||
-      oldDelegate.rtl != rtl;
+      oldDelegate.points != points || oldDelegate.events != events || oldDelegate.showGuides != showGuides;
 }

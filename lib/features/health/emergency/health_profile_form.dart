@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/health_models.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 
@@ -21,15 +23,16 @@ class HealthBasicsSection extends ConsumerStatefulWidget {
   const HealthBasicsSection({
     super.key,
     required this.petId,
-    this.saveLabel = 'Save',
+    this.saveLabel,
     this.onSaved,
     this.withContactAndNotes = false,
   });
 
   final String petId;
 
-  /// Text of the section's button ("Save", or "Next" inside a flow).
-  final String saveLabel;
+  /// Text of the section's button: "Save" in the app's language unless
+  /// given ("Finish" inside a flow).
+  final String? saveLabel;
   final ValueChanged<HealthProfile>? onSaved;
 
   /// Also shows the emergency contact person and free notes (Health's own
@@ -53,7 +56,10 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   bool _noConditions = false;
   bool _filled = false;
   bool _saving = false;
-  String? _error;
+
+  /// What went wrong when saving; worded when it is shown, so it follows
+  /// the language of the screen.
+  Object? _error;
 
   @override
   void dispose() {
@@ -113,7 +119,7 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = healthErrorMessage(e);
+          _error = e;
         });
       }
     }
@@ -123,11 +129,12 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   Widget build(BuildContext context) {
     final profile = ref.watch(healthProfileProvider(widget.petId));
     final current = profile.value;
+    final l10n = context.healthL10n;
     if (current == null) {
       return profile.hasError
           ? HealthLoadError(
-              what: 'the health profile',
-              message: healthErrorMessage(profile.error!),
+              title: l10n.loadFailedProfile,
+              error: profile.error!,
               onRetry: () => ref.invalidate(healthProfileProvider(widget.petId)),
             )
           : const HealthLoading();
@@ -139,48 +146,51 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FormLabel('Identification'),
+          FormLabel(l10n.identification),
           TextFormField(
             key: const Key('profile-microchip'),
             controller: _microchip,
             enabled: !_notChipped,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
-            decoration: InputDecoration(labelText: _notChipped ? 'Not chipped' : 'Microchip number (optional)'),
-            validator: (value) => (value?.trim().length ?? 0) > 40 ? 'Keep the number under 40 characters.' : null,
+            // A number: left to right on every screen.
+            textDirection: TextDirection.ltr,
+            textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
+            decoration: InputDecoration(labelText: _notChipped ? l10n.notChipped : l10n.microchipNumberOptional),
+            validator: (value) => (value?.trim().length ?? 0) > 40 ? l10n.validNumberTooLong(40) : null,
           ),
           _TickLine(
             checkKey: const Key('profile-not-chipped'),
-            label: 'Not chipped',
+            label: l10n.notChipped,
             value: _notChipped,
             onChanged: (value) => setState(() => _notChipped = value),
           ),
-          const FormLabel('Allergies'),
+          FormLabel(l10n.allergies),
           _AnswerField(
             fieldKey: const Key('profile-allergies'),
             checkKey: const Key('profile-no-allergies'),
             controller: _allergies,
-            label: 'Known allergies, one per line',
+            label: l10n.knownAllergies,
             noneKnown: _noAllergies,
             onNoneKnown: (value) => setState(() => _noAllergies = value),
           ),
-          const FormLabel('Medical conditions'),
+          FormLabel(l10n.medicalConditions),
           _AnswerField(
             fieldKey: const Key('profile-conditions'),
             checkKey: const Key('profile-no-conditions'),
             controller: _conditions,
-            label: 'Known conditions, one per line',
+            label: l10n.knownConditions,
             noneKnown: _noConditions,
             onNoneKnown: (value) => setState(() => _noConditions = value),
           ),
           if (widget.withContactAndNotes) ...[
-            const FormLabel('Emergency contact (someone who can help)'),
+            FormLabel(l10n.emergencyContactHeading),
             TextFormField(
               key: const Key('profile-contact-name'),
               controller: _contactName,
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Name (optional)'),
+              decoration: InputDecoration(labelText: l10n.nameOptional),
             ),
             const SizedBox(height: 10),
             TextFormField(
@@ -188,32 +198,40 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
               controller: _contactPhone,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
-              decoration: const InputDecoration(labelText: 'Phone (optional)'),
+              // A phone number: left to right on every screen.
+              textDirection: TextDirection.ltr,
+              textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
+              decoration: InputDecoration(labelText: l10n.phoneOptional),
               validator: (value) {
                 final v = value?.trim() ?? '';
                 if (v.isEmpty) return null;
                 final digits = v.replaceAll(RegExp('[^0-9]'), '');
-                return digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v)
-                    ? 'That does not look like a phone number.'
-                    : null;
+                return digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v) ? l10n.validPhone : null;
               },
             ),
-            const FormLabel('Anything else a vet should know'),
+            FormLabel(l10n.anythingElseForVet),
             TextFormField(
               key: const Key('profile-notes'),
               controller: _notes,
               minLines: 2,
               maxLines: 5,
               textCapitalization: TextCapitalization.sentences,
-              decoration: const InputDecoration(labelText: 'Notes (optional)'),
+              decoration: InputDecoration(labelText: l10n.notesOptional),
             ),
           ],
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+            Text(
+              healthErrorOf(context, _error),
+              style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+            ),
           ],
           const SizedBox(height: 22),
-          PrimaryButton(label: widget.saveLabel, loading: _saving, onPressed: () => _save(current)),
+          PrimaryButton(
+            label: widget.saveLabel ?? context.l10n.commonSave,
+            loading: _saving,
+            onPressed: () => _save(current),
+          ),
         ],
       ),
     );
@@ -240,6 +258,7 @@ class _AnswerField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -250,10 +269,10 @@ class _AnswerField extends StatelessWidget {
           minLines: 1,
           maxLines: 4,
           textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(labelText: noneKnown ? 'None known' : label),
-          validator: (value) => (value?.length ?? 0) > 600 ? 'Please keep this shorter.' : null,
+          decoration: InputDecoration(labelText: noneKnown ? l10n.noneKnown : label),
+          validator: (value) => (value?.length ?? 0) > 600 ? l10n.validKeepShorter : null,
         ),
-        _TickLine(checkKey: checkKey, label: 'None known', value: noneKnown, onChanged: onNoneKnown),
+        _TickLine(checkKey: checkKey, label: l10n.noneKnown, value: noneKnown, onChanged: onNoneKnown),
       ],
     );
   }
@@ -295,18 +314,18 @@ class HealthProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return HealthPage(
-      title: "${pet.name}'s health profile",
+      title: context.healthL10n.petsHealthProfile(pet.name),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           HealthBasicsSection(
             petId: pet.id,
             withContactAndNotes: true,
-            saveLabel: 'Save profile',
+            saveLabel: context.healthL10n.saveProfile,
             onSaved: (_) => Navigator.of(context).pop(),
           ),
           const SizedBox(height: 12),
-          const FinePrint('Everything here is optional. It fills the Emergency card and the message to the vet.'),
+          FinePrint(context.healthL10n.profileFinePrint),
         ],
       ),
     );

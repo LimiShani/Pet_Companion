@@ -39,6 +39,8 @@ class VetContact {
 class PersonContact {
   const PersonContact({required this.name, this.phone});
 
+  /// As the owner typed it; empty when only a phone number was given (a
+  /// screen then calls the person "Emergency contact" in its own language).
   final String name;
   final String? phone;
 }
@@ -96,19 +98,20 @@ final emergencyContactsProvider = FutureProvider.autoDispose.family<EmergencyCon
     regularVet: vets.regular == null ? null : VetContact.of(vets.regular!),
     emergencyVet: vets.emergency == null ? null : VetContact.of(vets.emergency!),
     contact: profile.hasContact
-        ? PersonContact(
-            name: contactName.isEmpty ? 'Emergency contact' : contactName,
-            phone: contactPhone.isEmpty ? null : contactPhone,
-          )
+        ? PersonContact(name: contactName, phone: contactPhone.isEmpty ? null : contactPhone)
         : null,
   );
 }, retry: _noRetry);
 
-/// User-facing text for a failure of [emergencyContactsProvider] or
-/// [healthCriticalItemsProvider].
+/// A failure of [emergencyContactsProvider] or [healthCriticalItemsProvider]
+/// in plain English, for logs. On a screen use `healthErrorOf(context, error)`.
 String emergencyErrorMessage(Object error) => healthErrorMessage(error);
 
 /// Health information the app keeps asking for until it is filled in.
+///
+/// [label] and [promptFor] are in English, for logs and tests: the pages
+/// that ask for these items (the Pets feature's) word them in the app's
+/// language themselves.
 enum HealthCriticalItem {
   /// No regular or emergency vet with a phone number.
   vetPhone("A vet's phone number"),

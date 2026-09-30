@@ -28,7 +28,7 @@ void main() {
       await openSchedule(tester);
 
       expect(find.text('Today'), findsOneWidget);
-      expect(find.text('· Tue 10 June'), findsOneWidget);
+      expect(find.text('· Tue, Jun 10'), findsOneWidget);
 
       // Open items, in time order.
       expect(find.byKey(const ValueKey('today-p-walk')), findsOneWidget);
@@ -355,9 +355,10 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('routine-time')));
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
-      // Weekdays only.
+      // Weekdays only. The week is the owner's (Settings); unless they chose
+      // another one it is the Israeli week: Sunday to Thursday.
+      await tapVisible(tester, find.byKey(const ValueKey('day-5')));
       await tapVisible(tester, find.byKey(const ValueKey('day-6')));
-      await tapVisible(tester, find.byKey(const ValueKey('day-7')));
       expect(find.text('Weekdays'), findsOneWidget);
 
       await tapVisible(tester, find.text('Save routine'));
@@ -367,7 +368,7 @@ void main() {
       final items = await real(tester, () => h.repository.fetchPlanItems(kelly));
       final saved = items.firstWhere((i) => i.title == 'Morning walk');
       expect(saved.kind, CareKind.walk);
-      expect(saved.days, {1, 2, 3, 4, 5});
+      expect(saved.days, {1, 2, 3, 4, 7});
       expect(saved.active, isTrue);
       // A routine nobody ticked never needs review.
       expect(find.text('Needs review'), findsOneWidget);

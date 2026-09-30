@@ -87,7 +87,9 @@ void main() {
     expect(log.status, CareLogStatus.done);
     expect(log.doneAt, DateTime(2025, 6, 10, 20, 10));
     expect(log.loggedAt, fixedNow);
-    expect(log.loggedByName, 'You'); // nobody is signed in here
+    // Nobody is signed in here: no name is stored, and the dose log says
+    // "logged by you" in the language of the screen.
+    expect(log.loggedByName, '');
     expect(log.medicationId, 'm-joint');
     final after = container.read(carePlanProvider(kelly)).value!;
     expect(entriesOn(after, fixedNow).last.isDone, isTrue);
