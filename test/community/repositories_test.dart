@@ -7,6 +7,8 @@ import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
 import 'package:pet_companion/features/community/data/guides_repository.dart';
+import 'package:pet_companion/features/community/data/supabase_community_support.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 const alex = AppUser(id: 'demo', email: 'demo@petcompanion.app', displayName: 'Alex');
 const dana = AppUser(id: 'u-dana', email: 'dana@example.com', displayName: 'Dana');
@@ -180,6 +182,30 @@ void main() {
       expect(search('LEAD harness'), contains('loose-lead'));
       expect(search('xylitol chocolate'), ['unsafe-foods']);
       expect(search('zzzz'), isEmpty);
+    });
+  });
+
+  group('Supabase error mapping', () {
+    String message(Object error) => communityExceptionFrom(error).message;
+
+    test('backend errors become friendly messages', () {
+      expect(message(const sb.PostgrestException(message: 'new row violates row-level security', code: '42501')),
+          'You are not allowed to do that.');
+      expect(message(const sb.PostgrestException(message: 'violates check constraint', code: '23514')),
+          'That text is empty or too long.');
+      expect(message(const sb.PostgrestException(message: 'Could not find the table', code: 'PGRST205')),
+          'The community is not set up on the server yet.');
+      expect(message(const sb.PostgrestException(message: 'JWT expired', code: 'PGRST303')), 'Please sign in again.');
+      expect(message(const sb.StorageException('The object exceeded the maximum allowed size', statusCode: '413')),
+          'That photo is too large. Please choose a smaller one.');
+      expect(message(const sb.StorageException('mime type image/gif is not supported', statusCode: '415')),
+          'Please choose a JPEG, PNG or WebP photo.');
+      expect(message(Exception('SocketException: Failed host lookup')), contains('Cannot reach the community'));
+    });
+
+    test('community exceptions pass through unchanged', () {
+      const original = CommunityException('Write something before posting.');
+      expect(communityExceptionFrom(original), same(original));
     });
   });
 
