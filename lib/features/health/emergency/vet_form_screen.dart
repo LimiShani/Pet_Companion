@@ -66,15 +66,19 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
       _error = null;
     });
     try {
-      final saved = await ref.read(vetsProvider.notifier).save(Vet(
-            id: widget.vet?.id ?? '',
-            name: _name.text.trim(),
-            phone: _phone.text.trim(),
-            onWhatsApp: _whatsApp && _phone.text.trim().isNotEmpty,
-            address: _address.text.trim(),
-            openingHours: _hours.text.trim(),
-            notes: _notes.text.trim(),
-          ));
+      final saved = await ref
+          .read(vetsProvider.notifier)
+          .save(
+            Vet(
+              id: widget.vet?.id ?? '',
+              name: _name.text.trim(),
+              phone: _phone.text.trim(),
+              onWhatsApp: _whatsApp && _phone.text.trim().isNotEmpty,
+              address: _address.text.trim(),
+              openingHours: _hours.text.trim(),
+              notes: _notes.text.trim(),
+            ),
+          );
       final petId = widget.petId;
       final role = widget.role;
       if (!_editing && petId != null && role != null) {

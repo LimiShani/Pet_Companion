@@ -41,21 +41,21 @@ Future<bool> launchOrExplain(
 
 /// Opens the dialler with [phone]. The owner presses call there.
 Future<bool> callContact(BuildContext context, WidgetRef ref, String phone) => launchOrExplain(
-      context,
-      launch: () => ref.read(contactLauncherProvider).call(phone),
-      problem: 'Could not open the phone app',
-      copyLabel: 'Copy number',
-      copyText: phone,
-    );
+  context,
+  launch: () => ref.read(contactLauncherProvider).call(phone),
+  problem: 'Could not open the phone app',
+  copyLabel: 'Copy number',
+  copyText: phone,
+);
 
 /// Opens the maps app on [address].
 Future<bool> openContactMap(BuildContext context, WidgetRef ref, String address) => launchOrExplain(
-      context,
-      launch: () => ref.read(contactLauncherProvider).openMap(address),
-      problem: 'Could not open the maps app',
-      copyLabel: 'Copy address',
-      copyText: address,
-    );
+  context,
+  launch: () => ref.read(contactLauncherProvider).openMap(address),
+  problem: 'Could not open the maps app',
+  copyLabel: 'Copy address',
+  copyText: address,
+);
 
 /// The Call, Message and Map buttons of one contact. Buttons whose data is
 /// missing are left out; with no phone number at all, [onAddPhone] is

@@ -29,6 +29,10 @@ abstract class HealthRepository {
   /// backend has none (the sample data).
   Future<Uri?> documentLink(HealthDocument document);
 
+  /// Removes every stored file of a pet. Called before a pet is deleted:
+  /// deleting the pet removes its rows, but not its files.
+  Future<void> deleteFilesForPet(String petId);
+
   // Vets belong to the owner, not to a pet.
   Future<List<Vet>> fetchVets();
   Future<Vet> saveVet(Vet vet);

@@ -26,19 +26,15 @@ class QuickLogCategory {
   final QuickLogScale scale;
 
   List<ObservationLevel> get levels => switch (scale) {
-        QuickLogScale.weight => const [],
-        QuickLogScale.amount => const [
-            ObservationLevel.usual,
-            ObservationLevel.less,
-            ObservationLevel.more,
-            ObservationLevel.unsure,
-          ],
-        QuickLogScale.appearance => const [
-            ObservationLevel.usual,
-            ObservationLevel.different,
-            ObservationLevel.unsure,
-          ],
-      };
+    QuickLogScale.weight => const [],
+    QuickLogScale.amount => const [
+      ObservationLevel.usual,
+      ObservationLevel.less,
+      ObservationLevel.more,
+      ObservationLevel.unsure,
+    ],
+    QuickLogScale.appearance => const [ObservationLevel.usual, ObservationLevel.different, ObservationLevel.unsure],
+  };
 }
 
 /// What the Health tab offers for one species. The navigation is the same
@@ -77,7 +73,12 @@ class SpeciesSettings {
   static SpeciesSettings of(PetSpecies species) => _settings[species] ?? _settings[PetSpecies.other]!;
 }
 
-const _weight = QuickLogCategory(Observation.weightCategory, 'Weight', Icons.monitor_weight_rounded, QuickLogScale.weight);
+const _weight = QuickLogCategory(
+  Observation.weightCategory,
+  'Weight',
+  Icons.monitor_weight_rounded,
+  QuickLogScale.weight,
+);
 const _appetite = QuickLogCategory('appetite', 'Appetite', Icons.restaurant_rounded, QuickLogScale.amount);
 const _energy = QuickLogCategory('energy', 'Energy', Icons.bolt_rounded, QuickLogScale.amount);
 const _mobility = QuickLogCategory('mobility', 'Mobility', Icons.pets_rounded, QuickLogScale.amount);
@@ -111,10 +112,10 @@ const _k = RecordKind.values;
 
 /// [first] in that order, then every other kind.
 List<RecordKind> _kinds(List<RecordKind> first) => [
-      ...first,
-      for (final kind in _k)
-        if (!first.contains(kind)) kind,
-    ];
+  ...first,
+  for (final kind in _k)
+    if (!first.contains(kind)) kind,
+];
 
 final _settings = <PetSpecies, SpeciesSettings>{
   PetSpecies.dog: SpeciesSettings(

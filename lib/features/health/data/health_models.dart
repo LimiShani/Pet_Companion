@@ -135,33 +135,33 @@ class HealthRecord {
 
   /// The same record, done at [at] (or planned again when `null`).
   HealthRecord withDone(DateTime? at) => HealthRecord(
-        id: id,
-        petId: petId,
-        kind: kind,
-        title: title,
-        notes: notes,
-        scheduledAt: scheduledAt,
-        doneAt: at,
-        clinic: clinic,
-        productName: productName,
-        nextDueOn: nextDueOn,
-        followUpOf: followUpOf,
-      );
+    id: id,
+    petId: petId,
+    kind: kind,
+    title: title,
+    notes: notes,
+    scheduledAt: scheduledAt,
+    doneAt: at,
+    clinic: clinic,
+    productName: productName,
+    nextDueOn: nextDueOn,
+    followUpOf: followUpOf,
+  );
 
   /// The same record with another "next due" date (`null` clears it).
   HealthRecord withNextDue(DateTime? day) => HealthRecord(
-        id: id,
-        petId: petId,
-        kind: kind,
-        title: title,
-        notes: notes,
-        scheduledAt: scheduledAt,
-        doneAt: doneAt,
-        clinic: clinic,
-        productName: productName,
-        nextDueOn: day == null ? null : dateOnly(day),
-        followUpOf: followUpOf,
-      );
+    id: id,
+    petId: petId,
+    kind: kind,
+    title: title,
+    notes: notes,
+    scheduledAt: scheduledAt,
+    doneAt: doneAt,
+    clinic: clinic,
+    productName: productName,
+    nextDueOn: day == null ? null : dateOnly(day),
+    followUpOf: followUpOf,
+  );
 }
 
 /// A file attached to a health record: a photo or a PDF.
@@ -295,6 +295,7 @@ class HealthProfile {
   const HealthProfile({
     required this.petId,
     this.microchip = '',
+    this.notChipped = false,
     this.allergies = const [],
     this.allergiesNoneKnown = false,
     this.conditions = const [],
@@ -308,6 +309,9 @@ class HealthProfile {
 
   final String petId;
   final String microchip;
+
+  /// The owner answered "not chipped": an answer, not a gap.
+  final bool notChipped;
   final List<String> allergies;
 
   /// The owner answered "none known": an answer, not a gap.
@@ -324,6 +328,9 @@ class HealthProfile {
 
   bool get hasContact => contactName.trim().isNotEmpty || contactPhone.trim().isNotEmpty;
 
+  /// A number, or "not chipped".
+  bool get microchipAnswered => microchip.trim().isNotEmpty || notChipped;
+
   /// Whether the owner has said anything about allergies: a list, or
   /// "none known".
   bool get allergiesAnswered => allergies.isNotEmpty || allergiesNoneKnown;
@@ -333,6 +340,7 @@ class HealthProfile {
 
   HealthProfile copyWith({
     String? microchip,
+    bool? notChipped,
     List<String>? allergies,
     bool? allergiesNoneKnown,
     List<String>? conditions,
@@ -344,6 +352,7 @@ class HealthProfile {
     return HealthProfile(
       petId: petId,
       microchip: microchip ?? this.microchip,
+      notChipped: notChipped ?? this.notChipped,
       allergies: allergies ?? this.allergies,
       allergiesNoneKnown: allergiesNoneKnown ?? this.allergiesNoneKnown,
       conditions: conditions ?? this.conditions,
@@ -358,18 +367,19 @@ class HealthProfile {
 
   /// The same profile pointing at [vetId] for [role] (`null` clears it).
   HealthProfile withVet(VetRole role, String? vetId) => HealthProfile(
-        petId: petId,
-        microchip: microchip,
-        allergies: allergies,
-        allergiesNoneKnown: allergiesNoneKnown,
-        conditions: conditions,
-        conditionsNoneKnown: conditionsNoneKnown,
-        contactName: contactName,
-        contactPhone: contactPhone,
-        notes: notes,
-        regularVetId: role == VetRole.regular ? vetId : regularVetId,
-        emergencyVetId: role == VetRole.emergency ? vetId : emergencyVetId,
-      );
+    petId: petId,
+    microchip: microchip,
+    notChipped: notChipped,
+    allergies: allergies,
+    allergiesNoneKnown: allergiesNoneKnown,
+    conditions: conditions,
+    conditionsNoneKnown: conditionsNoneKnown,
+    contactName: contactName,
+    contactPhone: contactPhone,
+    notes: notes,
+    regularVetId: role == VetRole.regular ? vetId : regularVetId,
+    emergencyVetId: role == VetRole.emergency ? vetId : emergencyVetId,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -438,18 +448,18 @@ class Medication {
   }
 
   Medication copyWith({String? id}) => Medication(
-        id: id ?? this.id,
-        petId: petId,
-        name: name,
-        strength: strength,
-        dose: dose,
-        route: route,
-        frequency: frequency,
-        startsOn: startsOn,
-        endsOn: endsOn,
-        prescribedBy: prescribedBy,
-        instructions: instructions,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    name: name,
+    strength: strength,
+    dose: dose,
+    route: route,
+    frequency: frequency,
+    startsOn: startsOn,
+    endsOn: endsOn,
+    prescribedBy: prescribedBy,
+    instructions: instructions,
+  );
 }
 
 /// What a recurring care item is. [dbValue] is `care_plan_items.kind`.
@@ -610,19 +620,19 @@ class CareLog {
   bool get isNew => id.isEmpty;
 
   CareLog copyWith({String? id}) => CareLog(
-        id: id ?? this.id,
-        petId: petId,
-        planItemId: planItemId,
-        medicationId: medicationId,
-        title: title,
-        dueOn: dueOn,
-        dueTime: dueTime,
-        status: status,
-        doneAt: doneAt,
-        note: note,
-        loggedByName: loggedByName,
-        loggedAt: loggedAt,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    planItemId: planItemId,
+    medicationId: medicationId,
+    title: title,
+    dueOn: dueOn,
+    dueTime: dueTime,
+    status: status,
+    doneAt: doneAt,
+    note: note,
+    loggedByName: loggedByName,
+    loggedAt: loggedAt,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -681,12 +691,12 @@ class Observation {
   bool get isWeight => category == weightCategory && value != null;
 
   Observation copyWith({String? id}) => Observation(
-        id: id ?? this.id,
-        petId: petId,
-        category: category,
-        level: level,
-        value: value,
-        note: note,
-        observedAt: observedAt,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    category: category,
+    level: level,
+    value: value,
+    note: note,
+    observedAt: observedAt,
+  );
 }

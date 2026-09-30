@@ -8,6 +8,8 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../share/share_actions.dart';
+import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'emergency_contacts.dart';
@@ -32,44 +34,55 @@ class EmergencyCardScreen extends ConsumerWidget {
 
   final Pet pet;
 
-  /// Shares the summary (wired by the Insights milestone).
+  /// Replaces what "Share summary" does. By default it hands the pet's
+  /// health summary, as a PDF, to the phone's share sheet.
   final void Function(BuildContext context, HealthSummary summary)? onShare;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(healthSummaryProvider(pet.id));
     final contacts = ref.watch(emergencyContactsProvider(pet.id));
+    final onShare = this.onShare ?? (BuildContext context, HealthSummary _) => shareHealthSummary(context, pet);
 
-    return Scaffold(
-      body: Column(
-        children: [
-          CoralHeader(
-            title: 'Emergency card',
-            showBack: true,
-            actions: [
-              if (onShare != null && summary.hasValue)
-                CoralHeaderAction(
-                  icon: Icons.ios_share_rounded,
-                  tooltip: 'Share summary',
-                  onPressed: () => onShare!(context, summary.value!),
+    return HealthKeeper(
+      petId: pet.id,
+      keep: HealthKeep.everything,
+      child: Scaffold(
+        body: Column(
+          children: [
+            CoralHeader(
+              title: 'Emergency card',
+              showBack: true,
+              actions: [
+                if (summary.hasValue)
+                  CoralHeaderAction(
+                    icon: Icons.ios_share_rounded,
+                    tooltip: 'Share summary',
+                    onPressed: () => onShare(context, summary.value!),
+                  ),
+              ],
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  16,
+                  AppSpacing.screen,
+                  24 + MediaQuery.paddingOf(context).bottom,
                 ),
-            ],
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 24 + MediaQuery.paddingOf(context).bottom),
-              child: summary.when(
-                loading: () => const HealthLoading(),
-                error: (error, _) => HealthLoadError(
-                  what: 'the Emergency card',
-                  message: healthErrorMessage(error),
-                  onRetry: () => ref.invalidate(healthSummaryProvider(pet.id)),
+                child: summary.when(
+                  loading: () => const HealthLoading(),
+                  error: (error, _) => HealthLoadError(
+                    what: 'the Emergency card',
+                    message: healthErrorMessage(error),
+                    onRetry: () => ref.invalidate(healthSummaryProvider(pet.id)),
+                  ),
+                  data: (data) => _Card(pet: pet, summary: data, contacts: contacts.value, onShare: onShare),
                 ),
-                data: (data) => _Card(pet: pet, summary: data, contacts: contacts.value, onShare: onShare),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -81,7 +94,7 @@ class _Card extends StatelessWidget {
   final Pet pet;
   final HealthSummary summary;
   final EmergencyContacts? contacts;
-  final void Function(BuildContext context, HealthSummary summary)? onShare;
+  final void Function(BuildContext context, HealthSummary summary) onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +158,11 @@ class _Card extends StatelessWidget {
               const SizedBox(height: 10),
               Text('Microchip', style: AppText.label.copyWith(color: AppColors.brown)),
               Text(
-                profile.microchip.trim().isEmpty ? 'Not added yet' : profile.microchip.trim(),
+                profile.microchip.trim().isNotEmpty
+                    ? profile.microchip.trim()
+                    : profile.notChipped
+                    ? 'Not chipped'
+                    : 'Not added yet',
                 style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: 0.5),
               ),
             ],
@@ -172,25 +189,28 @@ class _Card extends StatelessWidget {
             ),
           ),
         const SizedBox(height: 12),
-        if (contacts != null)
-          EmergencyContactList(pet: pet, contacts: contacts!)
-        else
-          const HealthLoading(),
-        if (onShare != null) ...[
-          OutlinedButton.icon(
-            key: const Key('share-summary'),
-            onPressed: () => onShare!(context, summary),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-            icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Share summary'),
-          ),
-          const SizedBox(height: 4),
-        ],
+        if (contacts != null) EmergencyContactList(pet: pet, contacts: contacts!) else const HealthLoading(),
+        OutlinedButton.icon(
+          key: const Key('share-summary'),
+          onPressed: () => onShare(context, summary),
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+          icon: const Icon(Icons.ios_share_rounded),
+          label: const Text('Share summary'),
+        ),
+        const SizedBox(height: 4),
         Wrap(
           alignment: WrapAlignment.center,
           children: [
-            HealthLink("${pet.name}'s vets", icon: Icons.medical_services_rounded, onPressed: () => VetsScreen.open(context, pet)),
-            HealthLink('Edit health profile', icon: Icons.edit_rounded, onPressed: () => HealthProfileScreen.open(context, pet)),
+            HealthLink(
+              "${pet.name}'s vets",
+              icon: Icons.medical_services_rounded,
+              onPressed: () => VetsScreen.open(context, pet),
+            ),
+            HealthLink(
+              'Edit health profile',
+              icon: Icons.edit_rounded,
+              onPressed: () => HealthProfileScreen.open(context, pet),
+            ),
           ],
         ),
         const SizedBox(height: 8),

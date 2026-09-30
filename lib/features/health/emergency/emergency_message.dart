@@ -37,8 +37,8 @@ List<MessageLine> emergencyMessageLines(HealthSummary summary) {
   String list(List<String> items, bool noneKnown) => items.isNotEmpty
       ? items.join('; ')
       : noneKnown
-          ? 'none known'
-          : '';
+      ? 'none known'
+      : '';
   final allergies = list(profile.allergies, profile.allergiesNoneKnown);
   final conditions = list(profile.conditions, profile.conditionsNoneKnown);
   final medicines = [
@@ -189,7 +189,10 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
                   child: Text(_typed.text.trim(), style: AppText.secondary.copyWith(fontWeight: FontWeight.w800)),
                 ),
               if (summary.isLoading && data == null)
-                const Padding(padding: EdgeInsets.all(12), child: Center(child: CircularProgressIndicator()))
+                const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Center(child: CircularProgressIndicator()),
+                )
               else if (summary.hasError && data == null)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 8, top: 8),

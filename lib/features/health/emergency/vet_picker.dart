@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
+import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'vet_form_screen.dart';
@@ -114,8 +115,7 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
           icon: const Icon(Icons.add_rounded),
           label: const Text('Add a new vet'),
         ),
-        if (current != null)
-          Center(child: HealthLink('Remove ${current.name} from this pet', onPressed: _remove)),
+        if (current != null) Center(child: HealthLink('Remove ${current.name} from this pet', onPressed: _remove)),
       ],
     );
   }
@@ -135,8 +135,8 @@ class SavedVetRow extends StatelessWidget {
     final detail = vet.hasPhone
         ? vet.phone
         : vet.hasAddress
-            ? vet.address
-            : 'No phone number yet';
+        ? vet.address
+        : 'No phone number yet';
     return HealthCard(
       padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 10, bottom: 10),
       child: Row(
@@ -183,7 +183,9 @@ class PetVetTile extends ConsumerWidget {
   final VetRole role;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => HealthKeeper(petId: petId, child: _tile(context, ref));
+
+  Widget _tile(BuildContext context, WidgetRef ref) {
     final vets = ref.watch(petVetsProvider(petId));
     void pick() => showVetPicker(context, petId: petId, role: role);
 
@@ -192,15 +194,15 @@ class PetVetTile extends ConsumerWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text(
-                healthErrorMessage(vets.error!),
-                style: AppText.secondary.copyWith(color: AppColors.brown),
-              ),
+              child: Text(healthErrorMessage(vets.error!), style: AppText.secondary.copyWith(color: AppColors.brown)),
             ),
-            HealthLink('Try again', onPressed: () {
-              ref.invalidate(vetsProvider);
-              ref.invalidate(healthProfileProvider(petId));
-            }),
+            HealthLink(
+              'Try again',
+              onPressed: () {
+                ref.invalidate(vetsProvider);
+                ref.invalidate(healthProfileProvider(petId));
+              },
+            ),
           ],
         ),
       );
@@ -238,7 +240,10 @@ class PetVetTile extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text('Change', style: AppText.secondary.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800)),
+          Text(
+            'Change',
+            style: AppText.secondary.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
+          ),
         ],
       ),
     );

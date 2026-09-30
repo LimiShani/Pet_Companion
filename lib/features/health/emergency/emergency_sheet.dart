@@ -6,6 +6,7 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
+import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'contact_actions.dart';
@@ -76,44 +77,50 @@ class EmergencySheet extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final contacts = ref.watch(emergencyContactsProvider(pet.id));
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SheetTitle('Emergency · ${pet.name}', subtitle: 'Call or message. You make the call or send the message yourself.'),
-        const SizedBox(height: 12),
-        contacts.when(
-          loading: () => const HealthLoading(),
-          error: (error, _) => HealthLoadError(
-            what: 'the contacts',
-            message: healthErrorMessage(error),
-            onRetry: () {
-              ref.invalidate(vetsProvider);
-              ref.invalidate(healthProfileProvider(pet.id));
-            },
+    return HealthKeeper(
+      petId: pet.id,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SheetTitle(
+            'Emergency · ${pet.name}',
+            subtitle: 'Call or message. You make the call or send the message yourself.',
           ),
-          data: (data) => data.isEmpty
-              ? NoVetPrompt(pet: pet)
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    EmergencyContactList(pet: pet, contacts: data),
-                    Center(
-                      child: HealthLink(
-                        "Open ${pet.name}'s Emergency card",
-                        icon: Icons.chevron_right_rounded,
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          openEmergencyCard(context, pet.id);
-                        },
+          const SizedBox(height: 12),
+          contacts.when(
+            loading: () => const HealthLoading(),
+            error: (error, _) => HealthLoadError(
+              what: 'the contacts',
+              message: healthErrorMessage(error),
+              onRetry: () {
+                ref.invalidate(vetsProvider);
+                ref.invalidate(healthProfileProvider(pet.id));
+              },
+            ),
+            data: (data) => data.isEmpty
+                ? NoVetPrompt(pet: pet)
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      EmergencyContactList(pet: pet, contacts: data),
+                      Center(
+                        child: HealthLink(
+                          "Open ${pet.name}'s Emergency card",
+                          icon: Icons.chevron_right_rounded,
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            openEmergencyCard(context, pet.id);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-        ),
-        const SizedBox(height: 8),
-        const FinePrint(kSafetyLine),
-      ],
+                    ],
+                  ),
+          ),
+          const SizedBox(height: 8),
+          const FinePrint(kSafetyLine),
+        ],
+      ),
     );
   }
 }

@@ -58,9 +58,13 @@ void main() {
     expect(review.single.due, DateTime(2025, 6, 9, 20));
 
     // Eight days later it has left the list, without being counted as anything.
-    expect(entriesNeedingReview(plan, DateTime(2025, 6, 9).add(const Duration(days: 8))).where(
-      (e) => e.due == DateTime(2025, 6, 9, 20),
-    ), isEmpty);
+    expect(
+      entriesNeedingReview(
+        plan,
+        DateTime(2025, 6, 9).add(const Duration(days: 8)),
+      ).where((e) => e.due == DateTime(2025, 6, 9, 20)),
+      isEmpty,
+    );
   });
 
   test('recording a dose stores the status, the time and who logged it', () async {
@@ -70,7 +74,9 @@ void main() {
     final plan = await container.read(carePlanProvider(kelly).future);
     final evening = entriesOn(plan, fixedNow).last;
 
-    final log = await container.read(carePlanProvider(kelly).notifier).record(
+    final log = await container
+        .read(carePlanProvider(kelly).notifier)
+        .record(
           item: evening.item,
           dueOn: fixedNow,
           status: CareLogStatus.done,
@@ -88,11 +94,9 @@ void main() {
 
     // "Not sure" is an answer too, and claims nothing about the dose.
     final review = entriesNeedingReview(after, fixedNow).single;
-    final unsure = await container.read(carePlanProvider(kelly).notifier).record(
-          item: review.item,
-          dueOn: review.due,
-          status: CareLogStatus.unknown,
-        );
+    final unsure = await container
+        .read(carePlanProvider(kelly).notifier)
+        .record(item: review.item, dueOn: review.due, status: CareLogStatus.unknown);
     expect(unsure.doneAt, isNull);
     expect(entriesNeedingReview(container.read(carePlanProvider(kelly)).value!, fixedNow), isEmpty);
   });
@@ -133,15 +137,17 @@ void main() {
     final controller = container.read(healthRecordsProvider('soya').notifier);
 
     final given = DateTime(2025, 6, 1, 10);
-    final record = await controller.save(HealthRecord(
-      id: '',
-      petId: 'soya',
-      kind: RecordKind.vaccination,
-      title: 'Rabies vaccine',
-      scheduledAt: given,
-      doneAt: given,
-      nextDueOn: DateTime(2026, 6, 1),
-    ));
+    final record = await controller.save(
+      HealthRecord(
+        id: '',
+        petId: 'soya',
+        kind: RecordKind.vaccination,
+        title: 'Rabies vaccine',
+        scheduledAt: given,
+        doneAt: given,
+        nextDueOn: DateTime(2026, 6, 1),
+      ),
+    );
     List<HealthRecord> planned() => plannedRecords(container.read(healthRecordsProvider('soya')).value!);
     expect(planned(), hasLength(1));
     expect(planned().single.title, 'Rabies vaccine');
@@ -172,13 +178,17 @@ void main() {
     expect(h.scheduler.last.upcoming.map((r) => r.title), containsAll(['General check', 'Medicine']));
 
     final before = h.scheduler.plans.length;
-    await container.read(carePlanProvider(kelly).notifier).saveRoutine(const CarePlanItem(
-          id: '',
-          petId: kelly,
-          kind: CareKind.feeding,
-          title: 'Lunch',
-          time: TimeOfDay(hour: 13, minute: 0),
-        ));
+    await container
+        .read(carePlanProvider(kelly).notifier)
+        .saveRoutine(
+          const CarePlanItem(
+            id: '',
+            petId: kelly,
+            kind: CareKind.feeding,
+            title: 'Lunch',
+            time: TimeOfDay(hour: 13, minute: 0),
+          ),
+        );
     expect(h.scheduler.plans.length, greaterThan(before));
     expect(h.scheduler.last.items.map((i) => i.title), contains('Lunch'));
   });
@@ -189,13 +199,11 @@ void main() {
     container.listen(observationsProvider(kelly), (_, _) {});
     await container.read(observationsProvider(kelly).future);
 
-    await container.read(observationsProvider(kelly).notifier).save(Observation(
-          id: '',
-          petId: kelly,
-          category: Observation.weightCategory,
-          value: 22.6,
-          observedAt: fixedNow,
-        ));
+    await container
+        .read(observationsProvider(kelly).notifier)
+        .save(
+          Observation(id: '', petId: kelly, category: Observation.weightCategory, value: 22.6, observedAt: fixedNow),
+        );
 
     expect(weightEntries(container.read(observationsProvider(kelly)).value!).last.value, 22.6);
     expect(container.read(petsProvider).firstWhere((p) => p.id == kelly).weightKg, 22.6);

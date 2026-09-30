@@ -4,13 +4,13 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/empty_state.dart';
+import '../state/health_keeper.dart';
 
 /// Minimum size of anything tappable in Health.
 const kHealthTapTarget = 48.0;
 
 /// The line shown wherever the app offers to call or message someone.
-const kSafetyLine =
-    'Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.';
+const kSafetyLine = 'Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.';
 
 /// A section heading with an optional count pill and a trailing action.
 class HealthSectionTitle extends StatelessWidget {
@@ -41,7 +41,10 @@ class HealthSectionTitle extends StatelessWidget {
             const SizedBox(width: 8),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
-              decoration: const BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.all(Radius.circular(999))),
+              decoration: const BoxDecoration(
+                color: AppColors.yellow,
+                borderRadius: BorderRadius.all(Radius.circular(999)),
+              ),
               child: Text('$count', style: AppText.label.copyWith(fontWeight: FontWeight.w800)),
             ),
           ],
@@ -110,14 +113,23 @@ class HealthCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: onTap == null
           ? Padding(padding: padding, child: child)
-          : InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
+          : InkWell(
+              onTap: onTap,
+              child: Padding(padding: padding, child: child),
+            ),
     );
   }
 }
 
 /// A dashed-looking prompt card inviting the owner to add something.
 class HealthPromptCard extends StatelessWidget {
-  const HealthPromptCard({super.key, required this.icon, required this.title, required this.message, required this.onTap});
+  const HealthPromptCard({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String title;
@@ -367,15 +379,20 @@ class FormLabel extends StatelessWidget {
 /// A full page over the tab: coral header with a back arrow, then a
 /// scrolling body. Used by every Health form and detail page.
 class HealthPage extends StatelessWidget {
-  const HealthPage({super.key, required this.title, required this.child, this.actions = const []});
+  const HealthPage({super.key, required this.title, required this.child, this.actions = const [], this.petId});
 
   final String title;
   final List<Widget> actions;
   final Widget child;
 
+  /// The pet whose health data the page reads and changes. When set, that
+  /// data stays loaded and up to date for as long as the page is open,
+  /// wherever it was opened from.
+  final String? petId;
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final page = Scaffold(
       body: Column(
         children: [
           CoralHeader(title: title, showBack: true, actions: actions),
@@ -393,6 +410,8 @@ class HealthPage extends StatelessWidget {
         ],
       ),
     );
+    final id = petId;
+    return id == null ? page : HealthKeeper(petId: id, keep: HealthKeep.everything, child: page);
   }
 }
 
@@ -480,10 +499,14 @@ void showHealthSnack(BuildContext context, String message, {String? actionLabel,
   if (messenger == null) return;
   messenger
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(
-      content: Text(message),
-      action: actionLabel == null || onAction == null ? null : SnackBarAction(label: actionLabel, onPressed: onAction),
-    ));
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: actionLabel == null || onAction == null
+            ? null
+            : SnackBarAction(label: actionLabel, onPressed: onAction),
+      ),
+    );
 }
 
 /// The loading state of a section.
@@ -491,8 +514,10 @@ class HealthLoading extends StatelessWidget {
   const HealthLoading({super.key});
 
   @override
-  Widget build(BuildContext context) =>
-      const Padding(padding: EdgeInsets.symmetric(vertical: 48), child: Center(child: CircularProgressIndicator()));
+  Widget build(BuildContext context) => const Padding(
+    padding: EdgeInsets.symmetric(vertical: 48),
+    child: Center(child: CircularProgressIndicator()),
+  );
 }
 
 /// The "could not load" state of a section, with a retry button.
