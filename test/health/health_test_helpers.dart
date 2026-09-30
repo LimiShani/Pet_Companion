@@ -1,8 +1,9 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_riverpod/misc.dart' show Override, ProviderListenable;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
@@ -14,6 +15,7 @@ import 'package:pet_companion/features/health/data/reminder_scheduler.dart';
 import 'package:pet_companion/features/health/emergency/contact_launcher.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
@@ -168,4 +170,60 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
   await tester.tap(finder);
   await tester.pumpAndSettle();
+}
+
+/// Pumps [child] alone (in the app's theme, at phone size) on the fakes,
+/// signed in as the demo user (Alex) unless [signedIn] is false. For
+/// pieces that other tabs place, such as the emergency button.
+Future<HealthHarness> pumpHealthHost(
+  WidgetTester tester,
+  Widget child, {
+  HealthHarness? harness,
+  bool signedIn = true,
+  Size size = const Size(390, 844),
+}) async {
+  tester.view.physicalSize = size * 3;
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+
+  final h = harness ?? HealthHarness();
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: h._overrides(),
+      child: MaterialApp(
+        theme: AppTheme.light(),
+        home: Scaffold(body: SafeArea(child: SingleChildScrollView(child: child))),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  if (signedIn) {
+    // Not awaited: the fake's delays only elapse while the tester pumps.
+    unawaited(hostContainer(tester).read(authControllerProvider.notifier).signIn(
+          email: FakeAuthRepository.demoEmail,
+          password: FakeAuthRepository.demoPassword,
+        ));
+    await tester.pumpAndSettle();
+  }
+  return h;
+}
+
+/// The provider container of the widget tree under test.
+ProviderContainer hostContainer(WidgetTester tester) =>
+    ProviderScope.containerOf(tester.element(find.byType(MaterialApp)), listen: false);
+
+/// Runs [body] outside the test's fake clock and returns its result. Use
+/// it to ask the fake repository something directly: its (zero) delays
+/// never elapse inside a widget test otherwise.
+Future<T> real<T>(WidgetTester tester, Future<T> Function() body) async => (await tester.runAsync(body)) as T;
+
+/// Keeps [provider] alive, lets its loading finish and returns its state.
+Future<AsyncValue<T>> settled<T>(WidgetTester tester, ProviderListenable<AsyncValue<T>> provider) async {
+  final container = hostContainer(tester);
+  final sub = container.listen(provider, (_, _) {});
+  addTearDown(sub.close);
+  for (var i = 0; i < 3; i++) {
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  return sub.read();
 }

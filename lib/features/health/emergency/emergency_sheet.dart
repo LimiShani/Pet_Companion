@@ -9,6 +9,7 @@ import '../data/health_models.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'contact_actions.dart';
+import 'contact_launcher.dart';
 import 'emergency_card_screen.dart';
 import 'emergency_contacts.dart';
 import 'health_profile_form.dart';
