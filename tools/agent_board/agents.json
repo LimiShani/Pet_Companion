@@ -165,6 +165,10 @@
         {
           "id": "h14",
           "title": "Phase 1: migration 0006, Supabase repository, tests and report"
+        },
+        {
+          "id": "h15",
+          "title": "Hebrew: every Health text in the strings files, week setting, Hebrew PDFs, right-to-left layout, tests in both languages"
         }
       ]
     },
@@ -218,6 +222,10 @@
         {
           "id": "c11",
           "title": "Phase 1 tests, migration 0007, report"
+        },
+        {
+          "id": "c12",
+          "title": "Hebrew: every Community text in the strings files, guides in Hebrew, right-to-left layout, tests in both languages"
         }
       ]
     },
