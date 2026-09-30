@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pet_companion/app.dart';
-import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/auth/widgets/language_pill.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
@@ -34,12 +31,6 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.pump(const Duration(milliseconds: 400));
   await tester.pumpAndSettle();
-}
-
-/// Whether the row of [language] in the language list is the marked one.
-bool _isChosen(WidgetTester tester, AppLanguage language) {
-  final row = find.descendant(of: find.byKey(LanguageChoice.keyOf(language)), matching: find.byType(Semantics));
-  return tester.widget<Semantics>(row.first).properties.selected ?? false;
 }
 
 Future<void> _openAccountSheet(WidgetTester tester) async {
@@ -299,12 +290,12 @@ void main() {
       expect(find.text('האכלה'), findsOneWidget);
 
       await _openAccountSheet(tester);
-      expect(find.text('שפה'), findsOneWidget);
+      expect(find.text('הגדרות'), findsOneWidget);
     });
   });
 
   group('the account sheet in Hebrew', () {
-    testWidgets('shows the account, the language and sign-out', (tester) async {
+    testWidgets('shows the account, the way to Settings and sign-out', (tester) async {
       await pumpApp(tester, language: AppLanguage.hebrew);
       await signInAsDemo(tester);
       await _settle(tester);
@@ -314,11 +305,11 @@ void main() {
       final email = find.text(FakeAuthRepository.demoEmail);
       expect(email, findsOneWidget);
       expect(tester.widget<Text>(email).textDirection, TextDirection.ltr);
-      expect(find.text('שפה'), findsOneWidget);
-      expect(find.text('עברית'), findsOneWidget);
-      expect(find.text('English'), findsOneWidget);
-      expect(find.text('בהרצה'), findsOneWidget);
+      expect(find.text('הגדרות'), findsOneWidget);
+      expect(find.text('שפה, שבוע'), findsOneWidget);
       expect(find.text('יציאה מהחשבון'), findsOneWidget);
+      // The language list itself is on the Settings page (test/settings/).
+      expect(find.byType(LanguageChoice), findsNothing);
 
       // The sign-out arrow is mirrored here, and only here.
       final arrow = find.byType(MirroredIcon);
@@ -363,89 +354,6 @@ void main() {
       expect(find.text('limor@example.com'), findsOneWidget);
     });
 
-    testWidgets('the account sheet switches the whole app, and the choice survives a restart', (tester) async {
-      final store = MemorySettingsStore();
-      await pumpApp(tester, settings: store);
-      await signInAsDemo(tester);
-      await _settle(tester);
-      expect(find.text('Feeding'), findsOneWidget);
-
-      await _openAccountSheet(tester);
-      expect(find.text('Language'), findsOneWidget);
-      // No choice was made yet: the app is on English.
-      expect(_isChosen(tester, AppLanguage.english), isTrue);
-      expect(_isChosen(tester, AppLanguage.hebrew), isFalse);
-
-      await tester.tap(find.byKey(LanguageChoice.keyOf(AppLanguage.hebrew)));
-      await _settle(tester);
-
-      // The sheet is still open, now in Hebrew, over a Hebrew dashboard.
-      expect(find.text('שפה'), findsOneWidget);
-      expect(find.text('Language'), findsNothing);
-      expect(find.text('האכלה'), findsOneWidget);
-      expect(find.text('Feeding'), findsNothing);
-      expect(_isChosen(tester, AppLanguage.hebrew), isTrue);
-      expect(store.values, {languageSettingKey: 'he'});
-
-      // Close the app and open it again with the same saved choices.
-      await pumpApp(tester, settings: store);
-      expect(find.text('טוב לראות אותך שוב'), findsOneWidget);
-      expect(find.text('Welcome back'), findsNothing);
-
-      // And back to English from inside the app.
-      await signInAsDemo(tester);
-      await _settle(tester);
-      await _openAccountSheet(tester);
-      await tester.tap(find.byKey(LanguageChoice.keyOf(AppLanguage.english)));
-      await _settle(tester);
-      expect(find.text('Feeding'), findsOneWidget);
-      expect(store.values, {languageSettingKey: 'en'});
-    });
-
-    testWidgets('once Hebrew follows the phone, a Hebrew phone starts in Hebrew and may choose otherwise', (
-      tester,
-    ) async {
-      tester.platformDispatcher.localesTestValue = const [Locale('he', 'IL')];
-      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
-      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
-      tester.view.devicePixelRatio = 3;
-      addTearDown(tester.view.reset);
-      final store = MemorySettingsStore();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
-            settingsStoreProvider.overrideWithValue(store),
-            hebrewFollowsDeviceProvider.overrideWithValue(true),
-          ],
-          child: const PetCompanionApp(),
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(find.text('טוב לראות אותך שוב'), findsOneWidget);
-
-      await signInAsDemo(tester);
-      await _settle(tester);
-      await _openAccountSheet(tester);
-
-      // Three choices now, and no "preview" tag.
-      expect(find.text('לפי שפת המכשיר'), findsOneWidget);
-      expect(find.text(_he.languageFollowPhoneNow('עברית')), findsOneWidget);
-      expect(find.text('בהרצה'), findsNothing);
-
-      await tester.tap(find.byKey(LanguageChoice.keyOf(AppLanguage.english)));
-      await _settle(tester);
-      expect(find.text('Follow the phone'), findsOneWidget);
-      expect(find.text('Feeding'), findsOneWidget);
-      expect(store.values, {languageSettingKey: 'en'});
-
-      await tester.tap(find.byKey(LanguageChoice.keyOf(AppLanguage.system)));
-      await _settle(tester);
-      expect(find.text('האכלה'), findsOneWidget);
-      expect(store.values, isEmpty);
-    });
-
     testWidgets('today a Hebrew phone that made no choice still starts in English', (tester) async {
       tester.platformDispatcher.localesTestValue = const [Locale('he', 'IL')];
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
@@ -487,7 +395,7 @@ void main() {
           expect(find.text(l10n.homeFeeding), findsOneWidget);
 
           await _openAccountSheet(tester);
-          expect(find.text(l10n.accountLanguage), findsOneWidget);
+          expect(find.text(l10n.settingsTitle), findsOneWidget);
           await tester.ensureVisible(find.text(l10n.accountSignOut));
           await tester.pumpAndSettle();
           expect(find.text(l10n.accountSignOut), findsOneWidget);
