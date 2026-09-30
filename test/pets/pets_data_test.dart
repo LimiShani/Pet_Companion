@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import 'package:pet_companion/features/pets/data/pets_repository.dart';
 import 'package:pet_companion/features/pets/data/supabase_pets_repository.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'pets_test_helpers.dart';
 
@@ -221,6 +224,92 @@ void main() {
 
     test('a species this version does not know reads as "other"', () {
       expect(petFromRow({'id': 'x', 'name': 'Rex', 'species': 'dragon'}).species, PetSpecies.other);
+    });
+  });
+
+  group('the Supabase backend', () {
+    test('weights are sent to the gram, so a 35 g bird is not rounded away', () {
+      expect(petToRow('o', const Pet(id: 'id', name: 'Kiwi', weightKg: 0.0351234))['weight_kg'], 0.035);
+      expect(petToRow('o', const Pet(id: 'id', name: 'Rex', weightKg: 23.4567))['weight_kg'], 23.457);
+    });
+
+    test('failures are reported in plain words, never as raw errors', () {
+      String message(Object error, {String doing = 'save your pet'}) =>
+          petsExceptionFor(error, doing: doing).message;
+
+      expect(
+        message(const sb.PostgrestException(message: 'new row violates row-level security policy', code: '42501')),
+        'You can only change your own pets. Please sign in again.',
+      );
+      expect(
+        message(const sb.PostgrestException(message: 'violates check constraint "pets_sex_check"', code: '23514')),
+        'Some of that information is not valid. Please check it and try again.',
+      );
+      expect(
+        message(const sb.PostgrestException(message: 'column pets.icon_key does not exist', code: '42703')),
+        'The database is not up to date for pets yet (migration 0005 has not been run).',
+      );
+      expect(
+        message(const sb.PostgrestException(message: "Could not find the 'sex' column", code: 'PGRST204')),
+        'The database is not up to date for pets yet (migration 0005 has not been run).',
+      );
+      expect(message(const sb.PostgrestException(message: 'JWT expired', code: 'PGRST301')), 'Please sign in again.');
+      expect(
+        message(const sb.PostgrestException(message: 'boom', code: 'XX000'), doing: 'load your pets'),
+        'Could not load your pets. Please try again.',
+      );
+      expect(
+        message(const sb.StorageException('The object exceeded the maximum allowed size', statusCode: '413')),
+        'That photo is too large.',
+      );
+      expect(
+        message(const sb.StorageException('mime type image/gif is not supported')),
+        'That kind of picture is not supported.',
+      );
+      expect(message(const sb.StorageException('Object not found')), 'That photo is no longer available.');
+      expect(
+        message(const sb.StorageException('nope', statusCode: '500'), doing: 'save the photo'),
+        'Could not save the photo. Please try again.',
+      );
+      expect(message(const sb.AuthException('session missing')), 'Please sign in again.');
+      expect(
+        message(TimeoutException('slow')),
+        'Cannot reach the server. Check your connection and try again.',
+      );
+      expect(
+        message(Exception('SocketException: Failed host lookup')),
+        'Cannot reach the server. Check your connection and try again.',
+      );
+      expect(message(StateError('odd')), 'Something went wrong. Please try again.');
+      expect(message(const PetsException('Already in words.')), 'Already in words.');
+    });
+
+    test('migration 0005 only adds: nothing is dropped, and row level security is stated', () {
+      final sql = File('supabase/migrations/0005_pets.sql').readAsStringSync().toLowerCase();
+      for (final column in ['sex', 'neutered', 'birth_date_approx', 'icon_key', 'archived_at', 'reminder_snoozed_until']) {
+        expect(sql, contains('add column if not exists $column '), reason: column);
+      }
+      expect(sql, contains('alter column weight_kg type numeric(7, 3)'));
+      expect(sql, contains('enable row level security'));
+      expect(sql, contains('create policy "pets: owner has full access"'));
+      expect(sql, contains('with check (auth.uid() = owner_id)'));
+      expect(sql, isNot(contains('drop table')));
+      expect(sql, isNot(contains('drop column')));
+      expect(sql, isNot(contains('delete from')));
+      expect(sql, isNot(contains('truncate')));
+      // Every statement that would fail on a second run is guarded.
+      expect(RegExp(r'add constraint (\w+)').allMatches(sql).length,
+          RegExp(r'drop constraint if exists (\w+)').allMatches(sql).length);
+      expect(sql, contains('drop policy if exists "pets: owner has full access"'));
+    });
+
+    test('every column the app writes exists after 0001 and 0005', () {
+      final schema = '${File('supabase/migrations/0001_profiles_and_pets.sql').readAsStringSync()}\n'
+          '${File('supabase/migrations/0005_pets.sql').readAsStringSync()}';
+      final row = petToRow('owner', const Pet(id: 'id', name: 'Soya'));
+      for (final column in row.keys) {
+        expect(RegExp('\\b$column\\b').hasMatch(schema), isTrue, reason: 'column $column');
+      }
     });
   });
 

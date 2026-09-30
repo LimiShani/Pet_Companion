@@ -21,20 +21,20 @@ class SupabasePetsRepository implements PetsRepository {
 
   /// How long a link to a photo stays valid. The photo itself is cached on
   /// the phone under its path, so a new link is only needed once per launch.
-  static const _signedUrlSeconds = 60 * 60;
+  static const _signedUrlSeconds = 24 * 60 * 60;
 
   // Real accounts always fetch: there is nothing to show before that.
   @override
   List<Pet>? cachedPets(String? ownerId) => ownerId == null ? const [] : null;
 
   @override
-  Future<List<Pet>> fetchPets(String ownerId) => _guard(() async {
+  Future<List<Pet>> fetchPets(String ownerId) => _guard('load your pets', () async {
         final rows = await _client.from(_table).select().eq('owner_id', ownerId).order('created_at');
         return [for (final row in rows) petFromRow(row)];
       });
 
   @override
-  Future<Pet> savePet(String ownerId, Pet pet) => _guard(() async {
+  Future<Pet> savePet(String ownerId, Pet pet) => _guard('save your pet', () async {
         final row = await _client.from(_table).upsert(petToRow(ownerId, pet)).select().single();
         // Today's feeding, activity and health events are not stored in
         // this table: keep what the app had.
@@ -51,7 +51,7 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<void> deletePet(String ownerId, Pet pet) => _guard(() async {
+  Future<void> deletePet(String ownerId, Pet pet) => _guard('delete your pet', () async {
         // Files first: once the row is gone nothing points at them any more.
         final folder = '$ownerId/${pet.id}';
         final files = await _client.storage.from(photoBucket).list(path: folder);
@@ -62,7 +62,7 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<String> uploadPhoto(String ownerId, String petId, Uint8List jpeg) => _guard(() async {
+  Future<String> uploadPhoto(String ownerId, String petId, Uint8List jpeg) => _guard('save the photo', () async {
         // A new name for every photo, so a cached older one is never shown.
         final path = '$ownerId/$petId/avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
         await _client.storage.from(photoBucket).uploadBinary(
@@ -74,63 +74,69 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<void> deletePhoto(String path) => _guard(() async {
+  Future<void> deletePhoto(String path) => _guard('remove the photo', () async {
         await _client.storage.from(photoBucket).remove([path]);
       });
 
   @override
-  Future<PetPhotoData> loadPhoto(String path) => _guard(() async {
+  Future<PetPhotoData> loadPhoto(String path) => _guard('load the photo', () async {
         final url = await _client.storage.from(photoBucket).createSignedUrl(path, _signedUrlSeconds);
         return PetPhotoData.url(Uri.parse(url));
       });
 
   /// Runs [action], turning backend failures into a [PetsException] with
-  /// copy that fits the app's tone.
-  Future<T> _guard<T>(Future<T> Function() action) async {
+  /// copy that fits the app's tone. [doing] finishes "Could not …".
+  Future<T> _guard<T>(String doing, Future<T> Function() action) async {
     try {
-      return await action();
-    } on PetsException {
-      rethrow;
-    } on sb.PostgrestException catch (e) {
-      throw PetsException(_postgrestMessage(e));
-    } on sb.StorageException catch (e) {
-      throw PetsException(_storageMessage(e));
-    } on sb.AuthException {
-      throw const PetsException('Please sign in again.');
-    } on TimeoutException {
-      throw const PetsException(_offline);
+      return await action().timeout(_timeout);
     } catch (e) {
-      final text = e.toString().toLowerCase();
-      if (text.contains('socket') || text.contains('failed host lookup') || text.contains('network')) {
-        throw const PetsException(_offline);
-      }
-      throw const PetsException('Something went wrong. Please try again.');
+      throw petsExceptionFor(e, doing: doing);
     }
   }
 
-  static const _offline = 'Cannot reach the server. Check your connection and try again.';
+  static const _timeout = Duration(seconds: 25);
+}
 
-  static String _postgrestMessage(sb.PostgrestException e) {
-    final code = e.code ?? '';
-    final message = e.message.toLowerCase();
+const _offline = 'Cannot reach the server. Check your connection and try again.';
+
+/// What to tell the owner when the backend failed while [doing] something
+/// ("save your pet", "load your pets"): plain words, never a raw error.
+PetsException petsExceptionFor(Object error, {String doing = 'save your pet'}) {
+  if (error is PetsException) return error;
+  if (error is sb.PostgrestException) {
+    final code = error.code ?? '';
+    final message = error.message.toLowerCase();
     if (code == '42501' || message.contains('row-level security')) {
-      return 'You can only change your own pets. Please sign in again.';
+      return const PetsException('You can only change your own pets. Please sign in again.');
     }
-    if (code == '23514') return 'Some of that information is not valid. Please check it and try again.';
+    if (code == '23514') {
+      return const PetsException('Some of that information is not valid. Please check it and try again.');
+    }
     if (code == '42703' || code == 'PGRST204') {
-      return 'The database is not up to date for pets yet (migration 0005 has not been run).';
+      return const PetsException('The database is not up to date for pets yet (migration 0005 has not been run).');
     }
-    if (code == 'PGRST301' || message.contains('jwt')) return 'Please sign in again.';
-    return 'Could not save your pet. Please try again.';
+    if (code == 'PGRST301' || message.contains('jwt')) return const PetsException('Please sign in again.');
+    return PetsException('Could not $doing. Please try again.');
   }
-
-  static String _storageMessage(sb.StorageException e) {
-    final message = e.message.toLowerCase();
-    if (message.contains('size') || e.statusCode == '413') return 'That photo is too large.';
-    if (message.contains('mime') || message.contains('type')) return 'That kind of picture is not supported.';
-    if (message.contains('not found')) return 'That photo is no longer available.';
-    return 'Could not save the photo. Please try again.';
+  if (error is sb.StorageException) {
+    final message = error.message.toLowerCase();
+    if (message.contains('size') || message.contains('too large') || error.statusCode == '413') {
+      return const PetsException('That photo is too large.');
+    }
+    if (message.contains('mime')) return const PetsException('That kind of picture is not supported.');
+    if (message.contains('not found')) return const PetsException('That photo is no longer available.');
+    if (message.contains('row-level security') || error.statusCode == '403') {
+      return const PetsException('You can only change your own pets. Please sign in again.');
+    }
+    return PetsException('Could not $doing. Please try again.');
   }
+  if (error is sb.AuthException) return const PetsException('Please sign in again.');
+  if (error is TimeoutException) return const PetsException(_offline);
+  final text = error.toString().toLowerCase();
+  if (text.contains('socket') || text.contains('failed host lookup') || text.contains('network')) {
+    return const PetsException(_offline);
+  }
+  return const PetsException('Something went wrong. Please try again.');
 }
 
 /// A `pets` row as a [Pet].
@@ -170,7 +176,8 @@ Map<String, dynamic> petToRow(String ownerId, Pet pet) {
         ? null
         : '${birth.year.toString().padLeft(4, '0')}-${birth.month.toString().padLeft(2, '0')}-${birth.day.toString().padLeft(2, '0')}',
     'birth_date_approx': birth != null && pet.birthDateApprox,
-    'weight_kg': pet.weightKg,
+    // To the gram: the column is numeric(7, 3).
+    'weight_kg': pet.weightKg == null ? null : (pet.weightKg! * 1000).round() / 1000,
     'sex': pet.sex?.name,
     'neutered': pet.neutered?.name,
     'photo_path': pet.photoPath,
