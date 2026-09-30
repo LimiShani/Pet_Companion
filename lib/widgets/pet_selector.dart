@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/pets/widgets/pet_avatar.dart';
+import '../models/pet.dart';
 import '../state/pets_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
@@ -19,7 +21,9 @@ class PetSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pets = ref.watch(petsProvider);
-    final selectedId = ref.watch(selectedPetIdProvider);
+    // The selected pet rather than the stored id, which can be stale (the
+    // pet was archived) or not set yet (the pets arrived after sign-in).
+    final selectedId = ref.watch(selectedPetProvider.select((pet) => pet.id));
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -27,7 +31,7 @@ class PetSelector extends ConsumerWidget {
         children: [
           for (final pet in pets) ...[
             _PetPill(
-              name: pet.name,
+              pet: pet,
               selected: pet.id == selectedId,
               onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
             ),
@@ -41,9 +45,9 @@ class PetSelector extends ConsumerWidget {
 }
 
 class _PetPill extends StatelessWidget {
-  const _PetPill({required this.name, required this.selected, required this.onTap});
+  const _PetPill({required this.pet, required this.selected, required this.onTap});
 
-  final String name;
+  final Pet pet;
   final bool selected;
   final VoidCallback onTap;
 
@@ -66,17 +70,10 @@ class _PetPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected ? AppColors.coral : AppColors.white.withValues(alpha: 0.55),
-                    border: selected ? Border.all(color: AppColors.white, width: 2) : null,
-                  ),
-                ),
+                // The pet's photo or icon (decorative here: the name follows).
+                ExcludeSemantics(child: PetAvatar(pet: pet, size: 22)),
                 const SizedBox(width: 8),
-                Text(name, style: AppText.cardTitle.copyWith(color: fg)),
+                Text(pet.name, style: AppText.cardTitle.copyWith(color: fg)),
               ],
             ),
           ),
