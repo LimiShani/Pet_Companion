@@ -296,7 +296,9 @@ class HealthProfile {
     required this.petId,
     this.microchip = '',
     this.allergies = const [],
+    this.allergiesNoneKnown = false,
     this.conditions = const [],
+    this.conditionsNoneKnown = false,
     this.contactName = '',
     this.contactPhone = '',
     this.notes = '',
@@ -307,7 +309,11 @@ class HealthProfile {
   final String petId;
   final String microchip;
   final List<String> allergies;
+
+  /// The owner answered "none known": an answer, not a gap.
+  final bool allergiesNoneKnown;
   final List<String> conditions;
+  final bool conditionsNoneKnown;
 
   /// The emergency contact person.
   final String contactName;
@@ -318,12 +324,19 @@ class HealthProfile {
 
   bool get hasContact => contactName.trim().isNotEmpty || contactPhone.trim().isNotEmpty;
 
+  /// Whether the owner has said anything about allergies: a list, or
+  /// "none known".
+  bool get allergiesAnswered => allergies.isNotEmpty || allergiesNoneKnown;
+  bool get conditionsAnswered => conditions.isNotEmpty || conditionsNoneKnown;
+
   String? vetId(VetRole role) => role == VetRole.regular ? regularVetId : emergencyVetId;
 
   HealthProfile copyWith({
     String? microchip,
     List<String>? allergies,
+    bool? allergiesNoneKnown,
     List<String>? conditions,
+    bool? conditionsNoneKnown,
     String? contactName,
     String? contactPhone,
     String? notes,
@@ -332,7 +345,9 @@ class HealthProfile {
       petId: petId,
       microchip: microchip ?? this.microchip,
       allergies: allergies ?? this.allergies,
+      allergiesNoneKnown: allergiesNoneKnown ?? this.allergiesNoneKnown,
       conditions: conditions ?? this.conditions,
+      conditionsNoneKnown: conditionsNoneKnown ?? this.conditionsNoneKnown,
       contactName: contactName ?? this.contactName,
       contactPhone: contactPhone ?? this.contactPhone,
       notes: notes ?? this.notes,
@@ -346,7 +361,9 @@ class HealthProfile {
         petId: petId,
         microchip: microchip,
         allergies: allergies,
+        allergiesNoneKnown: allergiesNoneKnown,
         conditions: conditions,
+        conditionsNoneKnown: conditionsNoneKnown,
         contactName: contactName,
         contactPhone: contactPhone,
         notes: notes,
