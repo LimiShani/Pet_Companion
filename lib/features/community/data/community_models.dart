@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import 'audience.dart';
+
 /// Thrown by the community repositories with a message safe to show to the
 /// user.
 class CommunityException implements Exception {
@@ -157,12 +159,20 @@ enum ReportReason {
 
 /// A topic room in the Chat section.
 class ChatChannel {
-  const ChatChannel({required this.id, required this.name, required this.description});
+  const ChatChannel({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.audience = Audience.everyone,
+  });
 
   /// A stable slug such as `general` or `puppies`.
   final String id;
   final String name;
   final String description;
+
+  /// Which animal's owners the room is for.
+  final Audience audience;
 }
 
 /// One message in a [ChatChannel].

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/app_user.dart';
+import 'audience.dart';
 import 'chat_repository.dart';
 import 'community_models.dart';
 import 'supabase_community_support.dart';
@@ -21,9 +22,12 @@ class SupabaseChatRepository implements ChatRepository {
 
   @override
   Future<List<ChatChannel>> fetchChannels() => guardCommunity(() async {
+        // All columns rather than a list: `audience` arrives with
+        // 0007_community_phase1.sql, and rooms must still load before it
+        // is run (every room then counts as shared).
         final rows = await _client
             .from('chat_channels')
-            .select('id, name, description')
+            .select()
             .order('sort_order', ascending: true)
             .order('name', ascending: true);
         return [
@@ -32,6 +36,7 @@ class SupabaseChatRepository implements ChatRepository {
               id: row['id'] as String,
               name: row['name'] as String,
               description: row['description'] as String? ?? '',
+              audience: Audience.fromKey(row['audience'] as String?),
             ),
         ];
       });

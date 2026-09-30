@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../../auth/app_user.dart';
+import 'audience.dart';
 import 'chat_repository.dart';
 import 'community_models.dart';
 
@@ -16,12 +17,52 @@ class FakeChatRepository implements ChatRepository {
     if (seeded) _seed();
   }
 
-  /// The channels the app ships with (the migration seeds the same ones).
+  /// The channels the app ships with, in display order (the migrations
+  /// seed the same ones): shared rooms first and last, dogs, then cats.
   static const defaultChannels = [
     ChatChannel(id: 'general', name: 'General', description: 'Say hello and share your day'),
-    ChatChannel(id: 'puppies', name: 'Puppies', description: 'First weeks, teething and sleep'),
-    ChatChannel(id: 'training', name: 'Training tips', description: 'What works, one small step at a time'),
-    ChatChannel(id: 'seniors', name: 'Senior dogs', description: 'Comfort and care for older friends'),
+    ChatChannel(
+      id: 'puppies',
+      name: 'Puppies',
+      description: 'First weeks, teething and sleep',
+      audience: Audience.dogs,
+    ),
+    ChatChannel(
+      id: 'training',
+      name: 'Training tips',
+      description: 'What works, one small step at a time',
+      audience: Audience.dogs,
+    ),
+    ChatChannel(
+      id: 'seniors',
+      name: 'Senior dogs',
+      description: 'Comfort and care for older friends',
+      audience: Audience.dogs,
+    ),
+    ChatChannel(
+      id: 'kittens',
+      name: 'Kittens',
+      description: 'First weeks, litter habits and play',
+      audience: Audience.cats,
+    ),
+    ChatChannel(
+      id: 'cat-litter',
+      name: 'Litter and cleaning',
+      description: 'Litter, smell and how many boxes',
+      audience: Audience.cats,
+    ),
+    ChatChannel(
+      id: 'cat-behaviour',
+      name: 'Cat behaviour and play',
+      description: 'Scratching, night-time energy, a second cat',
+      audience: Audience.cats,
+    ),
+    ChatChannel(
+      id: 'senior-cats',
+      name: 'Senior cats',
+      description: 'Comfort and care for older cats',
+      audience: Audience.cats,
+    ),
     ChatChannel(id: 'health', name: 'Health questions', description: 'Ask other owners. For anything urgent, call your vet'),
   ];
 
@@ -147,6 +188,17 @@ class FakeChatRepository implements ChatRepository {
     say('training', 'u-jonas', 'Jonas', const Duration(days: 1), 'Same here: five minutes before dinner, every day.');
 
     say('seniors', 'u-noa', 'Noa', const Duration(days: 2), 'A ramp for the car was the best thing we bought this year.');
+
+    say('kittens', 'u-dana', 'Dana', const Duration(hours: 7), 'Ten weeks old and she has discovered the curtains. Any tips?');
+    say('kittens', 'u-omer', 'Omer', const Duration(hours: 6, minutes: 40), 'A tall scratching post next to them saved ours. And lots of play before bed.');
+
+    say('cat-litter', 'u-dana', 'Dana', const Duration(hours: 4), 'Two cats, one covered box, and the smell is getting to us. What worked for you?');
+    say('cat-litter', 'u-omer', 'Omer', const Duration(hours: 3, minutes: 30), 'A second box in another room made the biggest difference for us.');
+
+    say('cat-behaviour', 'u-noa', 'Noa', const Duration(days: 1, hours: 5), 'Shoko does laps of the flat at four in the morning. Please tell me this passes.');
+    say('cat-behaviour', 'u-dana', 'Dana', const Duration(days: 1, hours: 4), 'It got much better for us with a long play session before the last meal.');
+
+    say('senior-cats', 'u-omer', 'Omer', const Duration(days: 3), 'Low-sided litter box for our sixteen year old. She uses it happily again.');
 
     say('health', 'u-sam', 'Sam', const Duration(hours: 9), 'How often do you all brush teeth? We manage about three times a week.');
     say('health', 'u-maya', 'Maya', const Duration(hours: 8), 'Our vet suggested daily if the dog accepts it. We are building up slowly.');

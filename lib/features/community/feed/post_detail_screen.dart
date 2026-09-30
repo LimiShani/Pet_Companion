@@ -9,7 +9,9 @@ import '../../../widgets/empty_state.dart';
 import '../community_time.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
+import '../widgets/advice_notice.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
@@ -87,6 +89,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     padding: const EdgeInsets.fromLTRB(4, 18, 4, 8),
                     child: Text('Comments', style: AppText.label.copyWith(color: AppColors.brown, fontSize: 13)),
                   ),
+                  const AdviceNotice(),
+                  const SizedBox(height: 10),
                   _Comments(postId: post.id),
                 ],
               ),
@@ -199,7 +203,7 @@ class _CommentRow extends StatelessWidget {
                   style: AppText.label.copyWith(color: AppColors.brown),
                 ),
                 const SizedBox(height: 2),
-                Text(comment.text, style: AppText.body.copyWith(height: 1.4)),
+                AutoDirectionText(comment.text, style: AppText.body.copyWith(height: 1.4)),
               ],
             ),
           ),

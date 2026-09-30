@@ -217,9 +217,9 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                             ),
                           ),
                         ),
-                        Positioned(
+                        PositionedDirectional(
                           top: 8,
-                          right: 8,
+                          end: 8,
                           child: IconButton.filled(
                             onPressed: () => setState(() => _photo = null),
                             tooltip: 'Remove photo',

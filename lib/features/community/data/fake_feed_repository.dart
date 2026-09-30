@@ -205,6 +205,19 @@ class FakeFeedRepository implements FeedRepository {
         otherLikes: 9,
       ),
       post(
+        authorId: 'u-dana',
+        authorName: 'Dana',
+        petName: 'Luli',
+        ago: const Duration(hours: 9),
+        text: 'Luli finally scratched the new post instead of the sofa. All it took was moving the post '
+            'right next to the sofa.',
+        photo: const PlaceholderPostPhoto(Color(0xFFFFD98B), icon: Icons.pets_rounded),
+        otherLikes: 12,
+        comments: [
+          ('u-noa', 'Noa', Duration(hours: 8), 'Same trick worked on Shoko. Cats and their rules.'),
+        ],
+      ),
+      post(
         authorId: 'u-priya',
         authorName: 'Priya',
         ago: const Duration(hours: 22),

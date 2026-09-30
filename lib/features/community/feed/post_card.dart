@@ -8,6 +8,7 @@ import '../community_time.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
 import 'post_actions.dart';
 
@@ -91,7 +92,7 @@ class PostCard extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: Text(post.text, style: AppText.body.copyWith(fontSize: 15, height: 1.45)),
+                child: AutoDirectionText(post.text, style: AppText.body.copyWith(fontSize: 15, height: 1.45)),
               ),
               if (post.photo != null)
                 Padding(
