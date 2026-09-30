@@ -6,10 +6,10 @@ import '../auth/auth_controller.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
 import '../features/auth/splash_screen.dart';
-import '../features/community/community_screen.dart';
-import '../features/health/health_screen.dart';
+import '../features/community/community_routes.dart';
+import '../features/health/health_routes.dart';
 import '../features/home/home_screen.dart';
-import '../features/store/store_screen.dart';
+import '../features/store/store_routes.dart';
 import '../widgets/app_bottom_nav.dart';
 
 abstract final class AppRoutes {
@@ -17,9 +17,9 @@ abstract final class AppRoutes {
   static const login = '/login';
   static const signUp = '/signup';
   static const home = '/home';
-  static const health = '/health';
-  static const community = '/community';
-  static const store = '/store';
+  static const health = HealthRoutes.root;
+  static const community = CommunityRoutes.root;
+  static const store = StoreRoutes.root;
 
   static const _public = {login, signUp};
   static bool isPublic(String location) => _public.contains(location);
@@ -46,15 +46,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(routes: [
             GoRoute(path: AppRoutes.home, builder: (context, state) => const HomeScreen()),
           ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: AppRoutes.health, builder: (context, state) => const HealthScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: AppRoutes.community, builder: (context, state) => const CommunityScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: AppRoutes.store, builder: (context, state) => const StoreScreen()),
-          ]),
+          // Each feature owns its branch's routes (see <feature>_routes.dart).
+          StatefulShellBranch(routes: healthRoutes),
+          StatefulShellBranch(routes: communityRoutes),
+          StatefulShellBranch(routes: storeRoutes),
         ],
       ),
     ],

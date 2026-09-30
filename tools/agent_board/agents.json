@@ -1,0 +1,70 @@
+{
+  "project": "Pet Companion",
+  "mainBranch": "main",
+  "lead": {
+    "id": "lead",
+    "name": "Lead",
+    "scope": "Shared foundation, coordination, integration and release of the agents' work.",
+    "milestones": [
+      { "id": "l1", "title": "Shared foundation: conventions, route files, shared widgets, theme, packages" },
+      { "id": "l2", "title": "Control board and agent worktrees" },
+      { "id": "l3", "title": "Review each agent's branch as it lands" },
+      { "id": "l4", "title": "Merge the three branches into main, resolve conflicts, full test run" },
+      { "id": "l5", "title": "Owner applies migrations 0002-0004 in the Supabase SQL editor" },
+      { "id": "l6", "title": "Visual check of every tab in the browser preview" }
+    ]
+  },
+  "agents": [
+    {
+      "id": "health",
+      "name": "Health agent",
+      "scope": "Per-pet medical and history log, weight tracking, and care tasks with reminders (feeding, medicine).",
+      "branch": "feature/health",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/health",
+      "milestones": [
+        { "id": "h1", "title": "Setup: read AGENTS.md, pub get, baseline analyze and tests green" },
+        { "id": "h2", "title": "Models, HealthRepository interface and seeded in-memory fake" },
+        { "id": "h3", "title": "Health tab: pet switcher, upcoming and history timeline" },
+        { "id": "h4", "title": "Add, edit and delete a health record (medicine, vet visit, vaccination, note)" },
+        { "id": "h5", "title": "Weight tracking: log a weight, trend view" },
+        { "id": "h6", "title": "Care tasks and reminders: feeding and medicine schedules, today's checklist" },
+        { "id": "h7", "title": "Supabase repositories and migration 0002_health.sql with RLS" },
+        { "id": "h8", "title": "Widget tests, analyzer clean, final report" }
+      ]
+    },
+    {
+      "id": "community",
+      "name": "Community agent",
+      "scope": "Social hub: photo feed with likes and comments, chat channels, and a guides library on raising and training.",
+      "branch": "feature/community",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/community",
+      "milestones": [
+        { "id": "c1", "title": "Setup: read AGENTS.md, pub get, baseline analyze and tests green" },
+        { "id": "c2", "title": "Models, CommunityRepository interface and seeded in-memory fake" },
+        { "id": "c3", "title": "Community tab shell: Feed, Chat and Guides sections" },
+        { "id": "c4", "title": "Feed: posts with pet photos, likes, comments, new post with photo" },
+        { "id": "c5", "title": "Chat: channel list and live conversation" },
+        { "id": "c6", "title": "Guides: categories, article list, reader, original starter guides" },
+        { "id": "c7", "title": "Supabase repositories and migration 0003_community.sql with RLS, storage, realtime" },
+        { "id": "c8", "title": "Widget tests, analyzer clean, final report" }
+      ]
+    },
+    {
+      "id": "store",
+      "name": "Store agent",
+      "scope": "Marketplace of bargain pet products: browse, search and filter deals, save favourites, share a deal.",
+      "branch": "feature/store",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/store",
+      "milestones": [
+        { "id": "s1", "title": "Setup: read AGENTS.md, pub get, baseline analyze and tests green" },
+        { "id": "s2", "title": "Models, StoreRepository interface and seeded in-memory fake" },
+        { "id": "s3", "title": "Store tab: categories, search, sort, deal grid" },
+        { "id": "s4", "title": "Deal detail: prices, discount, description, open the offer" },
+        { "id": "s5", "title": "Saved deals (favourites)" },
+        { "id": "s6", "title": "Share a deal and report an expired one" },
+        { "id": "s7", "title": "Supabase repositories and migration 0004_store.sql with RLS" },
+        { "id": "s8", "title": "Widget tests, analyzer clean, final report" }
+      ]
+    }
+  ]
+}

@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Pet Companion uses your photo library so you can add pictures of your pets.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Pet Companion uses the camera so you can take pictures of your pets.</string>
 </dict>
 </plist>

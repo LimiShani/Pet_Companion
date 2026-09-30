@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Control Board</title>
+<style>
+  :root {
+    --bg: #fff7e1; --surface: #ffffff; --surface-2: #fffbf0;
+    --ink: #4a3518; --muted: #75562e; --border: #e7d9b5;
+    --header: #ec6a48; --on-header: #ffffff;
+    --accent: #c4502f; --track: #f3e6c4;
+    --good: #2b7a4b; --warn: #9a5b00; --crit: #b3261e; --idle: #75562e;
+    --good-bg: #e3f3e6; --warn-bg: #fdeecb; --crit-bg: #fbe3e0; --idle-bg: #f3e6c4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1610; --surface: #281f17; --surface-2: #30261c;
+      --ink: #f3e7cf; --muted: #cdb98f; --border: #4a3d2c;
+      --header: #a8421f; --on-header: #ffffff;
+      --accent: #f2906f; --track: #3c3024;
+      --good: #7fd6a0; --warn: #f2b84b; --crit: #f59b92; --idle: #cdb98f;
+      --good-bg: #1f3a2a; --warn-bg: #40300f; --crit-bg: #47211d; --idle-bg: #3c3024;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.45 "Segoe UI", system-ui, -apple-system, sans-serif; }
+  header.top { background: var(--header); color: var(--on-header); padding: 18px 24px 20px;
+    border-radius: 0 0 28px 28px; }
+  header.top h1 { margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.2px; }
+  header.top .sub { margin-top: 4px; font-size: 13px; opacity: 0.95; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  main { padding: 20px 24px 40px; max-width: 1500px; margin: 0 auto; }
+  .banner { display: none; margin-bottom: 16px; padding: 10px 14px; border-radius: 14px;
+    background: var(--crit-bg); color: var(--crit); font-weight: 600; }
+  .banner.show { display: block; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tile { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 12px 16px; }
+  .tile .k { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .tile .v { font-size: 26px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .tile .d { font-size: 12px; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; align-items: start; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 18px; min-width: 0; }
+  .card h2 { margin: 0; font-size: 17px; font-weight: 800; }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .scope { margin: 4px 0 12px; color: var(--muted); font-size: 13px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 8px; border-radius: 999px;
+    font-size: 12px; font-weight: 700; white-space: nowrap; }
+  .pill svg { width: 14px; height: 14px; flex: none; }
+  .pill.good { background: var(--good-bg); color: var(--good); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.crit { background: var(--crit-bg); color: var(--crit); }
+  .pill.idle { background: var(--idle-bg); color: var(--idle); }
+  .step { font-weight: 600; margin-bottom: 10px; overflow-wrap: anywhere; }
+  .step .lbl, .lbl { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.4px; display: block; }
+  .meter { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .meter > i { display: block; height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.4s; }
+  .meter-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 6px 0 12px; font-variant-numeric: tabular-nums; }
+  ul.miles { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 6px; }
+  ul.miles li { display: grid; grid-template-columns: 18px 1fr; gap: 8px; align-items: start; font-size: 13px; }
+  ul.miles li svg { width: 16px; height: 16px; margin-top: 2px; }
+  ul.miles li.done { color: var(--muted); }
+  ul.miles li.done svg { color: var(--good); }
+  ul.miles li.now { font-weight: 700; }
+  ul.miles li.now svg { color: var(--accent); }
+  ul.miles li.todo svg { color: var(--border); }
+  .facts { border-top: 1px solid var(--border); padding-top: 12px; display: grid; gap: 8px; font-size: 13px; }
+  .facts .row { display: flex; flex-wrap: wrap; gap: 4px 14px; font-variant-numeric: tabular-nums; }
+  .facts b { font-weight: 700; }
+  .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; }
+  .commits { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; color: var(--muted); font-size: 12px; }
+  .commits li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .requests { margin: 0; padding-left: 18px; font-size: 13px; }
+  .alert { color: var(--warn); font-weight: 600; font-size: 12px; }
+  .notes { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; }
+  .note { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 8px 12px; margin-bottom: 8px; font-size: 13px; overflow-wrap: anywhere; }
+  .note .meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .note .reply { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+  form.send { display: grid; gap: 8px; margin-top: 8px; }
+  textarea { width: 100%; min-height: 58px; resize: vertical; padding: 10px 12px; border-radius: 14px;
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--ink); font: inherit; }
+  textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button { justify-self: end; border: 0; border-radius: 999px; padding: 9px 18px; font: inherit; font-weight: 800;
+    background: var(--accent); color: var(--surface); cursor: pointer; }
+  button:disabled { opacity: 0.55; cursor: default; }
+  .hint { color: var(--muted); font-size: 12px; }
+  footer { margin-top: 22px; color: var(--muted); font-size: 13px; max-width: 900px; }
+  footer p { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Pet Companion · Agent Control Board</h1>
+  <div class="sub"><span id="main-head">main: …</span><span id="refreshed">Connecting…</span></div>
+</header>
+<main>
+  <div class="banner" id="banner" role="alert">The board server is not answering. Showing the last state received.</div>
+  <section class="summary" id="summary" aria-label="Overall progress"></section>
+  <section class="grid" id="grid" aria-label="Agents"></section>
+  <footer>
+    <p><b>How to steer.</b> Type a note on an agent's card to change its scope or design. The agent reads its notes before each milestone and answers here. For anything that crosses agents (shared code, merging, the database), ask the lead in the chat.</p>
+    <p><b>What you are looking at.</b> The step and the ticked milestones are what the agent reports. Commits, files changed and uncommitted files come straight from git, so they cannot drift from reality.</p>
+  </footer>
+</main>
+<script>
+const ICON = {
+  check: '<path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  dot: '<circle cx="12" cy="12" r="5" fill="currentColor"/><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/>',
+  ring: '<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.4"/>',
+  play: '<path d="M8 5.5v13l11-6.5z" fill="currentColor"/>',
+  stop: '<path d="M12 3l10 17H2z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M12 10v4.5M12 17.4v.2" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  clock: '<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
+  pause: '<path d="M8 5v14M16 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+};
+const svg = (name) => {
+  const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('aria-hidden', 'true');
+  s.innerHTML = ICON[name];
+  return s;
+};
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined && text !== null) e.textContent = text;
+  return e;
+};
+const STALE_MINUTES = 20;
+const cards = new Map();
+let lastState = null;
+
+function ago(iso, now) {
+  if (!iso) return null;
+  const t = Date.parse(iso); if (Number.isNaN(t)) return null;
+  const mins = Math.max(0, Math.round((now - t) / 60000));
+  if (mins < 1) return 'just now';
+  if (mins < 60) return mins + ' min ago';
+  const h = Math.floor(mins / 60);
+  return h < 24 ? h + ' h ' + (mins % 60) + ' min ago' : Math.floor(h / 24) + ' d ago';
+}
+function minutesSince(iso, now) {
+  const t = Date.parse(iso || ''); return Number.isNaN(t) ? null : (now - t) / 60000;
+}
+
+/** Status pill: reserved status colours, always with an icon and a label. */
+function verdict(entry, now) {
+  const st = entry.status, total = entry.milestones.length;
+  const done = st && Array.isArray(st.done) ? st.done.filter((id) => entry.milestones.some((m) => m.id === id)).length : 0;
+  if (st && st.state === 'done') return { cls: 'good', icon: 'check', label: 'Done', done, total };
+  if (st && st.state === 'blocked') return { cls: 'crit', icon: 'stop', label: 'Blocked', done, total };
+  if (st && st.state === 'working') {
+    const m = minutesSince(st.updated, now);
+    if (m !== null && m > STALE_MINUTES) return { cls: 'warn', icon: 'clock', label: 'Quiet for ' + Math.round(m) + ' min', done, total };
+    return { cls: 'good', icon: 'play', label: 'Working', done, total };
+  }
+  if (st && st.state === 'queued') return { cls: 'idle', icon: 'pause', label: 'Queued', done, total };
+  const hasWork = entry.git && entry.git.ahead > 0;
+  return { cls: 'idle', icon: 'pause', label: hasWork ? 'No status yet' : 'Not started', done, total };
+}
+
+function renderDynamic(entry, now, isLead) {
+  const box = el('div');
+  const v = verdict(entry, now);
+  const st = entry.status || {};
+
+  const head = el('div', 'head');
+  head.append(el('h2', null, entry.name));
+  const pill = el('span', 'pill ' + v.cls); pill.append(svg(v.icon), document.createTextNode(v.label));
+  head.append(pill);
+  box.append(head, el('p', 'scope', entry.scope));
+
+  const step = el('div', 'step');
+  step.append(el('span', 'lbl', 'Current step'), document.createTextNode(st.step || (isLead ? 'Coordinating' : 'Waiting to start')));
+  box.append(step);
+
+  const meter = el('div', 'meter');
+  meter.setAttribute('role', 'progressbar');
+  meter.setAttribute('aria-valuemin', '0'); meter.setAttribute('aria-valuemax', String(v.total));
+  meter.setAttribute('aria-valuenow', String(v.done)); meter.setAttribute('aria-label', entry.name + ' milestones');
+  const fill = el('i'); fill.style.width = (v.total ? (100 * v.done / v.total) : 0) + '%'; meter.append(fill);
+  const mrow = el('div', 'meter-row');
+  mrow.append(el('span', null, v.done + ' of ' + v.total + ' milestones'),
+    el('span', null, st.updated ? 'reported ' + ago(st.updated, now) : 'no report yet'));
+  box.append(meter, mrow);
+
+  const doneIds = new Set(Array.isArray(st.done) ? st.done : []);
+  const firstOpen = entry.milestones.find((m) => !doneIds.has(m.id));
+  const list = el('ul', 'miles');
+  for (const m of entry.milestones) {
+    const isDone = doneIds.has(m.id);
+    const isNow = !isDone && firstOpen && m.id === firstOpen.id && (st.state === 'working' || st.state === 'blocked');
+    const li = el('li', isDone ? 'done' : isNow ? 'now' : 'todo');
+    li.append(svg(isDone ? 'check' : isNow ? 'dot' : 'ring'));
+    const label = el('span', null, m.title);
+    label.title = isDone ? 'Done' : isNow ? 'In progress' : 'Not started';
+    li.append(label);
+    list.append(li);
+  }
+  box.append(list);
+
+  const facts = el('div', 'facts');
+  if (!isLead) {
+    const g = entry.git || {};
+    const row = el('div', 'row');
+    const fact = (n, word) => { const s = el('span'); s.append(el('b', null, String(n)), document.createTextNode(' ' + word)); return s; };
+    if (!g.branchExists) {
+      row.append(el('span', 'hint', 'Branch ' + entry.branch + ' does not exist yet.'));
+    } else {
+      row.append(fact(g.ahead || 0, (g.ahead === 1 ? 'commit' : 'commits')),
+        fact(g.filesChanged || 0, 'files changed'),
+        fact('+' + (g.insertions || 0).toLocaleString() + ' / -' + (g.deletions || 0).toLocaleString(), 'lines'));
+      if (typeof g.dirty === 'number') row.append(fact(g.dirty, 'uncommitted'));
+    }
+    facts.append(row);
+    const br = el('div', 'row'); br.append(el('span', 'mono', entry.branch)); facts.append(br);
+    if (g.commits && g.commits.length) {
+      const cl = el('ul', 'commits');
+      for (const c of g.commits.slice(0, 4)) {
+        const li = el('li'); li.title = c.subject;
+        li.append(el('span', 'mono', c.hash), document.createTextNode('  ' + c.subject + '  · ' + ago(c.when, now)));
+        cl.append(li);
+      }
+      facts.append(cl);
+    }
+    if (st.state === 'working' && g.branchExists && g.commits && g.commits.length) {
+      const m = minutesSince(g.commits[0].when, now);
+      if (m !== null && m > 45) facts.append(el('div', 'alert', 'No commit for ' + Math.round(m) + ' min.'));
+    }
+  }
+  if (st.tests) { const t = el('div', 'row'); t.append(el('span', 'lbl', 'Tests'), el('span', null, st.tests)); facts.append(t); }
+  if (Array.isArray(st.requests) && st.requests.length) {
+    facts.append(el('span', 'lbl', 'Requests for the lead'));
+    const ul = el('ul', 'requests'); for (const r of st.requests) ul.append(el('li', null, String(r))); facts.append(ul);
+  }
+  if (facts.childNodes.length) box.append(facts);
+
+  if (!isLead) {
+    const notes = el('div', 'notes');
+    notes.append(el('span', 'lbl', 'Notes to this agent'));
+    if (!entry.notes.length) notes.append(el('div', 'hint', 'No notes yet.'));
+    for (const n of entry.notes) {
+      const d = el('div', 'note');
+      d.append(el('div', null, n.text));
+      d.append(el('div', 'meta', 'sent ' + (ago(n.time, now) || '') + ' · ' + (n.acked ? 'read by the agent' : 'not read yet')));
+      if (n.reply) { const r = el('div', 'reply'); r.append(el('span', 'lbl', 'Agent'), document.createTextNode(String(n.reply))); d.append(r); }
+      notes.append(d);
+    }
+    box.append(notes);
+  }
+  return box;
+}
+
+function ensureCard(entry, isLead) {
+  if (cards.has(entry.id)) return cards.get(entry.id);
+  const card = el('article', 'card');
+  const dyn = el('div'); card.append(dyn);
+  let form = null;
+  if (!isLead) {
+    form = el('form', 'send');
+    const ta = el('textarea'); ta.placeholder = 'Tell the ' + entry.name.toLowerCase() + ' what to change…';
+    ta.setAttribute('aria-label', 'Note to ' + entry.name); ta.maxLength = 2000;
+    const btn = el('button', null, 'Send note'); btn.type = 'submit';
+    const msg = el('div', 'hint');
+    form.append(ta, btn, msg);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = ta.value.trim(); if (!text) return;
+      btn.disabled = true; msg.textContent = 'Sending…';
+      try {
+        const res = await fetch('/api/note', { method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Agent-Board': '1' },
+          body: JSON.stringify({ agent: entry.id, text }) });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Could not send.');
+        ta.value = ''; msg.textContent = 'Sent. The agent reads notes before its next milestone.';
+        refresh();
+      } catch (err) { msg.textContent = err.message; }
+      btn.disabled = false;
+    });
+    card.append(form);
+  }
+  document.getElementById('grid').append(card);
+  const rec = { card, dyn };
+  cards.set(entry.id, rec);
+  return rec;
+}
+
+function renderSummary(state, now) {
+  const box = document.getElementById('summary'); box.textContent = '';
+  const agents = state.agents;
+  const total = agents.reduce((a, x) => a + x.milestones.length, 0);
+  const done = agents.reduce((a, x) => a + verdict(x, now).done, 0);
+  const commits = agents.reduce((a, x) => a + ((x.git && x.git.ahead) || 0), 0);
+  const working = agents.filter((x) => x.status && x.status.state === 'working').length;
+  const blocked = agents.filter((x) => x.status && x.status.state === 'blocked').length;
+  const finished = agents.filter((x) => x.status && x.status.state === 'done').length;
+  const unread = agents.reduce((a, x) => a + x.notes.filter((n) => !n.acked).length, 0);
+  const tile = (k, v, d) => { const t = el('div', 'tile'); t.append(el('div', 'k', k), el('div', 'v', v), el('div', 'd', d)); return t; };
+  box.append(
+    tile('Milestones finished', done + ' / ' + total, 'across the three feature agents'),
+    tile('Agents', working + ' working', finished + ' done · ' + blocked + ' blocked'),
+    tile('Commits on feature branches', String(commits), 'not yet merged into main'),
+    tile('Notes waiting', String(unread), unread ? 'sent but not read yet' : 'every note has been read'),
+  );
+}
+
+function render(state) {
+  const now = Date.parse(state.now) || Date.now();
+  document.getElementById('main-head').textContent = state.main
+    ? 'main: ' + state.main.hash + '  ' + state.main.subject : 'main: unknown';
+  renderSummary(state, now);
+  const entries = [];
+  if (state.lead) entries.push([{ ...state.lead, notes: [] }, true]);
+  for (const a of state.agents) entries.push([a, false]);
+  for (const [entry, isLead] of entries) {
+    const rec = ensureCard(entry, isLead);
+    rec.dyn.replaceChildren(renderDynamic(entry, now, isLead));
+  }
+}
+
+async function refresh() {
+  try {
+    const res = await fetch('/api/state', { cache: 'no-store' });
+    if (!res.ok) throw new Error('bad status');
+    lastState = await res.json();
+    render(lastState);
+    document.getElementById('banner').classList.remove('show');
+    document.getElementById('refreshed').textContent = 'Live · refreshed ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    document.getElementById('banner').classList.add('show');
+  }
+}
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

@@ -46,3 +46,6 @@ app.*.map.json
 
 # Local Supabase configuration (see README)
 env.json
+
+# Live state of the agent control board (status files, notes)
+tools/agent_board/state/

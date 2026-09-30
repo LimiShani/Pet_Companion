@@ -6,6 +6,7 @@ import '../../../state/pets_provider.dart';
 import '../../auth/widgets/account_sheet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/pet_selector.dart';
 
 /// Coral header: menu, branding, account avatar and the dog selector.
 ///
@@ -17,7 +18,6 @@ class HomeHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pets = ref.watch(petsProvider);
-    final selectedId = ref.watch(selectedPetIdProvider);
     final user = ref.watch(authControllerProvider).value;
 
     return ColoredBox(
@@ -61,24 +61,7 @@ class HomeHeader extends ConsumerWidget {
               const SizedBox(height: 14),
               Row(
                 children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          for (final pet in pets) ...[
-                            _DogPill(
-                              name: pet.name,
-                              selected: pet.id == selectedId,
-                              onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          _AddDogButton(onTap: () {}),
-                        ],
-                      ),
-                    ),
-                  ),
+                  Expanded(child: PetSelector(onAdd: () {})),
                   const SizedBox(width: 8),
                   Text(
                     '${pets.length} ${pets.length == 1 ? 'dog' : 'dogs'}',
@@ -117,81 +100,6 @@ class _AccountAvatar extends StatelessWidget {
             child: Center(
               child: Text(initial, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _DogPill extends StatelessWidget {
-  const _DogPill({required this.name, required this.selected, required this.onTap});
-
-  final String name;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = selected ? AppColors.ink : AppColors.white;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: selected ? AppColors.yellow : AppColors.onCoralPill,
-        shape: StadiumBorder(
-          side: BorderSide(color: selected ? AppColors.yellow : AppColors.onCoralOutline, width: 2),
-        ),
-        child: InkWell(
-          customBorder: const StadiumBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 0, 16, 0),
-            child: SizedBox(
-              height: 38,
-              child: Row(
-                children: [
-                  Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: selected ? AppColors.coral : AppColors.white.withValues(alpha: 0.55),
-                      border: selected ? Border.all(color: AppColors.white, width: 2) : null,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(name, style: AppText.cardTitle.copyWith(color: fg)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddDogButton extends StatelessWidget {
-  const _AddDogButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Add a dog',
-      child: Material(
-        color: Colors.transparent,
-        shape: CircleBorder(side: BorderSide(color: AppColors.white.withValues(alpha: 0.75), width: 2)),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: const SizedBox(
-            width: 38,
-            height: 38,
-            child: Icon(Icons.add_rounded, color: AppColors.white, size: 22),
           ),
         ),
       ),
