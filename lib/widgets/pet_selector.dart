@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/pets/pets.dart';
+import '../l10n/l10n.dart';
 import '../models/pet.dart';
 import '../state/pets_provider.dart';
 import '../theme/app_colors.dart';
@@ -85,7 +86,7 @@ class _PetPill extends StatelessWidget {
           onTap: onTap,
           onLongPress: onLongPress,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
+            padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -111,7 +112,7 @@ class _AddPetButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Add a pet',
+      label: context.l10n.petSelectorAdd,
       child: Material(
         color: Colors.transparent,
         shape: CircleBorder(side: BorderSide(color: AppColors.white.withValues(alpha: 0.75), width: 2)),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -20,7 +21,8 @@ class CoralHeader extends StatelessWidget {
 
   final String title;
 
-  /// Shows a back arrow that pops the current route.
+  /// Shows a back arrow that pops the current route. The arrow mirrors by
+  /// itself on a right-to-left screen (it then points right).
   final bool showBack;
 
   /// Usually [CoralHeaderAction]s.
@@ -48,7 +50,7 @@ class CoralHeader extends StatelessWidget {
                     if (showBack) ...[
                       CoralHeaderAction(
                         icon: Icons.arrow_back_rounded,
-                        tooltip: 'Back',
+                        tooltip: context.l10n.commonBack,
                         onPressed: () => Navigator.of(context).maybePop(),
                       ),
                       const SizedBox(width: 4),

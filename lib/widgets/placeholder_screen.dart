@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
@@ -28,7 +29,7 @@ class PlaceholderScreen extends StatelessWidget {
                 child: Icon(icon, size: 48, color: AppColors.coral),
               ),
               const SizedBox(height: 20),
-              Text('$title coming soon', style: AppText.petName, textAlign: TextAlign.center),
+              Text(context.l10n.placeholderComingSoon(title), style: AppText.petName, textAlign: TextAlign.center),
               const SizedBox(height: 8),
               Text(message, style: AppText.body.copyWith(color: AppColors.brown), textAlign: TextAlign.center),
             ],

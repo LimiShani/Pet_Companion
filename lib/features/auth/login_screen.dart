@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../auth/auth_controller.dart';
 import '../../auth/validators.dart';
+import '../../l10n/l10n.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -38,19 +39,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         .signIn(email: _email.text.trim(), password: _password.text);
     if (!ok && mounted) {
       final error = ref.read(authControllerProvider).error;
-      _showMessage(authErrorMessage(error ?? Object()));
+      _showMessage(authErrorText(context.l10n, error ?? Object()));
     }
   }
 
   Future<void> _forgotPassword() async {
     final email = _email.text.trim();
-    if (Validators.email(email) != null) {
-      _showMessage('Enter your email address above first, then tap Forgot password.');
+    if (!Validators.isEmail(email)) {
+      _showMessage(context.l10n.authForgotNeedsEmail);
       return;
     }
     final sent = await ref.read(authControllerProvider.notifier).sendPasswordReset(email: email);
     if (mounted) {
-      _showMessage(sent ? 'If an account uses $email, a reset link is on its way.' : 'Could not send a reset link. Please try again.');
+      final l10n = context.l10n;
+      _showMessage(sent ? l10n.authResetSent(email) : l10n.authResetFailed);
     }
   }
 
@@ -63,10 +65,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(authControllerProvider).isLoading;
+    final l10n = context.l10n;
+    final validators = Validators(l10n);
 
     return AuthScaffold(
-      title: 'Welcome back',
-      subtitle: 'Sign in to see how your pets are doing today.',
+      title: l10n.authWelcomeBack,
+      subtitle: l10n.authSignInSubtitle,
       child: AutofillGroup(
         child: Form(
           key: _form,
@@ -74,47 +78,53 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AuthTextField(
-                label: 'Email',
+                label: l10n.authEmail,
                 hint: 'you@example.com',
                 controller: _email,
-                validator: Validators.email,
+                validator: validators.email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
                 enabled: !loading,
+                leftToRight: true,
+                leftToRightHint: true,
               ),
               const SizedBox(height: 14),
               AuthTextField(
-                label: 'Password',
-                hint: 'Your password',
+                label: l10n.authPassword,
+                hint: l10n.authPasswordHint,
                 controller: _password,
-                validator: Validators.password,
+                validator: validators.password,
                 obscure: true,
                 textInputAction: TextInputAction.done,
                 autofillHints: const [AutofillHints.password],
                 enabled: !loading,
                 onSubmitted: (_) => _submit(),
+                leftToRight: true,
               ),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: AlignmentDirectional.centerEnd,
                 child: TextButton(
                   onPressed: loading ? null : _forgotPassword,
                   style: TextButton.styleFrom(foregroundColor: AppColors.coralDark),
-                  child: const Text('Forgot password?', style: AppText.secondary),
+                  child: Text(l10n.authForgotPassword, style: AppText.secondary),
                 ),
               ),
               const SizedBox(height: 6),
-              PrimaryButton(label: 'Sign in', onPressed: _submit, loading: loading),
+              PrimaryButton(label: l10n.authSignIn, onPressed: _submit, loading: loading),
               const SizedBox(height: 22),
               Wrap(
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text('New here?', style: AppText.body.copyWith(color: AppColors.brown)),
+                  Text(l10n.authNewHere, style: AppText.body.copyWith(color: AppColors.brown)),
                   TextButton(
                     onPressed: loading ? null : () => context.push(AppRoutes.signUp),
                     style: TextButton.styleFrom(foregroundColor: AppColors.coralDark),
-                    child: const Text('Create an account', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800)),
+                    child: Text(
+                      l10n.authCreateAnAccount,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                    ),
                   ),
                 ],
               ),

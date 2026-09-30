@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import 'language_pill.dart';
 
 /// Shared frame of the auth screens: coral top with the paw mark and a
 /// title, then the form on the cream background. Scrolls when the
 /// keyboard is open.
+///
+/// The top row holds the back arrow (at the start, when [showBack]) and the
+/// language pill (at the end), so the language can be changed before
+/// signing in.
 class AuthScaffold extends StatelessWidget {
   const AuthScaffold({super.key, required this.title, required this.subtitle, required this.child, this.showBack = false});
 
@@ -16,6 +22,8 @@ class AuthScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SingleChildScrollView(
@@ -35,21 +43,24 @@ class AuthScaffold extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SizedBox(
-                        height: 44,
-                        child: showBack
-                            ? Align(
-                                alignment: Alignment.centerLeft,
-                                child: IconButton(
-                                  onPressed: () => Navigator.of(context).maybePop(),
-                                  tooltip: 'Back',
-                                  icon: const Icon(Icons.arrow_back_rounded),
-                                  color: AppColors.white,
-                                  padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints.tightFor(width: 44, height: 44),
-                                ),
-                              )
-                            : null,
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 44),
+                        child: Row(
+                          children: [
+                            if (showBack)
+                              IconButton(
+                                onPressed: () => Navigator.of(context).maybePop(),
+                                tooltip: l10n.commonBack,
+                                // Mirrors by itself on a right-to-left screen.
+                                icon: const Icon(Icons.arrow_back_rounded),
+                                color: AppColors.white,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+                              ),
+                            const Spacer(),
+                            const LanguagePill(),
+                          ],
+                        ),
                       ),
                       Center(
                         child: Container(
@@ -65,7 +76,7 @@ class AuthScaffold extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'Pet Companion',
+                        l10n.appName,
                         textAlign: TextAlign.center,
                         style: AppText.appTitle.copyWith(color: AppColors.white, fontSize: 26),
                       ),

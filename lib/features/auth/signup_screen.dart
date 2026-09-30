@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/auth_controller.dart';
 import '../../auth/validators.dart';
+import '../../l10n/l10n.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
@@ -44,17 +45,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       final error = ref.read(authControllerProvider).error;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(authErrorMessage(error ?? Object()))));
+        ..showSnackBar(SnackBar(content: Text(authErrorText(context.l10n, error ?? Object()))));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final loading = ref.watch(authControllerProvider).isLoading;
+    final l10n = context.l10n;
+    final validators = Validators(l10n);
 
     return AuthScaffold(
-      title: 'Create your account',
-      subtitle: 'One account for all of your pets.',
+      title: l10n.authCreateTitle,
+      subtitle: l10n.authCreateSubtitle,
       showBack: true,
       child: AutofillGroup(
         child: Form(
@@ -63,10 +66,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               AuthTextField(
-                label: 'Your name',
-                hint: 'What should we call you?',
+                label: l10n.authYourName,
+                hint: l10n.authYourNameHint,
                 controller: _name,
-                validator: Validators.displayName,
+                validator: validators.displayName,
                 keyboardType: TextInputType.name,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.name],
@@ -74,42 +77,46 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               ),
               const SizedBox(height: 14),
               AuthTextField(
-                label: 'Email',
+                label: l10n.authEmail,
                 hint: 'you@example.com',
                 controller: _email,
-                validator: Validators.email,
+                validator: validators.email,
                 keyboardType: TextInputType.emailAddress,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.email],
                 enabled: !loading,
+                leftToRight: true,
+                leftToRightHint: true,
               ),
               const SizedBox(height: 14),
               AuthTextField(
-                label: 'Password',
-                hint: 'At least ${Validators.minPasswordLength} characters',
+                label: l10n.authPassword,
+                hint: l10n.authPasswordMinHint(Validators.minPasswordLength),
                 controller: _password,
-                validator: Validators.password,
+                validator: validators.password,
                 obscure: true,
                 textInputAction: TextInputAction.next,
                 autofillHints: const [AutofillHints.newPassword],
                 enabled: !loading,
+                leftToRight: true,
               ),
               const SizedBox(height: 14),
               AuthTextField(
-                label: 'Repeat password',
-                hint: 'Same as above',
+                label: l10n.authRepeatPassword,
+                hint: l10n.authRepeatPasswordHint,
                 controller: _confirm,
-                validator: (v) => Validators.confirmPassword(v, _password.text),
+                validator: (v) => validators.confirmPassword(v, _password.text),
                 obscure: true,
                 textInputAction: TextInputAction.done,
                 enabled: !loading,
                 onSubmitted: (_) => _submit(),
+                leftToRight: true,
               ),
               const SizedBox(height: 22),
-              PrimaryButton(label: 'Create account', onPressed: _submit, loading: loading),
+              PrimaryButton(label: l10n.authCreateAccount, onPressed: _submit, loading: loading),
               const SizedBox(height: 14),
               Text(
-                'By creating an account you agree to the Terms of Use and Privacy Policy.',
+                l10n.authTerms,
                 textAlign: TextAlign.center,
                 style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
               ),

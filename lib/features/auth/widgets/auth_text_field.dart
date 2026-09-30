@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
@@ -17,6 +18,8 @@ class AuthTextField extends StatefulWidget {
     this.obscure = false,
     this.enabled = true,
     this.onSubmitted,
+    this.leftToRight = false,
+    this.leftToRightHint = false,
   });
 
   final String label;
@@ -32,6 +35,14 @@ class AuthTextField extends StatefulWidget {
   final bool enabled;
   final ValueChanged<String>? onSubmitted;
 
+  /// What is typed here always runs left to right, whatever the screen's
+  /// direction: an e-mail address, a password.
+  final bool leftToRight;
+
+  /// The hint is itself left-to-right text (`you@example.com`), so it sits
+  /// where the typing will start. A hint in words follows the screen.
+  final bool leftToRightHint;
+
   @override
   State<AuthTextField> createState() => _AuthTextFieldState();
 }
@@ -41,11 +52,13 @@ class _AuthTextFieldState extends State<AuthTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 6, bottom: 6),
+          padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
           child: Text(widget.label, style: AppText.label.copyWith(color: AppColors.brown)),
         ),
         TextFormField(
@@ -58,9 +71,11 @@ class _AuthTextFieldState extends State<AuthTextField> {
           enabled: widget.enabled,
           onFieldSubmitted: widget.onSubmitted,
           autovalidateMode: AutovalidateMode.onUserInteraction,
+          textDirection: widget.leftToRight ? TextDirection.ltr : null,
           style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
           decoration: InputDecoration(
             hintText: widget.hint,
+            hintTextDirection: widget.leftToRightHint ? TextDirection.ltr : Directionality.of(context),
             hintStyle: AppText.body.copyWith(fontSize: 16, color: AppColors.brown.withValues(alpha: 0.55)),
             filled: true,
             fillColor: AppColors.white,
@@ -74,7 +89,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
             suffixIcon: widget.obscure
                 ? IconButton(
                     onPressed: () => setState(() => _hidden = !_hidden),
-                    tooltip: _hidden ? 'Show password' : 'Hide password',
+                    tooltip: _hidden ? l10n.authShowPassword : l10n.authHidePassword,
                     icon: Icon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                     color: AppColors.brown,
                   )

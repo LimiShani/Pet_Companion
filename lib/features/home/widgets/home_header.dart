@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -66,7 +67,7 @@ class HomeTopBar extends ConsumerWidget {
               children: [
                 IconButton(
                   onPressed: () {},
-                  tooltip: 'Menu',
+                  tooltip: context.l10n.homeMenu,
                   icon: const Icon(Icons.menu_rounded, size: 26),
                   color: AppColors.white,
                   padding: EdgeInsets.zero,
@@ -117,6 +118,7 @@ class HomeTopBar extends ConsumerWidget {
 class _Brand extends StatelessWidget {
   const _Brand();
 
+  /// The app's name stays in Latin letters in every language.
   static const _name = 'Pet Companion';
   static const _iconSize = 22.0;
   static const _gap = 8.0;
@@ -210,7 +212,7 @@ class HomePetRow extends ConsumerWidget {
                   Expanded(child: PetSelector(onAdd: () => openAddPet(context))),
                   const SizedBox(width: 8),
                   Text(
-                    '$count ${count == 1 ? 'pet' : 'pets'}',
+                    context.l10n.homePetCount(count),
                     style: AppText.label.copyWith(
                       color: AppColors.white.withValues(alpha: 0.9),
                       fontWeight: FontWeight.w600,
@@ -236,7 +238,7 @@ class _AccountAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Account',
+      label: context.l10n.homeAccount,
       child: Material(
         color: AppColors.yellow,
         shape: CircleBorder(side: BorderSide(color: AppColors.white.withValues(alpha: 0.85), width: 2)),

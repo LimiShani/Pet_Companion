@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -11,24 +11,22 @@ class HealthCard extends StatelessWidget {
 
   final List<HealthEvent> events;
 
-  static final _date = DateFormat('dd.MM.yy');
-  static final _time = DateFormat('HH:mm');
-
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final upcoming = [...events]..sort((a, b) => a.when.compareTo(b.when));
     final shown = upcoming.take(2).toList();
 
     return DashboardCard(
       color: AppColors.peach,
       iconAsset: 'assets/images/icon_health.png',
-      title: 'Health',
-      trailing: 'Upcoming',
+      title: l10n.homeHealth,
+      trailing: l10n.homeUpcoming,
       iconRing: true,
       child: shown.isEmpty
-          ? const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: Text('No health events yet', style: AppText.body),
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(l10n.homeNoHealthEvents, style: AppText.body),
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -58,10 +56,8 @@ class _EventRow extends StatelessWidget {
         const SizedBox(width: 8),
         const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
         const SizedBox(width: 5),
-        Text(
-          '${HealthCard._date.format(event.when)} · ${HealthCard._time.format(event.when)}',
-          style: AppText.secondary,
-        ),
+        // "12.06.25 · 18:20": read from the right it is still date, then time.
+        Text(AppFormat.of(context).dateTime(event.when), style: AppText.secondary),
       ],
     );
   }
