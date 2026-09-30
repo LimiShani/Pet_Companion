@@ -16,6 +16,7 @@ import 'package:pet_companion/features/health/emergency/contact_launcher.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
+import 'package:pet_companion/widgets/app_bottom_nav.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
@@ -149,7 +150,9 @@ Future<HealthHarness> pumpHealth(
   Size size = const Size(390, 844),
   bool openTab = true,
 }) async {
-  tester.view.physicalSize = size * 3;
+  // Sign in at phone size (the login form needs the room), then switch to
+  // the size under test.
+  tester.view.physicalSize = const Size(390, 844) * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
@@ -157,11 +160,16 @@ Future<HealthHarness> pumpHealth(
   await tester.pumpWidget(ProviderScope(overrides: h._overrides(), child: const PetCompanionApp()));
   await tester.pumpAndSettle();
   await signInAsDemo(tester);
-  if (openTab) {
-    await tester.tap(find.text('Health'));
-    await tester.pumpAndSettle();
-  }
+  tester.view.physicalSize = size * 3;
+  await tester.pumpAndSettle();
+  if (openTab) await openHealthTab(tester);
   return h;
+}
+
+/// Taps "Health" in the bottom bar.
+Future<void> openHealthTab(WidgetTester tester) async {
+  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Health')));
+  await tester.pumpAndSettle();
 }
 
 /// Scrolls [finder] into view and taps it.
@@ -180,6 +188,8 @@ Future<HealthHarness> pumpHealthHost(
   Widget child, {
   HealthHarness? harness,
   bool signedIn = true,
+  bool page = false,
+  TextDirection textDirection = TextDirection.ltr,
   Size size = const Size(390, 844),
 }) async {
   tester.view.physicalSize = size * 3;
@@ -192,7 +202,9 @@ Future<HealthHarness> pumpHealthHost(
       overrides: h._overrides(),
       child: MaterialApp(
         theme: AppTheme.light(),
-        home: Scaffold(body: SafeArea(child: SingleChildScrollView(child: child))),
+        builder: (context, app) => Directionality(textDirection: textDirection, child: app!),
+        // [page]: the child is a whole screen and brings its own Scaffold.
+        home: page ? child : Scaffold(body: SafeArea(child: SingleChildScrollView(child: child))),
       ),
     ),
   );

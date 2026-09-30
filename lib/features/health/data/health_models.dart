@@ -295,6 +295,7 @@ class HealthProfile {
   const HealthProfile({
     required this.petId,
     this.microchip = '',
+    this.notChipped = false,
     this.allergies = const [],
     this.allergiesNoneKnown = false,
     this.conditions = const [],
@@ -308,6 +309,9 @@ class HealthProfile {
 
   final String petId;
   final String microchip;
+
+  /// The owner answered "not chipped": an answer, not a gap.
+  final bool notChipped;
   final List<String> allergies;
 
   /// The owner answered "none known": an answer, not a gap.
@@ -324,6 +328,9 @@ class HealthProfile {
 
   bool get hasContact => contactName.trim().isNotEmpty || contactPhone.trim().isNotEmpty;
 
+  /// A number, or "not chipped".
+  bool get microchipAnswered => microchip.trim().isNotEmpty || notChipped;
+
   /// Whether the owner has said anything about allergies: a list, or
   /// "none known".
   bool get allergiesAnswered => allergies.isNotEmpty || allergiesNoneKnown;
@@ -333,6 +340,7 @@ class HealthProfile {
 
   HealthProfile copyWith({
     String? microchip,
+    bool? notChipped,
     List<String>? allergies,
     bool? allergiesNoneKnown,
     List<String>? conditions,
@@ -344,6 +352,7 @@ class HealthProfile {
     return HealthProfile(
       petId: petId,
       microchip: microchip ?? this.microchip,
+      notChipped: notChipped ?? this.notChipped,
       allergies: allergies ?? this.allergies,
       allergiesNoneKnown: allergiesNoneKnown ?? this.allergiesNoneKnown,
       conditions: conditions ?? this.conditions,
@@ -360,6 +369,7 @@ class HealthProfile {
   HealthProfile withVet(VetRole role, String? vetId) => HealthProfile(
         petId: petId,
         microchip: microchip,
+        notChipped: notChipped,
         allergies: allergies,
         allergiesNoneKnown: allergiesNoneKnown,
         conditions: conditions,

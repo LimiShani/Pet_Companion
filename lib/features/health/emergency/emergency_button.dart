@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../health_format.dart';
+import '../state/health_keeper.dart';
 import '../widgets/health_widgets.dart';
 import 'emergency_contacts.dart';
 import 'emergency_sheet.dart';
@@ -62,12 +63,14 @@ class EmergencyButton extends ConsumerWidget {
     final background = onCoral ? EmergencyButtonStyle.onCoralBackground : EmergencyButtonStyle.onLightBackground;
     final foreground = onCoral ? EmergencyButtonStyle.onCoralForeground : EmergencyButtonStyle.onLightForeground;
 
-    final petName = ref.watch(petsProvider.select((pets) {
-      for (final pet in pets) {
-        if (pet.id == petId) return pet.name;
-      }
-      return null;
-    }));
+    final petName = ref.watch(
+      petsProvider.select((pets) {
+        for (final pet in pets) {
+          if (pet.id == petId) return pet.name;
+        }
+        return null;
+      }),
+    );
     // Only "loaded, and nothing to call" shows the dot: loading and load
     // errors leave the button as it is.
     final contacts = showStatusDot ? ref.watch(emergencyContactsProvider(petId)) : null;
@@ -96,6 +99,13 @@ class EmergencyButton extends ConsumerWidget {
       ),
     );
 
+    return HealthKeeper(
+      petId: petId,
+      child: _button(context, label: label, pill: pill, nothingToCall: nothingToCall),
+    );
+  }
+
+  Widget _button(BuildContext context, {required String label, required Widget pill, required bool nothingToCall}) {
     return Semantics(
       button: true,
       label: nothingToCall ? '$label. No phone number saved yet' : label,

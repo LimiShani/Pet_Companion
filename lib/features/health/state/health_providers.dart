@@ -392,10 +392,18 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
     });
     final repo = ref.watch(healthRepositoryProvider);
     final today = dateOnly(ref.watch(healthClockProvider)());
-    final medications = repo.fetchMedications(petId);
-    final items = repo.fetchPlanItems(petId);
-    final logs = repo.fetchLogs(petId, from: today.subtract(const Duration(days: _logWindowDays)));
-    return CarePlan(medications: await medications, items: await items, logs: await logs);
+    // Waited for together, so a failure of one never leaves the others
+    // failing unobserved.
+    final results = await Future.wait<Object>([
+      repo.fetchMedications(petId),
+      repo.fetchPlanItems(petId),
+      repo.fetchLogs(petId, from: today.subtract(const Duration(days: _logWindowDays))),
+    ]);
+    return CarePlan(
+      medications: results[0] as List<Medication>,
+      items: results[1] as List<CarePlanItem>,
+      logs: results[2] as List<CareLog>,
+    );
   }
 
   CarePlan get _plan => state.value ?? const CarePlan();
@@ -664,3 +672,72 @@ final healthSummaryProvider = FutureProvider.autoDispose.family<HealthSummary, S
     weightKg: weights.isEmpty ? pet.weightKg : weights.last.value,
   );
 }, retry: _noRetry);
+
+// ---------------------------------------------------------------------------
+// Everything about one pet, for the tab's four sections
+// ---------------------------------------------------------------------------
+
+class PetHealthData {
+  const PetHealthData({
+    required this.records,
+    required this.documents,
+    required this.plan,
+    required this.observations,
+    required this.vets,
+    required this.profile,
+  });
+
+  final List<HealthRecord> records;
+  final List<HealthDocument> documents;
+  final CarePlan plan;
+  final List<Observation> observations;
+  final PetVets vets;
+  final HealthProfile profile;
+
+  /// Nothing has been entered for this pet yet (the vets aside).
+  bool get isEmpty => records.isEmpty && plan.isEmpty && observations.isEmpty;
+
+  /// The documents attached to one record.
+  List<HealthDocument> documentsOf(String recordId) => [
+        for (final d in documents)
+          if (d.recordId == recordId) d,
+      ];
+}
+
+final petHealthDataProvider = FutureProvider.autoDispose.family<PetHealthData, String>((ref, petId) async {
+  final records = ref.watch(healthRecordsProvider(petId).future);
+  final documents = ref.watch(healthDocumentsProvider(petId).future);
+  final plan = ref.watch(carePlanProvider(petId).future);
+  final observations = ref.watch(observationsProvider(petId).future);
+  final vets = ref.watch(petVetsProvider(petId).future);
+  final profile = ref.watch(healthProfileProvider(petId).future);
+  return PetHealthData(
+    records: await records,
+    documents: await documents,
+    plan: await plan,
+    observations: await observations,
+    vets: await vets,
+    profile: await profile,
+  );
+}, retry: _noRetry);
+
+/// Removes every stored health file of a pet (photos and PDFs attached to
+/// its records). Call it before deleting a pet: the database removes the
+/// pet's rows by itself, but not its files. Throws a [HealthException] on
+/// failure.
+final removeHealthFilesForPetProvider = Provider<Future<void> Function(String petId)>((ref) {
+  return (petId) async {
+    await ref.read(healthRepositoryProvider).deleteFilesForPet(petId);
+    if (ref.exists(healthDocumentsProvider(petId))) ref.invalidate(healthDocumentsProvider(petId));
+  };
+});
+
+/// Loads everything about a pet again (the "Try again" button).
+void refreshHealth(WidgetRef ref, String petId) {
+  ref.invalidate(healthRecordsProvider(petId));
+  ref.invalidate(healthDocumentsProvider(petId));
+  ref.invalidate(carePlanProvider(petId));
+  ref.invalidate(observationsProvider(petId));
+  ref.invalidate(vetsProvider);
+  ref.invalidate(healthProfileProvider(petId));
+}

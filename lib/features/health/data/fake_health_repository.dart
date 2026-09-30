@@ -137,6 +137,17 @@ class FakeHealthRepository implements HealthRepository {
     return null;
   }
 
+  @override
+  Future<void> deleteFilesForPet(String petId) async {
+    await _wait();
+    final gone = [
+      for (final d in _documents)
+        if (d.petId == petId) d.id,
+    ];
+    _documents.removeWhere((d) => d.petId == petId);
+    gone.forEach(_documentBytes.remove);
+  }
+
   // ------------------------------------------------------ vets and profile
 
   @override

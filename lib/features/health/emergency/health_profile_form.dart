@@ -48,6 +48,7 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   final _contactName = TextEditingController();
   final _contactPhone = TextEditingController();
   final _notes = TextEditingController();
+  bool _notChipped = false;
   bool _noAllergies = false;
   bool _noConditions = false;
   bool _filled = false;
@@ -71,6 +72,7 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
     _contactName.text = profile.contactName;
     _contactPhone.text = profile.contactPhone;
     _notes.text = profile.notes;
+    _notChipped = profile.notChipped && profile.microchip.trim().isEmpty;
     _noAllergies = profile.allergiesNoneKnown && profile.allergies.isEmpty;
     _noConditions = profile.conditionsNoneKnown && profile.conditions.isEmpty;
   }
@@ -90,7 +92,8 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
       final allergies = _noAllergies ? const <String>[] : _lines(_allergies.text);
       final conditions = _noConditions ? const <String>[] : _lines(_conditions.text);
       final saved = await ref.read(healthProfileProvider(widget.petId).notifier).save(current.copyWith(
-            microchip: _microchip.text.trim(),
+            microchip: _notChipped ? '' : _microchip.text.trim(),
+            notChipped: _notChipped,
             allergies: allergies,
             allergiesNoneKnown: _noAllergies,
             conditions: conditions,
@@ -136,10 +139,17 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
           TextFormField(
             key: const Key('profile-microchip'),
             controller: _microchip,
+            enabled: !_notChipped,
             keyboardType: TextInputType.text,
             textInputAction: TextInputAction.next,
-            decoration: const InputDecoration(labelText: 'Microchip number (optional)'),
+            decoration: InputDecoration(labelText: _notChipped ? 'Not chipped' : 'Microchip number (optional)'),
             validator: (value) => (value?.trim().length ?? 0) > 40 ? 'Keep the number under 40 characters.' : null,
+          ),
+          _TickLine(
+            checkKey: const Key('profile-not-chipped'),
+            label: 'Not chipped',
+            value: _notChipped,
+            onChanged: (value) => setState(() => _notChipped = value),
           ),
           const FormLabel('Allergies'),
           _AnswerField(
@@ -239,16 +249,31 @@ class _AnswerField extends StatelessWidget {
           decoration: InputDecoration(labelText: noneKnown ? 'None known' : label),
           validator: (value) => (value?.length ?? 0) > 600 ? 'Please keep this shorter.' : null,
         ),
-        CheckboxListTile(
-          key: checkKey,
-          value: noneKnown,
-          onChanged: (value) => onNoneKnown(value ?? false),
-          controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: EdgeInsets.zero,
-          dense: true,
-          title: Text('None known', style: AppText.body.copyWith(color: AppColors.ink)),
-        ),
+        _TickLine(checkKey: checkKey, label: 'None known', value: noneKnown, onChanged: onNoneKnown),
       ],
+    );
+  }
+}
+
+/// A tick box with a label: an honest "nothing to enter" answer.
+class _TickLine extends StatelessWidget {
+  const _TickLine({required this.checkKey, required this.label, required this.value, required this.onChanged});
+
+  final Key checkKey;
+  final String label;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return CheckboxListTile(
+      key: checkKey,
+      value: value,
+      onChanged: (value) => onChanged(value ?? false),
+      controlAffinity: ListTileControlAffinity.leading,
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      title: Text(label, style: AppText.body.copyWith(color: AppColors.ink)),
     );
   }
 }

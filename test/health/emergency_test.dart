@@ -81,6 +81,25 @@ void main() {
   });
 
   group('emergency sheet', () {
+    testWidgets('a vet edited from the Emergency card shows on every page below', (tester) async {
+      // Opened from another tab: the Health tab itself is not on screen.
+      await openSheet(tester, kelly);
+      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      expect(find.text('Emergency card'), findsOneWidget);
+
+      await tapVisible(tester, find.text("Kelly's vets"));
+      await tapVisible(tester, find.byKey(const ValueKey('edit-vet-regular')));
+      await tester.enterText(find.byKey(const Key('vet-name')), 'Riverside Vets');
+      await tapVisible(tester, find.text('Save vet'));
+      expect(find.text('Riverside Vets'), findsOneWidget);
+
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      expect(find.text('Emergency card'), findsOneWidget);
+      expect(find.text('Riverside Vets'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('lists the vets and the contact, and Call opens the dialler', (tester) async {
       final h = await openSheet(tester, kelly);
 
@@ -294,13 +313,15 @@ void main() {
       );
       expect((await settled(tester, healthCriticalItemsProvider(soya))).value, HealthCriticalItem.values);
 
-      await tester.enterText(find.byKey(const Key('profile-microchip')), '900 111 222');
+      await tapVisible(tester, find.byKey(const Key('profile-not-chipped')));
       await tapVisible(tester, find.byKey(const Key('profile-no-allergies')));
       await tester.enterText(find.byKey(const Key('profile-conditions')), 'Heart murmur\nSensitive stomach');
       await tapVisible(tester, find.text('Next'));
 
       expect(saved, isNotNull);
-      expect(saved!.microchip, '900 111 222');
+      expect(saved!.microchip, isEmpty);
+      expect(saved!.notChipped, isTrue);
+      expect(saved!.microchipAnswered, isTrue);
       expect(saved!.allergies, isEmpty);
       expect(saved!.allergiesNoneKnown, isTrue);
       expect(saved!.allergiesAnswered, isTrue);
@@ -320,6 +341,18 @@ void main() {
       final state = await settled(tester, healthCriticalItemsProvider(soya));
       expect(state.hasError, isTrue);
       expect(emergencyErrorMessage(state.error!), contains('Could not reach the server'));
+    });
+
+    testWidgets("a pet's stored files can be removed before the pet is deleted", (tester) async {
+      final h = await pumpHealthHost(tester, const SizedBox(height: 10));
+      expect(await real(tester, () => h.repository.fetchDocuments(kelly)), hasLength(4));
+
+      unawaited(removeHealthFilesForPet(tester.element(find.byType(SizedBox).first), kelly));
+      await tester.pumpAndSettle();
+
+      expect(await real(tester, () => h.repository.fetchDocuments(kelly)), isEmpty);
+      // The records themselves are the database's business, not this call's.
+      expect(await real(tester, () => h.repository.fetchRecords(kelly)), isNotEmpty);
     });
 
     testWidgets('a missing item opens the place where it is filled in', (tester) async {

@@ -5,6 +5,7 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
+import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'contact_actions.dart';
@@ -25,30 +26,33 @@ class VetsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final vets = ref.watch(petVetsProvider(pet.id));
 
-    return HealthPage(
-      title: "${pet.name}'s vets",
-      child: vets.when(
-        loading: () => const HealthLoading(),
-        error: (error, _) => HealthLoadError(
-          what: 'the vets',
-          message: healthErrorMessage(error),
-          onRetry: () {
-            ref.invalidate(vetsProvider);
-            ref.invalidate(healthProfileProvider(pet.id));
-          },
-        ),
-        data: (data) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 8),
-            for (final role in VetRole.values) ...[
-              _VetBlock(pet: pet, role: role, vet: data.of(role)),
-              const SizedBox(height: 16),
+    return HealthKeeper(
+      petId: pet.id,
+      child: HealthPage(
+        title: "${pet.name}'s vets",
+        child: vets.when(
+          loading: () => const HealthLoading(),
+          error: (error, _) => HealthLoadError(
+            what: 'the vets',
+            message: healthErrorMessage(error),
+            onRetry: () {
+              ref.invalidate(vetsProvider);
+              ref.invalidate(healthProfileProvider(pet.id));
+            },
+          ),
+          data: (data) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 8),
+              for (final role in VetRole.values) ...[
+                _VetBlock(pet: pet, role: role, vet: data.of(role)),
+                const SizedBox(height: 16),
+              ],
+              const FinePrint('Vets are saved once for your account, so your other pets can use the same ones.'),
+              const SizedBox(height: 8),
+              const FinePrint(kSafetyLine),
             ],
-            const FinePrint('Vets are saved once for your account, so your other pets can use the same ones.'),
-            const SizedBox(height: 8),
-            const FinePrint(kSafetyLine),
-          ],
+          ),
         ),
       ),
     );
@@ -99,7 +103,10 @@ class _VetBlock extends StatelessWidget {
                     IconDisc(role == VetRole.regular ? Icons.medical_services_rounded : Icons.local_hospital_rounded),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(current.name, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
+                      child: Text(
+                        current.name,
+                        style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800),
+                      ),
                     ),
                     IconButton(
                       key: ValueKey('edit-vet-$tag'),
