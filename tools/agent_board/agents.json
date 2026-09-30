@@ -61,7 +61,7 @@
     {
       "id": "health",
       "name": "Health agent",
-      "scope": "Per-pet medical and history log, weight tracking, and care tasks with reminders (feeding, medicine).",
+      "scope": "Health Hub for each pet: Overview, Schedule, History and Insights, the Vet section, Emergency card and emergency call or message, quick log, documents and PDF sharing.",
       "branch": "feature/health",
       "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/health",
       "milestones": [
@@ -71,31 +71,31 @@
         },
         {
           "id": "h2",
-          "title": "Models, HealthRepository interface and seeded in-memory fake"
+          "title": "Data layer: models, species settings, HealthRepository, seeded in-memory fake, injectable clock"
         },
         {
           "id": "h3",
-          "title": "Health tab: pet switcher, upcoming and history timeline"
+          "title": "Health tab shell, Overview and getting started; Vet section, health profile, Emergency card, emergency actions (Call, Message, Map) and the pieces for Home"
         },
         {
           "id": "h4",
-          "title": "Add, edit and delete a health record (medicine, vet visit, vaccination, note)"
+          "title": "History: timeline with filters and search, record detail, record form with next due date, photo and PDF attachments"
         },
         {
           "id": "h5",
-          "title": "Weight tracking: log a weight, trend view"
+          "title": "Schedule: Today / Upcoming / Needs review, routines, medicines with reminders, recording a dose"
         },
         {
           "id": "h6",
-          "title": "Care tasks and reminders: feeding and medicine schedules, today's checklist"
+          "title": "Insights and Quick log: weight trend, species-aware observation journal; PDF summary to share"
         },
         {
           "id": "h7",
-          "title": "Supabase repositories and migration 0002_health.sql with RLS"
+          "title": "Supabase repository and migration 0002_health.sql: tables, documents bucket, row level security"
         },
         {
           "id": "h8",
-          "title": "Widget tests, analyzer clean, final report"
+          "title": "Widget tests for every flow, right-to-left check, analyzer clean, final report"
         }
       ]
     },

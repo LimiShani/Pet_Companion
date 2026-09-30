@@ -8,6 +8,7 @@ class Pet {
   const Pet({
     required this.id,
     required this.name,
+    this.species = PetSpecies.dog,
     this.breed,
     this.ageYears,
     this.weightKg,
@@ -19,6 +20,9 @@ class Pet {
 
   final String id;
   final String name;
+
+  /// What kind of animal this is. Drives species-specific health features.
+  final PetSpecies species;
   final String? breed;
   final double? ageYears;
   final double? weightKg;
@@ -32,6 +36,7 @@ class Pet {
 
   Pet copyWith({
     String? name,
+    PetSpecies? species,
     String? breed,
     double? ageYears,
     double? weightKg,
@@ -43,6 +48,7 @@ class Pet {
     return Pet(
       id: id,
       name: name ?? this.name,
+      species: species ?? this.species,
       breed: breed ?? this.breed,
       ageYears: ageYears ?? this.ageYears,
       weightKg: weightKg ?? this.weightKg,
@@ -52,6 +58,25 @@ class Pet {
       healthEvents: healthEvents ?? this.healthEvents,
     );
   }
+}
+
+/// The kinds of animal the app knows about. Stored in the `pets.species`
+/// column by [name]; anything unknown reads back as [other].
+enum PetSpecies {
+  dog('Dog'),
+  cat('Cat'),
+  bird('Bird'),
+  rabbit('Rabbit'),
+  reptile('Reptile'),
+  other('Other');
+
+  const PetSpecies(this.label);
+
+  /// Display name, e.g. on the pet's profile line.
+  final String label;
+
+  static PetSpecies fromName(String? name) =>
+      PetSpecies.values.firstWhere((s) => s.name == name, orElse: () => PetSpecies.other);
 }
 
 /// Today's feeding progress for one pet.
