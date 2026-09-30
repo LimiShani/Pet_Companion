@@ -29,27 +29,85 @@ abstract final class AppSpacing {
 }
 
 /// Type scale from the redesign brief.
+///
+/// Every style names the app's fonts itself. Most text would inherit them
+/// from the theme anyway, but buttons, chips and a few other widgets
+/// replace the inherited style instead of merging with it, and a style
+/// without a family there falls back to the system font.
 abstract final class AppText {
-  static const appTitle = TextStyle(fontSize: 23, fontWeight: FontWeight.w800);
-  static const petName = TextStyle(fontSize: 24, fontWeight: FontWeight.w800, height: 28 / 24);
-  static const metric = TextStyle(fontSize: 30, fontWeight: FontWeight.w800, height: 32 / 30);
-  static const metricSmall = TextStyle(fontSize: 28, fontWeight: FontWeight.w800, height: 32 / 28);
-  static const pillValue = TextStyle(fontSize: 18, fontWeight: FontWeight.w800);
-  static const cardTitle = TextStyle(fontSize: 15, fontWeight: FontWeight.w700);
-  static const body = TextStyle(fontSize: 14, fontWeight: FontWeight.w600);
-  static const secondary = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
-  static const label = TextStyle(fontSize: 12, fontWeight: FontWeight.w700);
-  static const navLabel = TextStyle(fontSize: 11, fontWeight: FontWeight.w700);
+  static const appTitle = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 23,
+    fontWeight: FontWeight.w800,
+  );
+  static const petName = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 24,
+    fontWeight: FontWeight.w800,
+    height: 28 / 24,
+  );
+  static const metric = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 30,
+    fontWeight: FontWeight.w800,
+    height: 32 / 30,
+  );
+  static const metricSmall = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 28,
+    fontWeight: FontWeight.w800,
+    height: 32 / 28,
+  );
+  static const pillValue = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 18,
+    fontWeight: FontWeight.w800,
+  );
+  static const cardTitle = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 15,
+    fontWeight: FontWeight.w700,
+  );
+  static const body = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+  );
+  static const secondary = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
+  );
+  static const label = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 12,
+    fontWeight: FontWeight.w700,
+  );
+  static const navLabel = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 11,
+    fontWeight: FontWeight.w700,
+  );
 
   /// The label of a button. A button's `textStyle` replaces the inherited
   /// style instead of merging with it, so unlike the styles above it must
   /// name the app's fonts itself or the label falls back to the system font.
   static TextStyle button([double size = 15]) => TextStyle(
-        fontFamily: AppFonts.latin,
-        fontFamilyFallback: const [AppFonts.hebrew],
-        fontSize: size,
-        fontWeight: FontWeight.w800,
-      );
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: const [AppFonts.hebrew],
+    fontSize: size,
+    fontWeight: FontWeight.w800,
+  );
 }
 
 abstract final class AppTheme {
@@ -83,16 +141,13 @@ abstract final class AppTheme {
     );
 
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
-    final textTheme = AppFonts.textTheme(base.textTheme).apply(
-      bodyColor: AppColors.ink,
-      displayColor: AppColors.ink,
-    );
+    final textTheme = AppFonts.textTheme(base.textTheme).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
     final pillLabel = AppText.button();
 
     OutlineInputBorder fieldBorder(Color color, [double width = 1]) => OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-          borderSide: BorderSide(color: color, width: width),
-        );
+      borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+      borderSide: BorderSide(color: color, width: width),
+    );
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.cream,
@@ -130,10 +185,7 @@ abstract final class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.coralDark,
-          textStyle: AppText.button(14),
-        ),
+        style: TextButton.styleFrom(foregroundColor: AppColors.coralDark, textStyle: AppText.button(14)),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.coralDark,
