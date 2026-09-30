@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
+import 'app_fonts.dart';
 
 /// Spacing and radius system shared by every screen.
 abstract final class AppSpacing {
@@ -73,7 +73,7 @@ abstract final class AppTheme {
     );
 
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
-    final textTheme = GoogleFonts.nunitoTextTheme(base.textTheme).apply(
+    final textTheme = AppFonts.textTheme(base.textTheme).apply(
       bodyColor: AppColors.ink,
       displayColor: AppColors.ink,
     );
