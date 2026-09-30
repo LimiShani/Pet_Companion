@@ -1,0 +1,171 @@
+import 'dart:typed_data';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_companion/app.dart';
+import 'package:pet_companion/auth/auth_controller.dart';
+import 'package:pet_companion/auth/fake_auth_repository.dart';
+import 'package:pet_companion/features/health/data/fake_health_repository.dart';
+import 'package:pet_companion/features/health/data/file_services.dart';
+import 'package:pet_companion/features/health/data/health_models.dart';
+import 'package:pet_companion/features/health/data/reminder_scheduler.dart';
+import 'package:pet_companion/features/health/emergency/contact_launcher.dart';
+import 'package:pet_companion/features/health/state/health_providers.dart';
+import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/state/pets_provider.dart';
+
+import '../helpers.dart';
+
+/// The instant every Health test runs at: the sample data's day, late
+/// afternoon (a Tuesday).
+final fixedNow = DateTime(2025, 6, 10, 17, 40);
+
+/// A zero-latency copy of the sample data at [fixedNow].
+FakeHealthRepository fakeHealth({bool seeded = true}) =>
+    FakeHealthRepository(latency: Duration.zero, now: () => fixedNow, seeded: seeded);
+
+/// Remembers every plan the app hands to the reminder scheduler.
+class RecordingReminderScheduler implements ReminderScheduler {
+  final plans = <ReminderPlan>[];
+
+  ReminderPlan get last => plans.last;
+
+  @override
+  Future<void> sync(ReminderPlan plan) async => plans.add(plan);
+}
+
+/// Hands out prepared files instead of opening the camera or a file dialog.
+class FakeAttachmentPicker implements AttachmentPicker {
+  FakeAttachmentPicker({this.photo, this.pdf});
+
+  PickedFile? photo;
+  PickedFile? pdf;
+  final asked = <String>[];
+
+  @override
+  Future<PickedFile?> takePhoto() async {
+    asked.add('camera');
+    return photo;
+  }
+
+  @override
+  Future<PickedFile?> pickPhoto() async {
+    asked.add('gallery');
+    return photo;
+  }
+
+  @override
+  Future<PickedFile?> pickPdf() async {
+    asked.add('pdf');
+    return pdf;
+  }
+}
+
+/// Remembers what the app asked to share or open instead of doing it.
+class FakeFileSharer implements FileSharer {
+  final shared = <SharedFile>[];
+  final opened = <Uri>[];
+  bool succeeds = true;
+
+  @override
+  Future<bool> share(SharedFile file) async {
+    shared.add(file);
+    return succeeds;
+  }
+
+  @override
+  Future<bool> openLink(Uri link) async {
+    opened.add(link);
+    return succeeds;
+  }
+}
+
+PickedFile testPhoto([String name = 'booklet.png']) =>
+    PickedFile(name: name, mimeType: 'image/png', bytes: FakeHealthRepository.samplePng);
+
+PickedFile testPdf([String name = 'lab-results.pdf']) =>
+    PickedFile(name: name, mimeType: 'application/pdf', bytes: FakeHealthRepository.samplePdf);
+
+/// A file over the bucket's 5 MB limit.
+PickedFile hugePdf() =>
+    PickedFile(name: 'huge.pdf', mimeType: 'application/pdf', bytes: Uint8List(PickedFile.maxBytes + 1));
+
+/// Everything a Health test can swap out.
+class HealthHarness {
+  HealthHarness({FakeHealthRepository? repository, this.pets})
+      : repository = repository ?? fakeHealth(),
+        launcher = RecordingContactLauncher(),
+        scheduler = RecordingReminderScheduler(),
+        picker = FakeAttachmentPicker(),
+        sharer = FakeFileSharer();
+
+  final FakeHealthRepository repository;
+  final RecordingContactLauncher launcher;
+  final RecordingReminderScheduler scheduler;
+  final FakeAttachmentPicker picker;
+  final FakeFileSharer sharer;
+
+  /// Replaces the shared sample pets (to test other species).
+  final List<Pet>? pets;
+
+  DateTime now = fixedNow;
+
+  ProviderContainer container() {
+    final container = ProviderContainer(overrides: _overrides());
+    addTearDown(container.dispose);
+    return container;
+  }
+
+  List<Override> _overrides() => [
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
+        healthClockProvider.overrideWithValue(() => now),
+        healthRepositoryProvider.overrideWithValue(repository),
+        contactLauncherProvider.overrideWithValue(launcher),
+        reminderSchedulerProvider.overrideWithValue(scheduler),
+        attachmentPickerProvider.overrideWithValue(picker),
+        fileSharerProvider.overrideWithValue(sharer),
+        if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
+      ];
+}
+
+class _FixedPets extends PetsNotifier {
+  _FixedPets(this._pets);
+
+  final List<Pet> _pets;
+
+  @override
+  List<Pet> build() => _pets;
+}
+
+/// Pumps the whole app on fakes at phone size, signs in as the demo user
+/// (Alex) and opens the Health tab.
+Future<HealthHarness> pumpHealth(
+  WidgetTester tester, {
+  HealthHarness? harness,
+  Size size = const Size(390, 844),
+  bool openTab = true,
+}) async {
+  tester.view.physicalSize = size * 3;
+  tester.view.devicePixelRatio = 3;
+  addTearDown(tester.view.reset);
+
+  final h = harness ?? HealthHarness();
+  await tester.pumpWidget(ProviderScope(overrides: h._overrides(), child: const PetCompanionApp()));
+  await tester.pumpAndSettle();
+  await signInAsDemo(tester);
+  if (openTab) {
+    await tester.tap(find.text('Health'));
+    await tester.pumpAndSettle();
+  }
+  return h;
+}
+
+/// Scrolls [finder] into view and taps it.
+Future<void> tapVisible(WidgetTester tester, Finder finder) async {
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
+}
