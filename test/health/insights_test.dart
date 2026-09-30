@@ -151,11 +151,11 @@ void main() {
       expect(find.text('Last time: 23 kg on 01.06.25'), findsOneWidget);
       expect(saveEnabled(tester, 'Save to journal'), isFalse);
 
-      await tester.enterText(find.byKey(const Key('quick-weight')), '0');
+      await tester.enterText(find.byKey(const Key('quick-weight-field')), '0');
       await tester.pump();
       expect(saveEnabled(tester, 'Save to journal'), isFalse);
 
-      await tester.enterText(find.byKey(const Key('quick-weight')), '22,8');
+      await tester.enterText(find.byKey(const Key('quick-weight-field')), '22,8');
       await tester.pump();
       await tapVisible(tester, find.text('Save to journal'));
 
@@ -187,7 +187,7 @@ void main() {
 
       await tapVisible(tester, find.byKey(const ValueKey('quick-weight')));
       expect(find.text('Weight in grams'), findsOneWidget);
-      await tester.enterText(find.byKey(const Key('quick-weight')), '412');
+      await tester.enterText(find.byKey(const Key('quick-weight-field')), '412');
       await tester.pump();
       await tapVisible(tester, find.text('Save to journal'));
 
@@ -308,6 +308,29 @@ void main() {
       final bytes = await const PdfHealthPdfBuilder().build(report);
       expect(latin1.decode(bytes.sublist(0, 5)), '%PDF-');
       expect(bytes.length, greaterThan(800));
+    });
+
+    test('a long history runs over several pages', () async {
+      final long = HealthReport(
+        title: report.title,
+        subtitle: report.subtitle,
+        prepared: report.prepared,
+        fileName: report.fileName,
+        facts: report.facts,
+        recordsTitle: 'Recent records',
+        records: [
+          for (var i = 0; i < 80; i++)
+            HealthReportRow(
+              date: '14.03.25',
+              kind: 'Vet visit',
+              title: 'Visit number $i',
+              details: 'Park Vet Clinic · A long note about what was found and what to watch for next time.',
+            ),
+        ],
+      );
+      final bytes = await const PdfHealthPdfBuilder().build(long);
+      final text = latin1.decode(bytes);
+      expect(RegExp('/Type ?/Page[^s]').allMatches(text).length, greaterThan(1));
     });
 
     test('typographic punctuation is replaced, other scripts are detected', () {

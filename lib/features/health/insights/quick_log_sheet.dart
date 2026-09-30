@@ -214,7 +214,7 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           if (_isWeight) ...[
             const SizedBox(height: 14),
             TextField(
-              key: const Key('quick-weight'),
+              key: const Key('quick-weight-field'),
               controller: _weight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
