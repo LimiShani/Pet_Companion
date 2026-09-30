@@ -1,10 +1,35 @@
 import 'app_user.dart';
 
-/// Thrown by an [AuthRepository] with a message safe to show to the user.
+/// Why an account action failed. Repositories report the reason; the screen
+/// puts it into words in the app's language (see `authErrorText`).
+enum AuthFailure {
+  noAccount,
+  wrongPassword,
+  emailTaken,
+  invalidCredentials,
+  emailNotConfirmed,
+  rateLimited,
+  weakPassword,
+  network,
+  signInIncomplete,
+  signUpIncomplete,
+
+  /// Not really a failure: the account was created and waits for the link
+  /// in the confirmation email.
+  confirmEmailSent,
+
+  /// Anything the app has no words of its own for.
+  unknown,
+}
+
+/// Thrown by an [AuthRepository]. [failure] says what went wrong;
+/// [message] is the same in plain English, for logs and for an
+/// [AuthFailure.unknown] failure, where it is the backend's own explanation.
 class AuthException implements Exception {
-  const AuthException(this.message);
+  const AuthException(this.message, [this.failure = AuthFailure.unknown]);
 
   final String message;
+  final AuthFailure failure;
 
   @override
   String toString() => message;

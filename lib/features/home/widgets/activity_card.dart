@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -13,15 +13,16 @@ class ActivityCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final steps = NumberFormat.decimalPattern().format(status.steps);
-    final h = status.activeTime.inHours;
-    final m = status.activeTime.inMinutes.remainder(60);
-    final time = '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}';
+    final l10n = context.l10n;
+    final format = AppFormat.of(context);
+    final steps = format.integer(status.steps);
+    final time = format.hoursMinutes(status.activeTime);
+    final nextWalk = status.nextWalk;
 
     return DashboardCard(
       color: AppColors.yellow,
       iconAsset: 'assets/images/icon_activity.png',
-      title: 'Activity',
+      title: l10n.homeActivity,
       iconRing: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -29,17 +30,19 @@ class ActivityCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _Metric(value: steps, label: 'Steps'),
+                child: _Metric(value: steps, label: l10n.homeSteps),
               ),
               Container(width: 2, height: 40, color: AppColors.white.withValues(alpha: 0.7)),
               const SizedBox(width: 12),
               Expanded(
-                child: _Metric(value: time, label: 'Activity time'),
+                child: _Metric(value: time, label: l10n.homeActivityTime),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          NextEventLine(label: 'Next walk', time: status.nextWalk),
+          NextEventLine(
+            text: nextWalk == null ? l10n.homeNextWalkUnset : l10n.homeNextWalk(format.timeOfDay(nextWalk)),
+          ),
         ],
       ),
     );

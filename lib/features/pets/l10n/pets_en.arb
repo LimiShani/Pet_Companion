@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+
+  "myPetsTitle": "My pets",
+  "@myPetsTitle": {"description": "Title of the page that lists the owner's pets."}
+}

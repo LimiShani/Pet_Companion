@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 
-/// Bottom navigation: Home, Health, Community, Store.
+/// Bottom navigation: Home, Health, Community, Store. On a right-to-left
+/// screen the row mirrors by itself, so Home sits on the right.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({super.key, required this.currentIndex, required this.onSelect});
 
@@ -11,14 +13,18 @@ class AppBottomNav extends StatelessWidget {
   final ValueChanged<int> onSelect;
 
   static const _items = [
-    (label: 'Home', icon: Icons.home_outlined, activeIcon: Icons.home_rounded),
-    (label: 'Health', icon: Icons.monitor_heart_outlined, activeIcon: Icons.monitor_heart_rounded),
-    (label: 'Community', icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded),
-    (label: 'Store', icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag_rounded),
+    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded),
+    (icon: Icons.monitor_heart_outlined, activeIcon: Icons.monitor_heart_rounded),
+    (icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded),
+    (icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag_rounded),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    // In the order of [_items].
+    final labels = [l10n.navHome, l10n.navHealth, l10n.navCommunity, l10n.navStore];
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.white,
@@ -34,7 +40,7 @@ class AppBottomNav extends StatelessWidget {
               for (var i = 0; i < _items.length; i++)
                 Expanded(
                   child: _NavItem(
-                    label: _items[i].label,
+                    label: labels[i],
                     icon: i == currentIndex ? _items[i].activeIcon : _items[i].icon,
                     selected: i == currentIndex,
                     onTap: () => onSelect(i),
@@ -77,6 +83,8 @@ class _NavItem extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: AppText.navLabel.copyWith(
                     color: selected ? AppColors.ink : AppColors.brown,
                     fontWeight: selected ? FontWeight.w800 : FontWeight.w700,

@@ -48,8 +48,10 @@ class FakeAuthRepository implements AuthRepository {
   Future<AppUser> signIn({required String email, required String password}) async {
     await _wait();
     final account = _accounts[_key(email)];
-    if (account == null) throw const AuthException('No account uses that email address.');
-    if (account.password != password) throw const AuthException('Incorrect password. Please try again.');
+    if (account == null) throw const AuthException('No account uses that email address.', AuthFailure.noAccount);
+    if (account.password != password) {
+      throw const AuthException('Incorrect password. Please try again.', AuthFailure.wrongPassword);
+    }
     _set(account.user);
     return account.user;
   }
@@ -58,7 +60,9 @@ class FakeAuthRepository implements AuthRepository {
   Future<AppUser> signUp({required String displayName, required String email, required String password}) async {
     await _wait();
     final key = _key(email);
-    if (_accounts.containsKey(key)) throw const AuthException('An account with that email already exists.');
+    if (_accounts.containsKey(key)) {
+      throw const AuthException('An account with that email already exists.', AuthFailure.emailTaken);
+    }
     final user = AppUser(id: 'u${_accounts.length + 1}', email: key, displayName: displayName.trim());
     _accounts[key] = _Account(user: user, password: password);
     _set(user);

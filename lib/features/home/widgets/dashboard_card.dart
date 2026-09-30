@@ -4,7 +4,8 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 
 /// Shared shell of the feeding / activity / health cards: colored rounded
-/// box, illustrated icon disc on the left, content on the right.
+/// box, illustrated icon disc at the start, content after it (mirrored by
+/// itself on a right-to-left screen).
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
     super.key,
@@ -20,7 +21,7 @@ class DashboardCard extends StatelessWidget {
   final String iconAsset;
   final String title;
 
-  /// Small text at the top-right of the card (goal, "Upcoming"...).
+  /// Small text at the top end of the card (goal, "Upcoming"...).
   final String? trailing;
   final Widget child;
 
@@ -77,26 +78,23 @@ class DashboardCard extends StatelessWidget {
   }
 }
 
-/// "Next feeding · 19:30" style line with a small clock.
+/// "Next feeding · 19:30" style line with a small clock. [text] is the
+/// whole line, already in the screen's language.
 class NextEventLine extends StatelessWidget {
-  const NextEventLine({super.key, required this.label, required this.time});
+  const NextEventLine({super.key, required this.text});
 
-  final String label;
-  final TimeOfDay? time;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
-    final text = time == null ? 'not set' : formatTimeOfDay(time!);
     return Row(
       children: [
         const Icon(Icons.schedule_rounded, size: 15, color: AppColors.ink),
         const SizedBox(width: 6),
         Flexible(
-          child: Text('$label · $text', style: AppText.body, maxLines: 1, overflow: TextOverflow.ellipsis),
+          child: Text(text, style: AppText.body, maxLines: 1, overflow: TextOverflow.ellipsis),
         ),
       ],
     );
   }
 }
-
-String formatTimeOfDay(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';

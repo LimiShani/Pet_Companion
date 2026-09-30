@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+
+  "tabTitle": "Community",
+  "@tabTitle": {"description": "Title of the Community tab's header."}
+}

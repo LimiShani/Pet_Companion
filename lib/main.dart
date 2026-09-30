@@ -8,6 +8,7 @@ import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import 'auth/supabase_auth_repository.dart';
 import 'config/app_config.dart';
+import 'l10n/l10n.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +22,16 @@ Future<void> main() async {
         'using the in-memory auth backend (see README).');
   }
 
+  // The phone's saved choices (language, week layout), read before the
+  // first frame so the app opens in the chosen language. When they cannot
+  // be read the app still runs and simply does not remember them.
+  final settings = await SharedPrefsSettingsStore.load();
+
   runApp(
     ProviderScope(
       overrides: [
         if (supabaseAuth != null) authRepositoryProvider.overrideWithValue(supabaseAuth),
+        if (settings != null) settingsStoreProvider.overrideWithValue(settings),
       ],
       child: const PetCompanionApp(),
     ),

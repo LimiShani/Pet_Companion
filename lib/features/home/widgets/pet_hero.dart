@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -25,6 +26,11 @@ class PetHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final format = AppFormat.of(context);
+    final age = pet.ageYears;
+    final weight = pet.weightKg;
+
     return Stack(
       children: [
         Positioned(
@@ -54,17 +60,17 @@ class PetHero extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(left: 4),
+                        padding: const EdgeInsetsDirectional.only(start: 4),
                         child: Text(pet.name, style: AppText.petName, maxLines: 1, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(height: 8),
-                      _InfoPill(label: 'Breed', value: pet.breed ?? '—'),
+                      _InfoPill(label: l10n.homeBreed, value: pet.breed ?? _unknown),
                       const SizedBox(height: 6),
-                      _InfoPill(label: 'Age', value: pet.ageYears == null ? '—' : _formatNumber(pet.ageYears!)),
+                      _InfoPill(label: l10n.homeAge, value: age == null ? _unknown : format.decimal(age)),
                       const SizedBox(height: 6),
                       _InfoPill(
-                        label: 'Weight',
-                        value: pet.weightKg == null ? '—' : '${_formatNumber(pet.weightKg!)} kg',
+                        label: l10n.homeWeight,
+                        value: weight == null ? _unknown : l10n.homeWeightKg(format.decimal(weight)),
                       ),
                     ],
                   ),
@@ -77,7 +83,8 @@ class PetHero extends StatelessWidget {
     );
   }
 
-  static String _formatNumber(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
+  /// Shown for a detail the owner has not filled in.
+  static const _unknown = '—';
 }
 
 /// The pet's picture (its photo or its icon) in the white and coral ring.
@@ -111,23 +118,41 @@ class _InfoPill extends StatelessWidget {
   final String label;
   final String value;
 
+  static const _labelColumn = 56.0;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: const BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.all(Radius.circular(999))),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          SizedBox(
-            width: 56,
-            child: Text(label, style: AppText.label.copyWith(color: AppColors.brown)),
-          ),
-          Expanded(
-            child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The labels line up in a 56 px column. A longer word (another
+          // language, large text) gets the room it needs, up to half of the
+          // pill, instead of wrapping inside a fixed box.
+          final most = constraints.maxWidth / 2;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(minWidth: most < _labelColumn ? most : _labelColumn, maxWidth: most),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: Text(
+                    label,
+                    style: AppText.label.copyWith(color: AppColors.brown),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

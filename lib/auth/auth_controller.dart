@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../l10n/l10n.dart';
 import 'app_user.dart';
 import 'auth_repository.dart';
 import 'fake_auth_repository.dart';
@@ -55,6 +56,23 @@ class AuthController extends AsyncNotifier<AppUser?> {
 
 final authControllerProvider = AsyncNotifierProvider<AuthController, AppUser?>(AuthController.new);
 
-/// User-facing text for an auth failure.
-String authErrorMessage(Object error) =>
-    error is AuthException ? error.message : 'Something went wrong. Please try again.';
+/// User-facing text for an auth failure, in the language of [l10n].
+String authErrorText(AppL10n l10n, Object error) {
+  if (error is! AuthException) return l10n.errorGeneric;
+  return switch (error.failure) {
+    AuthFailure.noAccount => l10n.authErrNoAccount,
+    AuthFailure.wrongPassword => l10n.authErrWrongPassword,
+    AuthFailure.emailTaken => l10n.authErrEmailTaken,
+    AuthFailure.invalidCredentials => l10n.authErrInvalidCredentials,
+    AuthFailure.emailNotConfirmed => l10n.authErrEmailNotConfirmed,
+    AuthFailure.rateLimited => l10n.authErrRateLimited,
+    AuthFailure.weakPassword => l10n.authErrWeakPassword,
+    AuthFailure.network => l10n.authErrNetwork,
+    AuthFailure.signInIncomplete => l10n.authErrSignInIncomplete,
+    AuthFailure.signUpIncomplete => l10n.authErrSignUpIncomplete,
+    AuthFailure.confirmEmailSent => l10n.authErrConfirmEmailSent,
+    // The backend's own explanation is in English: shown as it is on an
+    // English screen, replaced by a plain line on any other.
+    AuthFailure.unknown => l10n.localeName == 'en' ? error.message : l10n.errorGeneric,
+  };
+}
