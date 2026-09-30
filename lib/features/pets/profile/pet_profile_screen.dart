@@ -370,7 +370,7 @@ class _HealthBasicsCard extends ConsumerWidget {
     if (value == null) {
       return PetsCard(
         child: profile.hasError
-            ? PetsNote(healthErrorMessage(profile.error!))
+            ? PetsNote(healthErrorOf(context, profile.error))
             : const Center(child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())),
       );
     }
