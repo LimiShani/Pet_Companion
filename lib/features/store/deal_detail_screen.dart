@@ -13,6 +13,7 @@ import 'store_format.dart';
 import 'widgets/deal_badge.dart';
 import 'widgets/deal_card.dart';
 import 'widgets/deal_image.dart';
+import 'widgets/save_deal_button.dart';
 import 'widgets/store_messages.dart';
 
 /// Everything about one deal, with the button that opens the seller's page.
@@ -30,7 +31,11 @@ class DealDetailScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CoralHeader(title: 'Deal', showBack: true),
+          CoralHeader(
+            title: 'Deal',
+            showBack: true,
+            actions: [if (deal != null) SaveDealButton(dealId: deal.id, inHeader: true)],
+          ),
           Expanded(
             child: deal != null
                 ? _DealBody(deal: deal)

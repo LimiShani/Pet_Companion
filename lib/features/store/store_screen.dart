@@ -10,7 +10,6 @@ import 'data/deal.dart';
 import 'data/deal_filters.dart';
 import 'state/store_providers.dart';
 import 'store_routes.dart';
-import 'widgets/deal_card.dart';
 import 'widgets/deal_grid.dart';
 import 'widgets/store_messages.dart';
 
@@ -46,7 +45,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   Widget build(BuildContext context) {
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
-    final now = ref.watch(storeClockProvider)();
     // Load the user's saved and reported deals together with the catalogue,
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
@@ -63,6 +61,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
         children: [
           CoralHeader(
             title: 'Store',
+            actions: [
+              CoralHeaderAction(
+                icon: Icons.favorite_border_rounded,
+                tooltip: 'Saved deals',
+                onPressed: () => context.push(StoreRoutes.saved),
+              ),
+            ],
             bottom: _SearchField(
               controller: _search,
               onChanged: ref.read(storeFilterProvider.notifier).setQuery,
@@ -112,15 +117,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         child: _NoDeals(filter: filter, onClear: _clearFilters),
                       )
                     else
-                      SliverDealGrid(
-                        deals: shown,
-                        cardBuilder: (context, deal) => DealCard(
-                          key: ValueKey('deal-card-${deal.id}'),
-                          deal: deal,
-                          expired: deal.isExpired(now),
-                          onTap: () => context.push(StoreRoutes.deal(deal.id)),
-                        ),
-                      ),
+                      SliverDealGrid(deals: shown),
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
                   ],
                 ],
