@@ -104,6 +104,9 @@ Finder get gridScrollable =>
 /// Opens the page of the deal whose card is on screen (scrolling to it).
 Future<void> openDeal(WidgetTester tester, String dealId) async {
   final card = find.byKey(ValueKey('deal-card-$dealId'));
+  // Start from the top: the grid only builds the rows near the viewport.
+  tester.state<ScrollableState>(gridScrollable).position.jumpTo(0);
+  await tester.pump();
   await tester.scrollUntilVisible(card, 200, scrollable: gridScrollable);
   await tester.pumpAndSettle();
   // The picture's left half: clear of the badge, the heart and the

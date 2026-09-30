@@ -17,15 +17,54 @@ import 'widgets/save_deal_button.dart';
 import 'widgets/store_messages.dart';
 
 /// Everything about one deal, with the button that opens the seller's page.
-class DealDetailScreen extends ConsumerWidget {
+class DealDetailScreen extends ConsumerStatefulWidget {
   const DealDetailScreen({super.key, required this.dealId});
 
   final String dealId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DealDetailScreen> createState() => _DealDetailScreenState();
+}
+
+class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
+  // While the user's own deal is being deleted the page keeps showing it,
+  // so it does not flash "This deal is gone" on its way out.
+  Deal? _lastShown;
+  bool _deleting = false;
+
+  Future<void> _delete(Deal deal) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete this deal?'),
+        content: const Text('It will be removed from the Store for everyone.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    setState(() => _deleting = true);
+    try {
+      await ref.read(dealsProvider.notifier).delete(deal.id);
+      if (mounted) navigator.pop();
+      showStoreMessageOn(messenger, 'Your deal was deleted.');
+    } catch (error) {
+      if (mounted) setState(() => _deleting = false);
+      showStoreMessageOn(messenger, storeErrorMessage(error));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final deals = ref.watch(dealsProvider);
-    final deal = ref.watch(dealByIdProvider(dealId));
+    final current = ref.watch(dealByIdProvider(widget.dealId));
+    if (current != null) _lastShown = current;
+    final deal = current ?? (_deleting ? _lastShown : null);
 
     return Scaffold(
       body: Column(
@@ -38,7 +77,7 @@ class DealDetailScreen extends ConsumerWidget {
           ),
           Expanded(
             child: deal != null
-                ? _DealBody(deal: deal)
+                ? _DealBody(deal: deal, busy: _deleting, onDelete: () => _delete(deal))
                 : deals.isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : EmptyState(
@@ -56,9 +95,25 @@ class DealDetailScreen extends ConsumerWidget {
 }
 
 class _DealBody extends ConsumerWidget {
-  const _DealBody({required this.deal});
+  const _DealBody({required this.deal, required this.busy, required this.onDelete});
 
   final Deal deal;
+
+  /// The deal is being deleted: its actions are switched off.
+  final bool busy;
+
+  /// Asks to delete the deal. Only offered on the user's own deals.
+  final VoidCallback onDelete;
+
+  Future<void> _report(BuildContext context, WidgetRef ref) async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(reportedDealIdsProvider.notifier).report(deal.id);
+      showStoreMessageOn(messenger, 'Thanks, we will check it.');
+    } catch (error) {
+      showStoreMessageOn(messenger, storeErrorMessage(error));
+    }
+  }
 
   Future<void> _open(BuildContext context, WidgetRef ref) async {
     final uri = safeDealLink(deal.link);
@@ -72,6 +127,8 @@ class _DealBody extends ConsumerWidget {
     final userId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
     final expired = deal.isExpired(now);
     final host = safeDealLink(deal.link)?.host;
+    final mine = deal.isSharedBy(userId);
+    final reported = ref.watch(reportedDealIdsProvider.select((ids) => ids.value?.contains(deal.id) ?? false));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,6 +215,29 @@ class _DealBody extends ConsumerWidget {
                   const SizedBox(height: 14),
                   Text(deal.description, style: AppText.body.copyWith(height: 1.5)),
                 ],
+                // A deal that is already marked as over needs no report.
+                if (!expired) ...[
+                  const SizedBox(height: 6),
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: reported
+                        ? const _ReportedNote()
+                        : TextButton.icon(
+                            onPressed: busy ? null : () => _report(context, ref),
+                            icon: const Icon(Icons.flag_outlined, size: 18),
+                            label: const Text('Report as expired'),
+                            style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+                          ),
+                  ),
+                ],
+                if (mine) ...[
+                  const SizedBox(height: 10),
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : onDelete,
+                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                    label: const Text('Delete my deal'),
+                  ),
+                ],
               ],
             ),
           ),
@@ -168,7 +248,7 @@ class _DealBody extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               FilledButton.icon(
-                onPressed: () => _open(context, ref),
+                onPressed: busy ? null : () => _open(context, ref),
                 icon: const Icon(Icons.open_in_new_rounded, size: 20),
                 iconAlignment: IconAlignment.end,
                 label: const Text('Open offer'),
@@ -220,6 +300,30 @@ class _Pill extends StatelessWidget {
         border: color == null ? Border.all(color: Theme.of(context).colorScheme.outlineVariant) : null,
       ),
       child: Text(label, style: AppText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+    );
+  }
+}
+
+class _ReportedNote extends StatelessWidget {
+  const _ReportedNote();
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: 44),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.brown),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'You reported this as expired',
+              style: AppText.body.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

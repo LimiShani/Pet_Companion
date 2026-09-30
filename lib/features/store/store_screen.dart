@@ -8,6 +8,7 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
 import 'data/deal.dart';
 import 'data/deal_filters.dart';
+import 'share_deal_screen.dart';
 import 'state/store_providers.dart';
 import 'store_routes.dart';
 import 'widgets/deal_grid.dart';
@@ -36,6 +37,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     if (!ok && mounted) showStoreMessage(context, 'Could not refresh the deals. Please try again.');
   }
 
+  Future<void> _shareDeal() async {
+    final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
+      MaterialPageRoute(fullscreenDialog: true, builder: (context) => const ShareDealScreen()),
+    );
+    if (deal != null && mounted) showStoreMessage(context, 'Thanks! Your deal is live.');
+  }
+
   void _clearFilters() {
     _search.clear();
     ref.read(storeFilterProvider.notifier).clear();
@@ -56,6 +64,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
     return Scaffold(
       key: const Key('store-screen'),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _shareDeal,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Share a deal'),
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -118,7 +131,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       )
                     else
                       SliverDealGrid(deals: shown),
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                    // Room for the floating button below the last row.
+                    const SliverToBoxAdapter(child: SizedBox(height: 96)),
                   ],
                 ],
               ),
