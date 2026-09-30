@@ -118,28 +118,41 @@ class _InfoPill extends StatelessWidget {
   final String label;
   final String value;
 
+  static const _labelColumn = 56.0;
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: const BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.all(Radius.circular(999))),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.baseline,
-        textBaseline: TextBaseline.alphabetic,
-        children: [
-          // The labels line up in a 56 px column, and a longer word (another
-          // language, large text) gets the room it needs instead of wrapping.
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 56),
-            child: Padding(
-              padding: const EdgeInsetsDirectional.only(end: 8),
-              child: Text(label, style: AppText.label.copyWith(color: AppColors.brown), maxLines: 1),
-            ),
-          ),
-          Expanded(
-            child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The labels line up in a 56 px column. A longer word (another
+          // language, large text) gets the room it needs, up to half of the
+          // pill, instead of wrapping inside a fixed box.
+          final most = constraints.maxWidth / 2;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(minWidth: most < _labelColumn ? most : _labelColumn, maxWidth: most),
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 8),
+                  child: Text(
+                    label,
+                    style: AppText.label.copyWith(color: AppColors.brown),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

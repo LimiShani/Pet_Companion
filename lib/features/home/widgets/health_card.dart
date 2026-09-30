@@ -48,17 +48,34 @@ class _EventRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(event.title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
-        ),
-        const SizedBox(width: 8),
-        const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
-        const SizedBox(width: 5),
-        // "12.06.25 · 18:20": read from the right it is still date, then time.
-        Text(AppFormat.of(context).dateTime(event.when), style: AppText.secondary),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) => Row(
+        children: [
+          Expanded(
+            child: Text(event.title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 8),
+          // The date keeps its natural size and the title takes the rest.
+          // Only when the date alone would take most of the row (a narrow
+          // phone with very large text) is it scaled down to fit.
+          ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.65),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
+                  const SizedBox(width: 5),
+                  // "12.06.25 · 18:20": read from the right it is still date,
+                  // then time.
+                  Text(AppFormat.of(context).dateTime(event.when), style: AppText.secondary),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
