@@ -84,6 +84,33 @@
     background: var(--accent); color: var(--surface); cursor: pointer; }
   button:disabled { opacity: 0.55; cursor: default; }
   .hint { color: var(--muted); font-size: 12px; }
+  .proposal { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; display: flex;
+    align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .proposal button { justify-self: auto; }
+  button.ghost { background: transparent; color: var(--accent); border: 2px solid var(--accent); padding: 7px 16px; }
+  #viewer { display: none; margin-top: 20px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 24px; padding: 18px; }
+  #viewer.show { display: block; }
+  #viewer .vhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  #viewer h2 { margin: 0; font-size: 19px; font-weight: 800; }
+  #viewer .how { margin: 8px 0 14px; padding: 10px 14px; border-radius: 14px; background: var(--warn-bg); color: var(--ink); font-size: 13px; }
+  #viewer .panes { display: grid; grid-template-columns: minmax(300px, 5fr) minmax(320px, 7fr); gap: 18px; align-items: start; }
+  @media (max-width: 900px) { #viewer .panes { grid-template-columns: 1fr; } }
+  .doc { min-width: 0; overflow-wrap: anywhere; }
+  .doc h3 { font-size: 17px; margin: 18px 0 6px; font-weight: 800; }
+  .doc h4 { font-size: 14px; margin: 14px 0 4px; font-weight: 800; }
+  .doc h3:first-child, .doc h4:first-child { margin-top: 0; }
+  .doc p { margin: 6px 0; }
+  .doc ul, .doc ol { margin: 6px 0; padding-left: 20px; }
+  .doc li { margin: 3px 0; }
+  .doc code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; padding: 0 4px; }
+  .doc pre { background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px;
+    overflow-x: auto; font-size: 12px; }
+  .doc table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 8px 0; }
+  .doc th, .doc td { border: 1px solid var(--border); padding: 5px 8px; text-align: left; vertical-align: top; }
+  .doc th { background: var(--surface-2); }
+  iframe.mock { width: 100%; height: 900px; border: 1px solid var(--border); border-radius: 16px; background: #fff7e1; }
   footer { margin-top: 22px; color: var(--muted); font-size: 13px; max-width: 900px; }
   footer p { margin: 0 0 6px; }
 </style>
@@ -97,6 +124,20 @@
   <div class="banner" id="banner" role="alert">The board server is not answering. Showing the last state received.</div>
   <section class="summary" id="summary" aria-label="Overall progress"></section>
   <section class="grid" id="grid" aria-label="Agents"></section>
+  <section id="viewer" aria-label="Design proposal">
+    <div class="vhead">
+      <h2 id="viewer-title">Design proposal</h2>
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <a id="viewer-open" href="#" target="_blank" rel="noopener" class="hint" style="align-self:center">Open the mockup in its own tab</a>
+        <button type="button" class="ghost" id="viewer-close">Close</button>
+      </div>
+    </div>
+    <div class="how"><b>To approve or ask for changes:</b> tell the lead in the chat, for example "approve health" or "store: drop the share-a-deal form". The agent is paused and builds nothing until the lead passes on your answer.</div>
+    <div class="panes">
+      <div class="doc" id="viewer-doc"></div>
+      <div><iframe class="mock" id="viewer-frame" title="Design mockup" sandbox=""></iframe></div>
+    </div>
+  </section>
   <footer>
     <p><b>How to steer.</b> Type a note on an agent's card to change its scope or design. The agent reads its notes before each milestone and answers here. For anything that crosses agents (shared code, merging, the database), ask the lead in the chat.</p>
     <p><b>What you are looking at.</b> The step and the ticked milestones are what the agent reports. Commits, files changed and uncommitted files come straight from git, so they cannot drift from reality.</p>
@@ -147,6 +188,7 @@ function verdict(entry, now) {
   const done = st && Array.isArray(st.done) ? st.done.filter((id) => entry.milestones.some((m) => m.id === id)).length : 0;
   if (st && st.state === 'done') return { cls: 'good', icon: 'check', label: 'Done', done, total };
   if (st && st.state === 'blocked') return { cls: 'crit', icon: 'stop', label: 'Blocked', done, total };
+  if (st && st.state === 'review') return { cls: 'warn', icon: 'clock', label: 'Waiting for your approval', done, total };
   if (st && st.state === 'working') {
     const m = minutesSince(st.updated, now);
     if (m !== null && m > STALE_MINUTES) return { cls: 'warn', icon: 'clock', label: 'Quiet for ' + Math.round(m) + ' min', done, total };
@@ -234,6 +276,22 @@ function renderDynamic(entry, now, isLead) {
   if (facts.childNodes.length) box.append(facts);
 
   if (!isLead) {
+    const p = entry.proposal || {};
+    const prop = el('div', 'proposal');
+    const info = el('div');
+    info.append(el('span', 'lbl', 'Design proposal'));
+    const ready = p.hasDoc || p.hasMockup;
+    info.append(document.createTextNode(ready
+      ? 'Ready' + (p.updated ? ' · updated ' + ago(p.updated, now) : '') + (p.hasDoc && p.hasMockup ? '' : p.hasDoc ? ' · mockup still coming' : ' · feature list still coming')
+      : 'Being prepared'));
+    prop.append(info);
+    if (ready) {
+      const open = el('button', 'ghost', 'Open proposal'); open.type = 'button';
+      open.addEventListener('click', () => openProposal(entry));
+      prop.append(open);
+    }
+    box.append(prop);
+
     const notes = el('div', 'notes');
     notes.append(el('span', 'lbl', 'Notes to this agent'));
     if (!entry.notes.length) notes.append(el('div', 'hint', 'No notes yet.'));
@@ -248,6 +306,88 @@ function renderDynamic(entry, now, isLead) {
   }
   return box;
 }
+
+/** Inline markdown: **bold** and `code`, built as DOM nodes (never innerHTML). */
+function inline(text, parent) {
+  const re = /(\*\*[^*]+\*\*|`[^`]+`)/g;
+  let last = 0, m;
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) parent.append(document.createTextNode(text.slice(last, m.index)));
+    const tok = m[0];
+    parent.append(tok.startsWith('**') ? el('b', null, tok.slice(2, -2)) : el('code', null, tok.slice(1, -1)));
+    last = m.index + tok.length;
+  }
+  if (last < text.length) parent.append(document.createTextNode(text.slice(last)));
+  return parent;
+}
+
+/** A small, safe markdown renderer: headings, lists, tables, code blocks, paragraphs. */
+function renderMarkdown(md, root) {
+  root.textContent = '';
+  const lines = md.replace(/\r/g, '').split('\n');
+  let i = 0, list = null, listTag = null;
+  const closeList = () => { list = null; listTag = null; };
+  while (i < lines.length) {
+    const line = lines[i];
+    if (/^```/.test(line)) {
+      closeList(); const buf = []; i++;
+      while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]);
+      i++; root.append(el('pre', null, buf.join('\n'))); continue;
+    }
+    if (/^\s*\|.*\|\s*$/.test(line)) {
+      closeList(); const rows = [];
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) rows.push(lines[i++]);
+      const split = (r) => r.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim());
+      const isRule = (cells) => cells.every((c) => /^:?-{2,}:?$/.test(c));
+      const hasHeader = rows.length > 1 && isRule(split(rows[1]));
+      const table = el('table');
+      rows.forEach((r, idx) => {
+        const cells = split(r);
+        if (isRule(cells)) return;
+        const tr = el('tr');
+        for (const c of cells) inline(c, tr.appendChild(el(hasHeader && idx === 0 ? 'th' : 'td')));
+        table.append(tr);
+      });
+      root.append(table); continue;
+    }
+    const h = /^(#{1,6})\s+(.*)$/.exec(line);
+    if (h) { closeList(); inline(h[2], root.appendChild(el(h[1].length <= 2 ? 'h3' : 'h4'))); i++; continue; }
+    const li = /^\s*([-*]|\d+[.)])\s+(.*)$/.exec(line);
+    if (li) {
+      const tag = /\d/.test(li[1]) ? 'ol' : 'ul';
+      if (!list || listTag !== tag) { list = root.appendChild(el(tag)); listTag = tag; }
+      inline(li[2], list.appendChild(el('li'))); i++; continue;
+    }
+    if (!line.trim()) { closeList(); i++; continue; }
+    closeList();
+    const buf = [line]; i++;
+    while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|\s*([-*]|\d+[.)])\s|```|\s*\|)/.test(lines[i])) buf.push(lines[i++]);
+    inline(buf.join(' '), root.appendChild(el('p')));
+  }
+}
+
+async function openProposal(entry) {
+  const viewer = document.getElementById('viewer');
+  document.getElementById('viewer-title').textContent = entry.name + ': design proposal';
+  const doc = document.getElementById('viewer-doc');
+  doc.textContent = 'Loading…';
+  const frame = document.getElementById('viewer-frame');
+  const link = document.getElementById('viewer-open');
+  const src = '/mockup/' + encodeURIComponent(entry.id) + '?t=' + Date.now();
+  frame.src = src; link.href = src;
+  viewer.classList.add('show');
+  viewer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  try {
+    const res = await fetch('/api/proposal/' + encodeURIComponent(entry.id), { cache: 'no-store' });
+    const data = await res.json();
+    if (data.markdown) renderMarkdown(data.markdown, doc);
+    else doc.textContent = 'The feature list has not been written yet.';
+  } catch (e) { doc.textContent = 'Could not load the proposal.'; }
+}
+document.getElementById('viewer-close').addEventListener('click', () => {
+  document.getElementById('viewer').classList.remove('show');
+  document.getElementById('viewer-frame').removeAttribute('src');
+});
 
 function ensureCard(entry, isLead) {
   if (cards.has(entry.id)) return cards.get(entry.id);
@@ -296,7 +436,7 @@ function renderSummary(state, now) {
   const unread = agents.reduce((a, x) => a + x.notes.filter((n) => !n.acked).length, 0);
   const tile = (k, v, d) => { const t = el('div', 'tile'); t.append(el('div', 'k', k), el('div', 'v', v), el('div', 'd', d)); return t; };
   box.append(
-    tile('Milestones finished', done + ' / ' + total, 'across the three feature agents'),
+    tile('Milestones finished', done + ' / ' + total, 'across the feature agents'),
     tile('Agents', working + ' working', finished + ' done · ' + blocked + ' blocked'),
     tile('Commits on feature branches', String(commits), 'not yet merged into main'),
     tile('Notes waiting', String(unread), unread ? 'sent but not read yet' : 'every note has been read'),

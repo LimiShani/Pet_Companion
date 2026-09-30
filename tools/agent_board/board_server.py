@@ -29,6 +29,7 @@ REPO = HERE.parent.parent
 STATE = HERE / "state"
 STATUS_DIR = STATE / "status"
 INBOX_DIR = STATE / "inbox"
+PROPOSALS_DIR = STATE / "proposals"
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8095
 GIT_TTL_SECONDS = 4
 MAX_NOTE_CHARS = 2000
@@ -124,6 +125,21 @@ def _git_facts(branch: str, worktree: str, main: str) -> dict:
     return facts
 
 
+def _proposal_info(agent_id: str) -> dict:
+    """Whether the agent has written its design proposal and mockup."""
+    folder = PROPOSALS_DIR / agent_id
+    doc, mockup = folder / "proposal.md", folder / "mockup.html"
+    info: dict = {"hasDoc": doc.is_file(), "hasMockup": mockup.is_file()}
+    times = [p.stat().st_mtime for p in (doc, mockup) if p.is_file()]
+    if times:
+        info["updated"] = datetime.fromtimestamp(max(times), timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return info
+
+
+def _known_agent(agent_id: str) -> bool:
+    return agent_id in {a["id"] for a in _roster().get("agents", [])}
+
+
 def build_state() -> dict:
     roster = _roster()
     main = roster.get("mainBranch", "main")
@@ -147,6 +163,7 @@ def build_state() -> dict:
             "status": status,
             "git": _git_facts(agent["branch"], agent["worktree"], main),
             "notes": notes,
+            "proposal": _proposal_info(agent["id"]),
         })
     lead = roster.get("lead")
     if lead:
@@ -187,8 +204,10 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):  # keep the console quiet
         pass
 
-    def _send(self, code: int, body: bytes, content_type: str):
+    def _send(self, code: int, body: bytes, content_type: str, extra: dict | None = None):
         self.send_response(code)
+        for name, value in (extra or {}).items():
+            self.send_header(name, value)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
@@ -208,6 +227,29 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(500, b"index.html is missing", "text/plain; charset=utf-8")
         elif path == "/api/state":
             self._json(200, build_state())
+        elif path.startswith("/api/proposal/"):
+            agent_id = path.rsplit("/", 1)[-1]
+            if not _known_agent(agent_id):
+                self._json(404, {"error": "Unknown agent."})
+                return
+            doc = PROPOSALS_DIR / agent_id / "proposal.md"
+            try:
+                text = doc.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                text = ""
+            self._json(200, {"markdown": text, **_proposal_info(agent_id)})
+        elif path.startswith("/mockup/"):
+            agent_id = path.rsplit("/", 1)[-1]
+            mockup = PROPOSALS_DIR / agent_id / "mockup.html"
+            if not _known_agent(agent_id) or not mockup.is_file():
+                self._send(404, b"No mockup yet.", "text/plain; charset=utf-8")
+                return
+            # Agent-written HTML: serve it sandboxed so it can run no script
+            # and load nothing from the network or from this server.
+            self._send(200, mockup.read_bytes(), "text/html; charset=utf-8", {
+                "Content-Security-Policy":
+                    "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:",
+            })
         else:
             self._send(404, b"Not found", "text/plain; charset=utf-8")
 
@@ -235,6 +277,7 @@ class Handler(BaseHTTPRequestHandler):
 def main():
     STATUS_DIR.mkdir(parents=True, exist_ok=True)
     INBOX_DIR.mkdir(parents=True, exist_ok=True)
+    PROPOSALS_DIR.mkdir(parents=True, exist_ok=True)
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     print(f"Agent control board: http://127.0.0.1:{PORT}/", flush=True)
     try:
