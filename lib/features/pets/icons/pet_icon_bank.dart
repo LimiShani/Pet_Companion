@@ -250,7 +250,7 @@ class _Drawn {
   }
 }
 
-final _pathToken = RegExp(r'[MmLlHhVvCcSsZz]|-?(?:\d+\.?\d*|\.\d+)');
+final _pathToken = RegExp(r'[A-Za-z]|-?(?:\d+\.?\d*|\.\d+)');
 
 /// Builds a [Path] from SVG path notation. Understands the commands the
 /// drawings use: M, L, H, V, C, S and Z, absolute and relative.
