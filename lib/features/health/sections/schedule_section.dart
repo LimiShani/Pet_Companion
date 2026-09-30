@@ -6,6 +6,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
+import '../data/species_settings.dart';
 import '../health_format.dart';
 import '../records/record_detail_screen.dart';
 import '../records/record_form_screen.dart';
@@ -196,6 +197,7 @@ class ScheduleSection extends ConsumerWidget {
           for (final item in _routines(plan)) ...[
             _RoutineCard(
               item: item,
+              kindLabel: SpeciesSettings.of(pet.species).routineLabel(item.kind),
               onTap: () => openRoutineForm(context, pet, item: item),
             ),
             const SizedBox(height: 8),
@@ -232,6 +234,7 @@ class _RoutineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final item = entry.item;
+    final kindLabel = SpeciesSettings.of(pet.species).routineLabel(item.kind);
     return HealthCard(
       key: ValueKey('today-${item.id}'),
       onTap: () => openRoutineForm(context, pet, item: item),
@@ -252,7 +255,9 @@ class _RoutineRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.title, style: AppText.cardTitle),
-                Text(item.kind.label, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                // A routine named after its kind does not say it twice.
+                if (item.title.trim() != kindLabel)
+                  Text(kindLabel, style: AppText.secondary.copyWith(color: AppColors.brown)),
               ],
             ),
           ),
@@ -688,9 +693,12 @@ class _MedicineCard extends StatelessWidget {
 
 /// A routine in the care plan.
 class _RoutineCard extends StatelessWidget {
-  const _RoutineCard({required this.item, required this.onTap});
+  const _RoutineCard({required this.item, required this.kindLabel, required this.onTap});
 
   final CarePlanItem item;
+
+  /// What the routine's kind is called for this pet's species.
+  final String kindLabel;
   final VoidCallback onTap;
 
   @override
@@ -709,7 +717,12 @@ class _RoutineCard extends StatelessWidget {
               children: [
                 Text(item.title, style: AppText.cardTitle),
                 Text(
-                  '${item.kind.label} · ${formatTimeOfDay(item.time)} · ${formatDays(item.days)}',
+                  [
+                    // A routine named after its kind does not say it twice.
+                    if (item.title.trim() != kindLabel) kindLabel,
+                    formatTimeOfDay(item.time),
+                    formatDays(item.days),
+                  ].join(' · '),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
                 if (!item.active) const Padding(padding: EdgeInsets.only(top: 4), child: HealthTag('Paused')),

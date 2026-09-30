@@ -14,8 +14,10 @@ import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'emergency_contacts.dart';
+import 'emergency_kit_screen.dart';
 import 'emergency_sheet.dart';
 import 'health_profile_form.dart';
+import 'lost_pet_card_screen.dart';
 import 'vets_screen.dart';
 
 /// Opens the full Emergency card of [petId] over the whole app. Nothing
@@ -189,6 +191,10 @@ class _Card extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         if (contacts != null) EmergencyContactList(pet: pet, contacts: contacts!) else const HealthLoading(),
+        EmergencyKitRow(pet: pet),
+        const SizedBox(height: 10),
+        LostPetButton(pet: pet),
+        const SizedBox(height: 10),
         OutlinedButton.icon(
           key: const Key('share-summary'),
           onPressed: () => onShare(context, summary),

@@ -1,8 +1,8 @@
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/app_config.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
@@ -50,6 +50,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   late final _product = TextEditingController(text: widget.record?.productName ?? '');
   late final _clinic = TextEditingController(text: widget.record?.clinic ?? '');
   late final _notes = TextEditingController(text: widget.record?.notes ?? '');
+  late final _cost = TextEditingController(text: _costText(widget.record?.costAmount));
   late RecordKind _kind;
   late DateTime _day;
   late TimeOfDay _time;
@@ -61,6 +62,11 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
 
   bool get _editing => widget.record != null;
   String get _petId => widget.pet.id;
+
+  /// An existing record keeps its own currency; a new cost is in the app's.
+  String get _currency => widget.record?.costCurrency ?? AppConfig.defaultCurrency;
+
+  static String _costText(double? amount) => amount == null ? '' : formatNumber(amount, decimals: 2);
   DateTime get _now => ref.read(healthClockProvider)();
   DateTime get _at => atTime(_day, _time);
   bool get _ahead => _at.isAfter(_now);
@@ -89,7 +95,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
 
   @override
   void dispose() {
-    for (final c in [_title, _product, _clinic, _notes]) {
+    for (final c in [_title, _product, _clinic, _notes, _cost]) {
       c.dispose();
     }
     super.dispose();
@@ -187,6 +193,8 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               productName: _kind.hasProduct ? _product.text.trim() : '',
               nextDueOn: nextDue,
               followUpOf: widget.record?.followUpOf,
+              costAmount: _cost.text.trim().isEmpty ? null : parseMoney(_cost.text),
+              costCurrency: _currency,
             ),
           );
       String? fileProblem;
@@ -353,6 +361,30 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.next,
               decoration: const InputDecoration(labelText: 'Vet or clinic (optional)'),
+            ),
+            const SizedBox(height: 10),
+            TextFormField(
+              key: const Key('record-cost'),
+              controller: _cost,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
+              textInputAction: TextInputAction.next,
+              decoration: InputDecoration(
+                labelText: ahead ? 'Expected cost (optional)' : 'Cost (optional)',
+                prefixText: '${currencySymbol(_currency)} ',
+              ),
+              validator: (value) {
+                final v = value?.trim() ?? '';
+                if (v.isEmpty) return null;
+                return parseMoney(v) == null ? 'Enter an amount, like 120 or 89.90.' : null;
+              },
+            ),
+            const SizedBox(height: 6),
+            FinePrint(
+              ahead
+                  ? 'What you expect to pay. It stays with your records and is left out of anything you share with a vet.'
+                  : 'What you paid. It stays with your records and is left out of anything you share with a vet.',
+              center: false,
             ),
             const SizedBox(height: 10),
             TextFormField(

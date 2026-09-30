@@ -3,12 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import '../emergency/emergency_contacts.dart';
+import 'emergency_kit.dart';
 import 'health_providers.dart';
 
 /// How much of a pet's health data a [HealthKeeper] keeps active.
 enum HealthKeep {
   /// The vets, the health profile and the emergency contacts.
   contacts,
+
+  /// The contacts, plus the emergency kit (which reads the care plan).
+  emergency,
 
   /// Everything: also the records, documents, care plan and observations.
   everything,
@@ -67,10 +71,14 @@ class _HealthKeeperState extends State<HealthKeeper> {
     keep(healthProfileProvider(id));
     keep(petVetsProvider(id));
     keep(emergencyContactsProvider(id));
+    if (widget.keep != HealthKeep.contacts) {
+      keep(carePlanProvider(id));
+      keep(kitChecksProvider(id));
+      keep(emergencyKitProvider(id));
+    }
     if (widget.keep == HealthKeep.everything) {
       keep(healthRecordsProvider(id));
       keep(healthDocumentsProvider(id));
-      keep(carePlanProvider(id));
       keep(observationsProvider(id));
       keep(petHealthDataProvider(id));
       keep(healthSummaryProvider(id));

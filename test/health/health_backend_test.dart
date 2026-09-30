@@ -36,6 +36,7 @@ void main() {
         productName: 'Rabies vaccine, batch A1234',
         nextDueOn: DateTime(2026, 3, 14),
         followUpOf: 'a0000000-0000-4000-8000-000000000001',
+        costAmount: 180.5,
       );
       final row = recordToRow(record);
       // The database generates the id and defaults the owner.
@@ -55,6 +56,10 @@ void main() {
       expect(back.productName, record.productName);
       expect(back.nextDueOn, record.nextDueOn);
       expect(back.followUpOf, record.followUpOf);
+      expect(row['cost_amount'], 180.5);
+      expect(row['cost_currency'], 'ILS');
+      expect(back.costAmount, 180.5);
+      expect(back.costCurrency, 'ILS');
     });
 
     test('a planned record and a row written before 0002 both read back', () {
@@ -300,6 +305,83 @@ void main() {
         expect(policy, contains("bucket_id = 'pet-documents'"));
         expect(policy, contains('(storage.foldername(name))[1] = (select auth.uid())::text'));
       }
+    });
+  });
+
+  group('0006_health_phase1.sql', () {
+    final sql = File('supabase/migrations/0006_health_phase1.sql').readAsStringSync();
+    final tables = RegExp(r'create table if not exists public\.(\w+)').allMatches(sql).map((m) => m.group(1)!).toList();
+
+    test('adds the cost columns, the routine kinds and two tables, and nothing else', () {
+      expect(tables, ['emergency_kit_items', 'lost_pet_cards']);
+      for (final column in ['cost_amount', 'cost_currency']) {
+        expect(sql, contains('alter table public.health_events add column if not exists $column'));
+      }
+      // The default currency is the app's.
+      expect(sql, contains("cost_currency text default 'ILS'"));
+      // Every kind the app can store, the old ones included.
+      for (final kind in CareKind.values) {
+        expect(sql, contains("'${kind.dbValue}'"), reason: kind.name);
+      }
+      // Purely additive: nothing removed, no bucket, no storage policy.
+      expect(sql, isNot(contains('drop table')));
+      expect(sql, isNot(contains('drop column')));
+      expect(sql, isNot(contains('delete from')));
+      expect(sql, isNot(contains('storage.')));
+      // The columns of the rows the app sends exist.
+      final kit = kitCheckToRow(const KitCheck(petId: pet, item: KitItem.carrier));
+      final card = lostCardToRow(const LostPetCard(petId: pet));
+      final kitTable = sql.substring(sql.indexOf('create table if not exists public.emergency_kit_items'));
+      final cardTable = sql.substring(sql.indexOf('create table if not exists public.lost_pet_cards'));
+      for (final column in kit.keys) {
+        expect(kitTable, contains('\n  $column '), reason: column);
+      }
+      for (final column in card.keys) {
+        expect(cardTable, contains('\n  $column '), reason: column);
+      }
+      for (final item in KitItem.values) {
+        expect(item.dbValue.length, lessThanOrEqualTo(40));
+      }
+    });
+
+    test('both tables have row level security and one owner-only policy', () {
+      for (final table in tables) {
+        expect(sql, contains('alter table public.$table enable row level security;'), reason: table);
+        expect(sql, contains('create policy "$table: owner has full access" on public.$table'), reason: table);
+        expect(sql, contains('grant select, insert, update, delete on public.$table to authenticated;'));
+      }
+      final policies = RegExp(r'create policy[^;]+;').allMatches(sql).map((m) => m.group(0)!).toList();
+      expect(policies, hasLength(2));
+      for (final policy in policies) {
+        expect(policy, contains('to authenticated'));
+        expect(policy, contains('using (owner_id = (select auth.uid()))'));
+        // Rows can only be written for a pet that belongs to the user.
+        expect(policy, contains('public.health_owns_pet(pet_id)'));
+      }
+      // Rows go with the pet and with the account.
+      expect('references public.pets (id) on delete cascade'.allMatches(sql), hasLength(2));
+      expect('references auth.users (id) on delete cascade'.allMatches(sql), hasLength(2));
+    });
+
+    test('is safe to run more than once, and all or nothing', () {
+      for (final policy in RegExp(r'create policy ("[^"]+") on ([\w.]+)').allMatches(sql)) {
+        expect(sql, contains('drop policy if exists ${policy.group(1)} on ${policy.group(2)};'));
+      }
+      final triggers = RegExp(r'create trigger (\w+)\s+before update on ([\w.]+)').allMatches(sql);
+      expect(triggers, hasLength(2));
+      for (final trigger in triggers) {
+        expect(sql, contains('drop trigger if exists ${trigger.group(1)} on ${trigger.group(2)};'));
+      }
+      expect(RegExp(r'create table (?!if not exists)').hasMatch(sql), isFalse);
+      expect(RegExp(r'create (unique )?index (?!if not exists)').hasMatch(sql), isFalse);
+      expect(RegExp(r'add column (?!if not exists)').hasMatch(sql), isFalse);
+      final constraints = RegExp(r'add constraint (\w+)').allMatches(sql).map((m) => m.group(1)!).toList();
+      expect(constraints, ['health_events_cost_valid', 'care_plan_items_kind_check']);
+      for (final constraint in constraints) {
+        expect(sql, contains('drop constraint if exists $constraint;'));
+      }
+      expect(RegExp(r'^begin;$', multiLine: true).hasMatch(sql), isTrue);
+      expect(sql.trimRight(), endsWith('commit;'));
     });
   });
 }

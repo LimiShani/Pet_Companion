@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/health/health_screen.dart';
 import 'package:pet_companion/features/health/sections/overview_section.dart';
@@ -63,6 +64,96 @@ void main() {
         await tapVisible(tester, find.byKey(const Key('overview-pet')));
         expect(find.text("Kelly's health profile"), findsOneWidget);
         await back(tester);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets('the emergency kit, the documents page and the lost card', (tester) async {
+        final h = HealthHarness();
+        h.cardPhotos.photo = MemoryImage(FakeHealthRepository.samplePng);
+        await pumpHealthHost(
+          tester,
+          const HealthScreen(),
+          harness: h,
+          page: true,
+          size: const Size(320, 640),
+          textDirection: direction,
+        );
+
+        await tester.tap(find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')));
+        await tester.pumpAndSettle();
+        await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
+        expect(find.text("Kelly's emergency kit"), findsOneWidget);
+        await tapVisible(tester, find.byKey(const ValueKey('kit-foodWater')));
+        expect(find.text('4 of 6 ready'), findsOneWidget);
+        await tapVisible(tester, find.byKey(const Key('kit-open-documents')));
+        expect(find.text("Kelly's documents"), findsOneWidget);
+        await back(tester);
+        await back(tester);
+
+        await tapVisible(tester, find.byKey(const Key('open-lost-card')));
+        await tester.enterText(
+          find.byKey(const Key('lost-description')),
+          'Mixed-breed dog, medium, light brown coat, red collar. Shy: please do not chase her.',
+        );
+        await tester.enterText(find.byKey(const Key('lost-area')), 'Herzl 12, Florentin, Tel Aviv');
+        await tester.enterText(find.byKey(const Key('lost-phone')), '+972 50 555 0117');
+        await tester.enterText(find.byKey(const Key('lost-extra')), 'Needs a daily medicine');
+        await tester.pumpAndSettle();
+        await tapVisible(tester, find.byKey(const Key('lost-confirm-phone')));
+        expect(find.text('Show this phone number on the card: +972 50 555 0117'), findsOneWidget);
+        // Both languages of the card, in either app direction.
+        await tapVisible(tester, find.byKey(const ValueKey('lost-language-en')));
+        expect(find.text('Seen Kelly? Please call'), findsOneWidget);
+        await tapVisible(tester, find.byKey(const ValueKey('lost-language-he')));
+        await tapVisible(tester, find.text('Share as image'));
+        expect(h.sharer.shared, hasLength(1));
+        await back(tester);
+        expect(tester.takeException(), isNull);
+      });
+
+      testWidgets("a cat's Quick log, routine form and a record with a cost", (tester) async {
+        final h = HealthHarness(
+          repository: fakeHealth(seeded: false),
+          pets: const [Pet(id: 'mitzi', name: 'Mitzi', species: PetSpecies.cat, breed: 'Domestic shorthair')],
+        );
+        await pumpHealthHost(
+          tester,
+          const HealthScreen(),
+          harness: h,
+          page: true,
+          size: const Size(320, 640),
+          textDirection: direction,
+        );
+
+        await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+        expect(find.byKey(const ValueKey('quick-group-behaviour')), findsOneWidget);
+        await tapVisible(tester, find.byKey(const ValueKey('quick-biting')));
+        await tapVisible(tester, find.byKey(const ValueKey('level-more')));
+        await tapVisible(tester, find.text('Save to journal'));
+        // Let the "Saved to the journal." message go before tapping under it.
+        await tester.pump(const Duration(seconds: 5));
+        await tester.pumpAndSettle();
+
+        await tapVisible(tester, find.byKey(const Key('overview-add-record')));
+        await tester.enterText(find.byKey(const Key('record-title')), 'Yearly check and vaccinations at the clinic');
+        await tester.enterText(find.byKey(const Key('record-cost')), '12345.50');
+        await tapVisible(tester, find.text('Save record'));
+
+        await openSection(tester, 'Schedule');
+        await tapVisible(tester, find.text('Add to the schedule'));
+        await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
+        await tapVisible(tester, find.byKey(const ValueKey('routine-kind-litterCleaning')));
+        await tapVisible(tester, find.text('Save routine'));
+        expect(find.text('Litter box cleaning'), findsWidgets);
+
+        await openSection(tester, 'History');
+        expect(find.bySemanticsLabel(RegExp('Cost')), findsOneWidget);
+        await tapVisible(tester, find.text('Yearly check and vaccinations at the clinic'));
+        expect(find.byKey(const Key('record-cost-row')), findsOneWidget);
+        await back(tester);
+
+        await openSection(tester, 'Insights');
+        expect(find.byKey(const Key('journal-behaviour-group')), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
 

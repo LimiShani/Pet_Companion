@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/app_config.dart';
 import 'health_models.dart';
 
 /// Conversions between the Health models and the rows of the tables in
@@ -56,6 +57,8 @@ HealthRecord recordFromRow(Row row) => HealthRecord(
   productName: _textOr(row['product_name']),
   nextDueOn: dayFromDbOrNull(row['next_due_on']),
   followUpOf: _text(row['follow_up_of']),
+  costAmount: (row['cost_amount'] as num?)?.toDouble(),
+  costCurrency: _textOr(row['cost_currency'], AppConfig.defaultCurrency),
 );
 
 /// The columns of a record. `id` and `owner_id` are left to the caller:
@@ -71,6 +74,9 @@ Row recordToRow(HealthRecord record) => {
   'product_name': record.productName.isEmpty ? null : record.productName,
   'next_due_on': record.nextDueOn == null ? null : dayToDb(record.nextDueOn!),
   'follow_up_of': record.followUpOf,
+  // Columns of 0006_health_phase1.sql.
+  'cost_amount': record.costAmount,
+  'cost_currency': record.costAmount == null ? null : record.costCurrency,
 };
 
 // --------------------------------------------------------- health_documents
@@ -246,4 +252,49 @@ Row observationToRow(Observation observation) => {
   'unit': observation.isWeight ? 'kg' : null,
   'note': observation.note,
   'observed_at': instantToDb(observation.observedAt),
+};
+
+// ------------------------------------------------------ emergency_kit_items
+
+/// `null` for an item this version of the app does not know.
+KitCheck? kitCheckFromRow(Row row) {
+  final item = KitItem.fromDb(_text(row['item']));
+  if (item == null) return null;
+  return KitCheck(
+    petId: row['pet_id'] as String,
+    item: item,
+    checkedAt: instantFromDbOrNull(row['checked_at']),
+    note: _textOr(row['note']),
+  );
+}
+
+Row kitCheckToRow(KitCheck check) => {
+  'pet_id': check.petId,
+  'item': check.item.dbValue,
+  'checked_at': check.checkedAt == null ? null : instantToDb(check.checkedAt!),
+  'note': check.note,
+};
+
+// ----------------------------------------------------------- lost_pet_cards
+
+LostPetCard lostCardFromRow(Row row) => LostPetCard(
+  petId: row['pet_id'] as String,
+  description: _textOr(row['description']),
+  area: _textOr(row['area']),
+  lastSeenAt: instantFromDbOrNull(row['last_seen_at']),
+  phone: _textOr(row['phone']),
+  extra: _textOr(row['extra']),
+  language: LostCardLanguage.fromCode(_text(row['language'])),
+  foundAt: instantFromDbOrNull(row['found_at']),
+);
+
+Row lostCardToRow(LostPetCard card) => {
+  'pet_id': card.petId,
+  'description': card.description,
+  'area': card.area,
+  'last_seen_at': card.lastSeenAt == null ? null : instantToDb(card.lastSeenAt!),
+  'phone': card.phone,
+  'extra': card.extra,
+  'language': card.language.code,
+  'found_at': card.foundAt == null ? null : instantToDb(card.foundAt!),
 };

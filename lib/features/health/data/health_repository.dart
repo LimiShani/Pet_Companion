@@ -66,4 +66,20 @@ abstract class HealthRepository {
   Future<List<Observation>> fetchObservations(String petId);
   Future<Observation> saveObservation(Observation observation);
   Future<void> deleteObservation(String observationId);
+
+  // The emergency kit checklist.
+
+  /// The answers saved for a pet's kit; an item never answered has none.
+  Future<List<KitCheck>> fetchKit(String petId);
+
+  /// Stores the pet's answer for one item, replacing the one before.
+  Future<KitCheck> saveKitCheck(KitCheck check);
+
+  // The "my pet is lost" card.
+
+  /// What was last written for the pet's card, or `null` when there is none.
+  Future<LostPetCard?> fetchLostCard(String petId);
+
+  /// Stores the pet's card, replacing the one before.
+  Future<LostPetCard> saveLostCard(LostPetCard card);
 }

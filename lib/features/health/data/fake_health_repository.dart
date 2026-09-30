@@ -38,6 +38,8 @@ class FakeHealthRepository implements HealthRepository {
   final _planItems = <CarePlanItem>[];
   final _logs = <CareLog>[];
   final _observations = <Observation>[];
+  final _kit = <String, Map<KitItem, KitCheck>>{};
+  final _lostCards = <String, LostPetCard>{};
   var _nextId = 1;
 
   String _id(String prefix) => '$prefix${_nextId++}';
@@ -323,6 +325,36 @@ class FakeHealthRepository implements HealthRepository {
     _observations.removeWhere((o) => o.id == observationId);
   }
 
+  // --------------------------------------------------------- emergency kit
+
+  @override
+  Future<List<KitCheck>> fetchKit(String petId) async {
+    await _wait();
+    return [...?_kit[petId]?.values];
+  }
+
+  @override
+  Future<KitCheck> saveKitCheck(KitCheck check) async {
+    await _wait();
+    _kit.putIfAbsent(check.petId, () => {})[check.item] = check;
+    return check;
+  }
+
+  // ------------------------------------------------------------- lost card
+
+  @override
+  Future<LostPetCard?> fetchLostCard(String petId) async {
+    await _wait();
+    return _lostCards[petId];
+  }
+
+  @override
+  Future<LostPetCard> saveLostCard(LostPetCard card) async {
+    await _wait();
+    _lostCards[card.petId] = card;
+    return card;
+  }
+
   // ------------------------------------------------------------ sample data
 
   void _seed() {
@@ -368,6 +400,7 @@ class FakeHealthRepository implements HealthRepository {
       String clinic = '',
       String product = '',
       DateTime? nextDue,
+      double? cost,
     }) => HealthRecord(
       id: id,
       petId: pet,
@@ -379,6 +412,7 @@ class FakeHealthRepository implements HealthRepository {
       clinic: clinic,
       productName: product,
       nextDueOn: nextDue,
+      costAmount: cost,
     );
 
     _records.addAll([
@@ -417,6 +451,7 @@ class FakeHealthRepository implements HealthRepository {
         'Flea and tick tablet',
         DateTime(2025, 5, 27, 19, 30),
         nextDue: DateTime(2025, 7, 27),
+        cost: 85,
       ),
       done(
         'r-limp',
@@ -425,6 +460,7 @@ class FakeHealthRepository implements HealthRepository {
         DateTime(2025, 5, 2, 8, 15),
         clinic: clinic,
         notes: 'Arthritis in the hips. Started joint tablets.',
+        cost: 320,
       ),
       done('r-worm', RecordKind.preventive, 'Worming tablet', DateTime(2025, 4, 10, 9)),
       done(
@@ -436,6 +472,7 @@ class FakeHealthRepository implements HealthRepository {
         product: 'Rabies vaccine, 1 year, batch A1234',
         nextDue: DateTime(2026, 3, 14),
         notes: 'A little sleepy that evening, fine the next morning.',
+        cost: 180,
       ),
       done(
         'r-food',
@@ -444,7 +481,7 @@ class FakeHealthRepository implements HealthRepository {
         DateTime(2025, 2, 1, 8),
         notes: 'Switched over one week. No tummy trouble.',
       ),
-      done('r-dental', RecordKind.procedure, 'Dental cleaning', DateTime(2025, 1, 20, 9), clinic: clinic),
+      done('r-dental', RecordKind.procedure, 'Dental cleaning', DateTime(2025, 1, 20, 9), clinic: clinic, cost: 649.9),
       done('r-blood', RecordKind.document, 'Blood test results', DateTime(2025, 1, 20, 11)),
       done(
         'r-ear',
@@ -579,6 +616,16 @@ class FakeHealthRepository implements HealthRepository {
       given('p-breakfast', today, const TimeOfDay(hour: 7, minute: 30), title: 'Breakfast', med: null);
     }
     if (!now.isBefore(atTime(today, const TimeOfDay(hour: 8, minute: 5)))) given('p-joint-am', today, am);
+
+    // Half of Kelly's emergency kit is ready.
+    _kit[pet] = {
+      for (final (item, day) in [
+        (KitItem.carrier, DateTime(2025, 6, 2)),
+        (KitItem.documents, DateTime(2025, 6, 2)),
+        (KitItem.microchip, DateTime(2025, 5, 28)),
+      ])
+        item: KitCheck(petId: pet, item: item, checkedAt: day),
+    };
 
     Observation weight(String id, DateTime day, double kg, [String note = '']) =>
         Observation(id: id, petId: pet, category: Observation.weightCategory, value: kg, note: note, observedAt: day);

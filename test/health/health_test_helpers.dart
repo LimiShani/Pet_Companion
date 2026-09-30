@@ -15,6 +15,7 @@ import 'package:pet_companion/features/health/data/reminder_scheduler.dart';
 import 'package:pet_companion/features/health/emergency/contact_launcher.dart';
 import 'package:pet_companion/features/health/share/health_pdf.dart';
 import 'package:pet_companion/features/health/share/health_report.dart';
+import 'package:pet_companion/features/health/share/lost_card_renderer.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
@@ -105,6 +106,38 @@ class RecordingPdfBuilder implements HealthPdfBuilder {
   }
 }
 
+/// Hands back small stand-in files instead of photographing the lost card.
+class FakeLostCardRenderer implements LostCardRenderer {
+  int pictures = 0;
+  final pdfTitles = <String>[];
+  bool failing = false;
+
+  @override
+  Future<Uint8List> png(GlobalKey boundary, {double width = 1080}) async {
+    if (failing) throw const HealthException('Could not prepare the card. Please try again.');
+    pictures++;
+    return FakeHealthRepository.samplePng;
+  }
+
+  @override
+  Future<Uint8List> pdf(Uint8List png, {required String title}) async {
+    pdfTitles.add(title);
+    return FakeHealthRepository.samplePdf;
+  }
+}
+
+/// The photo a lost card gets: none, unless a test sets one.
+class FakeLostCardPhotoSource implements LostCardPhotoSource {
+  ImageProvider? photo;
+  final asked = <String>[];
+
+  @override
+  Future<ImageProvider?> photoOf(Pet pet) async {
+    asked.add(pet.id);
+    return photo;
+  }
+}
+
 PickedFile testPhoto([String name = 'booklet.png']) =>
     PickedFile(name: name, mimeType: 'image/png', bytes: FakeHealthRepository.samplePng);
 
@@ -123,7 +156,9 @@ class HealthHarness {
       scheduler = RecordingReminderScheduler(),
       picker = FakeAttachmentPicker(),
       sharer = FakeFileSharer(),
-      pdf = RecordingPdfBuilder();
+      pdf = RecordingPdfBuilder(),
+      cardRenderer = FakeLostCardRenderer(),
+      cardPhotos = FakeLostCardPhotoSource();
 
   final FakeHealthRepository repository;
   final RecordingContactLauncher launcher;
@@ -131,6 +166,8 @@ class HealthHarness {
   final FakeAttachmentPicker picker;
   final FakeFileSharer sharer;
   final RecordingPdfBuilder pdf;
+  final FakeLostCardRenderer cardRenderer;
+  final FakeLostCardPhotoSource cardPhotos;
 
   /// Replaces the shared sample pets (to test other species).
   final List<Pet>? pets;
@@ -152,6 +189,8 @@ class HealthHarness {
     attachmentPickerProvider.overrideWithValue(picker),
     fileSharerProvider.overrideWithValue(sharer),
     healthPdfBuilderProvider.overrideWithValue(pdf),
+    lostCardRendererProvider.overrideWithValue(cardRenderer),
+    lostCardPhotoSourceProvider.overrideWithValue(cardPhotos),
     if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
   ];
 }

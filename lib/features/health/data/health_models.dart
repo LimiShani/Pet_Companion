@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../config/app_config.dart';
+
 /// Thrown by a `HealthRepository` with a message safe to show to the user.
 class HealthException implements Exception {
   const HealthException(this.message);
@@ -75,6 +77,8 @@ class HealthRecord {
     this.productName = '',
     this.nextDueOn,
     this.followUpOf,
+    this.costAmount,
+    this.costCurrency = AppConfig.defaultCurrency,
   });
 
   /// Empty until the repository has stored the record.
@@ -101,6 +105,15 @@ class HealthRecord {
 
   /// Id of the record whose "next due" date created this planned record.
   final String? followUpOf;
+
+  /// What the owner paid (or, for a planned record, expects to pay), or
+  /// `null` when no cost was entered. Never part of what is shared with a vet.
+  final double? costAmount;
+
+  /// ISO 4217 code of [costAmount].
+  final String costCurrency;
+
+  bool get hasCost => costAmount != null;
 
   bool get isNew => id.isEmpty;
   bool get isDone => doneAt != null;
@@ -130,6 +143,8 @@ class HealthRecord {
       productName: productName ?? this.productName,
       nextDueOn: nextDueOn,
       followUpOf: followUpOf ?? this.followUpOf,
+      costAmount: costAmount,
+      costCurrency: costCurrency,
     );
   }
 
@@ -146,6 +161,8 @@ class HealthRecord {
     productName: productName,
     nextDueOn: nextDueOn,
     followUpOf: followUpOf,
+    costAmount: costAmount,
+    costCurrency: costCurrency,
   );
 
   /// The same record with another "next due" date (`null` clears it).
@@ -161,6 +178,8 @@ class HealthRecord {
     productName: productName,
     nextDueOn: day == null ? null : dateOnly(day),
     followUpOf: followUpOf,
+    costAmount: costAmount,
+    costCurrency: costCurrency,
   );
 }
 
@@ -469,6 +488,15 @@ enum CareKind {
   walk('walk', 'Walk'),
   grooming('grooming', 'Grooming'),
   cleaning('cleaning', 'Cleaning'),
+
+  /// Scooping the litter box (cats).
+  litterCleaning('litter_cleaning', 'Litter box cleaning'),
+
+  /// Replacing the litter (cats).
+  litterChange('litter_change', 'Litter change'),
+
+  /// Cleaning the cage, hutch, tank or enclosure (cage animals).
+  cageCleaning('cage_cleaning', 'Cage cleaning'),
   other('other', 'Other');
 
   const CareKind(this.dbValue, this.label);
@@ -699,4 +727,106 @@ class Observation {
     note: note,
     observedAt: observedAt,
   );
+}
+
+// ---------------------------------------------------------------------------
+// The emergency kit: what is ready for a siren or for leaving in a hurry
+// ---------------------------------------------------------------------------
+
+/// One line of a pet's emergency kit. [dbValue] is `emergency_kit_items.item`.
+enum KitItem {
+  /// A carrier, crate or travel cage (and the lead, for a dog).
+  carrier('carrier'),
+  foodWater('food_water'),
+  documents('documents'),
+  microchip('microchip'),
+
+  /// Only part of the kit while the pet has an active medicine.
+  medicines('medicines'),
+
+  /// The plan for the protected room during sirens.
+  shelterPlan('shelter_plan');
+
+  const KitItem(this.dbValue);
+
+  final String dbValue;
+
+  static KitItem? fromDb(String? value) {
+    for (final item in KitItem.values) {
+      if (item.dbValue == value) return item;
+    }
+    return null;
+  }
+}
+
+/// The owner's answer for one kit item: ticked (and when), and a note.
+class KitCheck {
+  const KitCheck({required this.petId, required this.item, this.checkedAt, this.note = ''});
+
+  final String petId;
+  final KitItem item;
+
+  /// When the owner ticked it, or `null` while it is not ready.
+  final DateTime? checkedAt;
+
+  /// Free text; used for the plan for the protected room.
+  final String note;
+
+  bool get isReady => checkedAt != null;
+}
+
+// ---------------------------------------------------------------------------
+// The "my pet is lost" card
+// ---------------------------------------------------------------------------
+
+/// The language of the card's few fixed words. The card is read by
+/// neighbours, not by the app's user, so it has its own language.
+/// [code] is `lost_pet_cards.language`.
+enum LostCardLanguage {
+  hebrew('he', 'Hebrew'),
+  english('en', 'English');
+
+  const LostCardLanguage(this.code, this.label);
+
+  final String code;
+
+  /// What the switch on the page calls it.
+  final String label;
+
+  static LostCardLanguage fromCode(String? code) =>
+      LostCardLanguage.values.firstWhere((l) => l.code == code, orElse: () => LostCardLanguage.hebrew);
+}
+
+/// What the owner wrote for a pet's lost card, kept so nothing is retyped.
+/// The app never posts it anywhere: it only builds a picture to share.
+class LostPetCard {
+  const LostPetCard({
+    required this.petId,
+    this.description = '',
+    this.area = '',
+    this.lastSeenAt,
+    this.phone = '',
+    this.extra = '',
+    this.language = LostCardLanguage.hebrew,
+    this.foundAt,
+  });
+
+  final String petId;
+
+  /// What the pet looks like, in the owner's words.
+  final String description;
+
+  /// A general area, typed by the owner. Never filled from a saved address.
+  final String area;
+  final DateTime? lastSeenAt;
+
+  /// The owner's phone number, shown on the card only after they confirm it.
+  final String phone;
+
+  /// One more line ("needs a daily medicine").
+  final String extra;
+  final LostCardLanguage language;
+
+  /// When the pet came back home, or `null` while it is still looked for.
+  final DateTime? foundAt;
 }

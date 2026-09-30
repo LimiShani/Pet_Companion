@@ -138,6 +138,12 @@ class _Detail extends ConsumerWidget {
         ),
       if (record.productName.isNotEmpty) LabeledValue('Product', record.productName),
       if (record.clinic.isNotEmpty) LabeledValue('Vet or clinic', record.clinic),
+      if (record.costAmount != null)
+        LabeledValue(
+          record.isDone ? 'Cost' : 'Expected cost',
+          formatMoney(record.costAmount!, record.costCurrency),
+          key: const Key('record-cost-row'),
+        ),
       if (record.notes.isNotEmpty) LabeledValue('Notes', record.notes),
     ];
 

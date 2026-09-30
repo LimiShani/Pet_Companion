@@ -67,6 +67,27 @@ String formatWeightChange(double fromKg, double toKg, {bool grams = false}) {
   return diff < 0 ? '$shown down' : '$shown up';
 }
 
+/// "₪320", "₪89.90": the currency's own symbol, with decimals only when the
+/// amount has them. The one place Health turns an amount into text.
+String formatMoney(double amount, String currency) {
+  final whole = amount == amount.roundToDouble();
+  return NumberFormat.simpleCurrency(name: currency, decimalDigits: whole ? 0 : null).format(amount);
+}
+
+/// The symbol shown beside an amount field ("₪" for ILS).
+String currencySymbol(String currency) => NumberFormat.simpleCurrency(name: currency).currencySymbol;
+
+/// The amount typed into a cost field, or `null` when it is not an amount.
+/// A comma is accepted as the decimal mark.
+double? parseMoney(String text) {
+  final value = double.tryParse(text.trim().replaceAll(',', '.'));
+  if (value == null || value.isNaN || value < 0 || value > maxMoney) return null;
+  return (value * 100).round() / 100;
+}
+
+/// The largest amount a cost column holds.
+const maxMoney = 99999999.99;
+
 /// "Dog · Mix · 13.6 years": what is known about the pet, nothing invented.
 String petLine(Pet pet) => [
   pet.species.label,
@@ -111,6 +132,9 @@ IconData careKindIcon(CareKind kind) => switch (kind) {
   CareKind.walk => Icons.directions_walk_rounded,
   CareKind.grooming => Icons.brush_rounded,
   CareKind.cleaning => Icons.cleaning_services_rounded,
+  CareKind.litterCleaning => Icons.inbox_rounded,
+  CareKind.litterChange => Icons.autorenew_rounded,
+  CareKind.cageCleaning => Icons.cleaning_services_rounded,
   CareKind.other => Icons.check_circle_outline_rounded,
 };
 
