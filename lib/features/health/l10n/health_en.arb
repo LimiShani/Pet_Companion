@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+
+  "tabTitle": "Health",
+  "@tabTitle": {"description": "Title of the Health tab's header."}
+}

@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+
+  "tabTitle": "Store",
+  "@tabTitle": {"description": "Title of the Store tab's header."}
+}
