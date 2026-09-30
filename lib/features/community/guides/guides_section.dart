@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
-import '../community_time.dart';
+import '../community_words.dart';
 import '../data/audience.dart';
-import '../data/community_models.dart';
 import '../data/guides_repository.dart';
 import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
+import '../widgets/section_state.dart';
 import '../widgets/small_tag.dart';
 import 'guides_providers.dart';
 
@@ -42,17 +43,18 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     final library = ref.watch(guideLibraryProvider);
     final scope = ref.watch(communityScopeProvider);
     final data = library.value;
 
     if (data == null) {
       if (library.isLoading) return const Center(child: CircularProgressIndicator());
-      return EmptyState(
+      return SectionState(
         icon: Icons.cloud_off_rounded,
-        title: 'Cannot load the guides',
-        message: communityErrorMessage(library.error ?? ''),
-        actionLabel: 'Try again',
+        title: l10n.guidesLoadFailed,
+        message: communityErrorText(context, library.error),
+        actionLabel: context.l10n.commonTryAgain,
         onAction: () => ref.invalidate(guideLibraryProvider),
       );
     }
@@ -67,21 +69,23 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
     return ListView(
       padding: const EdgeInsets.only(top: 16, bottom: 24),
       children: [
-        const ScopeBar(what: 'guides'),
+        const ScopeBar(what: ScopeBarSubject.guides),
         const SizedBox(height: 12),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
           child: TextField(
             controller: _search,
             textInputAction: TextInputAction.search,
+            // A search reads in the direction of what is typed.
+            textDirection: contentDirection(context, _search.text),
             decoration: InputDecoration(
-              hintText: 'Search guides',
+              hintText: l10n.searchGuides,
               prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
               suffixIcon: _search.text.isEmpty
                   ? null
                   : IconButton(
                       onPressed: _search.clear,
-                      tooltip: 'Clear search',
+                      tooltip: l10n.clearSearch,
                       icon: const Icon(Icons.close_rounded, color: AppColors.brown),
                     ),
             ),
@@ -95,7 +99,7 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
             children: [
               _CategoryChip(
                 id: 'all',
-                label: 'All',
+                label: l10n.categoryAll,
                 selected: categoryId == null,
                 onSelected: () => setState(() => _categoryId = null),
               ),
@@ -103,7 +107,7 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
                 const SizedBox(width: 8),
                 _CategoryChip(
                   id: category.id,
-                  label: category.name,
+                  label: l10n.categoryName(category),
                   selected: categoryId == category.id,
                   onSelected: () => setState(() => _categoryId = category.id),
                 ),
@@ -118,20 +122,18 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
             child: everywhere > 0
                 ? EmptyState(
                     icon: Icons.search_off_rounded,
-                    title: 'No guides for ${scope.noun} match',
-                    message: everywhere == 1
-                        ? 'There is 1 match among the guides for every animal.'
-                        : 'There are $everywhere matches among the guides for every animal.',
-                    actionLabel: 'Search everything',
+                    title: l10n.noGuidesFor(scope),
+                    message: l10n.matchesElsewhere(everywhere),
+                    actionLabel: l10n.searchEverything,
                     onAction: () {
                       setState(() => _categoryId = null);
                       ref.read(communityScopeProvider.notifier).select(CommunityScope.everything);
                     },
                   )
-                : const EmptyState(
+                : EmptyState(
                     icon: Icons.search_off_rounded,
-                    title: 'No guides match',
-                    message: 'Try a different word or another category.',
+                    title: l10n.noGuidesMatchTitle,
+                    message: l10n.noGuidesMatchMessage,
                   ),
           )
         else
@@ -179,13 +181,18 @@ class _GuideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final meta = ['${guide.readingMinutes} min read', if (category != null) category!.name].join(' · ');
+    final l10n = context.communityL10n;
+    final format = AppFormat.of(context);
+    final meta = dotted([
+      l10n.readTime(guide.readingMinutes),
+      if (category != null) l10n.categoryName(category!),
+    ]);
     final small = AppText.label.copyWith(color: AppColors.brown);
-    final audienceTag = showAudience ? SmallTag.forAudience(guide.audience) : null;
+    final audienceTag = showAudience ? SmallTag.forAudience(l10n, guide.audience) : null;
     final tags = [
       ?audienceTag,
-      if (guide.review != null) SmallTag.reviewed,
-      if (!guide.translated) SmallTag.englishOnly,
+      if (guide.review != null) SmallTag.reviewed(l10n),
+      if (!guide.translated) SmallTag.englishOnly(l10n),
     ];
 
     return Card(
@@ -226,7 +233,10 @@ class _GuideCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     // Who wrote it and when: shown before anyone opens it.
                     Text(
-                      'By ${guide.author.name} · Updated ${shortDate(guide.updatedAt)}',
+                      dotted([
+                        l10n.guideBy(l10n.inLine(guide.author.name)),
+                        l10n.guideUpdated(format.date(guide.updatedAt)),
+                      ]),
                       style: small,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,

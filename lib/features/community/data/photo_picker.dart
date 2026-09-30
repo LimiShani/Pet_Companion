@@ -36,9 +36,7 @@ class ImagePickerPhotoPicker implements PhotoPicker {
       return PickedPhoto(bytes: await file.readAsBytes(), name: file.name, mimeType: file.mimeType);
     } on PlatformException {
       throw CommunityException(
-        source == PhotoSource.camera
-            ? 'Cannot open the camera. Check that Pet Companion is allowed to use it.'
-            : 'Cannot open your photos. Check that Pet Companion is allowed to see them.',
+        source == PhotoSource.camera ? CommunityFailure.cameraNotAllowed : CommunityFailure.photosNotAllowed,
       );
     }
   }

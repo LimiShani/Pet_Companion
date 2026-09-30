@@ -3,9 +3,14 @@ import 'package:flutter/services.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../community_words.dart';
 
 /// A text field with a round send button, pinned under a list: the comment
 /// field of a post and the message field of a chat room.
+///
+/// The field leads and the button follows: the button is on the right in
+/// English and on the left in Hebrew, and its arrow (which Flutter mirrors
+/// by itself) points the way the line reads.
 class MessageBar extends StatelessWidget {
   const MessageBar({
     super.key,
@@ -34,18 +39,24 @@ class MessageBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Expanded(
-            child: TextField(
-              controller: controller,
-              minLines: 1,
-              maxLines: 4,
-              textCapitalization: TextCapitalization.sentences,
-              inputFormatters: inputFormatters,
-              style: AppText.body.copyWith(fontSize: 15),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: AppText.body.copyWith(fontSize: 15, color: AppColors.brown.withValues(alpha: 0.6)),
-                isDense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            // What is being typed reads in its own direction, as it will
+            // once it is sent; an empty field follows the screen.
+            child: ValueListenableBuilder<TextEditingValue>(
+              valueListenable: controller,
+              builder: (context, value, _) => TextField(
+                controller: controller,
+                minLines: 1,
+                maxLines: 4,
+                textCapitalization: TextCapitalization.sentences,
+                textDirection: contentDirection(context, value.text),
+                inputFormatters: inputFormatters,
+                style: AppText.body.copyWith(fontSize: 15),
+                decoration: InputDecoration(
+                  hintText: hint,
+                  hintStyle: AppText.body.copyWith(fontSize: 15, color: AppColors.brown.withValues(alpha: 0.6)),
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                ),
               ),
             ),
           ),

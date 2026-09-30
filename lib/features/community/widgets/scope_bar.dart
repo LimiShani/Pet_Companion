@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../community_words.dart';
 import '../data/audience.dart';
+
+/// What a section with a [ScopeBar] lists.
+enum ScopeBarSubject { rooms, guides }
 
 /// The Dogs · Cats · Everything chips at the top of the Chat and Guides
 /// sections, with a line saying what is shown and why.
@@ -14,18 +19,21 @@ import '../data/audience.dart';
 class ScopeBar extends ConsumerWidget {
   const ScopeBar({super.key, required this.what});
 
-  /// What the section lists, as in "all [what]": "rooms" or "guides".
-  final String what;
+  /// What the section lists: the caption names it.
+  final ScopeBarSubject what;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
     final scope = ref.watch(communityScopeProvider);
     final pet = ref.watch(selectedPetProvider);
     final matched =
         scope != CommunityScope.everything && scope == CommunityScope.forSpecies(pet.species) && pet.name.isNotEmpty;
-    final caption = matched
-        ? 'Matched to ${pet.name}. Tap Everything to see all $what.'
-        : 'Showing $what for ${scope.noun}.';
+    final matchedPet = matched ? l10n.inLine(pet.name) : null;
+    final caption = switch (what) {
+      ScopeBarSubject.rooms => l10n.roomsCaption(scope, matchedPet: matchedPet),
+      ScopeBarSubject.guides => l10n.guidesCaption(scope, matchedPet: matchedPet),
+    };
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -39,7 +47,7 @@ class ScopeBar extends ConsumerWidget {
                 if (option != CommunityScope.values.first) const SizedBox(width: 8),
                 ChoiceChip(
                   key: ValueKey('scope-${option.name}'),
-                  label: Text(option.label),
+                  label: Text(l10n.scope(option)),
                   selected: option == scope,
                   showCheckmark: false,
                   onSelected: (_) => ref.read(communityScopeProvider.notifier).select(option),

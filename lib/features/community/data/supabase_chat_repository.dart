@@ -64,7 +64,7 @@ class SupabaseChatRepository implements ChatRepository {
   Future<void> sendMessage({required AppUser author, required String channelId, required String text}) =>
       guardCommunity(() async {
         final body = text.trim();
-        if (body.isEmpty) throw const CommunityException('Write something before sending.');
+        if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyMessage);
         _names.remember(author.id, author.displayName);
         await _client.from('chat_messages').insert({'channel_id': channelId, 'author_id': author.id, 'body': body});
       });
@@ -78,7 +78,7 @@ class SupabaseChatRepository implements ChatRepository {
           id: row['id'] as String,
           channelId: row['channel_id'] as String,
           authorId: row['author_id'] as String,
-          authorName: names[row['author_id']] ?? fallbackAuthorName,
+          authorName: names[row['author_id']] ?? '',
           text: row['body'] as String,
           sentAt: parseTimestamp(row['created_at']),
         ),

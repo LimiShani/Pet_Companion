@@ -54,7 +54,7 @@ class SupabaseFeedRepository implements FeedRepository {
   }) =>
       guardCommunity(() async {
         final body = text.trim();
-        if (body.isEmpty) throw const CommunityException('Write something before posting.');
+        if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyPost);
         final pet = petName?.trim() ?? '';
 
         String? photoPath;
@@ -89,7 +89,7 @@ class SupabaseFeedRepository implements FeedRepository {
         return Post(
           id: row['id'] as String,
           authorId: author.id,
-          authorName: authorNameOrFallback(author.displayName),
+          authorName: storedAuthorName(author.displayName),
           petName: pet.isEmpty ? null : pet,
           text: body,
           // Shown from memory until the next fetch brings a signed link.
@@ -106,7 +106,7 @@ class SupabaseFeedRepository implements FeedRepository {
             .eq('id', postId)
             .eq('author_id', viewer.id)
             .select('photo_path');
-        if (deleted.isEmpty) throw const CommunityException('You can only delete your own posts.');
+        if (deleted.isEmpty) throw const CommunityException(CommunityFailure.notYourPost);
         if (deleted.first['photo_path'] case final String path) await _removePhoto(path);
       });
 
@@ -152,7 +152,7 @@ class SupabaseFeedRepository implements FeedRepository {
               id: row['id'] as String,
               postId: row['post_id'] as String,
               authorId: row['author_id'] as String,
-              authorName: names[row['author_id']] ?? fallbackAuthorName,
+              authorName: names[row['author_id']] ?? '',
               text: row['body'] as String,
               createdAt: parseTimestamp(row['created_at']),
             ),
@@ -163,7 +163,7 @@ class SupabaseFeedRepository implements FeedRepository {
   Future<Comment> addComment({required AppUser author, required String postId, required String text}) =>
       guardCommunity(() async {
         final body = text.trim();
-        if (body.isEmpty) throw const CommunityException('Write something before sending.');
+        if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyMessage);
         final row = await _client
             .from('community_comments')
             .insert({'post_id': postId, 'author_id': author.id, 'body': body})
@@ -174,7 +174,7 @@ class SupabaseFeedRepository implements FeedRepository {
           id: row['id'] as String,
           postId: postId,
           authorId: author.id,
-          authorName: authorNameOrFallback(author.displayName),
+          authorName: storedAuthorName(author.displayName),
           text: body,
           createdAt: parseTimestamp(row['created_at']),
         );
@@ -186,7 +186,7 @@ class SupabaseFeedRepository implements FeedRepository {
     return Post(
       id: row['id'] as String,
       authorId: row['author_id'] as String,
-      authorName: authorNameOrFallback(row['author_name'] as String?),
+      authorName: storedAuthorName(row['author_name'] as String?),
       petName: row['pet_name'] as String?,
       text: row['body'] as String,
       photo: path == null || url == null ? null : RemotePostPhoto(url: url, cacheKey: path),
@@ -231,6 +231,6 @@ class SupabaseFeedRepository implements FeedRepository {
     final extension = dot < 0 ? '' : photo.name.substring(dot + 1).toLowerCase();
     if (_contentTypes.containsKey(extension)) return extension == 'jpeg' ? 'jpg' : extension;
     if (extension.isEmpty && mime == null) return 'jpg';
-    throw const CommunityException('Please choose a JPEG, PNG or WebP photo.');
+    throw const CommunityException(CommunityFailure.photoUnsupported);
   }
 }

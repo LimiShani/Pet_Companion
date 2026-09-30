@@ -2,15 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
+import '../community_words.dart';
 import '../data/audience.dart';
 import '../data/community_models.dart';
+import '../widgets/auto_direction_text.dart';
 import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
 import '../widgets/small_tag.dart';
+import '../widgets/section_state.dart';
 import 'chat_providers.dart';
 
 /// The Chat section of the Community tab: the topic rooms for the chosen
@@ -20,26 +23,27 @@ class ChatSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
     final channels = ref.watch(chatChannelsProvider);
     final scope = ref.watch(communityScopeProvider);
     final list = channels.value;
 
     if (list == null) {
       if (channels.isLoading) return const Center(child: CircularProgressIndicator());
-      return EmptyState(
+      return SectionState(
         icon: Icons.cloud_off_rounded,
-        title: 'Cannot load the chat rooms',
-        message: communityErrorMessage(channels.error ?? ''),
-        actionLabel: 'Try again',
+        title: l10n.roomsLoadFailed,
+        message: communityErrorText(context, channels.error),
+        actionLabel: context.l10n.commonTryAgain,
         onAction: () => ref.invalidate(chatChannelsProvider),
       );
     }
 
     if (list.isEmpty) {
-      return const EmptyState(
+      return SectionState(
         icon: Icons.forum_rounded,
-        title: 'No chat rooms yet',
-        message: 'Rooms will appear here as soon as they open.',
+        title: l10n.noRoomsTitle,
+        message: l10n.noRoomsMessage,
       );
     }
 
@@ -51,15 +55,12 @@ class ChatSection extends ConsumerWidget {
     return ListView(
       padding: const EdgeInsets.only(top: 16, bottom: 24),
       children: [
-        const ScopeBar(what: 'rooms'),
+        const ScopeBar(what: ScopeBarSubject.rooms),
         const SizedBox(height: 12),
         if (visible.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen + 4, vertical: 8),
-            child: Text(
-              'No rooms for ${scope.noun} yet. Tap Everything to see all rooms.',
-              style: AppText.body.copyWith(color: AppColors.brown),
-            ),
+            child: Text(l10n.noRoomsFor(scope), style: AppText.body.copyWith(color: AppColors.brown)),
           ),
         for (final channel in visible)
           Padding(
@@ -67,7 +68,7 @@ class ChatSection extends ConsumerWidget {
             child: _ChannelCard(
               channel: channel,
               // Under Everything each room says which animal it is for.
-              tag: scope == CommunityScope.everything ? SmallTag.forAudience(channel.audience) : null,
+              tag: scope == CommunityScope.everything ? SmallTag.forAudience(l10n, channel.audience) : null,
             ),
           ),
       ],
@@ -83,6 +84,8 @@ class _ChannelCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -96,22 +99,27 @@ class _ChannelCard extends StatelessWidget {
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      channel.name,
+                    // A room the app does not know by id keeps its stored
+                    // name, which reads in its own direction.
+                    AutoDirectionText(
+                      l10n.roomName(channel),
                       style: AppText.cardTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w800),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    Text(
-                      channel.description,
+                    AutoDirectionText(
+                      l10n.roomAbout(channel),
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (tag != null) ...[const SizedBox(height: 6), tag!],
+                    if (tag != null) ...[
+                      const SizedBox(height: 6),
+                      Align(alignment: AlignmentDirectional.centerStart, child: tag!),
+                    ],
                   ],
                 ),
               ),

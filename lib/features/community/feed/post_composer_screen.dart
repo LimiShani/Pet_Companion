@@ -2,13 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
+import '../community_words.dart';
 import '../data/community_models.dart';
 import '../data/photo_picker.dart';
 import '../widgets/author_avatar.dart';
+import '../widgets/auto_direction_text.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
 
@@ -53,11 +56,12 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   Future<void> _pick(PhotoSource source) async {
     final messenger = ScaffoldMessenger.of(context);
+    final errorWords = communityErrorWords(context);
     try {
       final photo = await ref.read(photoPickerProvider).pick(source);
       if (photo != null && mounted) setState(() => _photo = photo);
     } catch (e) {
-      showCommunitySnack(messenger, communityErrorMessage(e));
+      showCommunitySnack(messenger, errorWords(e));
     }
   }
 
@@ -65,6 +69,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
     if (!_hasText || _posting) return;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
+    final errorWords = communityErrorWords(context);
     String? petName;
     for (final pet in ref.read(petsProvider)) {
       if (pet.id == _petId) petName = pet.name;
@@ -75,21 +80,22 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
       await ref.read(feedControllerProvider.notifier).create(text: _text.text, petName: petName, photo: _photo);
       navigator.pop();
     } catch (e) {
-      showCommunitySnack(messenger, communityErrorMessage(e));
+      showCommunitySnack(messenger, errorWords(e));
       if (mounted) setState(() => _posting = false);
     }
   }
 
   Future<void> _confirmDiscard() async {
     final navigator = Navigator.of(context);
+    final l10n = context.communityL10n;
     final discard = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Discard this post?'),
-        content: const Text('What you have written will be lost.'),
+        title: Text(l10n.discardTitle),
+        content: Text(l10n.discardBody),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Keep writing')),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Discard')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.keepWriting)),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.discard)),
         ],
       ),
     );
@@ -98,9 +104,10 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     final user = ref.watch(authControllerProvider).value;
     final pets = ref.watch(petsProvider);
-    final authorName = authorNameOrFallback(user?.displayName);
+    final storedName = storedAuthorName(user?.displayName);
 
     return PopScope(
       canPop: !_dirty || _posting,
@@ -112,7 +119,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CoralHeader(
-              title: 'New post',
+              title: l10n.newPost,
               showBack: true,
               actions: [
                 FilledButton(
@@ -130,7 +137,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                           height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.ink),
                         )
-                      : const Text('Post'),
+                      : Text(l10n.postButton),
                 ),
               ],
             ),
@@ -140,20 +147,20 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                 children: [
                   Row(
                     children: [
-                      AuthorAvatar(name: authorName, authorId: user?.id ?? ''),
+                      AuthorAvatar(name: storedName, authorId: user?.id ?? ''),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              authorName,
+                            AutoDirectionText(
+                              l10n.memberName(storedName),
                               style: AppText.cardTitle.copyWith(fontWeight: FontWeight.w800),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              'Everyone in the community can see this',
+                              l10n.composerAudience,
                               style: AppText.label.copyWith(color: AppColors.brown),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -171,9 +178,12 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                     maxLines: 12,
                     maxLength: CommunityLimits.postLength,
                     textCapitalization: TextCapitalization.sentences,
+                    // The post reads in the direction of what is typed, as
+                    // it will in the feed; an empty field follows the screen.
+                    textDirection: contentDirection(context, _text.text),
                     style: AppText.body.copyWith(fontSize: 16, height: 1.5),
                     decoration: InputDecoration(
-                      hintText: 'What is your pet up to?',
+                      hintText: l10n.composerHint,
                       border: _fieldBorder,
                       enabledBorder: _fieldBorder,
                       focusedBorder: _fieldBorder.copyWith(
@@ -183,7 +193,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                     ),
                   ),
                   if (pets.isNotEmpty) ...[
-                    const _Label('About'),
+                    _Label(l10n.composerAbout),
                     Wrap(
                       spacing: 8,
                       runSpacing: 4,
@@ -198,7 +208,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       ],
                     ),
                   ],
-                  const _Label('Photo'),
+                  _Label(l10n.composerPhoto),
                   if (_photo != null) ...[
                     Stack(
                       children: [
@@ -209,7 +219,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                             child: Image.memory(
                               _photo!.bytes,
                               fit: BoxFit.cover,
-                              semanticLabel: 'The photo for this post',
+                              semanticLabel: l10n.composerPhotoPreview,
                               errorBuilder: (context, error, stack) => ColoredBox(
                                 color: Theme.of(context).colorScheme.surfaceContainer,
                                 child: const Center(child: Icon(Icons.image_rounded, size: 48, color: AppColors.brown)),
@@ -222,7 +232,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                           end: 8,
                           child: IconButton.filled(
                             onPressed: () => setState(() => _photo = null),
-                            tooltip: 'Remove photo',
+                            tooltip: l10n.removePhoto,
                             style: IconButton.styleFrom(
                               backgroundColor: const Color(0x8C3C190A),
                               foregroundColor: AppColors.white,
@@ -239,7 +249,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       Expanded(
                         child: _SourceButton(
                           icon: Icons.photo_library_rounded,
-                          label: 'Gallery',
+                          label: l10n.gallery,
                           onPressed: _posting ? null : () => _pick(PhotoSource.gallery),
                         ),
                       ),
@@ -247,7 +257,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       Expanded(
                         child: _SourceButton(
                           icon: Icons.photo_camera_rounded,
-                          label: 'Camera',
+                          label: l10n.camera,
                           onPressed: _posting ? null : () => _pick(PhotoSource.camera),
                         ),
                       ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../community_words.dart';
 import '../data/audience.dart';
 
 /// A small rounded label on a card: "Cats", "English only", "Reviewed".
@@ -10,8 +12,8 @@ class SmallTag extends StatelessWidget {
 
   /// The tag for an item that is for one animal; nothing for what is shared
   /// by everyone.
-  static Widget? forAudience(Audience audience) {
-    final label = audience.tag;
+  static Widget? forAudience(CommunityL10n l10n, Audience audience) {
+    final label = l10n.audienceTag(audience);
     if (label == null) return null;
     return SmallTag(
       label,
@@ -25,10 +27,12 @@ class SmallTag extends StatelessWidget {
 
   /// Marks a guide shown in English because it has no text in the reader's
   /// language yet.
-  static const englishOnly = SmallTag('English only', color: Color(0xFFFBE9BD), icon: Icons.translate_rounded);
+  static Widget englishOnly(CommunityL10n l10n) =>
+      SmallTag(l10n.tagEnglishOnly, color: const Color(0xFFFBE9BD), icon: Icons.translate_rounded);
 
   /// Marks a guide with a professional review that still applies.
-  static const reviewed = SmallTag('Reviewed', color: AppColors.sage, icon: Icons.verified_user_rounded);
+  static Widget reviewed(CommunityL10n l10n) =>
+      SmallTag(l10n.tagReviewed, color: AppColors.sage, icon: Icons.verified_user_rounded);
 
   final String label;
   final Color color;

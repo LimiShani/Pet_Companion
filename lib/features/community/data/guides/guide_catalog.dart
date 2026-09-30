@@ -6,7 +6,8 @@ import '../guides_repository.dart';
 // The language-neutral part of the guides library: the categories, and one
 // record per guide (its id, category and animal). The text of each guide
 // lives per language in `guides_en.dart` and `guides_he.dart`, keyed by the
-// same id.
+// same id. The categories' names here are the stored (English) ones; the
+// screen names the categories in its own language, by id.
 
 const guideCategories = <GuideCategory>[
   GuideCategory(id: 'start', name: 'Getting started', icon: Icons.pets_rounded),
