@@ -1070,7 +1070,7 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String doneLineSkipped(String title) {
-    return '\u2068$title\u2069: דילוג';
+    return '\u2068$title\u2069: לא בוצע';
   }
 
   @override
@@ -1413,7 +1413,7 @@ class HealthL10nHe extends HealthL10n {
   String get routineOn => 'פעילה';
 
   @override
-  String get routinePausedNote => 'מושהית: נשמרת כאן, אבל לא מופיעה כמשימה';
+  String get routinePausedNote => 'מושהית: נשמרת כאן, אבל לא מופיעה בלוח הזמנים';
 
   @override
   String get saveRoutine => 'שמירת השגרה';

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
@@ -144,6 +145,40 @@ void main() {
     expect(find.text(h.l10n.comingUp), findsOneWidget);
     expect(find.text(h.l10n.quickLog), findsOneWidget);
     expect(directionOf(tester, find.text(h.l10n.comingUp)), h.isHebrew ? TextDirection.rtl : TextDirection.ltr);
+  });
+
+  testWidgets('the tab works in the app as shipped, in Hebrew, on the sample data', (tester) async {
+    // No Health overrides at all: the default repository (with its delay)
+    // and the sample-data clock, which treats 10.06.25 as today.
+    await pumpApp(tester, language: AppLanguage.hebrew);
+    await signInAsDemo(tester);
+    await openHealthTab(tester, label: appHe.navHealth);
+
+    expect(find.text('בקרוב'), findsOneWidget);
+    expect(find.text('General check'), findsOneWidget);
+    expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
+
+    await openSection(tester, 'לוח זמנים');
+    expect(find.text('היום'), findsOneWidget);
+    await openSection(tester, 'היסטוריה');
+    expect(find.text('12 רשומות'), findsOneWidget);
+    await openSection(tester, 'תובנות');
+    expect(find.text(he.observations), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('switching the language turns an open Health tab around at once', (tester) async {
+    final h = await pumpHealth(tester);
+    expect(find.text('Coming up'), findsOneWidget);
+    expect(directionOf(tester, find.text('Coming up')), TextDirection.ltr);
+
+    final container = ProviderScope.containerOf(tester.element(find.byType(EmergencyButton)), listen: false);
+    await tester.runAsync(() => container.read(appLanguageProvider.notifier).choose(AppLanguage.hebrew));
+    await tester.pumpAndSettle();
+    expect(find.text('בקרוב'), findsOneWidget);
+    expect(directionOf(tester, find.text('בקרוב')), TextDirection.rtl);
+    expect(find.text('Coming up'), findsNothing);
+    expect(h.settings.values[languageSettingKey], 'he');
   });
 
   group('plural forms on the Overview', () {
