@@ -34,6 +34,47 @@
   },
   "agents": [
     {
+      "id": "pets",
+      "name": "Pets agent",
+      "scope": "Add a pet: create and edit a pet, photo with cropping or an icon from a bank, connect a vet, basic health info, the list of critical information, and reminders until it is filled in. Also stores pets in the database.",
+      "branch": "feature/pets",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/pets",
+      "milestones": [
+        {
+          "id": "p1",
+          "title": "Setup: read AGENTS.md and the pet, Home and Health code and proposals; baseline analyze and tests green"
+        },
+        {
+          "id": "p2",
+          "title": "Design proposal: the add-a-pet flow, critical information, reminders, data schema, mockup"
+        },
+        {
+          "id": "p3",
+          "title": "Data layer: pet model, PetsRepository (sample and Supabase), providers, first-pet start"
+        },
+        {
+          "id": "p4",
+          "title": "Add a pet: basics, photo with cropping, icon bank"
+        },
+        {
+          "id": "p5",
+          "title": "Connect a vet and basic health info, using the Health agent's pieces"
+        },
+        {
+          "id": "p6",
+          "title": "Critical-information checklist, reminders until complete, edit pet page"
+        },
+        {
+          "id": "p7",
+          "title": "Supabase repository and migration 0005_pets.sql: columns, photo storage, row level security"
+        },
+        {
+          "id": "p8",
+          "title": "Widget tests, analyzer clean, final report"
+        }
+      ]
+    },
+    {
       "id": "home",
       "name": "Home agent",
       "scope": "The emergency entry point on the main page: one always-visible control that leads to calling or messaging the vet. Designed together with the Health agent.",
