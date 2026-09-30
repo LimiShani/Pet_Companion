@@ -19,8 +19,11 @@ import 'package:google_fonts/google_fonts.dart';
 /// **To switch to bundled files** (every weight real, no network):
 ///  1. put the font files and their `OFL.txt` in `assets/fonts/`;
 ///  2. declare the two families in `pubspec.yaml` under `flutter: fonts:`
-///     with the family names [latin] and [hebrew], one `asset` per weight
-///     (400, 600, 700, 800 for Nunito; 400, 500, 600, 700 for Fredoka);
+///     with the family names [latin] and [hebrew]. With one file per weight
+///     give each `asset` its `weight` (the app uses 400, 600, 700 and 800;
+///     Fredoka stops at 700). The official Google Fonts repository carries
+///     each family as a single variable file instead: then one `asset` per
+///     family, and the weights must be checked on a real screen;
 ///  3. set [bundled] to `true`.
 /// Nothing else in the app refers to a font family.
 abstract final class AppFonts {
