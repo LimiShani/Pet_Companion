@@ -144,11 +144,23 @@
         },
         {
           "id": "h10",
-          "title": "Phase 1 build"
+          "title": "Phase 1: cost on a record, with amounts exposed for the future Budget module"
         },
         {
           "id": "h11",
-          "title": "Phase 1 tests, migration 0006, report"
+          "title": "Phase 1: behaviour journal, cleaning routines, and a check of every species list for cats"
+        },
+        {
+          "id": "h12",
+          "title": "Phase 1: emergency kit checklist per pet"
+        },
+        {
+          "id": "h13",
+          "title": "Phase 1: \"My pet is lost\" card to share"
+        },
+        {
+          "id": "h14",
+          "title": "Phase 1: migration 0006, Supabase repository, tests and report"
         }
       ]
     },
@@ -284,6 +296,10 @@
         {
           "id": "t5",
           "title": "Right-to-left tests across the app, analyzer clean, final report"
+        },
+        {
+          "id": "t6",
+          "title": "Side menu and Settings page (language, week start): design first, then build"
         }
       ]
     }

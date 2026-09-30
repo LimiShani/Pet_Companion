@@ -11,4 +11,8 @@ abstract final class AppConfig {
 
   /// True when both Supabase values were provided at build time.
   static const hasSupabase = supabaseUrl != '' && supabasePublishableKey != '';
+
+  /// The currency amounts are entered and shown in unless a record carries
+  /// its own code (ISO 4217). One place to change it for the whole app.
+  static const defaultCurrency = 'ILS';
 }
