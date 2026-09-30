@@ -1,6 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/app_language.dart';
+
 /// A language the Community tab's long-form content (the guides) can be
 /// written in.
 enum ContentLanguage {
@@ -23,12 +25,10 @@ enum ContentLanguage {
   }
 }
 
-/// "Which language now?" for the Community tab's content.
-///
-/// English until the app has a language setting. INTEGRATION: this is the
-/// one place to connect it. Make the provider follow the app's language,
-/// for example
-/// `ContentLanguage.fromCode(ref.watch(appLocaleProvider).languageCode)`;
-/// the guides then load in that language, falling back to English with an
-/// "English only" tag where a guide is not translated yet.
-final communityLanguageProvider = Provider<ContentLanguage>((ref) => ContentLanguage.en);
+/// "Which language now?" for the Community tab's content: the language the
+/// app is showing, so the guides follow the language switch at once. A
+/// guide with no text in that language is shown in English with an
+/// "English only" tag.
+final communityLanguageProvider = Provider<ContentLanguage>(
+  (ref) => ContentLanguage.fromCode(ref.watch(appLocaleProvider).languageCode),
+);

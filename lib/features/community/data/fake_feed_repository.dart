@@ -35,12 +35,12 @@ class FakeFeedRepository implements FeedRepository {
 
   Future<void> _wait() async {
     await Future<void>.delayed(latency);
-    if (failing) throw const CommunityException('Cannot reach the community right now. Please try again.');
+    if (failing) throw const CommunityException(CommunityFailure.unreachable);
   }
 
   _PostRecord _find(String postId) => _posts.firstWhere(
         (p) => p.id == postId,
-        orElse: () => throw const CommunityException('This post is no longer available.'),
+        orElse: () => throw const CommunityException(CommunityFailure.postGone),
       );
 
   @override
@@ -60,12 +60,12 @@ class FakeFeedRepository implements FeedRepository {
   }) async {
     await _wait();
     final body = text.trim();
-    if (body.isEmpty) throw const CommunityException('Write something before posting.');
+    if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyPost);
     final pet = petName?.trim() ?? '';
     final record = _PostRecord(
       id: 'p${_nextId++}',
       authorId: author.id,
-      authorName: authorNameOrFallback(author.displayName),
+      authorName: storedAuthorName(author.displayName),
       petName: pet.isEmpty ? null : pet,
       text: body,
       photo: photo == null ? null : MemoryPostPhoto(photo.bytes),
@@ -79,7 +79,7 @@ class FakeFeedRepository implements FeedRepository {
   Future<void> deletePost({required AppUser viewer, required String postId}) async {
     await _wait();
     final record = _find(postId);
-    if (record.authorId != viewer.id) throw const CommunityException('You can only delete your own posts.');
+    if (record.authorId != viewer.id) throw const CommunityException(CommunityFailure.notYourPost);
     _posts.remove(record);
   }
 
@@ -113,13 +113,13 @@ class FakeFeedRepository implements FeedRepository {
   Future<Comment> addComment({required AppUser author, required String postId, required String text}) async {
     await _wait();
     final body = text.trim();
-    if (body.isEmpty) throw const CommunityException('Write something before sending.');
+    if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyMessage);
     final record = _find(postId);
     final comment = Comment(
       id: 'c${_nextId++}',
       postId: postId,
       authorId: author.id,
-      authorName: authorNameOrFallback(author.displayName),
+      authorName: storedAuthorName(author.displayName),
       text: body,
       createdAt: _now(),
     );

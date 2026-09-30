@@ -3,7 +3,7 @@ import 'guide_credits.dart';
 
 // The English text of the dog guides. Written for Pet Companion: original
 // text, mainstream advice, plain and warm. The reader adds the closing note
-// (`guideDisclaimer`) at the end of every guide.
+// (the `guideDisclaimer` string) at the end of every guide.
 //
 // When you change a guide's text, set its `updatedAt` to that day. A review
 // (if a guide ever has one) covers the text as it was read, so it stops

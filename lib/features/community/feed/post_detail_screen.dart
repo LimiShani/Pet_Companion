@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
-import '../../../widgets/empty_state.dart';
-import '../community_time.dart';
+import '../community_words.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../widgets/advice_notice.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/section_state.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
@@ -41,12 +42,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     final text = _comment.text.trim();
     if (text.isEmpty || _sending) return;
     final messenger = ScaffoldMessenger.of(context);
+    final errorWords = communityErrorWords(context);
     setState(() => _sending = true);
     try {
       await ref.read(commentsProvider(widget.postId).notifier).add(text);
       _comment.clear();
     } catch (e) {
-      showCommunitySnack(messenger, communityErrorMessage(e));
+      showCommunitySnack(messenger, errorWords(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -54,6 +56,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     final feed = ref.watch(feedControllerProvider);
     final post = ref.watch(postProvider(widget.postId));
 
@@ -61,16 +64,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CoralHeader(title: 'Post', showBack: true),
+          CoralHeader(title: l10n.postTitle, showBack: true),
           if (post == null)
             Expanded(
               child: feed.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : EmptyState(
+                  : SectionState(
                       icon: Icons.search_off_rounded,
-                      title: 'This post is no longer available',
-                      message: 'It may have been deleted.',
-                      actionLabel: 'Back to the feed',
+                      title: l10n.postGoneTitle,
+                      message: l10n.postGoneMessage,
+                      actionLabel: l10n.backToFeed,
                       onAction: () => Navigator.of(context).maybePop(),
                     ),
             )
@@ -87,7 +90,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 18, 4, 8),
-                    child: Text('Comments', style: AppText.label.copyWith(color: AppColors.brown, fontSize: 13)),
+                    child: Text(l10n.comments, style: AppText.label.copyWith(color: AppColors.brown, fontSize: 13)),
                   ),
                   const AdviceNotice(),
                   const SizedBox(height: 10),
@@ -97,8 +100,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             ),
             MessageBar(
               controller: _comment,
-              hint: 'Add a comment',
-              sendTooltip: 'Send comment',
+              hint: l10n.commentHint,
+              sendTooltip: l10n.sendComment,
               sending: _sending,
               onSend: _send,
               inputFormatters: [LengthLimitingTextInputFormatter(CommunityLimits.commentLength)],
@@ -117,6 +120,7 @@ class _Comments extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
     final comments = ref.watch(commentsProvider(postId));
     final now = ref.watch(communityClockProvider)();
     final list = comments.value;
@@ -134,13 +138,12 @@ class _Comments extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Cannot load the comments. ${communityErrorMessage(comments.error ?? '')}',
-                style: AppText.body.copyWith(color: AppColors.brown),
-              ),
+              // What failed, then why: two whole messages.
+              Text(l10n.commentsLoadFailed, style: AppText.body.copyWith(color: AppColors.brown)),
+              Text(communityErrorText(context, comments.error), style: AppText.body.copyWith(color: AppColors.brown)),
               TextButton(
                 onPressed: () => ref.invalidate(commentsProvider(postId)),
-                child: const Text('Try again'),
+                child: Text(context.l10n.commonTryAgain),
               ),
             ],
           ),
@@ -151,7 +154,7 @@ class _Comments extends ConsumerWidget {
     if (list.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        child: Text('No comments yet. Be the first.', style: AppText.body.copyWith(color: AppColors.brown)),
+        child: Text(l10n.noComments, style: AppText.body.copyWith(color: AppColors.brown)),
       );
     }
 
@@ -179,6 +182,9 @@ class _CommentRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+    final when = l10n.relativeTime(context.l10n, AppFormat.of(context), comment.createdAt, now);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -188,16 +194,18 @@ class _CommentRow extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Who and when, set apart by a dot. A name in the other
+                // script is kept as one unit, so it cannot reorder the line.
                 Text.rich(
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: comment.authorName,
+                        text: l10n.inLine(l10n.memberName(comment.authorName)),
                         style: AppText.secondary.copyWith(fontWeight: FontWeight.w800, color: AppColors.ink),
                       ),
-                      TextSpan(text: ' · ${relativeTime(comment.createdAt, now)}'),
+                      TextSpan(text: ' · $when'),
                     ],
                   ),
                   style: AppText.label.copyWith(color: AppColors.brown),

@@ -19,6 +19,8 @@ class FakeChatRepository implements ChatRepository {
 
   /// The channels the app ships with, in display order (the migrations
   /// seed the same ones): shared rooms first and last, dogs, then cats.
+  /// Names and descriptions are as the database stores them; the screen
+  /// shows these rooms in its own language, by id.
   static const defaultChannels = [
     ChatChannel(id: 'general', name: 'General', description: 'Say hello and share your day'),
     ChatChannel(
@@ -78,7 +80,7 @@ class FakeChatRepository implements ChatRepository {
   final _updates = <String, StreamController<List<ChatMessage>>>{};
   var _nextId = 1;
 
-  static const _unreachable = CommunityException('Cannot reach the chat right now. Please try again.');
+  static const _unreachable = CommunityException(CommunityFailure.chatUnreachable);
 
   Future<void> _wait() async {
     await Future<void>.delayed(latency);
@@ -129,12 +131,12 @@ class FakeChatRepository implements ChatRepository {
   Future<void> sendMessage({required AppUser author, required String channelId, required String text}) async {
     await _wait();
     final body = text.trim();
-    if (body.isEmpty) throw const CommunityException('Write something before sending.');
+    if (body.isEmpty) throw const CommunityException(CommunityFailure.emptyMessage);
     _append(ChatMessage(
       id: 'm${_nextId++}',
       channelId: channelId,
       authorId: author.id,
-      authorName: authorNameOrFallback(author.displayName),
+      authorName: storedAuthorName(author.displayName),
       text: body,
       sentAt: _now(),
     ));

@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
-import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/widgets/post_photo_view.dart';

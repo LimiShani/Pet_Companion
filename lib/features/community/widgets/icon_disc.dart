@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
+import 'speech_icon.dart';
 
 /// Yellow disc with an icon: leads a chat room or guide card.
 class IconDisc extends StatelessWidget {
@@ -15,7 +16,7 @@ class IconDisc extends StatelessWidget {
       width: size,
       height: size,
       decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-      child: Icon(icon, size: size * 0.5, color: AppColors.ink),
+      child: DirectionalCommunityIcon(icon, size: size * 0.5, color: AppColors.ink),
     );
   }
 }

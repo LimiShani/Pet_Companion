@@ -19,7 +19,7 @@ class FeedController extends AsyncNotifier<List<Post>> {
 
   AppUser get _viewer {
     final user = ref.read(authControllerProvider).value;
-    if (user == null) throw const CommunityException('Please sign in again.');
+    if (user == null) throw const CommunityException(CommunityFailure.signInAgain);
     return user;
   }
 
@@ -116,7 +116,7 @@ class CommentsController extends AsyncNotifier<List<Comment>> {
 
   Future<void> add(String text) async {
     final author = ref.read(authControllerProvider).value;
-    if (author == null) throw const CommunityException('Please sign in again.');
+    if (author == null) throw const CommunityException(CommunityFailure.signInAgain);
     final comment = await ref.read(feedRepositoryProvider).addComment(author: author, postId: postId, text: text);
     state = AsyncData([...?state.value, comment]);
     ref.read(feedControllerProvider.notifier).commentAdded(postId);

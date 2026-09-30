@@ -11,6 +11,7 @@ import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/community/community_routes.dart';
+import 'package:pet_companion/features/community/data/chat_repository.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/community_providers.dart';
@@ -19,12 +20,38 @@ import 'package:pet_companion/features/community/data/fake_feed_repository.dart'
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
 
 import '../helpers.dart';
+
+/// The Community's words in each language, as the strings files have them.
+final en = lookupCommunityL10n(englishLocale);
+final he = lookupCommunityL10n(hebrewLocale);
+final appEn = lookupAppL10n(englishLocale);
+final appHe = lookupAppL10n(hebrewLocale);
+
+/// The English words the older tests name as constants.
+final guideDisclaimer = en.guideDisclaimer;
+final adviceNoticeText = en.adviceNotice;
+final contactProfessionalLabel = en.contactProfessional;
+
+/// A text as it reads: without the invisible direction marks.
+String plain(String text) => stripBidiMarks(text);
+
+/// A `Text` that reads [text], whatever direction marks it carries.
+Finder reads(String text) => find.byWidgetPredicate(
+      (widget) =>
+          widget is Text &&
+          plain(widget.data ?? widget.textSpan?.toPlainText() ?? '') == plain(text),
+      description: 'a text reading "$text"',
+    );
+
+/// The direction of the part of the screen [finder] is in.
+TextDirection screenDirection(WidgetTester tester, Finder finder) => Directionality.of(tester.element(finder));
 
 /// The seeded demo account the tests sign in with.
 const demoUser = AppUser(id: 'demo', email: FakeAuthRepository.demoEmail, displayName: 'Alex');
@@ -73,7 +100,9 @@ class CommunityHarness {
     FakeChatRepository? chat,
     this.pets,
     this.guides,
-    this.language = ContentLanguage.en,
+    this.language,
+    this.appLanguage,
+    this.chatBackend,
   })  : feed = feed ?? FakeFeedRepository(latency: Duration.zero, now: testClock),
         chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock);
 
@@ -87,8 +116,19 @@ class CommunityHarness {
   /// Replaces the bundled guides (to test a reviewed or translated guide).
   final GuidesRepository? guides;
 
-  /// The language the content is asked for in.
-  final ContentLanguage language;
+  /// Pins the language the guides are asked for in, whatever the app's
+  /// language is. Left out, the guides follow the app's language, as they
+  /// do in the app.
+  final ContentLanguage? language;
+
+  /// A chat backend of the test's own, used instead of [chat].
+  final ChatRepository? chatBackend;
+
+  /// The language the app starts in: English when left out.
+  final AppLanguage? appLanguage;
+
+  /// The saved choices of this app run (the language switch writes here).
+  late final settings = MemorySettingsStore({languageSettingKey: ?appLanguage?.code});
 
   /// Every source link the reader asked the phone to open.
   final openedSources = <Uri>[];
@@ -97,9 +137,10 @@ class CommunityHarness {
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
         communityClockProvider.overrideWithValue(testClock),
         feedRepositoryProvider.overrideWithValue(feed),
-        chatRepositoryProvider.overrideWithValue(chat),
+        chatRepositoryProvider.overrideWithValue(chatBackend ?? chat),
         photoPickerProvider.overrideWithValue(picker),
-        communityLanguageProvider.overrideWithValue(language),
+        settingsStoreProvider.overrideWithValue(settings),
+        if (language != null) communityLanguageProvider.overrideWithValue(language!),
         guideSourceOpenerProvider.overrideWithValue((uri) async {
           openedSources.add(uri);
           return true;
@@ -115,10 +156,16 @@ void _setScreen(WidgetTester tester, Size size) {
   addTearDown(tester.view.reset);
 }
 
-/// Pumps the whole app at phone size on zero-latency fakes, signs in with
-/// the demo account (Alex, id `demo`) and opens the Community tab.
-Future<CommunityHarness> pumpCommunity(WidgetTester tester, {CommunityHarness? harness}) async {
+/// Pumps the whole app at phone size ([size]) on zero-latency fakes, signs
+/// in with the demo account (Alex, id `demo`) and opens the Community tab.
+/// The app runs in the harness's language: English unless it says Hebrew.
+Future<CommunityHarness> pumpCommunity(
+  WidgetTester tester, {
+  CommunityHarness? harness,
+  Size size = const Size(390, 844),
+}) async {
   final h = harness ?? CommunityHarness();
+  // Signed in at the usual size; the screen under test then takes [size].
   _setScreen(tester, const Size(390, 844));
 
   await tester.pumpWidget(
@@ -130,8 +177,13 @@ Future<CommunityHarness> pumpCommunity(WidgetTester tester, {CommunityHarness? h
   await tester.pumpAndSettle();
   await signInAsDemo(tester);
 
-  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Community')));
+  final tab = h.appLanguage == AppLanguage.hebrew ? appHe.navCommunity : appEn.navCommunity;
+  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text(tab)));
   await tester.pumpAndSettle();
+  if (size != const Size(390, 844)) {
+    tester.view.physicalSize = size * 3;
+    await tester.pumpAndSettle();
+  }
   return h;
 }
 
@@ -202,9 +254,18 @@ Future<void> scrollTo(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
-/// Goes back with the header's arrow.
+/// Goes back with the header's arrow, in whichever language is on screen.
 Future<void> goBack(WidgetTester tester) async {
-  await tester.tap(find.byTooltip('Back').hitTestable());
+  final english = find.byTooltip(appEn.commonBack).hitTestable();
+  await tester.tap(english.evaluate().isNotEmpty ? english : find.byTooltip(appHe.commonBack).hitTestable());
+  await tester.pumpAndSettle();
+}
+
+/// Switches the app's language from inside the running app, as the
+/// language switch in the menu does.
+Future<void> switchLanguage(WidgetTester tester, AppLanguage language) async {
+  // Not awaited: the store's write only completes while the tester pumps.
+  unawaited(hostContainer(tester).read(appLanguageProvider.notifier).choose(language));
   await tester.pumpAndSettle();
 }
 

@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/community_models.dart';
@@ -16,7 +17,7 @@ class PostPhotoView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       image: true,
-      label: 'Photo',
+      label: context.communityL10n.photoLabel,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
         child: AspectRatio(

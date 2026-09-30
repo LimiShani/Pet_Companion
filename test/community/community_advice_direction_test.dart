@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
-import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
-import 'package:pet_companion/features/community/widgets/auto_direction_text.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 
 import 'community_helpers.dart';
@@ -110,10 +109,13 @@ void main() {
 
   group('member text in its own direction', () {
     test('the direction of a text goes by its first letter', () {
-      expect(directionOfText('Hello everyone'), TextDirection.ltr);
-      expect(directionOfText('שלום לכולם'), TextDirection.rtl);
-      expect(directionOfText('3 חתולים'), TextDirection.rtl);
-      expect(directionOfText('12:30 ...'), isNull);
+      for (final screen in TextDirection.values) {
+        expect(directionOfText('Hello everyone', fallback: screen), TextDirection.ltr);
+        expect(directionOfText('שלום לכולם', fallback: screen), TextDirection.rtl);
+        expect(directionOfText('3 חתולים', fallback: screen), TextDirection.rtl);
+        // No letters at all: it follows the screen.
+        expect(directionOfText('12:30 ...', fallback: screen), screen);
+      }
     });
 
     testWidgets('a Hebrew message reads right to left in an English app', (tester) async {

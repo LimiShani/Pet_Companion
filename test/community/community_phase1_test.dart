@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/data/audience.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
-import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/features/community/widgets/scope_bar.dart';
 import 'package:pet_companion/features/community/widgets/small_tag.dart';
@@ -285,7 +284,8 @@ void main() {
       expect(tag('English only'), findsNWidgets(2));
       expect(Directionality.of(tester.element(find.text(hebrewFixture.title))), TextDirection.rtl);
       expect(Directionality.of(tester.element(find.text('Setting up the litter box'))), TextDirection.ltr);
-      expect(find.textContaining('By מחבר לבדיקה'), findsOneWidget);
+      // The Hebrew name is kept as one unit inside the English line.
+      expect(reads('By מחבר לבדיקה · Updated 01.10.26'), findsOneWidget);
 
       await tapVisible(tester, find.text(hebrewFixture.title));
       expect(tag('English only'), findsNothing);

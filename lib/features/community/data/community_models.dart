@@ -4,20 +4,60 @@ import 'package:flutter/material.dart';
 
 import 'audience.dart';
 
-/// Thrown by the community repositories with a message safe to show to the
-/// user.
-class CommunityException implements Exception {
-  const CommunityException(this.message);
+/// Why something in the community failed. Repositories and controllers
+/// report the reason; the screen puts it into words in the app's language
+/// (see `communityErrorText` in `community_words.dart`).
+enum CommunityFailure {
+  /// The feed's backend did not answer.
+  unreachable,
 
-  final String message;
+  /// The chat's backend did not answer.
+  chatUnreachable,
 
-  @override
-  String toString() => message;
+  /// No connection to the server.
+  offline,
+  postGone,
+  emptyPost,
+
+  /// An empty comment or chat message.
+  emptyMessage,
+  notYourPost,
+  signInAgain,
+
+  /// Refused by the database's access rules.
+  notAllowed,
+
+  /// A text the database's length checks refuse.
+  textInvalid,
+
+  /// The post or room was deleted meanwhile.
+  gone,
+
+  /// The database has no community tables yet (a migration has not run).
+  notSetUp,
+  photoTooLarge,
+  photoUnsupported,
+  photoUpload,
+  cameraNotAllowed,
+  photosNotAllowed,
+
+  /// Anything the app has no words of its own for.
+  unknown,
 }
 
-/// User-facing text for a community failure.
-String communityErrorMessage(Object error) =>
-    error is CommunityException ? error.message : 'Something went wrong. Please try again.';
+/// Thrown by the community repositories and controllers. [failure] says
+/// what went wrong; the words shown to the user come from the strings
+/// files. [detail] is for logs only (the backend's own explanation).
+class CommunityException implements Exception {
+  const CommunityException(this.failure, [this.detail]);
+
+  final CommunityFailure failure;
+  final String? detail;
+
+  @override
+  String toString() =>
+      detail == null ? 'CommunityException(${failure.name})' : 'CommunityException(${failure.name}: $detail)';
+}
 
 /// Limits shared by the UI, the fakes and the database checks.
 abstract final class CommunityLimits {
@@ -145,17 +185,9 @@ class Comment {
   String get authorInitial => initialOf(authorName);
 }
 
-/// Why a post was reported. [name] is what is stored.
-enum ReportReason {
-  spam('Spam or advertising'),
-  abusive('Unkind or abusive'),
-  inappropriate('Inappropriate or upsetting'),
-  other('Something else');
-
-  const ReportReason(this.label);
-
-  final String label;
-}
+/// Why a post was reported. [name] is what is stored; the words are in the
+/// strings files (`reportReasonText`).
+enum ReportReason { spam, abusive, inappropriate, other }
 
 /// A topic room in the Chat section.
 class ChatChannel {
@@ -168,6 +200,10 @@ class ChatChannel {
 
   /// A stable slug such as `general` or `puppies`.
   final String id;
+
+  /// The room's name and description as stored (English for the rooms the
+  /// app ships with). The screen shows the rooms it knows by [id] in its
+  /// own language (`roomNameText`) and any other room as stored.
   final String name;
   final String description;
 
@@ -194,15 +230,10 @@ class ChatMessage {
   final DateTime sentAt;
 }
 
-/// Shown when an account has no display name.
-const fallbackAuthorName = 'Pet lover';
-
-/// The name to show for an author: their display name, or a friendly
-/// fallback when it is empty.
-String authorNameOrFallback(String? displayName) {
-  final name = displayName?.trim() ?? '';
-  return name.isEmpty ? fallbackAuthorName : name;
-}
+/// A member's display name as stored: trimmed, and empty when the account
+/// has none. The screen shows a friendly fallback in its own language for
+/// an empty one (`memberNameText`).
+String storedAuthorName(String? displayName) => displayName?.trim() ?? '';
 
 /// One upper-case letter for an avatar.
 String initialOf(String name) {

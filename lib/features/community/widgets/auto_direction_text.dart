@@ -1,26 +1,28 @@
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart' show Bidi;
 
-/// The direction [text] reads in, going by its first letter: right to left
-/// for Hebrew or Arabic, left to right for Latin. `null` when the text has
-/// no letters (digits, emoji), so it follows the screen's direction.
-TextDirection? directionOfText(String text) {
-  if (Bidi.startsWithRtl(text)) return TextDirection.rtl;
-  if (Bidi.startsWithLtr(text)) return TextDirection.ltr;
-  return null;
-}
+import '../community_words.dart';
 
-/// Text written by a member (a post, a comment, a chat message), laid out in
-/// its own direction whatever the app's language is, so a Hebrew message
-/// reads correctly in an English app and the other way round.
+/// Text written by a member (a post, a comment, a chat message, a display
+/// name), laid out in its own direction whatever the app's language is, so
+/// a Hebrew message reads right to left in an English app and an English
+/// one left to right in a Hebrew app. Text with no letters (digits, emoji)
+/// follows the screen.
 class AutoDirectionText extends StatelessWidget {
-  const AutoDirectionText(this.text, {super.key, this.style});
+  const AutoDirectionText(this.text, {super.key, this.style, this.maxLines, this.overflow});
 
   final String text;
   final TextStyle? style;
+  final int? maxLines;
+  final TextOverflow? overflow;
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: style, textDirection: directionOfText(text));
+    return Text(
+      text,
+      style: style,
+      maxLines: maxLines,
+      overflow: overflow,
+      textDirection: contentDirection(context, text),
+    );
   }
 }

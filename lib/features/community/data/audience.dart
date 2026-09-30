@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 
-/// Which animal a chat room or a guide is for.
+/// Which animal a chat room or a guide is for. The words for it are in the
+/// strings files (`CommunityWords.audienceTag`, `forWhom`).
 enum Audience {
   everyone('all'),
   dogs('dog'),
@@ -27,39 +28,15 @@ enum Audience {
         'cat' => cats,
         _ => other,
       };
-
-  /// The small tag shown next to an item under Everything; `null` for what
-  /// is shared by everyone.
-  String? get tag => switch (this) {
-        everyone => null,
-        dogs => 'Dogs',
-        cats => 'Cats',
-        other => 'Other animals',
-      };
-
-  /// "For cats", as the reader's subtitle says it; `null` for everyone.
-  String? get forWhom => switch (this) {
-        everyone => null,
-        dogs => 'For dogs',
-        cats => 'For cats',
-        other => 'For other animals',
-      };
 }
 
 /// What the Chat and Guides sections show: one animal's content plus what
-/// is shared by everyone, or everything.
+/// is shared by everyone, or everything. The chips' labels are in the strings
+/// files (`CommunityWords.scope`).
 enum CommunityScope {
-  dogs('Dogs', 'dogs'),
-  cats('Cats', 'cats'),
-  everything('Everything', 'every animal');
-
-  const CommunityScope(this.label, this.noun);
-
-  /// The chip's label.
-  final String label;
-
-  /// As in "Showing guides for [noun]".
-  final String noun;
+  dogs,
+  cats,
+  everything;
 
   bool shows(Audience audience) => switch (this) {
         dogs => audience == Audience.everyone || audience == Audience.dogs,

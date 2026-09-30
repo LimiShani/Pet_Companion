@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/auth/app_user.dart';
-import 'package:pet_companion/features/community/community_time.dart';
+import 'package:pet_companion/features/community/community_words.dart';
 import 'package:pet_companion/features/community/data/audience.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
@@ -14,6 +14,7 @@ import 'package:pet_companion/features/community/data/guides/guides_en.dart';
 import 'package:pet_companion/features/community/data/guides/guides_he.dart';
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/supabase_community_support.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
@@ -404,7 +405,11 @@ void main() {
   });
 
   group('Supabase error mapping', () {
-    String message(Object error) => communityExceptionFrom(error).message;
+    // The data layer reports the reason; the words are the screen's, in its
+    // own language. Here: the reason, worded in English.
+    final words = lookupCommunityL10n(englishLocale);
+    final app = lookupAppL10n(englishLocale);
+    String message(Object error) => communityFailureText(words, app, communityExceptionFrom(error));
 
     test('backend errors become friendly messages', () {
       expect(message(const sb.PostgrestException(message: 'new row violates row-level security', code: '42501')),
@@ -422,14 +427,34 @@ void main() {
     });
 
     test('community exceptions pass through unchanged', () {
-      const original = CommunityException('Write something before posting.');
+      const original = CommunityException(CommunityFailure.emptyPost);
       expect(communityExceptionFrom(original), same(original));
+      expect(message(original), 'Write something before posting.');
+    });
+
+    test('a backend error is reported as a reason, and the backend wording is kept for the logs', () {
+      final refused = communityExceptionFrom(
+        const sb.PostgrestException(message: 'new row violates row-level security', code: '42501'),
+      );
+      expect(refused.failure, CommunityFailure.notAllowed);
+      expect(refused.detail, 'new row violates row-level security');
+      expect('$refused', 'CommunityException(notAllowed: new row violates row-level security)');
+
+      expect(communityExceptionFrom(Exception('SocketException')).failure, CommunityFailure.offline);
+      expect(
+        communityExceptionFrom(const sb.PostgrestException(message: 'something new', code: 'XX000')).failure,
+        CommunityFailure.unknown,
+      );
+      expect(message(const sb.PostgrestException(message: 'something new', code: 'XX000')),
+          'Something went wrong. Please try again.');
     });
   });
 
   group('time formatting', () {
     test('relative time', () {
-      String ago(Duration d) => relativeTime(fixedNow.subtract(d), fixedNow);
+      final words = lookupCommunityL10n(englishLocale);
+      final app = lookupAppL10n(englishLocale);
+      String ago(Duration d) => words.relativeTime(app, const AppFormat('en'), fixedNow.subtract(d), fixedNow);
 
       expect(ago(const Duration(seconds: 20)), 'just now');
       expect(ago(const Duration(minutes: 12)), '12 min ago');
@@ -440,10 +465,12 @@ void main() {
     });
 
     test('chat day labels and clock time', () {
-      expect(dayLabel(DateTime(2026, 5, 14, 0, 5), fixedNow), 'Today');
-      expect(dayLabel(DateTime(2026, 5, 13, 23, 50), fixedNow), 'Yesterday');
-      expect(dayLabel(DateTime(2026, 5, 1, 12), fixedNow), '01.05.26');
-      expect(clockTime(DateTime(2026, 5, 14, 8, 5)), '08:05');
+      final app = lookupAppL10n(englishLocale);
+      const format = AppFormat('en');
+      expect(dayLabel(app, format, DateTime(2026, 5, 14, 0, 5), fixedNow), 'Today');
+      expect(dayLabel(app, format, DateTime(2026, 5, 13, 23, 50), fixedNow), 'Yesterday');
+      expect(dayLabel(app, format, DateTime(2026, 5, 1, 12), fixedNow), '01.05.26');
+      expect(format.time(DateTime(2026, 5, 14, 8, 5)), '08:05');
     });
   });
 }

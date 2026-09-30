@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../health/emergency/emergency.dart';
-
-/// The standing line in chat rooms and under a post's comments.
-const adviceNoticeText = 'Members share personal experience, not professional advice.';
-
-/// The action that goes with [adviceNoticeText] and with a guide's closing
-/// note.
-const contactProfessionalLabel = 'Contact a professional';
 
 /// Opens the selected pet's emergency and vet sheet (the Health tab's): the
 /// regular vet, the emergency vet and the emergency contact.
@@ -29,6 +23,7 @@ class AdviceNotice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
     final radius = BorderRadius.circular(AppSpacing.fieldRadius);
     final style = AppText.label.copyWith(color: AppColors.ink, height: 1.4);
 
@@ -49,12 +44,14 @@ class AdviceNotice extends ConsumerWidget {
                   const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.brown),
                   const SizedBox(width: 8),
                   Expanded(
+                    // Two whole messages side by side: the notice, then the
+                    // action that goes with it.
                     child: Text.rich(
                       TextSpan(
                         children: [
-                          const TextSpan(text: '$adviceNoticeText '),
+                          TextSpan(text: '${l10n.adviceNotice} '),
                           TextSpan(
-                            text: contactProfessionalLabel,
+                            text: l10n.contactProfessional,
                             style: style.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
                           ),
                         ],

@@ -3,17 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
-import '../../../widgets/empty_state.dart';
-import '../community_time.dart';
+import '../community_words.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../feed/post_actions.dart' show showCommunitySnack;
 import '../widgets/advice_notice.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
+import '../widgets/section_state.dart';
 import 'chat_providers.dart';
 
 /// A chat room: the live conversation and a message field.
@@ -41,12 +42,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final author = ref.read(authControllerProvider).value;
     if (text.isEmpty || _sending || author == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final errorWords = communityErrorWords(context);
     setState(() => _sending = true);
     try {
       await ref.read(chatRepositoryProvider).sendMessage(author: author, channelId: widget.channelId, text: text);
       _message.clear();
     } catch (e) {
-      showCommunitySnack(messenger, communityErrorMessage(e));
+      showCommunitySnack(messenger, errorWords(e));
     } finally {
       if (mounted) setState(() => _sending = false);
     }
@@ -54,12 +56,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     final channels = ref.watch(chatChannelsProvider).value ?? const <ChatChannel>[];
     ChatChannel? channel;
     for (final c in channels) {
       if (c.id == widget.channelId) channel = c;
     }
-    final name = channel?.name ?? 'Chat';
+    final name = channel == null ? l10n.sectionChat : l10n.roomName(channel);
 
     return Scaffold(
       body: Column(
@@ -74,8 +77,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           Expanded(child: _Messages(channelId: widget.channelId)),
           MessageBar(
             controller: _message,
-            hint: 'Message $name',
-            sendTooltip: 'Send message',
+            hint: l10n.messageHint(l10n.inLine(name)),
+            sendTooltip: l10n.sendMessage,
             sending: _sending,
             onSend: _send,
             inputFormatters: [LengthLimitingTextInputFormatter(CommunityLimits.messageLength)],
@@ -93,6 +96,9 @@ class _Messages extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
+    final app = context.l10n;
+    final format = AppFormat.of(context);
     final messages = ref.watch(chatMessagesProvider(channelId));
     final viewerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
     final now = ref.watch(communityClockProvider)();
@@ -100,20 +106,20 @@ class _Messages extends ConsumerWidget {
 
     if (list == null) {
       if (messages.isLoading) return const Center(child: CircularProgressIndicator());
-      return EmptyState(
+      return SectionState(
         icon: Icons.cloud_off_rounded,
-        title: 'Cannot load this conversation',
-        message: communityErrorMessage(messages.error ?? ''),
-        actionLabel: 'Try again',
+        title: l10n.chatLoadFailed,
+        message: communityErrorText(context, messages.error),
+        actionLabel: app.commonTryAgain,
         onAction: () => ref.invalidate(chatMessagesProvider(channelId)),
       );
     }
 
     if (list.isEmpty) {
-      return const EmptyState(
+      return SectionState(
         icon: Icons.chat_bubble_rounded,
-        title: 'No messages yet',
-        message: 'Say hello to get the conversation going.',
+        title: l10n.noMessagesTitle,
+        message: l10n.noMessagesMessage,
       );
     }
 
@@ -134,7 +140,7 @@ class _Messages extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4, bottom: 12),
                 child: Text(
-                  dayLabel(message.sentAt, now),
+                  dayLabel(app, format, message.sentAt, now),
                   textAlign: TextAlign.center,
                   style: AppText.label.copyWith(color: AppColors.brown),
                 ),
@@ -155,15 +161,18 @@ class _Bubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     const big = Radius.circular(20);
     const small = Radius.circular(6);
 
     return Semantics(
       container: true,
-      label: mine ? 'You' : null,
+      label: mine ? l10n.ownMessage : null,
       child: Align(
         // Own messages at the end of the line, other people's at the start:
         // right and left in English, mirrored in a right-to-left layout.
+        // The side says whose message it is, so it follows the screen and
+        // not the language the message happens to be written in.
         alignment: mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
         child: FractionallySizedBox(
           widthFactor: 0.82,
@@ -176,8 +185,8 @@ class _Bubble extends StatelessWidget {
                 if (!mine)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(start: 8, bottom: 3),
-                    child: Text(
-                      message.authorName,
+                    child: AutoDirectionText(
+                      l10n.memberName(message.authorName),
                       style: AppText.label.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -199,7 +208,7 @@ class _Bubble extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 3, 8, 0),
                   child: Text(
-                    clockTime(message.sentAt),
+                    AppFormat.of(context).time(message.sentAt),
                     style: AppText.navLabel.copyWith(color: AppColors.brown),
                   ),
                 ),

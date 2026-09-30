@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
-import '../data/community_models.dart';
+import '../community_words.dart';
+import '../widgets/section_state.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
@@ -17,26 +18,27 @@ class FeedSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
     final feed = ref.watch(feedControllerProvider);
     final posts = feed.value;
 
     if (posts == null) {
       if (feed.isLoading) return const Center(child: CircularProgressIndicator());
-      return EmptyState(
+      return SectionState(
         icon: Icons.cloud_off_rounded,
-        title: 'Cannot load the feed',
-        message: communityErrorMessage(feed.error ?? ''),
-        actionLabel: 'Try again',
+        title: l10n.feedLoadFailed,
+        message: communityErrorText(context, feed.error),
+        actionLabel: context.l10n.commonTryAgain,
         onAction: () => ref.invalidate(feedControllerProvider),
       );
     }
 
     if (posts.isEmpty) {
-      return EmptyState(
+      return SectionState(
         icon: Icons.pets_rounded,
-        title: 'No posts yet',
-        message: 'Be the first to share a photo or a story about your pet.',
-        actionLabel: 'Write a post',
+        title: l10n.noPostsTitle,
+        message: l10n.noPostsMessage,
+        actionLabel: l10n.writeAPost,
         onAction: () => openPostComposer(context),
       );
     }
@@ -44,10 +46,11 @@ class FeedSection extends ConsumerWidget {
     return RefreshIndicator(
       onRefresh: () async {
         final messenger = ScaffoldMessenger.of(context);
+        final errorWords = communityErrorWords(context);
         try {
           await ref.read(feedControllerProvider.notifier).refresh();
         } catch (e) {
-          showCommunitySnack(messenger, communityErrorMessage(e));
+          showCommunitySnack(messenger, errorWords(e));
         }
       },
       child: ListView.separated(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../community_words.dart';
 import '../data/community_models.dart';
 import 'feed_controller.dart';
 
@@ -15,10 +17,11 @@ void showCommunitySnack(ScaffoldMessengerState messenger, String message) {
 /// Likes or unlikes [post], reporting a failure in a snack bar.
 Future<void> togglePostLike(BuildContext context, WidgetRef ref, Post post) async {
   final messenger = ScaffoldMessenger.of(context);
+  final errorWords = communityErrorWords(context);
   try {
     await ref.read(feedControllerProvider.notifier).setLiked(post.id, liked: !post.likedByMe);
   } catch (e) {
-    showCommunitySnack(messenger, communityErrorMessage(e));
+    showCommunitySnack(messenger, errorWords(e));
   }
 }
 
@@ -28,6 +31,8 @@ Future<bool> reportPostFlow(BuildContext context, WidgetRef ref, Post post) asyn
   // Looked up before the first await: the card may be gone afterwards.
   final messenger = ScaffoldMessenger.of(context);
   final controller = ref.read(feedControllerProvider.notifier);
+  final l10n = context.communityL10n;
+  final errorWords = communityErrorWords(context);
 
   final reason = await showModalBottomSheet<ReportReason>(
     context: context,
@@ -39,10 +44,10 @@ Future<bool> reportPostFlow(BuildContext context, WidgetRef ref, Post post) asyn
 
   try {
     await controller.report(post.id, reason);
-    showCommunitySnack(messenger, 'Thanks. We have hidden this post and will review it.');
+    showCommunitySnack(messenger, l10n.reportThanks);
     return true;
   } catch (e) {
-    showCommunitySnack(messenger, communityErrorMessage(e));
+    showCommunitySnack(messenger, errorWords(e));
     return false;
   }
 }
@@ -52,15 +57,18 @@ Future<bool> reportPostFlow(BuildContext context, WidgetRef ref, Post post) asyn
 Future<bool> deletePostFlow(BuildContext context, WidgetRef ref, Post post) async {
   final messenger = ScaffoldMessenger.of(context);
   final controller = ref.read(feedControllerProvider.notifier);
+  final l10n = context.communityL10n;
+  final app = context.l10n;
+  final errorWords = communityErrorWords(context);
 
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('Delete this post?'),
-      content: const Text('Its comments and likes go with it. This cannot be undone.'),
+      title: Text(l10n.deletePostTitle),
+      content: Text(l10n.deletePostBody),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-        FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(app.commonCancel)),
+        FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(app.commonDelete)),
       ],
     ),
   );
@@ -68,10 +76,10 @@ Future<bool> deletePostFlow(BuildContext context, WidgetRef ref, Post post) asyn
 
   try {
     await controller.delete(post.id);
-    showCommunitySnack(messenger, 'Your post was deleted.');
+    showCommunitySnack(messenger, l10n.postDeleted);
     return true;
   } catch (e) {
-    showCommunitySnack(messenger, communityErrorMessage(e));
+    showCommunitySnack(messenger, errorWords(e));
     return false;
   }
 }
@@ -81,6 +89,7 @@ class _ReportSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
     final radius = BorderRadius.circular(AppSpacing.fieldRadius);
     return SafeArea(
       child: SingleChildScrollView(
@@ -89,12 +98,9 @@ class _ReportSheet extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Report this post', style: AppText.cardTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(l10n.reportTitle, style: AppText.cardTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
             const SizedBox(height: 4),
-            Text(
-              'Tell us what is wrong. We hide the post for you right away and review it.',
-              style: AppText.body.copyWith(color: AppColors.brown),
-            ),
+            Text(l10n.reportBody, style: AppText.body.copyWith(color: AppColors.brown)),
             const SizedBox(height: 12),
             for (final reason in ReportReason.values)
               Padding(
@@ -109,7 +115,8 @@ class _ReportSheet extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                       child: Row(
                         children: [
-                          Expanded(child: Text(reason.label, style: AppText.body.copyWith(fontSize: 15))),
+                          Expanded(child: Text(l10n.reportReason(reason), style: AppText.body.copyWith(fontSize: 15))),
+                          // Mirrors itself in a right-to-left layout.
                           const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
                         ],
                       ),

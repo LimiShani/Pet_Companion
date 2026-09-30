@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../community_time.dart';
+import '../community_words.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
+import '../widgets/speech_icon.dart';
 import 'post_actions.dart';
 
 enum _PostAction { report, delete }
@@ -28,13 +30,18 @@ class PostCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.communityL10n;
+    final app = context.l10n;
+    final format = AppFormat.of(context);
     final now = ref.watch(communityClockProvider)();
     final viewerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
     final isMine = post.authorId == viewerId;
-    final meta = [
-      if (post.petName != null) 'with ${post.petName}',
-      relativeTime(post.createdAt, now),
-    ].join(' · ');
+    final meta = dotted([
+      // A name in the other script is kept as one unit, so it cannot
+      // reorder the line.
+      if (post.petName != null) l10n.postWithPet(l10n.inLine(post.petName!)),
+      l10n.relativeTime(app, format, post.createdAt, now),
+    ]);
 
     return Card(
       clipBehavior: Clip.antiAlias,
@@ -54,8 +61,10 @@ class PostCard extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          post.authorName,
+                        // The author's name as they wrote it, next to the
+                        // avatar whatever language it is in.
+                        AutoDirectionText(
+                          l10n.memberName(post.authorName),
                           style: AppText.cardTitle.copyWith(fontWeight: FontWeight.w800),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -70,21 +79,21 @@ class PostCard extends ConsumerWidget {
                     ),
                   ),
                   PopupMenuButton<_PostAction>(
-                    tooltip: 'Post options',
+                    tooltip: l10n.postOptions,
                     icon: const Icon(Icons.more_horiz_rounded, color: AppColors.brown),
                     color: AppColors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     onSelected: (action) => _onAction(context, ref, action),
                     itemBuilder: (context) => [
                       if (isMine)
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: _PostAction.delete,
-                          child: _MenuRow(icon: Icons.delete_outline_rounded, label: 'Delete'),
+                          child: _MenuRow(icon: Icons.delete_outline_rounded, label: app.commonDelete),
                         )
                       else
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: _PostAction.report,
-                          child: _MenuRow(icon: Icons.flag_outlined, label: 'Report'),
+                          child: _MenuRow(icon: Icons.flag_outlined, label: l10n.report),
                         ),
                     ],
                   ),
@@ -105,18 +114,20 @@ class PostCard extends ConsumerWidget {
               Row(
                 children: [
                   _CountButton(
-                    tooltip: post.likedByMe ? 'Unlike' : 'Like',
+                    tooltip: post.likedByMe ? l10n.unlike : l10n.like,
                     icon: post.likedByMe ? Icons.favorite_rounded : Icons.favorite_border_rounded,
                     color: post.likedByMe ? AppColors.coralDark : AppColors.brown,
-                    count: post.likeCount,
+                    count: format.integer(post.likeCount),
+                    countInWords: l10n.likeCount(post.likeCount),
                     onTap: () => togglePostLike(context, ref, post),
                   ),
                   const SizedBox(width: 4),
                   _CountButton(
-                    tooltip: 'Comments',
+                    tooltip: l10n.comments,
                     icon: Icons.chat_bubble_outline_rounded,
                     color: AppColors.brown,
-                    count: post.commentCount,
+                    count: format.integer(post.commentCount),
+                    countInWords: l10n.commentCount(post.commentCount),
                     onTap: onOpen,
                   ),
                 ],
@@ -163,13 +174,19 @@ class _CountButton extends StatelessWidget {
     required this.icon,
     required this.color,
     required this.count,
+    required this.countInWords,
     required this.onTap,
   });
 
   final String tooltip;
   final IconData icon;
   final Color color;
-  final int count;
+
+  /// The number as shown: "14".
+  final String count;
+
+  /// The number as a screen reader says it: "14 likes".
+  final String countInWords;
   final VoidCallback? onTap;
 
   @override
@@ -186,9 +203,13 @@ class _CountButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 22, color: color),
+                DirectionalCommunityIcon(icon, size: 22, color: color),
                 const SizedBox(width: 6),
-                Text('$count', style: AppText.secondary.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown)),
+                Text(
+                  count,
+                  semanticsLabel: countInWords,
+                  style: AppText.secondary.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown),
+                ),
               ],
             ),
           ),

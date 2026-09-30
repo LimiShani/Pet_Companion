@@ -6,15 +6,15 @@ import 'guides/guide_catalog.dart';
 import 'guides/guides_en.dart';
 import 'guides/guides_he.dart';
 
-/// The closing line every guide carries.
-const guideDisclaimer =
-    'This guide is general guidance and not a substitute for advice from your veterinarian.';
-
 /// A shelf of the guides library.
 class GuideCategory {
   const GuideCategory({required this.id, required this.name, required this.icon});
 
   final String id;
+
+  /// The shelf's name as stored (English for the shelves the app ships
+  /// with). The screen shows the shelves it knows by [id] in its own
+  /// language (`CommunityWords.categoryName`).
   final String name;
   final IconData icon;
 }
