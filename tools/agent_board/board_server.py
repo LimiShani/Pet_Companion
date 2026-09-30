@@ -145,7 +145,11 @@ def _proposal_info(agent_id: str) -> dict:
 
 
 def _known_agent(agent_id: str) -> bool:
-    return agent_id in {a["id"] for a in _roster().get("agents", [])}
+    roster = _roster()
+    ids = {a["id"] for a in roster.get("agents", [])}
+    if roster.get("lead"):
+        ids.add(roster["lead"]["id"])  # the lead can publish proposals too
+    return agent_id in ids
 
 
 def cached_state() -> dict:
@@ -199,7 +203,7 @@ def build_state() -> dict:
         })
     lead = roster.get("lead")
     if lead:
-        lead = {**lead, "status": _status(lead["id"])}
+        lead = {**lead, "status": _status(lead["id"]), "proposal": _proposal_info(lead["id"])}
     return {
         "now": _now_iso(),
         "project": roster.get("project", ""),
