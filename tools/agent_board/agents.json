@@ -71,6 +71,10 @@
         {
           "id": "p8",
           "title": "Widget tests, analyzer clean, final report"
+        },
+        {
+          "id": "p9",
+          "title": "Hebrew: every Pets text in the strings files, right-to-left layout, tests in both languages"
         }
       ]
     },
@@ -267,6 +271,10 @@
         {
           "id": "s11",
           "title": "Phase 1 tests, migration 0008, report"
+        },
+        {
+          "id": "s12",
+          "title": "Hebrew: every Store text in the strings files, right-to-left layout, tests in both languages"
         }
       ]
     },
@@ -291,7 +299,7 @@
         },
         {
           "id": "t4",
-          "title": "Hebrew for Health, Community, Store and Pets, with the feature agents"
+          "title": "Hebrew for Health, Community, Store and Pets: done by each feature agent, reviewed here for consistent wording"
         },
         {
           "id": "t5",
@@ -299,7 +307,7 @@
         },
         {
           "id": "t6",
-          "title": "Side menu and Settings page (language, week start): design first, then build"
+          "title": "Side menu and Settings page (language, week start)"
         }
       ]
     }
