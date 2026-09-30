@@ -67,14 +67,16 @@ class FakeLinkOpener implements LinkOpener {
   }
 }
 
-/// Pumps the whole app at phone size on fakes, signs in as the demo user
-/// and opens the Store tab. Returns the catalogue the app runs on.
+/// Pumps the whole app on fakes (at phone size unless [size] says
+/// otherwise), signs in as the demo user and opens the Store tab. Returns
+/// the catalogue the app runs on.
 Future<FakeStoreRepository> pumpStore(
   WidgetTester tester, {
   FakeStoreRepository? repository,
   FakeLinkOpener? opener,
+  Size size = const Size(390, 844),
 }) async {
-  tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+  tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
