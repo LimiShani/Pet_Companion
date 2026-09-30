@@ -36,7 +36,7 @@ void main() {
       expect(find.text('01.06.25 · 6 weigh-ins'), findsOneWidget);
       expect(find.text('0.2 kg down since 02.05.25 · highest 24.1 · lowest 23'), findsOneWidget);
       expect(find.text('18.09.24'), findsOneWidget);
-      expect(find.text('◆ vet visit'), findsOneWidget);
+      expect(find.text('vet visit'), findsOneWidget);
 
       // The line is drawn by hand; vet visits inside its period are marked.
       final chart = tester.widget<WeightTrendChart>(find.byType(WeightTrendChart));

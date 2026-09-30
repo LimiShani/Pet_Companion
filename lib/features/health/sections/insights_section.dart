@@ -242,7 +242,18 @@ class _WeightCard extends StatelessWidget {
               Expanded(child: Text(formatDate(first.observedAt), style: small)),
               if (marked.isNotEmpty)
                 Flexible(
-                  child: Text('◆ vet visit', style: small, textAlign: TextAlign.center),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Drawn, not typed: the app font has no diamond glyph.
+                      Transform.rotate(
+                        angle: 0.7853981633974483,
+                        child: Container(width: 7, height: 7, color: small.color),
+                      ),
+                      const SizedBox(width: 6),
+                      Flexible(child: Text('vet visit', style: small, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    ],
+                  ),
                 ),
               Expanded(
                 child: Text(
