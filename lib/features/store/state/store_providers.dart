@@ -3,11 +3,14 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
+import '../../../models/pet.dart';
+import '../../../state/pets_provider.dart';
 import '../data/deal.dart';
 import '../data/deal_filters.dart';
 import '../data/fake_store_repository.dart';
 import '../data/store_repository.dart';
 import '../data/supabase_store_repository.dart';
+import '../store_strings.dart';
 
 /// "Now" for everything time-related in the Store (expiry, "3 hours ago").
 /// Tests override it with a fixed instant.
@@ -23,7 +26,7 @@ final storeRepositoryProvider = Provider<StoreRepository>(
 
 /// User-facing text for a Store failure.
 String storeErrorMessage(Object error) =>
-    error is StoreException ? error.message : 'Something went wrong. Please try again.';
+    error is StoreException ? error.message : StoreStrings.somethingWentWrong;
 
 // Riverpod retries failed providers on its own by default; here a failure
 // is shown with a "Try again" button instead.
@@ -53,7 +56,7 @@ class DealsController extends AsyncNotifier<List<Deal>> {
   /// when it cannot be stored.
   Future<Deal> share(DealDraft draft) async {
     final user = ref.read(authControllerProvider).value;
-    if (user == null) throw const StoreException('Please sign in to share a deal.');
+    if (user == null) throw const StoreException(StoreStrings.signInToShare);
     final deal = await ref
         .read(storeRepositoryProvider)
         .shareDeal(userId: user.id, userName: user.displayName, draft: draft);
@@ -65,7 +68,7 @@ class DealsController extends AsyncNotifier<List<Deal>> {
   /// [StoreException] when it cannot be removed.
   Future<void> delete(String dealId) async {
     final user = ref.read(authControllerProvider).value;
-    if (user == null) throw const StoreException('Please sign in to delete a deal.');
+    if (user == null) throw const StoreException(StoreStrings.signInToDelete);
     await ref.read(storeRepositoryProvider).deleteDeal(userId: user.id, dealId: dealId);
     if (!ref.mounted) return;
     state = AsyncData([
@@ -136,7 +139,7 @@ class ReportedDealsController extends AsyncNotifier<Set<String>> {
   /// Records a report. Throws a [StoreException] when it cannot be stored.
   Future<void> report(String dealId) async {
     final userId = ref.read(authControllerProvider).value?.id;
-    if (userId == null) throw const StoreException('Please sign in to report a deal.');
+    if (userId == null) throw const StoreException(StoreStrings.signInToReport);
     await ref.read(storeRepositoryProvider).reportExpired(userId: userId, dealId: dealId);
     if (ref.mounted) state = AsyncData({...?state.value, dealId});
   }
@@ -145,10 +148,15 @@ class ReportedDealsController extends AsyncNotifier<Set<String>> {
 final reportedDealIdsProvider =
     AsyncNotifierProvider<ReportedDealsController, Set<String>>(ReportedDealsController.new, retry: _noRetry);
 
-/// The search text, category and sort order picked on the Store tab.
+/// The search text, category, sort order and "all animals" choice picked
+/// on the Store tab.
 class StoreFilterController extends Notifier<StoreFilter> {
   @override
   StoreFilter build() => const StoreFilter();
+
+  /// Shows the deals for every kind of animal, or (with `false`) only what
+  /// suits the selected pet.
+  void setAllAnimals(bool value) => state = state.withAllAnimals(value);
 
   void setQuery(String query) => state = state.withQuery(query);
 
@@ -156,17 +164,35 @@ class StoreFilterController extends Notifier<StoreFilter> {
 
   void setSort(DealSort sort) => state = state.withSort(sort);
 
-  /// Back to every category and no search text. The sort order stays.
-  void clear() => state = StoreFilter(sort: state.sort);
+  /// Back to every category and no search text. The sort order and the
+  /// choice of animals stay.
+  void clear() => state = StoreFilter(sort: state.sort, allAnimals: state.allAnimals);
 }
 
 final storeFilterProvider = NotifierProvider<StoreFilterController, StoreFilter>(StoreFilterController.new);
 
-/// The catalogue as the Store grid shows it: filtered, sorted, expired last.
+/// The kind of animal the Store is shopping for: the selected pet's.
+final storePetSpeciesProvider = Provider<PetSpecies>(
+  (ref) => ref.watch(selectedPetProvider.select((pet) => pet.species)),
+);
+
+/// The catalogue as the Store grid shows it: what suits the selected pet
+/// (or every animal), filtered, sorted, expired last.
 final visibleDealsProvider = Provider<AsyncValue<List<Deal>>>((ref) {
   final filter = ref.watch(storeFilterProvider);
   final now = ref.watch(storeClockProvider)();
-  return ref.watch(dealsProvider).whenData((deals) => visibleDeals(deals, filter, now));
+  final pet = ref.watch(storePetSpeciesProvider);
+  return ref.watch(dealsProvider).whenData((deals) => visibleDeals(deals, filter, now, pet: pet));
+});
+
+/// How many deals match the search and the category when every animal is
+/// included. Tells an empty list for the selected pet apart from a search
+/// that finds nothing at all.
+final allAnimalsDealCountProvider = Provider<int>((ref) {
+  final filter = ref.watch(storeFilterProvider).withAllAnimals(true);
+  final now = ref.watch(storeClockProvider)();
+  final deals = ref.watch(dealsProvider).value ?? const <Deal>[];
+  return visibleDeals(deals, filter, now).length;
 });
 
 /// The signed-in user's saved deals, newest first, expired last.

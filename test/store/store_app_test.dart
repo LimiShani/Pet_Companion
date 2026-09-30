@@ -26,7 +26,7 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
     expect(find.text('Squeaky rope tug toy, 2 pack'), findsOneWidget);
     expect(find.text('Share a deal'), findsOneWidget);
 
@@ -37,7 +37,7 @@ void main() {
     await tester.tap(find.text('Store').last);
     await tester.pumpAndSettle();
     expect(find.byType(SavedDealsScreen), findsNothing);
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
   });
 
   testWidgets('a wide screen shows more cards per row', (tester) async {

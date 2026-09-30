@@ -1,21 +1,28 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../models/pet.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/pet_selector.dart';
 import 'data/deal.dart';
 import 'data/deal_filters.dart';
 import 'share_deal_screen.dart';
 import 'state/store_providers.dart';
 import 'store_routes.dart';
+import 'store_strings.dart';
 import 'widgets/deal_grid.dart';
 import 'widgets/store_messages.dart';
 
 /// The Store tab: a marketplace of bargain pet products. Each deal links
 /// out to its seller; nothing is bought inside the app.
+///
+/// It opens on what suits the selected pet; "All animals" in the header
+/// shows the deals for every kind of animal.
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
@@ -34,14 +41,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   Future<void> _refresh() async {
     final ok = await ref.read(dealsProvider.notifier).refresh();
-    if (!ok && mounted) showStoreMessage(context, 'Could not refresh the deals. Please try again.');
+    if (!ok && mounted) showStoreMessage(context, StoreStrings.couldNotRefresh);
   }
 
   Future<void> _shareDeal() async {
     final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
       MaterialPageRoute(fullscreenDialog: true, builder: (context) => const ShareDealScreen()),
     );
-    if (deal != null && mounted) showStoreMessage(context, 'Thanks! Your deal is live.');
+    if (deal != null && mounted) showStoreMessage(context, StoreStrings.dealIsLive);
   }
 
   void _clearFilters() {
@@ -53,6 +60,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   Widget build(BuildContext context) {
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
+    final species = ref.watch(storePetSpeciesProvider);
     // Load the user's saved and reported deals together with the catalogue,
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
@@ -61,29 +69,34 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final loading = deals.isLoading && !deals.hasValue;
     final failed = !loading && deals.hasError && !deals.hasValue;
     final shown = deals.value ?? const <Deal>[];
+    final filters = ref.read(storeFilterProvider.notifier);
 
     return Scaffold(
       key: const Key('store-screen'),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _shareDeal,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('Share a deal'),
+        label: const Text(StoreStrings.shareADeal),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CoralHeader(
-            title: 'Store',
+            title: StoreStrings.storeTitle,
             actions: [
               CoralHeaderAction(
                 icon: Icons.favorite_border_rounded,
-                tooltip: 'Saved deals',
+                tooltip: StoreStrings.savedDealsTooltip,
                 onPressed: () => context.push(StoreRoutes.saved),
               ),
             ],
-            bottom: _SearchField(
-              controller: _search,
-              onChanged: ref.read(storeFilterProvider.notifier).setQuery,
+            bottom: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _PetScope(allAnimals: filter.allAnimals, onChanged: filters.setAllAnimals),
+                const SizedBox(height: 10),
+                _SearchField(controller: _search, onChanged: filters.setQuery),
+              ],
             ),
           ),
           Expanded(
@@ -104,33 +117,37 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       hasScrollBody: false,
                       child: EmptyState(
                         icon: Icons.cloud_off_rounded,
-                        title: 'Could not load deals',
+                        title: StoreStrings.couldNotLoadDeals,
                         message: storeErrorMessage(deals.error!),
-                        actionLabel: 'Try again',
+                        actionLabel: StoreStrings.tryAgain,
                         onAction: () => ref.read(dealsProvider.notifier).refresh(),
                       ),
                     )
                   else ...[
                     SliverToBoxAdapter(
-                      child: _CategoryChips(
-                        selected: filter.category,
-                        onSelected: ref.read(storeFilterProvider.notifier).setCategory,
-                      ),
+                      child: _CategoryChips(selected: filter.category, onSelected: filters.setCategory),
                     ),
                     SliverToBoxAdapter(
                       child: _SortRow(
-                        count: shown.length,
+                        countText: filter.allAnimals
+                            ? StoreStrings.dealCount(shown.length)
+                            : StoreStrings.dealCountFor(shown.length, species),
                         sort: filter.sort,
-                        onSort: ref.read(storeFilterProvider.notifier).setSort,
+                        onSort: filters.setSort,
                       ),
                     ),
                     if (shown.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
-                        child: _NoDeals(filter: filter, onClear: _clearFilters),
+                        child: _NoDeals(
+                          filter: filter,
+                          species: species,
+                          onClear: _clearFilters,
+                          onShowAllAnimals: () => filters.setAllAnimals(true),
+                        ),
                       )
                     else
-                      SliverDealGrid(deals: shown),
+                      SliverDealGrid(deals: shown, showAnimals: filter.allAnimals),
                     // Room for the floating button below the last row.
                     const SliverToBoxAdapter(child: SizedBox(height: 96)),
                   ],
@@ -139,6 +156,111 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Who the Store is shopping for: the shared row of pet pills, followed by
+/// an "All animals" pill. A pet pill selects that pet for the whole app and
+/// narrows the Store to its kind; "All animals" shows every deal and leaves
+/// no pet highlighted.
+class _PetScope extends StatefulWidget {
+  const _PetScope({required this.allAnimals, required this.onChanged});
+
+  final bool allAnimals;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  State<_PetScope> createState() => _PetScopeState();
+}
+
+class _PetScopeState extends State<_PetScope> {
+  final _allAnimalsKey = GlobalKey();
+  Offset? _pressedAt;
+
+  bool _isOnAllAnimals(Offset position) {
+    final box = _allAnimalsKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.hasSize) return false;
+    return (box.localToGlobal(Offset.zero) & box.size).contains(position);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // The selector handles taps on its pet pills itself and only reports a
+    // change of pet, so tapping the pet that is already selected would not
+    // be noticed. Watching for a tap on the row (not a scroll, not on "All
+    // animals") catches every way back from "All animals" to a pet.
+    return Listener(
+      onPointerDown: (event) => _pressedAt = event.position,
+      onPointerCancel: (_) => _pressedAt = null,
+      onPointerUp: (event) {
+        final pressedAt = _pressedAt;
+        _pressedAt = null;
+        if (!widget.allAnimals || pressedAt == null) return;
+        if ((event.position - pressedAt).distance > kTouchSlop) return;
+        if (_isOnAllAnimals(event.position)) return;
+        widget.onChanged(false);
+      },
+      child: PetSelector(
+        highlightSelected: !widget.allAnimals,
+        trailing: _AllAnimalsPill(
+          key: _allAnimalsKey,
+          selected: widget.allAnimals,
+          onTap: () => widget.onChanged(true),
+        ),
+      ),
+    );
+  }
+}
+
+/// Drawn to match the pet pills of [PetSelector], with a paw for a picture.
+class _AllAnimalsPill extends StatelessWidget {
+  const _AllAnimalsPill({super.key, required this.selected, required this.onTap});
+
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: Material(
+        color: selected ? AppColors.yellow : AppColors.onCoralPill,
+        shape: StadiumBorder(
+          side: BorderSide(color: selected ? AppColors.yellow : AppColors.onCoralOutline, width: 2),
+        ),
+        child: InkWell(
+          customBorder: const StadiumBorder(),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: selected ? AppColors.coral : AppColors.white.withValues(alpha: 0.55),
+                  ),
+                  child: Icon(
+                    Icons.pets_rounded,
+                    size: 13,
+                    color: selected ? AppColors.white : AppColors.coralDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  StoreStrings.allAnimals,
+                  style: AppText.cardTitle.copyWith(color: selected ? AppColors.ink : AppColors.white),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -160,13 +282,13 @@ class _SearchField extends StatelessWidget {
         textInputAction: TextInputAction.search,
         style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
         decoration: InputDecoration(
-          hintText: 'Search deals',
+          hintText: StoreStrings.searchHint,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
           suffixIcon: controller.text.isEmpty
               ? null
               : IconButton(
-                  tooltip: 'Clear search',
+                  tooltip: StoreStrings.clearSearch,
                   icon: const Icon(Icons.close_rounded, color: AppColors.brown),
                   onPressed: () {
                     controller.clear();
@@ -190,7 +312,7 @@ class _CategoryChips extends StatelessWidget {
     Widget chip(String label, DealCategory? category) {
       final on = selected == category;
       return Padding(
-        padding: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsetsDirectional.only(end: 8),
         child: ChoiceChip(
           label: Text(label),
           selected: on,
@@ -204,10 +326,10 @@ class _CategoryChips extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 12, AppSpacing.screen - 8, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 12, AppSpacing.screen - 8, 0),
       child: Row(
         children: [
-          chip('All', null),
+          chip(StoreStrings.allCategories, null),
           for (final category in DealCategory.values) chip(category.label, category),
         ],
       ),
@@ -216,16 +338,17 @@ class _CategoryChips extends StatelessWidget {
 }
 
 class _SortRow extends StatelessWidget {
-  const _SortRow({required this.count, required this.sort, required this.onSort});
+  const _SortRow({required this.countText, required this.sort, required this.onSort});
 
-  final int count;
+  /// "23 deals for dogs", or "36 deals" when every animal is shown.
+  final String countText;
   final DealSort sort;
   final ValueChanged<DealSort> onSort;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 6, AppSpacing.screen, 10),
+      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 6, AppSpacing.screen, 10),
       child: SizedBox(
         width: double.infinity,
         child: Wrap(
@@ -235,11 +358,12 @@ class _SortRow extends StatelessWidget {
           runSpacing: 6,
           children: [
             Text(
-              count == 1 ? '1 deal' : '$count deals',
+              countText,
+              key: const Key('store-deal-count'),
               style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
             ),
             PopupMenuButton<DealSort>(
-              tooltip: 'Sort deals',
+              tooltip: StoreStrings.sortTooltip,
               initialValue: sort,
               onSelected: onSort,
               color: AppColors.white,
@@ -259,7 +383,7 @@ class _SortRow extends StatelessWidget {
               ],
               child: Container(
                 constraints: const BoxConstraints(minHeight: 44),
-                padding: const EdgeInsets.fromLTRB(14, 6, 10, 6),
+                padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 10, 6),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(999),
@@ -289,36 +413,63 @@ class _SortRow extends StatelessWidget {
   }
 }
 
-class _NoDeals extends StatelessWidget {
-  const _NoDeals({required this.filter, required this.onClear});
+/// What the grid's place shows when there is nothing to list.
+class _NoDeals extends ConsumerWidget {
+  const _NoDeals({
+    required this.filter,
+    required this.species,
+    required this.onClear,
+    required this.onShowAllAnimals,
+  });
 
   final StoreFilter filter;
+  final PetSpecies species;
   final VoidCallback onClear;
+  final VoidCallback onShowAllAnimals;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final query = filter.query.trim();
+    final category = filter.category?.label;
+
+    // Nothing for this pet, but other animals have deals here: the way out
+    // is "All animals", not clearing the search.
+    final others = filter.allAnimals ? 0 : ref.watch(allAnimalsDealCountProvider);
+    if (others > 0) {
+      return EmptyState(
+        icon: Icons.pets_rounded,
+        title: StoreStrings.noDealsForAnimalsTitle(species),
+        message: StoreStrings.noDealsForAnimalsMessage(
+          species: species,
+          query: query,
+          category: category,
+          othersCount: others,
+        ),
+        actionLabel: StoreStrings.showAllAnimals,
+        onAction: onShowAllAnimals,
+      );
+    }
+
     if (!filter.isNarrowed) {
       return const EmptyState(
         icon: Icons.shopping_bag_rounded,
-        title: 'No deals yet',
-        message: 'New bargains will show up here. Found one yourself? Share it with other pet owners.',
+        title: StoreStrings.noDealsYetTitle,
+        message: StoreStrings.noDealsYetMessage,
       );
     }
-    final query = filter.query.trim();
-    final category = filter.category?.label;
     final String message;
     if (query.isEmpty) {
-      message = 'There are no deals in $category right now. Try a different category.';
+      message = StoreStrings.noDealsInCategory(category!);
     } else if (category == null) {
-      message = 'Nothing matches "$query". Try another word.';
+      message = StoreStrings.nothingMatches(query);
     } else {
-      message = 'Nothing matches "$query" in $category. Try another word or a different category.';
+      message = StoreStrings.nothingMatchesInCategory(query, category);
     }
     return EmptyState(
       icon: Icons.search_rounded,
-      title: 'No deals found',
+      title: StoreStrings.noDealsFoundTitle,
       message: message,
-      actionLabel: 'Clear filters',
+      actionLabel: StoreStrings.clearFilters,
       onAction: onClear,
     );
   }

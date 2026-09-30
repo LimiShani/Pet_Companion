@@ -13,9 +13,13 @@ import 'save_deal_button.dart';
 /// more on wider screens. Cards in a row share the height of the tallest,
 /// and no card has a fixed height, so long titles and wrapped prices fit.
 class SliverDealGrid extends StatelessWidget {
-  const SliverDealGrid({super.key, required this.deals});
+  const SliverDealGrid({super.key, required this.deals, this.showAnimals = false});
 
   final List<Deal> deals;
+
+  /// Tags the deals that are for some kinds of animal only. For lists that
+  /// are not narrowed to one pet.
+  final bool showAnimals;
 
   /// A card is never narrower than this (except with the minimum of two
   /// columns on a very small phone).
@@ -49,7 +53,11 @@ class SliverDealGrid extends StatelessWidget {
                         if (i > 0) const SizedBox(width: _gap),
                         Expanded(
                           child: start + i < deals.length
-                              ? _GridCard(key: ValueKey('deal-card-${deals[start + i].id}'), deal: deals[start + i])
+                              ? _GridCard(
+                                  key: ValueKey('deal-card-${deals[start + i].id}'),
+                                  deal: deals[start + i],
+                                  showAnimals: showAnimals,
+                                )
                               : const SizedBox.shrink(),
                         ),
                       ],
@@ -68,9 +76,10 @@ class SliverDealGrid extends StatelessWidget {
 /// A [DealCard] wired up for the grid: it opens the deal's page and carries
 /// the save button.
 class _GridCard extends ConsumerWidget {
-  const _GridCard({super.key, required this.deal});
+  const _GridCard({super.key, required this.deal, required this.showAnimals});
 
   final Deal deal;
+  final bool showAnimals;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,6 +87,7 @@ class _GridCard extends ConsumerWidget {
     return DealCard(
       deal: deal,
       expired: deal.isExpired(now),
+      showAnimals: showAnimals,
       onTap: () => context.push(StoreRoutes.deal(deal.id)),
       corner: SaveDealButton(key: ValueKey('save-${deal.id}'), dealId: deal.id),
     );

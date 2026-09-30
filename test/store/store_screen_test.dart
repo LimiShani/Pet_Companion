@@ -31,7 +31,7 @@ void main() {
     await pumpStore(tester);
 
     expect(find.byKey(const Key('store-screen')), findsOneWidget);
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
     expect(find.text('Biggest discount'), findsOneWidget);
 
     expect(shownDealIds(tester).first, 'd-rope-tug-toy');
@@ -66,12 +66,12 @@ void main() {
 
     await tester.enterText(find.byType(TextField), 'salmon');
     await tester.pumpAndSettle();
-    expect(find.text('2 deals'), findsOneWidget);
+    expect(find.text('2 deals for dogs'), findsOneWidget);
     expect(shownDealIds(tester), ['d-salmon-kibble-12kg', 'd-salmon-training-treats']);
 
     await tester.tap(find.byTooltip('Clear search'));
     await tester.pumpAndSettle();
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
   });
 
   testWidgets('a category chip filters the grid', (tester) async {
@@ -83,7 +83,7 @@ void main() {
     await tester.tap(toys);
     await tester.pumpAndSettle();
 
-    expect(find.text('3 deals'), findsOneWidget);
+    expect(find.text('3 deals for dogs'), findsOneWidget);
     expect(shownDealIds(tester), ['d-rope-tug-toy', 'd-puzzle-feeder', 'd-fetch-balls']);
 
     final all = find.widgetWithText(ChoiceChip, 'All');
@@ -91,7 +91,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(all);
     await tester.pumpAndSettle();
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
   });
 
   testWidgets('sort: biggest discount is the default, expired last', (tester) async {
@@ -143,7 +143,7 @@ void main() {
     await tester.tap(find.text('Clear filters'));
     await tester.pumpAndSettle();
     expect(find.text('No deals found'), findsNothing);
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
     expect(find.text('hamster wheel'), findsNothing);
   });
 
@@ -165,12 +165,12 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Could not load deals'), findsNothing);
-    expect(find.text('21 deals'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
   });
 
   testWidgets('pull to refresh loads new deals', (tester) async {
     final store = await pumpStore(tester, repository: fakeStore(seed: sortSeed()));
-    expect(find.text('4 deals'), findsOneWidget);
+    expect(find.text('4 deals for dogs'), findsOneWidget);
 
     await store.shareDeal(
       userId: 'someone-else',
@@ -187,7 +187,7 @@ void main() {
     await tester.fling(find.byType(CustomScrollView), const Offset(0, 400), 1000);
     await tester.pumpAndSettle();
 
-    expect(find.text('5 deals'), findsOneWidget);
+    expect(find.text('5 deals for dogs'), findsOneWidget);
     expect(find.text('Brand new bargain'), findsOneWidget);
   });
 
@@ -199,6 +199,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Could not refresh the deals. Please try again.'), findsOneWidget);
-    expect(find.text('4 deals'), findsOneWidget);
+    expect(find.text('4 deals for dogs'), findsOneWidget);
   });
 }

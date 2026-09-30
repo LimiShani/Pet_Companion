@@ -1,9 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
+import '../store_strings.dart';
 import 'deal.dart';
 import 'store_repository.dart';
 
-/// [StoreRepository] backed by the tables of `0004_store.sql`.
+/// [StoreRepository] backed by the tables of `0004_store.sql`, with the
+/// columns `0008_store_phase1.sql` adds to `store_deals`.
 ///
 /// Row level security does the enforcing: every signed-in user reads the
 /// catalogue, and a user only adds, changes or removes rows of their own.
@@ -58,7 +60,7 @@ class SupabaseStoreRepository implements StoreRepository {
   @override
   Future<void> deleteDeal({required String userId, required String dealId}) => _guard(() async {
         final removed = await _client.from(_deals).delete().eq('id', dealId).eq('shared_by', userId).select('id');
-        if (removed.isEmpty) throw const StoreException('You can only delete deals you shared.');
+        if (removed.isEmpty) throw const StoreException(StoreStrings.onlyDeleteOwn);
       });
 
   @override
@@ -87,23 +89,27 @@ class SupabaseStoreRepository implements StoreRepository {
       throw StoreException(_friendly(e));
     } catch (_) {
       // No connection, a timeout, or a response that was not what we expect.
-      throw const StoreException('Cannot reach the server. Check your connection and try again.');
+      throw const StoreException(StoreStrings.cannotReachServer);
     }
   }
 
   static String _friendly(sb.PostgrestException e) {
     final message = e.message.toLowerCase();
     // 42501: refused by row level security. 23514: a check constraint.
-    if (e.code == '42501' || message.contains('row-level security')) {
-      return 'You are not allowed to do that. Please sign in again.';
-    }
+    if (e.code == '42501' || message.contains('row-level security')) return StoreStrings.notAllowed;
     if (e.code == '23514') {
-      if (message.contains('price')) return 'The deal price must be below the original price.';
-      if (message.contains('link')) return 'Use a link that starts with https://';
-      return 'Some of the details are not valid. Please check them and try again.';
+      // The message names the constraint that refused the row.
+      if (message.contains('package')) return StoreStrings.packageNotValid;
+      if (message.contains('delivery')) return StoreStrings.deliveryNotValid;
+      if (message.contains('price')) return StoreStrings.priceBelowOriginal;
+      if (message.contains('link')) return StoreStrings.linkMustBeHttps;
+      return StoreStrings.detailsNotValid;
     }
-    if (e.code == '23503') return 'This deal is no longer available.';
-    if (e.code == 'PGRST301' || message.contains('jwt')) return 'Your session has ended. Please sign in again.';
-    return 'Something went wrong. Please try again.';
+    if (e.code == '23503') return StoreStrings.dealNoLongerAvailable;
+    if (e.code == 'PGRST301' || message.contains('jwt')) return StoreStrings.sessionEnded;
+    // PGRST204: a column the app sends is not in the database yet, which
+    // means `0008_store_phase1.sql` has not been run.
+    if (e.code == 'PGRST204') return StoreStrings.storeNeedsUpdate;
+    return StoreStrings.somethingWentWrong;
   }
 }

@@ -10,6 +10,7 @@ import 'data/deal.dart';
 import 'data/link_opener.dart';
 import 'state/store_providers.dart';
 import 'store_format.dart';
+import 'store_strings.dart';
 import 'widgets/deal_badge.dart';
 import 'widgets/deal_card.dart';
 import 'widgets/deal_image.dart';
@@ -36,11 +37,11 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete this deal?'),
-        content: const Text('It will be removed from the Store for everyone.'),
+        title: const Text(StoreStrings.deleteDealTitle),
+        content: const Text(StoreStrings.deleteDealMessage),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text(StoreStrings.cancel)),
+          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: const Text(StoreStrings.delete)),
         ],
       ),
     );
@@ -52,7 +53,7 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
     try {
       await ref.read(dealsProvider.notifier).delete(deal.id);
       if (mounted) navigator.pop();
-      showStoreMessageOn(messenger, 'Your deal was deleted.');
+      showStoreMessageOn(messenger, StoreStrings.dealDeleted);
     } catch (error) {
       if (mounted) setState(() => _deleting = false);
       showStoreMessageOn(messenger, storeErrorMessage(error));
@@ -71,7 +72,7 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CoralHeader(
-            title: 'Deal',
+            title: StoreStrings.dealTitle,
             showBack: true,
             actions: [if (deal != null) SaveDealButton(dealId: deal.id, inHeader: true)],
           ),
@@ -82,9 +83,9 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
                     ? const Center(child: CircularProgressIndicator())
                     : EmptyState(
                         icon: Icons.search_off_rounded,
-                        title: 'This deal is gone',
-                        message: 'It may have been removed by the person who shared it.',
-                        actionLabel: 'Back to the Store',
+                        title: StoreStrings.dealGoneTitle,
+                        message: StoreStrings.dealGoneMessage,
+                        actionLabel: StoreStrings.backToStore,
                         onAction: () => Navigator.of(context).maybePop(),
                       ),
           ),
@@ -109,7 +110,7 @@ class _DealBody extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(reportedDealIdsProvider.notifier).report(deal.id);
-      showStoreMessageOn(messenger, 'Thanks, we will check it.');
+      showStoreMessageOn(messenger, StoreStrings.reportThanks);
     } catch (error) {
       showStoreMessageOn(messenger, storeErrorMessage(error));
     }
@@ -118,7 +119,7 @@ class _DealBody extends ConsumerWidget {
   Future<void> _open(BuildContext context, WidgetRef ref) async {
     final uri = safeDealLink(deal.link);
     final opened = uri != null && await ref.read(linkOpenerProvider).open(uri);
-    if (!opened && context.mounted) showStoreMessage(context, 'Could not open the offer. Please try again.');
+    if (!opened && context.mounted) showStoreMessage(context, StoreStrings.couldNotOpenOffer);
   }
 
   @override
@@ -135,7 +136,7 @@ class _DealBody extends ConsumerWidget {
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 16),
+            padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -144,7 +145,11 @@ class _DealBody extends ConsumerWidget {
                   child: Stack(
                     children: [
                       AspectRatio(aspectRatio: 16 / 9, child: DealImage(deal: deal, discSize: 92, faded: expired)),
-                      Positioned(left: 14, top: 14, child: DealBadge(deal: deal, expired: expired, large: true)),
+                      PositionedDirectional(
+                        start: 14,
+                        top: 14,
+                        child: DealBadge(deal: deal, expired: expired, large: true),
+                      ),
                     ],
                   ),
                 ),
@@ -154,6 +159,12 @@ class _DealBody extends ConsumerWidget {
                   runSpacing: 8,
                   children: [
                     _Pill(label: deal.category.label, color: AppColors.yellow),
+                    AnimalsTag(
+                      key: const Key('deal-animals'),
+                      label: StoreStrings.forAnimals(deal.speciesInOrder),
+                      color: AppColors.sage,
+                      large: true,
+                    ),
                     _Pill(label: _origin(deal, userId)),
                   ],
                 ),
@@ -161,29 +172,13 @@ class _DealBody extends ConsumerWidget {
                 Text(deal.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, height: 1.2)),
                 if (expired) ...[
                   const SizedBox(height: 14),
-                  _EndedNotice(endedOn: deal.expiresAt!),
+                  _Notice(text: StoreStrings.dealEndedOn(StoreFormat.date(deal.expiresAt!))),
+                ] else if (deal.isPriceStale(now)) ...[
+                  const SizedBox(height: 14),
+                  const _Notice(key: Key('deal-price-stale'), text: StoreStrings.priceMayHaveChanged),
                 ],
                 const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                  decoration: BoxDecoration(
-                    color: AppColors.sage,
-                    borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DealPrices(deal: deal, large: true),
-                      if (deal.amountSaved > 0) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'You save ${StoreFormat.money(deal.amountSaved, deal.currency)} (${deal.discountPercent}%)',
-                          style: AppText.body.copyWith(fontWeight: FontWeight.w800),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
+                _PriceCard(deal: deal),
                 const SizedBox(height: AppSpacing.cardGap),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -193,18 +188,28 @@ class _DealBody extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      _InfoRow(icon: Icons.storefront_rounded, label: 'Seller', value: deal.sellerName),
+                      _InfoRow(
+                        icon: Icons.storefront_rounded,
+                        label: StoreStrings.sellerLabel,
+                        value: deal.sellerName,
+                      ),
+                      const Divider(),
+                      _InfoRow(
+                        icon: Icons.verified_outlined,
+                        label: StoreStrings.priceCheckedLabel,
+                        value: StoreFormat.checked(deal.priceChecked, now),
+                      ),
                       const Divider(),
                       _InfoRow(
                         icon: Icons.schedule_rounded,
-                        label: 'Posted',
+                        label: StoreStrings.postedLabel,
                         value: StoreFormat.timeAgo(deal.postedAt, now),
                       ),
                       if (!expired) ...[
                         const Divider(),
                         _InfoRow(
                           icon: Icons.event_rounded,
-                          label: 'Ends',
+                          label: StoreStrings.endsLabel,
                           value: StoreFormat.ends(deal.expiresAt, now),
                         ),
                       ],
@@ -225,7 +230,7 @@ class _DealBody extends ConsumerWidget {
                         : TextButton.icon(
                             onPressed: busy ? null : () => _report(context, ref),
                             icon: const Icon(Icons.flag_outlined, size: 18),
-                            label: const Text('Report as expired'),
+                            label: const Text(StoreStrings.reportExpired),
                             style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
                           ),
                   ),
@@ -235,7 +240,7 @@ class _DealBody extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: busy ? null : onDelete,
                     icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                    label: const Text('Delete my deal'),
+                    label: const Text(StoreStrings.deleteMyDeal),
                   ),
                 ],
               ],
@@ -243,7 +248,7 @@ class _DealBody extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 8, AppSpacing.screen, 12),
+          padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 8, AppSpacing.screen, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -251,7 +256,7 @@ class _DealBody extends ConsumerWidget {
                 onPressed: busy ? null : () => _open(context, ref),
                 icon: const Icon(Icons.open_in_new_rounded, size: 20),
                 iconAlignment: IconAlignment.end,
-                label: const Text('Open offer'),
+                label: const Text(StoreStrings.openOffer),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
                   textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
@@ -260,7 +265,7 @@ class _DealBody extends ConsumerWidget {
               if (host != null) ...[
                 const SizedBox(height: 6),
                 Text(
-                  'Opens $host in your browser',
+                  StoreStrings.opensInBrowser(host),
                   style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
                   textAlign: TextAlign.center,
                   maxLines: 1,
@@ -275,10 +280,125 @@ class _DealBody extends ConsumerWidget {
   }
 
   static String _origin(Deal deal, String? userId) {
-    if (deal.isCurated) return 'Pet Companion pick';
-    if (deal.isSharedBy(userId)) return 'Shared by you';
+    if (deal.isCurated) return StoreStrings.pickOfTheApp;
+    if (deal.isSharedBy(userId)) return StoreStrings.sharedByYou;
     final name = deal.sharedByName?.trim() ?? '';
-    return name.isEmpty ? 'Shared by a member' : 'Shared by $name';
+    return name.isEmpty ? StoreStrings.sharedByMember : StoreStrings.sharedBy(name);
+  }
+}
+
+/// The sage card with everything about the price: now and before, the
+/// saving and, when the deal carries them, the unit price, the package, the
+/// delivery cost and the final price.
+class _PriceCard extends StatelessWidget {
+  const _PriceCard({required this.deal});
+
+  final Deal deal;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = deal.package;
+    final unitPrice = deal.unitPrice;
+    final delivery = deal.deliveryCost;
+    final finalPrice = deal.finalPrice;
+    // A deal with neither a package size nor a delivery cost looks as it
+    // did before these existed.
+    final hasBreakdown = size != null || delivery != null;
+    final line = Divider(height: 1, thickness: 1, color: AppColors.ink.withValues(alpha: 0.22));
+
+    String money(double amount) => StoreFormat.money(amount, deal.currency);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppColors.sage,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DealPrices(deal: deal, large: true),
+          if (deal.amountSaved > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              StoreStrings.youSave(money(deal.amountSaved), deal.discountPercent),
+              style: AppText.body.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ],
+          if (hasBreakdown) ...[
+            const SizedBox(height: 12),
+            line,
+            const SizedBox(height: 4),
+            if (unitPrice != null)
+              _PriceLine(
+                label: StoreStrings.unitPriceLabel,
+                value: StoreFormat.unitPrice(unitPrice, deal.currency),
+              ),
+            if (size != null) _PriceLine(label: StoreStrings.packageLabel, value: StoreFormat.package(size)),
+            _PriceLine(
+              label: StoreStrings.deliveryLabel,
+              value: delivery == null
+                  ? StoreStrings.deliveryNotGiven
+                  : delivery == 0
+                      ? StoreStrings.deliveryFree
+                      : StoreStrings.deliveryPlus(money(delivery)),
+              note: delivery == null ? StoreStrings.deliveryAskSeller : null,
+            ),
+            if (finalPrice != null) ...[
+              const SizedBox(height: 4),
+              line,
+              const SizedBox(height: 4),
+              _PriceLine(label: StoreStrings.finalPriceLabel, value: money(finalPrice), strong: true),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// A label at the start and its value at the end. Wraps when they do not
+/// fit on one line.
+class _PriceLine extends StatelessWidget {
+  const _PriceLine({required this.label, required this.value, this.note, this.strong = false});
+
+  final String label;
+  final String value;
+
+  /// A small remark under the value.
+  final String? note;
+
+  /// The line that matters most: the final price.
+  final bool strong;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            children: [
+              Text(label, style: AppText.body.copyWith(fontWeight: strong ? FontWeight.w800 : FontWeight.w600)),
+              Text(
+                value,
+                style: strong ? AppText.pillValue : AppText.body.copyWith(fontWeight: FontWeight.w800),
+              ),
+            ],
+          ),
+          if (note != null)
+            Text(
+              note!,
+              style: AppText.label.copyWith(fontWeight: FontWeight.w600),
+              textAlign: TextAlign.end,
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -318,7 +438,7 @@ class _ReportedNote extends StatelessWidget {
           const SizedBox(width: 8),
           Flexible(
             child: Text(
-              'You reported this as expired',
+              StoreStrings.reportedExpired,
               style: AppText.body.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
             ),
           ),
@@ -328,10 +448,12 @@ class _ReportedNote extends StatelessWidget {
   }
 }
 
-class _EndedNotice extends StatelessWidget {
-  const _EndedNotice({required this.endedOn});
+/// A butter-coloured line with a clock: the deal has ended, or its price
+/// was checked a while ago.
+class _Notice extends StatelessWidget {
+  const _Notice({super.key, required this.text});
 
-  final DateTime endedOn;
+  final String text;
 
   @override
   Widget build(BuildContext context) {
@@ -345,12 +467,7 @@ class _EndedNotice extends StatelessWidget {
         children: [
           const Icon(Icons.schedule_rounded, size: 20, color: AppColors.ink),
           const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'This deal ended on ${StoreFormat.date(endedOn)}',
-              style: AppText.body.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
+          Expanded(child: Text(text, style: AppText.body.copyWith(fontWeight: FontWeight.w700))),
         ],
       ),
     );

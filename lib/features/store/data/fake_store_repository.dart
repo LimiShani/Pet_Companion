@@ -1,3 +1,4 @@
+import '../store_strings.dart';
 import 'deal.dart';
 import 'sample_deals.dart';
 import 'store_repository.dart';
@@ -7,7 +8,8 @@ import 'store_repository.dart';
 ///
 /// Used automatically when the app is built without Supabase configuration.
 /// It applies the same rules as the database: a deal must be a real
-/// discount with an `https` link, and only the sharer can delete it.
+/// discount with an `https` link, a package size is above zero, delivery
+/// never costs less than nothing, and only the sharer can delete a deal.
 class FakeStoreRepository implements StoreRepository {
   FakeStoreRepository({
     this.latency = const Duration(milliseconds: 300),
@@ -44,13 +46,13 @@ class FakeStoreRepository implements StoreRepository {
   }
 
   void _checkWrite() {
-    if (failWrites) throw const StoreException('Cannot reach the server. Check your connection and try again.');
+    if (failWrites) throw const StoreException(StoreStrings.cannotReachServer);
   }
 
   @override
   Future<List<Deal>> fetchDeals() async {
     await _wait();
-    if (failFetches) throw const StoreException('Cannot reach the server. Check your connection and try again.');
+    if (failFetches) throw const StoreException(StoreStrings.cannotReachServer);
     return List.unmodifiable(_deals);
   }
 
@@ -77,15 +79,21 @@ class FakeStoreRepository implements StoreRepository {
     await _wait();
     _checkWrite();
     if (draft.title.trim().isEmpty || draft.sellerName.trim().isEmpty) {
-      throw const StoreException('A deal needs a title and a seller.');
+      throw const StoreException(StoreStrings.dealNeedsTitleAndSeller);
     }
     if (draft.price <= 0 || draft.originalPrice <= 0 || draft.price > draft.originalPrice) {
-      throw const StoreException('The deal price must be below the original price.');
+      throw const StoreException(StoreStrings.priceBelowOriginal);
     }
     if (Uri.tryParse(draft.link)?.scheme != 'https') {
-      throw const StoreException('Use a link that starts with https://');
+      throw const StoreException(StoreStrings.linkMustBeHttps);
     }
+    final size = draft.package;
+    if (size != null && !(size.amount > 0)) throw const StoreException(StoreStrings.packageNotValid);
+    final delivery = draft.deliveryCost;
+    if (delivery != null && !(delivery >= 0)) throw const StoreException(StoreStrings.deliveryNotValid);
+
     final name = userName?.trim() ?? '';
+    final now = _now();
     final deal = Deal(
       id: 'shared-${_nextId++}',
       title: draft.title.trim(),
@@ -98,8 +106,13 @@ class FakeStoreRepository implements StoreRepository {
       link: draft.link.trim(),
       sharedBy: userId,
       sharedByName: name.isEmpty ? null : name,
-      postedAt: _now(),
+      postedAt: now,
       expiresAt: draft.expiresAt,
+      package: size,
+      deliveryCost: delivery,
+      // The sharer looked at the price today.
+      priceCheckedAt: now,
+      species: Set.unmodifiable(draft.species),
     );
     _deals.insert(0, deal);
     return deal;
@@ -111,7 +124,7 @@ class FakeStoreRepository implements StoreRepository {
     _checkWrite();
     final index = _deals.indexWhere((d) => d.id == dealId);
     if (index < 0) return;
-    if (_deals[index].sharedBy != userId) throw const StoreException('You can only delete deals you shared.');
+    if (_deals[index].sharedBy != userId) throw const StoreException(StoreStrings.onlyDeleteOwn);
     _deals.removeAt(index);
     for (final ids in _savedByUser.values) {
       ids.remove(dealId);
