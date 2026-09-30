@@ -41,3 +41,31 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    # The fonts' licence texts travel with the app.
+    - assets/fonts/OFL-Nunito.txt
+    - assets/fonts/OFL-Fredoka.txt
+  # Bundled fonts (SIL Open Font License): Nunito for Latin letters and
+  # digits, Fredoka for Hebrew letters. See lib/theme/app_fonts.dart.
+  fonts:
+    - family: Nunito
+      fonts:
+        - asset: assets/fonts/Nunito-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Nunito-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Nunito-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Nunito-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Nunito-ExtraBold.ttf
+          weight: 800
+    - family: Fredoka
+      fonts:
+        - asset: assets/fonts/Fredoka-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Fredoka-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Fredoka-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Fredoka-Bold.ttf
+          weight: 700
