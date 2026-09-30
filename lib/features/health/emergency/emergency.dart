@@ -17,13 +17,17 @@ import 'emergency_contacts.dart';
 import 'health_profile_form.dart';
 import 'vet_picker.dart';
 
-export '../data/health_models.dart' show HealthException, HealthProfile, Vet, VetRole;
+export '../data/health_models.dart' show HealthException, HealthProfile, KitItem, Vet, VetRole;
+// The emergency kit: `ref.watch(emergencyKitProvider(petId))` gives how many
+// items are ready (`ready`) out of how many apply to the pet (`total`).
+export '../state/emergency_kit.dart' show EmergencyKit, KitEntry, emergencyKitProvider;
 export '../state/health_providers.dart'
     show PetVets, healthErrorMessage, healthProfileProvider, petVetsProvider, removeHealthFilesForPetProvider;
 export 'contact_launcher.dart';
 export 'emergency_button.dart';
 export 'emergency_card_screen.dart' show openEmergencyCard;
 export 'emergency_contacts.dart';
+export 'emergency_kit_screen.dart' show openEmergencyKit;
 export 'emergency_sheet.dart' show callPrimaryEmergencyContact, showEmergencySheet;
 export 'health_profile_form.dart' show HealthBasicsSection, HealthProfileScreen;
 export 'vet_form_screen.dart' show openVetForm;

@@ -1,0 +1,345 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../models/pet.dart';
+import '../../../state/pets_provider.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
+import '../data/health_models.dart';
+import '../health_format.dart';
+import '../records/pet_documents_screen.dart';
+import '../state/emergency_kit.dart';
+import '../state/health_providers.dart';
+import '../widgets/health_widgets.dart';
+import 'health_profile_form.dart';
+
+/// Opens the emergency kit checklist of [petId] over the whole app. Nothing
+/// opens for an unknown pet id.
+Future<void> openEmergencyKit(BuildContext context, String petId) {
+  for (final pet in ProviderScope.containerOf(context, listen: false).read(petsProvider)) {
+    if (pet.id == petId) return pushHealthPage<void>(context, EmergencyKitScreen(pet: pet));
+  }
+  assert(false, 'openEmergencyKit: no pet with id "$petId" in petsProvider');
+  return Future.value();
+}
+
+/// "3 of 6 ready", or "All 6 ready".
+String kitCountLabel(EmergencyKit kit) =>
+    kit.isComplete ? 'All ${kit.total} ready' : '${kit.ready} of ${kit.total} ready';
+
+/// The row that leads to the kit from the emergency sheet and the
+/// Emergency card: its name and how much of it is ready.
+class EmergencyKitRow extends ConsumerWidget {
+  const EmergencyKitRow({super.key, required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final kit = ref.watch(emergencyKitProvider(pet.id)).value;
+    return HealthCard(
+      key: const Key('open-emergency-kit'),
+      onTap: () => openEmergencyKit(context, pet.id),
+      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 12, bottom: 12),
+      child: Row(
+        children: [
+          const IconDisc(Icons.backpack_rounded),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Emergency kit', style: AppText.cardTitle),
+                Text(
+                  kit == null ? 'What to have ready' : kitCountLabel(kit),
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+        ],
+      ),
+    );
+  }
+}
+
+/// What one kit item says, for one pet. Whole sentences, in one place.
+class _KitText {
+  const _KitText(this.title, this.detail);
+
+  final String title;
+  final String detail;
+
+  static _KitText of(KitItem item, Pet pet, EmergencyKit kit, HealthProfile? profile) {
+    switch (item) {
+      case KitItem.carrier:
+        return _KitText(switch (pet.species) {
+          PetSpecies.dog => 'Carrier or crate, lead and harness',
+          PetSpecies.cat || PetSpecies.rabbit => 'Carrier',
+          PetSpecies.bird => 'Travel cage',
+          PetSpecies.reptile => 'Travel box',
+          PetSpecies.other => 'Carrier or travel cage',
+        }, 'Within reach, near the door.');
+      case KitItem.foodWater:
+        return const _KitText('Food and water for three days', 'With a bowl, in one bag.');
+      case KitItem.documents:
+        return _KitText(
+          'Documents',
+          pet.species == PetSpecies.dog
+              ? 'Vaccination booklet and licence, on paper or as photos.'
+              : 'Vaccination booklet and vet papers, on paper or as photos.',
+        );
+      case KitItem.microchip:
+        final number = profile?.microchip.trim() ?? '';
+        return _KitText(
+          'Microchip details up to date',
+          number.isNotEmpty
+              ? '$number · your phone number in the chip registry is current.'
+              : (profile?.notChipped ?? false)
+              ? 'Marked as not chipped in the health profile.'
+              : 'No microchip number saved yet.',
+        );
+      case KitItem.medicines:
+        return _KitText(
+          'Medicines',
+          '${kit.medicines.map((m) => m.displayName).join(', ')} · a spare supply in the kit.',
+        );
+      case KitItem.shelterPlan:
+        return _KitText('A plan for the protected room', 'Who takes ${pet.name}, and where the carrier is.');
+    }
+  }
+}
+
+/// A pet's emergency kit: what to have ready for sirens, a quick move to
+/// the protected room, or leaving home in a hurry. Each item is ticked and
+/// remembered with its date. The owner's own list, not official guidance.
+class EmergencyKitScreen extends ConsumerWidget {
+  const EmergencyKitScreen({super.key, required this.pet});
+
+  final Pet pet;
+
+  Future<void> _toggle(BuildContext context, WidgetRef ref, KitEntry entry) async {
+    try {
+      await ref.read(kitChecksProvider(pet.id).notifier).setReady(entry.item, !entry.isReady);
+    } catch (error) {
+      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final kit = ref.watch(emergencyKitProvider(pet.id));
+    final profile = ref.watch(healthProfileProvider(pet.id)).value;
+    final data = ref.watch(petHealthDataProvider(pet.id)).value;
+    final value = kit.value;
+
+    // The files "Documents" can open right away.
+    final documents = data?.documents.length ?? 0;
+
+    return HealthPage(
+      petId: pet.id,
+      title: "${pet.name}'s emergency kit",
+      child: value == null
+          ? kit.hasError
+                ? HealthLoadError(
+                    what: 'the emergency kit',
+                    message: healthErrorMessage(kit.error!),
+                    onRetry: () {
+                      ref.invalidate(kitChecksProvider(pet.id));
+                      ref.invalidate(carePlanProvider(pet.id));
+                    },
+                  )
+                : const HealthLoading()
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 8),
+                _Summary(kit: value),
+                for (final entry in value.entries) ...[
+                  const SizedBox(height: 8),
+                  _KitItemCard(
+                    entry: entry,
+                    text: _KitText.of(entry.item, pet, value, profile),
+                    onToggle: () => _toggle(context, ref, entry),
+                    link: switch (entry.item) {
+                      KitItem.documents when documents > 0 => HealthLink(
+                        documents == 1 ? '1 document saved here' : '$documents documents saved here',
+                        key: const Key('kit-open-documents'),
+                        icon: Icons.chevron_right_rounded,
+                        onPressed: () => PetDocumentsScreen.open(context, pet),
+                      ),
+                      KitItem.microchip => HealthLink(
+                        'Health profile',
+                        key: const Key('kit-open-profile'),
+                        icon: Icons.chevron_right_rounded,
+                        onPressed: () => HealthProfileScreen.open(context, pet),
+                      ),
+                      _ => null,
+                    },
+                    note: entry.item == KitItem.shelterPlan ? _PlanNote(petId: pet.id, note: entry.note) : null,
+                  ),
+                ],
+                const SizedBox(height: 12),
+                const FinePrint(
+                  "Your own list, not official guidance. During an emergency follow the Home Front Command's "
+                  'instructions.',
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _Summary extends StatelessWidget {
+  const _Summary({required this.kit});
+
+  final EmergencyKit kit;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = kitCountLabel(kit);
+    return HealthCard(
+      key: const Key('kit-summary'),
+      color: AppColors.peach,
+      radius: AppSpacing.cardRadius,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(label, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 2),
+          const Text(
+            'For sirens, a quick move to the protected room, or leaving home in a hurry.',
+            style: AppText.secondary,
+          ),
+          const SizedBox(height: 10),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(999),
+            child: LinearProgressIndicator(
+              value: kit.total == 0 ? 0 : kit.ready / kit.total,
+              minHeight: 8,
+              color: AppColors.coralDark,
+              backgroundColor: AppColors.white.withValues(alpha: 0.6),
+              semanticsLabel: 'Emergency kit',
+              semanticsValue: label,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _KitItemCard extends StatelessWidget {
+  const _KitItemCard({required this.entry, required this.text, required this.onToggle, this.link, this.note});
+
+  final KitEntry entry;
+  final _KitText text;
+  final VoidCallback onToggle;
+
+  /// Where the facts behind the item live.
+  final Widget? link;
+
+  /// The note field of the item.
+  final Widget? note;
+
+  @override
+  Widget build(BuildContext context) {
+    final checkedAt = entry.checkedAt;
+    return HealthCard(
+      key: ValueKey('kit-card-${entry.item.name}'),
+      onTap: onToggle,
+      padding: const EdgeInsetsDirectional.only(start: 4, end: 14, top: 8, bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Semantics(
+            label: text.title,
+            child: Checkbox(
+              key: ValueKey('kit-${entry.item.name}'),
+              value: entry.isReady,
+              onChanged: (_) => onToggle(),
+              materialTapTargetSize: MaterialTapTargetSize.padded,
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(text.title, style: AppText.cardTitle),
+                  Text(text.detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  if (checkedAt != null)
+                    Text(
+                      'Ticked ${formatDate(checkedAt)}',
+                      style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+                    ),
+                  if (link != null) Align(alignment: AlignmentDirectional.centerStart, child: link),
+                  if (note != null) Padding(padding: const EdgeInsets.only(top: 8), child: note),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The owner's own words for the plan. Saved when the field is left or
+/// the keyboard's "done" is pressed.
+class _PlanNote extends ConsumerStatefulWidget {
+  const _PlanNote({required this.petId, required this.note});
+
+  final String petId;
+  final String note;
+
+  @override
+  ConsumerState<_PlanNote> createState() => _PlanNoteState();
+}
+
+class _PlanNoteState extends ConsumerState<_PlanNote> {
+  late final _text = TextEditingController(text: widget.note);
+  final _focus = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _focus.addListener(() {
+      if (!_focus.hasFocus) _save();
+    });
+  }
+
+  @override
+  void dispose() {
+    _text.dispose();
+    _focus.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    if (_text.text.trim() == widget.note) return;
+    try {
+      await ref.read(kitChecksProvider(widget.petId).notifier).setNote(KitItem.shelterPlan, _text.text);
+    } catch (error) {
+      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      key: const Key('kit-plan-note'),
+      controller: _text,
+      focusNode: _focus,
+      minLines: 1,
+      maxLines: 3,
+      maxLength: 300,
+      textCapitalization: TextCapitalization.sentences,
+      textInputAction: TextInputAction.done,
+      onSubmitted: (_) => _save(),
+      decoration: const InputDecoration(labelText: 'Our plan (optional)', fillColor: AppColors.cream, counterText: ''),
+    );
+  }
+}

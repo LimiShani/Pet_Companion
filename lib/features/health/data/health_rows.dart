@@ -253,3 +253,24 @@ Row observationToRow(Observation observation) => {
   'note': observation.note,
   'observed_at': instantToDb(observation.observedAt),
 };
+
+// ------------------------------------------------------ emergency_kit_items
+
+/// `null` for an item this version of the app does not know.
+KitCheck? kitCheckFromRow(Row row) {
+  final item = KitItem.fromDb(_text(row['item']));
+  if (item == null) return null;
+  return KitCheck(
+    petId: row['pet_id'] as String,
+    item: item,
+    checkedAt: instantFromDbOrNull(row['checked_at']),
+    note: _textOr(row['note']),
+  );
+}
+
+Row kitCheckToRow(KitCheck check) => {
+  'pet_id': check.petId,
+  'item': check.item.dbValue,
+  'checked_at': check.checkedAt == null ? null : instantToDb(check.checkedAt!),
+  'note': check.note,
+};

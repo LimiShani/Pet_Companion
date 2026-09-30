@@ -14,6 +14,7 @@ import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
 import 'emergency_contacts.dart';
+import 'emergency_kit_screen.dart';
 import 'emergency_sheet.dart';
 import 'health_profile_form.dart';
 import 'vets_screen.dart';
@@ -189,6 +190,8 @@ class _Card extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         if (contacts != null) EmergencyContactList(pet: pet, contacts: contacts!) else const HealthLoading(),
+        EmergencyKitRow(pet: pet),
+        const SizedBox(height: 12),
         OutlinedButton.icon(
           key: const Key('share-summary'),
           onPressed: () => onShare(context, summary),

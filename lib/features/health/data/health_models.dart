@@ -728,3 +728,49 @@ class Observation {
     observedAt: observedAt,
   );
 }
+
+// ---------------------------------------------------------------------------
+// The emergency kit: what is ready for a siren or for leaving in a hurry
+// ---------------------------------------------------------------------------
+
+/// One line of a pet's emergency kit. [dbValue] is `emergency_kit_items.item`.
+enum KitItem {
+  /// A carrier, crate or travel cage (and the lead, for a dog).
+  carrier('carrier'),
+  foodWater('food_water'),
+  documents('documents'),
+  microchip('microchip'),
+
+  /// Only part of the kit while the pet has an active medicine.
+  medicines('medicines'),
+
+  /// The plan for the protected room during sirens.
+  shelterPlan('shelter_plan');
+
+  const KitItem(this.dbValue);
+
+  final String dbValue;
+
+  static KitItem? fromDb(String? value) {
+    for (final item in KitItem.values) {
+      if (item.dbValue == value) return item;
+    }
+    return null;
+  }
+}
+
+/// The owner's answer for one kit item: ticked (and when), and a note.
+class KitCheck {
+  const KitCheck({required this.petId, required this.item, this.checkedAt, this.note = ''});
+
+  final String petId;
+  final KitItem item;
+
+  /// When the owner ticked it, or `null` while it is not ready.
+  final DateTime? checkedAt;
+
+  /// Free text; used for the plan for the protected room.
+  final String note;
+
+  bool get isReady => checkedAt != null;
+}

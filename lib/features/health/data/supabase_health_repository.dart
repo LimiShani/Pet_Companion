@@ -26,6 +26,7 @@ class SupabaseHealthRepository implements HealthRepository {
   static const _planItems = 'care_plan_items';
   static const _logs = 'care_logs';
   static const _observations = 'health_observations';
+  static const _kit = 'emergency_kit_items';
   static const _bucket = 'pet-documents';
 
   /// How long a link to a document stays valid: long enough to open it.
@@ -303,6 +304,22 @@ class SupabaseHealthRepository implements HealthRepository {
 
   @override
   Future<void> deleteObservation(String observationId) => _delete(_observations, observationId);
+
+  // --------------------------------------------------------- emergency kit
+
+  @override
+  Future<List<KitCheck>> fetchKit(String petId) => _guard(() async {
+    if (!isStored(petId)) return <KitCheck>[];
+    final rows = await _client.from(_kit).select().eq('pet_id', petId);
+    return [for (final row in rows) ?kitCheckFromRow(row)];
+  });
+
+  @override
+  Future<KitCheck> saveKitCheck(KitCheck check) => _guard(() async {
+    _requireStored(check.petId);
+    final row = await _client.from(_kit).upsert(kitCheckToRow(check), onConflict: 'pet_id,item').select().single();
+    return kitCheckFromRow(row) ?? check;
+  });
 
   // ---------------------------------------------------------------- errors
 

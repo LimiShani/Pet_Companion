@@ -38,6 +38,7 @@ class FakeHealthRepository implements HealthRepository {
   final _planItems = <CarePlanItem>[];
   final _logs = <CareLog>[];
   final _observations = <Observation>[];
+  final _kit = <String, Map<KitItem, KitCheck>>{};
   var _nextId = 1;
 
   String _id(String prefix) => '$prefix${_nextId++}';
@@ -323,6 +324,21 @@ class FakeHealthRepository implements HealthRepository {
     _observations.removeWhere((o) => o.id == observationId);
   }
 
+  // --------------------------------------------------------- emergency kit
+
+  @override
+  Future<List<KitCheck>> fetchKit(String petId) async {
+    await _wait();
+    return [...?_kit[petId]?.values];
+  }
+
+  @override
+  Future<KitCheck> saveKitCheck(KitCheck check) async {
+    await _wait();
+    _kit.putIfAbsent(check.petId, () => {})[check.item] = check;
+    return check;
+  }
+
   // ------------------------------------------------------------ sample data
 
   void _seed() {
@@ -584,6 +600,16 @@ class FakeHealthRepository implements HealthRepository {
       given('p-breakfast', today, const TimeOfDay(hour: 7, minute: 30), title: 'Breakfast', med: null);
     }
     if (!now.isBefore(atTime(today, const TimeOfDay(hour: 8, minute: 5)))) given('p-joint-am', today, am);
+
+    // Half of Kelly's emergency kit is ready.
+    _kit[pet] = {
+      for (final (item, day) in [
+        (KitItem.carrier, DateTime(2025, 6, 2)),
+        (KitItem.documents, DateTime(2025, 6, 2)),
+        (KitItem.microchip, DateTime(2025, 5, 28)),
+      ])
+        item: KitCheck(petId: pet, item: item, checkedAt: day),
+    };
 
     Observation weight(String id, DateTime day, double kg, [String note = '']) =>
         Observation(id: id, petId: pet, category: Observation.weightCategory, value: kg, note: note, observedAt: day);
