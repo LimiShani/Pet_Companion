@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
@@ -9,6 +10,7 @@ import '../data/fake_health_repository.dart';
 import '../data/health_models.dart';
 import '../data/health_repository.dart';
 import '../data/reminder_scheduler.dart';
+import '../data/supabase_health_repository.dart';
 import 'schedule_logic.dart';
 
 /// The day the sample data lives on: the home dashboard shows "General
@@ -30,9 +32,12 @@ final healthClockProvider = Provider<DateTime Function()>(
   (ref) => AppConfig.hasSupabase ? DateTime.now : sampleDataNow,
 );
 
-/// The health backend: the in-memory sample data.
+/// The health backend: Supabase when the app is built with its
+/// configuration, otherwise the in-memory sample data.
 final healthRepositoryProvider = Provider<HealthRepository>(
-  (ref) => FakeHealthRepository(now: ref.watch(healthClockProvider)),
+  (ref) => AppConfig.hasSupabase
+      ? SupabaseHealthRepository(sb.Supabase.instance.client)
+      : FakeHealthRepository(now: ref.watch(healthClockProvider)),
 );
 
 /// User-facing text for a Health failure.
