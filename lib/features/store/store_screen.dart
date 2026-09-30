@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -8,6 +9,7 @@ import '../../widgets/empty_state.dart';
 import 'data/deal.dart';
 import 'data/deal_filters.dart';
 import 'state/store_providers.dart';
+import 'store_routes.dart';
 import 'widgets/deal_card.dart';
 import 'widgets/deal_grid.dart';
 import 'widgets/store_messages.dart';
@@ -116,6 +118,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                           key: ValueKey('deal-card-${deal.id}'),
                           deal: deal,
                           expired: deal.isExpired(now),
+                          onTap: () => context.push(StoreRoutes.deal(deal.id)),
                         ),
                       ),
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),

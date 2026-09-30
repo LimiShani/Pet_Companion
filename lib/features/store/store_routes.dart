@@ -1,16 +1,28 @@
 import 'package:go_router/go_router.dart';
 
+import 'deal_detail_screen.dart';
 import 'store_screen.dart';
 
 /// Paths owned by the Store feature.
 abstract final class StoreRoutes {
   static const root = '/store';
+
+  /// The page of one deal.
+  static String deal(String id) => '$root/deal/${Uri.encodeComponent(id)}';
 }
 
 /// Routes of the Store tab's navigation branch. The first entry is the
-/// tab's root; add sub-pages as nested `routes` of it so the bottom bar
-/// stays visible, or push a `MaterialPageRoute` on the root navigator for
-/// full-screen flows.
+/// tab's root; sub-pages are nested so the bottom bar stays visible. The
+/// "Share a deal" form is a full-screen route pushed on the root navigator.
 final List<RouteBase> storeRoutes = [
-  GoRoute(path: StoreRoutes.root, builder: (context, state) => const StoreScreen()),
+  GoRoute(
+    path: StoreRoutes.root,
+    builder: (context, state) => const StoreScreen(),
+    routes: [
+      GoRoute(
+        path: 'deal/:id',
+        builder: (context, state) => DealDetailScreen(dealId: state.pathParameters['id']!),
+      ),
+    ],
+  ),
 ];

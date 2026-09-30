@@ -6,6 +6,7 @@ import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/store/data/deal.dart';
 import 'package:pet_companion/features/store/data/fake_store_repository.dart';
+import 'package:pet_companion/features/store/data/link_opener.dart';
 import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
 
@@ -34,6 +35,7 @@ Deal testDeal(
   String? sharedBy,
   String? sharedByName,
   String description = '',
+  String? link,
 }) {
   return Deal(
     id: id,
@@ -43,7 +45,7 @@ Deal testDeal(
     price: price,
     originalPrice: originalPrice,
     sellerName: seller,
-    link: 'https://example.com/$id',
+    link: link ?? 'https://example.com/$id',
     sharedBy: sharedBy,
     sharedByName: sharedByName,
     postedAt: fixedNow.subtract(posted),
@@ -51,9 +53,27 @@ Deal testDeal(
   );
 }
 
+/// Records the links the app asks to open instead of launching a browser.
+class FakeLinkOpener implements LinkOpener {
+  final opened = <Uri>[];
+
+  /// What [open] answers: false simulates a device with no browser.
+  bool succeeds = true;
+
+  @override
+  Future<bool> open(Uri uri) async {
+    opened.add(uri);
+    return succeeds;
+  }
+}
+
 /// Pumps the whole app at phone size on fakes, signs in as the demo user
 /// and opens the Store tab. Returns the catalogue the app runs on.
-Future<FakeStoreRepository> pumpStore(WidgetTester tester, {FakeStoreRepository? repository}) async {
+Future<FakeStoreRepository> pumpStore(
+  WidgetTester tester, {
+  FakeStoreRepository? repository,
+  FakeLinkOpener? opener,
+}) async {
   tester.view.physicalSize = const Size(390 * 3, 844 * 3);
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
@@ -65,6 +85,7 @@ Future<FakeStoreRepository> pumpStore(WidgetTester tester, {FakeStoreRepository?
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
         storeClockProvider.overrideWithValue(() => fixedNow),
         storeRepositoryProvider.overrideWithValue(store),
+        linkOpenerProvider.overrideWithValue(opener ?? FakeLinkOpener()),
       ],
       child: const PetCompanionApp(),
     ),
@@ -74,6 +95,21 @@ Future<FakeStoreRepository> pumpStore(WidgetTester tester, {FakeStoreRepository?
   await tester.tap(find.text('Store'));
   await tester.pumpAndSettle();
   return store;
+}
+
+/// The vertical scroll view of the page on top (the grid, or a deal page).
+Finder get gridScrollable =>
+    find.descendant(of: find.byType(CustomScrollView).last, matching: find.byType(Scrollable)).first;
+
+/// Opens the page of the deal whose card is on screen (scrolling to it).
+Future<void> openDeal(WidgetTester tester, String dealId) async {
+  final card = find.byKey(ValueKey('deal-card-$dealId'));
+  await tester.scrollUntilVisible(card, 200, scrollable: gridScrollable);
+  await tester.pumpAndSettle();
+  // The picture's left half: clear of the badge, the heart and the
+  // floating button.
+  await tester.tapAt(tester.getTopLeft(card) + const Offset(30, 70));
+  await tester.pumpAndSettle();
 }
 
 /// Ids of the deal cards currently built, in grid order.
