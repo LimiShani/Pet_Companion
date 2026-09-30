@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../../config/app_config.dart';
+
 /// Thrown by a `HealthRepository` with a message safe to show to the user.
 class HealthException implements Exception {
   const HealthException(this.message);
@@ -75,6 +77,8 @@ class HealthRecord {
     this.productName = '',
     this.nextDueOn,
     this.followUpOf,
+    this.costAmount,
+    this.costCurrency = AppConfig.defaultCurrency,
   });
 
   /// Empty until the repository has stored the record.
@@ -101,6 +105,15 @@ class HealthRecord {
 
   /// Id of the record whose "next due" date created this planned record.
   final String? followUpOf;
+
+  /// What the owner paid (or, for a planned record, expects to pay), or
+  /// `null` when no cost was entered. Never part of what is shared with a vet.
+  final double? costAmount;
+
+  /// ISO 4217 code of [costAmount].
+  final String costCurrency;
+
+  bool get hasCost => costAmount != null;
 
   bool get isNew => id.isEmpty;
   bool get isDone => doneAt != null;
@@ -130,6 +143,8 @@ class HealthRecord {
       productName: productName ?? this.productName,
       nextDueOn: nextDueOn,
       followUpOf: followUpOf ?? this.followUpOf,
+      costAmount: costAmount,
+      costCurrency: costCurrency,
     );
   }
 
@@ -146,6 +161,8 @@ class HealthRecord {
     productName: productName,
     nextDueOn: nextDueOn,
     followUpOf: followUpOf,
+    costAmount: costAmount,
+    costCurrency: costCurrency,
   );
 
   /// The same record with another "next due" date (`null` clears it).
@@ -161,6 +178,8 @@ class HealthRecord {
     productName: productName,
     nextDueOn: day == null ? null : dateOnly(day),
     followUpOf: followUpOf,
+    costAmount: costAmount,
+    costCurrency: costCurrency,
   );
 }
 

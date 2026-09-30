@@ -251,7 +251,9 @@ class _WeightCard extends StatelessWidget {
                         child: Container(width: 7, height: 7, color: small.color),
                       ),
                       const SizedBox(width: 6),
-                      Flexible(child: Text('vet visit', style: small, maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      Flexible(
+                        child: Text('vet visit', style: small, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
                     ],
                   ),
                 ),

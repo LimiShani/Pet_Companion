@@ -36,6 +36,7 @@ void main() {
         productName: 'Rabies vaccine, batch A1234',
         nextDueOn: DateTime(2026, 3, 14),
         followUpOf: 'a0000000-0000-4000-8000-000000000001',
+        costAmount: 180.5,
       );
       final row = recordToRow(record);
       // The database generates the id and defaults the owner.
@@ -55,6 +56,10 @@ void main() {
       expect(back.productName, record.productName);
       expect(back.nextDueOn, record.nextDueOn);
       expect(back.followUpOf, record.followUpOf);
+      expect(row['cost_amount'], 180.5);
+      expect(row['cost_currency'], 'ILS');
+      expect(back.costAmount, 180.5);
+      expect(back.costCurrency, 'ILS');
     });
 
     test('a planned record and a row written before 0002 both read back', () {

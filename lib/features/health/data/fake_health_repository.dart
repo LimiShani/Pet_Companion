@@ -368,6 +368,7 @@ class FakeHealthRepository implements HealthRepository {
       String clinic = '',
       String product = '',
       DateTime? nextDue,
+      double? cost,
     }) => HealthRecord(
       id: id,
       petId: pet,
@@ -379,6 +380,7 @@ class FakeHealthRepository implements HealthRepository {
       clinic: clinic,
       productName: product,
       nextDueOn: nextDue,
+      costAmount: cost,
     );
 
     _records.addAll([
@@ -417,6 +419,7 @@ class FakeHealthRepository implements HealthRepository {
         'Flea and tick tablet',
         DateTime(2025, 5, 27, 19, 30),
         nextDue: DateTime(2025, 7, 27),
+        cost: 85,
       ),
       done(
         'r-limp',
@@ -425,6 +428,7 @@ class FakeHealthRepository implements HealthRepository {
         DateTime(2025, 5, 2, 8, 15),
         clinic: clinic,
         notes: 'Arthritis in the hips. Started joint tablets.',
+        cost: 320,
       ),
       done('r-worm', RecordKind.preventive, 'Worming tablet', DateTime(2025, 4, 10, 9)),
       done(
@@ -436,6 +440,7 @@ class FakeHealthRepository implements HealthRepository {
         product: 'Rabies vaccine, 1 year, batch A1234',
         nextDue: DateTime(2026, 3, 14),
         notes: 'A little sleepy that evening, fine the next morning.',
+        cost: 180,
       ),
       done(
         'r-food',
@@ -444,7 +449,7 @@ class FakeHealthRepository implements HealthRepository {
         DateTime(2025, 2, 1, 8),
         notes: 'Switched over one week. No tummy trouble.',
       ),
-      done('r-dental', RecordKind.procedure, 'Dental cleaning', DateTime(2025, 1, 20, 9), clinic: clinic),
+      done('r-dental', RecordKind.procedure, 'Dental cleaning', DateTime(2025, 1, 20, 9), clinic: clinic, cost: 649.9),
       done('r-blood', RecordKind.document, 'Blood test results', DateTime(2025, 1, 20, 11)),
       done(
         'r-ear',

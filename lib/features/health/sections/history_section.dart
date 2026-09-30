@@ -226,6 +226,7 @@ class _RecordCard extends StatelessWidget {
     final line = [record.kind.label, formatDate(record.when), if (record.clinic.isNotEmpty) record.clinic].join(' · ');
     final note = record.notes.trim().split('\n').first;
     final due = record.nextDueOn;
+    final cost = record.costAmount;
 
     return HealthCard(
       key: ValueKey('record-${record.id}'),
@@ -247,7 +248,7 @@ class _RecordCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 2),
                     child: Text(note, style: AppText.secondary, maxLines: 2, overflow: TextOverflow.ellipsis),
                   ),
-                if (due != null || files > 0)
+                if (due != null || files > 0 || cost != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
                     child: Wrap(
@@ -255,6 +256,15 @@ class _RecordCard extends StatelessWidget {
                       runSpacing: 4,
                       children: [
                         if (due != null) HealthTag('Next due ${formatDate(due)}', icon: Icons.event_repeat_rounded),
+                        if (cost != null)
+                          Semantics(
+                            label: 'Cost ${formatMoney(cost, record.costCurrency)}',
+                            excludeSemantics: true,
+                            child: HealthTag(
+                              formatMoney(cost, record.costCurrency),
+                              key: ValueKey('cost-${record.id}'),
+                            ),
+                          ),
                         if (files > 0)
                           Semantics(
                             label: files == 1 ? '1 attachment' : '$files attachments',

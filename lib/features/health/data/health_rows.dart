@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/app_config.dart';
 import 'health_models.dart';
 
 /// Conversions between the Health models and the rows of the tables in
@@ -56,6 +57,8 @@ HealthRecord recordFromRow(Row row) => HealthRecord(
   productName: _textOr(row['product_name']),
   nextDueOn: dayFromDbOrNull(row['next_due_on']),
   followUpOf: _text(row['follow_up_of']),
+  costAmount: (row['cost_amount'] as num?)?.toDouble(),
+  costCurrency: _textOr(row['cost_currency'], AppConfig.defaultCurrency),
 );
 
 /// The columns of a record. `id` and `owner_id` are left to the caller:
@@ -71,6 +74,9 @@ Row recordToRow(HealthRecord record) => {
   'product_name': record.productName.isEmpty ? null : record.productName,
   'next_due_on': record.nextDueOn == null ? null : dayToDb(record.nextDueOn!),
   'follow_up_of': record.followUpOf,
+  // Columns of 0006_health_phase1.sql.
+  'cost_amount': record.costAmount,
+  'cost_currency': record.costAmount == null ? null : record.costCurrency,
 };
 
 // --------------------------------------------------------- health_documents
