@@ -274,3 +274,27 @@ Row kitCheckToRow(KitCheck check) => {
   'checked_at': check.checkedAt == null ? null : instantToDb(check.checkedAt!),
   'note': check.note,
 };
+
+// ----------------------------------------------------------- lost_pet_cards
+
+LostPetCard lostCardFromRow(Row row) => LostPetCard(
+  petId: row['pet_id'] as String,
+  description: _textOr(row['description']),
+  area: _textOr(row['area']),
+  lastSeenAt: instantFromDbOrNull(row['last_seen_at']),
+  phone: _textOr(row['phone']),
+  extra: _textOr(row['extra']),
+  language: LostCardLanguage.fromCode(_text(row['language'])),
+  foundAt: instantFromDbOrNull(row['found_at']),
+);
+
+Row lostCardToRow(LostPetCard card) => {
+  'pet_id': card.petId,
+  'description': card.description,
+  'area': card.area,
+  'last_seen_at': card.lastSeenAt == null ? null : instantToDb(card.lastSeenAt!),
+  'phone': card.phone,
+  'extra': card.extra,
+  'language': card.language.code,
+  'found_at': card.foundAt == null ? null : instantToDb(card.foundAt!),
+};

@@ -15,6 +15,7 @@ import 'emergency_card_screen.dart';
 import 'emergency_contacts.dart';
 import 'emergency_kit_screen.dart';
 import 'health_profile_form.dart';
+import 'lost_pet_card_screen.dart';
 import 'vet_form_screen.dart';
 import 'vet_picker.dart';
 
@@ -122,6 +123,8 @@ class EmergencySheet extends ConsumerWidget {
           // Being ready, whatever is saved above.
           const SizedBox(height: 10),
           EmergencyKitRow(pet: pet),
+          const SizedBox(height: 10),
+          LostPetButton(pet: pet),
           const SizedBox(height: 8),
           const FinePrint(kSafetyLine),
         ],

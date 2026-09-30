@@ -30,6 +30,8 @@ export 'emergency_contacts.dart';
 export 'emergency_kit_screen.dart' show openEmergencyKit;
 export 'emergency_sheet.dart' show callPrimaryEmergencyContact, showEmergencySheet;
 export 'health_profile_form.dart' show HealthBasicsSection, HealthProfileScreen;
+// The "my pet is lost" page: builds a card to share; posts nothing itself.
+export 'lost_pet_card_screen.dart' show openLostPetCard;
 export 'vet_form_screen.dart' show openVetForm;
 export 'vet_picker.dart' show PetVetTile, showVetPicker;
 

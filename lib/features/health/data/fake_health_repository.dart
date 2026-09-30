@@ -39,6 +39,7 @@ class FakeHealthRepository implements HealthRepository {
   final _logs = <CareLog>[];
   final _observations = <Observation>[];
   final _kit = <String, Map<KitItem, KitCheck>>{};
+  final _lostCards = <String, LostPetCard>{};
   var _nextId = 1;
 
   String _id(String prefix) => '$prefix${_nextId++}';
@@ -337,6 +338,21 @@ class FakeHealthRepository implements HealthRepository {
     await _wait();
     _kit.putIfAbsent(check.petId, () => {})[check.item] = check;
     return check;
+  }
+
+  // ------------------------------------------------------------- lost card
+
+  @override
+  Future<LostPetCard?> fetchLostCard(String petId) async {
+    await _wait();
+    return _lostCards[petId];
+  }
+
+  @override
+  Future<LostPetCard> saveLostCard(LostPetCard card) async {
+    await _wait();
+    _lostCards[card.petId] = card;
+    return card;
   }
 
   // ------------------------------------------------------------ sample data

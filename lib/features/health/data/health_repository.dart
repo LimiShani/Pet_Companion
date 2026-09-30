@@ -74,4 +74,12 @@ abstract class HealthRepository {
 
   /// Stores the pet's answer for one item, replacing the one before.
   Future<KitCheck> saveKitCheck(KitCheck check);
+
+  // The "my pet is lost" card.
+
+  /// What was last written for the pet's card, or `null` when there is none.
+  Future<LostPetCard?> fetchLostCard(String petId);
+
+  /// Stores the pet's card, replacing the one before.
+  Future<LostPetCard> saveLostCard(LostPetCard card);
 }

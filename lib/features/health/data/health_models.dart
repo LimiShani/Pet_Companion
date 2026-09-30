@@ -774,3 +774,59 @@ class KitCheck {
 
   bool get isReady => checkedAt != null;
 }
+
+// ---------------------------------------------------------------------------
+// The "my pet is lost" card
+// ---------------------------------------------------------------------------
+
+/// The language of the card's few fixed words. The card is read by
+/// neighbours, not by the app's user, so it has its own language.
+/// [code] is `lost_pet_cards.language`.
+enum LostCardLanguage {
+  hebrew('he', 'Hebrew'),
+  english('en', 'English');
+
+  const LostCardLanguage(this.code, this.label);
+
+  final String code;
+
+  /// What the switch on the page calls it.
+  final String label;
+
+  static LostCardLanguage fromCode(String? code) =>
+      LostCardLanguage.values.firstWhere((l) => l.code == code, orElse: () => LostCardLanguage.hebrew);
+}
+
+/// What the owner wrote for a pet's lost card, kept so nothing is retyped.
+/// The app never posts it anywhere: it only builds a picture to share.
+class LostPetCard {
+  const LostPetCard({
+    required this.petId,
+    this.description = '',
+    this.area = '',
+    this.lastSeenAt,
+    this.phone = '',
+    this.extra = '',
+    this.language = LostCardLanguage.hebrew,
+    this.foundAt,
+  });
+
+  final String petId;
+
+  /// What the pet looks like, in the owner's words.
+  final String description;
+
+  /// A general area, typed by the owner. Never filled from a saved address.
+  final String area;
+  final DateTime? lastSeenAt;
+
+  /// The owner's phone number, shown on the card only after they confirm it.
+  final String phone;
+
+  /// One more line ("needs a daily medicine").
+  final String extra;
+  final LostCardLanguage language;
+
+  /// When the pet came back home, or `null` while it is still looked for.
+  final DateTime? foundAt;
+}

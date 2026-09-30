@@ -27,6 +27,7 @@ class SupabaseHealthRepository implements HealthRepository {
   static const _logs = 'care_logs';
   static const _observations = 'health_observations';
   static const _kit = 'emergency_kit_items';
+  static const _lostCards = 'lost_pet_cards';
   static const _bucket = 'pet-documents';
 
   /// How long a link to a document stays valid: long enough to open it.
@@ -319,6 +320,22 @@ class SupabaseHealthRepository implements HealthRepository {
     _requireStored(check.petId);
     final row = await _client.from(_kit).upsert(kitCheckToRow(check), onConflict: 'pet_id,item').select().single();
     return kitCheckFromRow(row) ?? check;
+  });
+
+  // ------------------------------------------------------------- lost card
+
+  @override
+  Future<LostPetCard?> fetchLostCard(String petId) => _guard(() async {
+    if (!isStored(petId)) return null;
+    final row = await _client.from(_lostCards).select().eq('pet_id', petId).maybeSingle();
+    return row == null ? null : lostCardFromRow(row);
+  });
+
+  @override
+  Future<LostPetCard> saveLostCard(LostPetCard card) => _guard(() async {
+    _requireStored(card.petId);
+    final row = await _client.from(_lostCards).upsert(lostCardToRow(card), onConflict: 'pet_id').select().single();
+    return lostCardFromRow(row);
   });
 
   // ---------------------------------------------------------------- errors
