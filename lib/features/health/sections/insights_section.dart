@@ -29,10 +29,16 @@ class _InsightsSectionState extends State<InsightsSection> {
   /// The journal's category filter; every category when `null`.
   String? _category;
 
+  /// The journal shows the whole Behaviour group.
+  bool _behaviourOnly = false;
+
   @override
   void didUpdateWidget(InsightsSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.pet.id != widget.pet.id) _category = null;
+    if (oldWidget.pet.id != widget.pet.id) {
+      _category = null;
+      _behaviourOnly = false;
+    }
   }
 
   @override
@@ -60,10 +66,13 @@ class _InsightsSectionState extends State<InsightsSection> {
       for (final key in present)
         if (!settings.quickLog.any((c) => c.key == key)) settings.category(key),
     ];
-    final selected = present.contains(_category) ? _category : null;
+    bool isBehaviour(String key) => settings.category(key).group == QuickLogGroup.behaviour;
+    final hasBehaviour = present.any(isBehaviour);
+    final behaviourOnly = _behaviourOnly && hasBehaviour;
+    final selected = !behaviourOnly && present.contains(_category) ? _category : null;
     final shown = [
       for (final o in journal)
-        if (selected == null || o.category == selected) o,
+        if (behaviourOnly ? isBehaviour(o.category) : selected == null || o.category == selected) o,
     ];
 
     return Column(
@@ -87,15 +96,32 @@ class _InsightsSectionState extends State<InsightsSection> {
               _CategoryChip(
                 chipKey: const Key('journal-all'),
                 label: 'All',
-                selected: selected == null,
-                onSelected: () => setState(() => _category = null),
+                selected: selected == null && !behaviourOnly,
+                onSelected: () => setState(() {
+                  _category = null;
+                  _behaviourOnly = false;
+                }),
               ),
+              // The whole Behaviour group at once, once there is an entry.
+              if (hasBehaviour)
+                _CategoryChip(
+                  chipKey: const Key('journal-behaviour-group'),
+                  label: QuickLogGroup.behaviour.label,
+                  selected: behaviourOnly,
+                  onSelected: () => setState(() {
+                    _category = null;
+                    _behaviourOnly = true;
+                  }),
+                ),
               for (final c in categories)
                 _CategoryChip(
                   chipKey: ValueKey('journal-${c.key}'),
                   label: c.label,
                   selected: selected == c.key,
-                  onSelected: () => setState(() => _category = c.key),
+                  onSelected: () => setState(() {
+                    _category = c.key;
+                    _behaviourOnly = false;
+                  }),
                 ),
             ],
           ),

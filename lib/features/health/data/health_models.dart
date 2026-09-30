@@ -488,6 +488,15 @@ enum CareKind {
   walk('walk', 'Walk'),
   grooming('grooming', 'Grooming'),
   cleaning('cleaning', 'Cleaning'),
+
+  /// Scooping the litter box (cats).
+  litterCleaning('litter_cleaning', 'Litter box cleaning'),
+
+  /// Replacing the litter (cats).
+  litterChange('litter_change', 'Litter change'),
+
+  /// Cleaning the cage, hutch, tank or enclosure (cage animals).
+  cageCleaning('cage_cleaning', 'Cage cleaning'),
   other('other', 'Other');
 
   const CareKind(this.dbValue, this.label);

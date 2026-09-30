@@ -37,19 +37,47 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
   final _form = GlobalKey<FormState>();
   late final _title = TextEditingController(text: widget.item?.title ?? '');
   late CareKind _kind;
-  late TimeOfDay _time = widget.item?.time ?? const TimeOfDay(hour: 8, minute: 0);
-  late Set<int> _days = widget.item?.days ?? CarePlanItem.everyDay;
+  late TimeOfDay _time;
+  late Set<int> _days;
   late bool _active = widget.item?.active ?? true;
+
+  // Once the owner chose a time or days, picking another kind leaves them.
+  late bool _timeChosen = widget.item != null;
+  late bool _daysChosen = widget.item != null;
   bool _saving = false;
   String? _error;
 
   bool get _editing => widget.item != null;
   String get _petId => widget.pet.id;
+  SpeciesSettings get _settings => SpeciesSettings.of(widget.pet.species);
+
+  /// The usual time and days a kind starts from.
+  static (TimeOfDay, Set<int>) _usual(CareKind kind) => switch (kind) {
+    CareKind.litterCleaning => (const TimeOfDay(hour: 20, minute: 0), CarePlanItem.everyDay),
+    CareKind.litterChange || CareKind.cageCleaning => (const TimeOfDay(hour: 10, minute: 0), const {6}),
+    _ => (const TimeOfDay(hour: 8, minute: 0), CarePlanItem.everyDay),
+  };
 
   @override
   void initState() {
     super.initState();
-    _kind = widget.item?.kind ?? SpeciesSettings.of(widget.pet.species).routineKinds.first;
+    final item = widget.item;
+    _kind = item?.kind ?? _settings.routineKinds.first;
+    final (time, days) = _usual(_kind);
+    _time = item?.time ?? time;
+    _days = item?.days ?? days;
+  }
+
+  void _chooseKind(CareKind kind) {
+    setState(() {
+      // The title follows the kind until the owner types one.
+      final typed = _title.text.trim();
+      if (typed.isEmpty || typed == _settings.routineLabel(_kind)) _title.text = _settings.routineLabel(kind);
+      final (time, days) = _usual(kind);
+      if (!_timeChosen) _time = time;
+      if (!_daysChosen) _days = days;
+      _kind = kind;
+    });
   }
 
   @override
@@ -60,7 +88,11 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
 
   Future<void> _pickTime() async {
     final picked = await showTimePicker(context: context, initialTime: _time, helpText: 'Time of the routine');
-    if (picked != null && mounted) setState(() => _time = picked);
+    if (picked == null || !mounted) return;
+    setState(() {
+      _time = picked;
+      _timeChosen = true;
+    });
   }
 
   Future<void> _save() async {
@@ -125,7 +157,7 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final offered = SpeciesSettings.of(widget.pet.species).routineKinds;
+    final offered = _settings.routineKinds;
     final kinds = [...offered, if (!offered.contains(_kind)) _kind];
 
     return HealthPage(
@@ -153,14 +185,10 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
                   ChoiceChip(
                     key: ValueKey('routine-kind-${kind.name}'),
                     avatar: Icon(careKindIcon(kind), size: 18, color: AppColors.ink),
-                    label: Text(kind.label),
+                    label: Text(_settings.routineLabel(kind)),
                     selected: kind == _kind,
                     showCheckmark: false,
-                    onSelected: (_) => setState(() {
-                      // The title follows the kind until the owner types one.
-                      if (_title.text.trim().isEmpty || _title.text.trim() == _kind.label) _title.text = kind.label;
-                      _kind = kind;
-                    }),
+                    onSelected: (_) => _chooseKind(kind),
                   ),
               ],
             ),
@@ -186,7 +214,13 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
               onTap: _pickTime,
             ),
             const FormLabel('Days'),
-            DaysPicker(days: _days, onChanged: (days) => setState(() => _days = days)),
+            DaysPicker(
+              days: _days,
+              onChanged: (days) => setState(() {
+                _days = days;
+                _daysChosen = true;
+              }),
+            ),
             const SizedBox(height: 8),
             SwitchListTile(
               key: const Key('routine-active'),

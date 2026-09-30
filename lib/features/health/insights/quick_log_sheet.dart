@@ -188,28 +188,35 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           _editing ? 'Edit entry' : 'Quick log for ${pet.name}',
           subtitle: _editing ? category?.label : 'What did you notice?',
         ),
-        if (!_editing) ...[
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [
-              for (final c in _settings.quickLog)
-                ChoiceChip(
-                  key: ValueKey('quick-${c.key}'),
-                  avatar: Icon(c.icon, size: 18, color: AppColors.ink),
-                  label: Text(c.label),
-                  selected: c.key == category?.key,
-                  showCheckmark: false,
-                  onSelected: (_) => setState(() {
-                    if (_category?.key != c.key) _level = null;
-                    _category = c;
-                    _error = null;
-                  }),
-                ),
+        if (!_editing)
+          // Two short groups. A species without behaviour categories keeps
+          // the single list, with no heading.
+          for (final group in QuickLogGroup.values)
+            if (_settings.quickLogIn(group).isNotEmpty) ...[
+              if (_settings.quickLogIn(QuickLogGroup.behaviour).isEmpty)
+                const SizedBox(height: 12)
+              else
+                FormLabel(group.label, key: ValueKey('quick-group-${group.name}')),
+              Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  for (final c in _settings.quickLogIn(group))
+                    ChoiceChip(
+                      key: ValueKey('quick-${c.key}'),
+                      avatar: Icon(c.icon, size: 18, color: AppColors.ink),
+                      label: Text(c.label),
+                      selected: c.key == category?.key,
+                      showCheckmark: false,
+                      onSelected: (_) => setState(() {
+                        if (_category?.key != c.key) _level = null;
+                        _category = c;
+                        _error = null;
+                      }),
+                    ),
+                ],
+              ),
             ],
-          ),
-        ],
         if (category != null) ...[
           if (_isWeight) ...[
             const SizedBox(height: 14),

@@ -132,6 +132,9 @@ IconData careKindIcon(CareKind kind) => switch (kind) {
   CareKind.walk => Icons.directions_walk_rounded,
   CareKind.grooming => Icons.brush_rounded,
   CareKind.cleaning => Icons.cleaning_services_rounded,
+  CareKind.litterCleaning => Icons.inbox_rounded,
+  CareKind.litterChange => Icons.autorenew_rounded,
+  CareKind.cageCleaning => Icons.cleaning_services_rounded,
   CareKind.other => Icons.check_circle_outline_rounded,
 };
 
