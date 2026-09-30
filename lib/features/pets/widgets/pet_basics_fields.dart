@@ -2,48 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../pet_words.dart';
 import 'pets_widgets.dart';
 
-/// Birds and reptiles are weighed in grams; the value is still stored in kg
-/// (as in Health).
-bool petWeighsInGrams(PetSpecies species) => species == PetSpecies.bird || species == PetSpecies.reptile;
-
-String _trimmed(double value, int decimals) {
-  final text = value.toStringAsFixed(decimals);
-  return text.contains('.') ? text.replaceFirst(RegExp(r'\.?0+$'), '') : text;
-}
-
-/// "18 kg", "4.25 kg", or "35 g" for an animal weighed in grams. To the
-/// gram either way, so that a small animal is never shown as 0 kg.
-String formatPetWeight(double kg, PetSpecies species) =>
-    petWeighsInGrams(species) ? '${_trimmed(kg * 1000, 0)} g' : '${_trimmed(kg, 3)} kg';
-
-/// "Dog · Mixed · about 3 years": the kind, then what is known. The age is
-/// counted at [now] (today when not given).
-String petSummaryLine(Pet pet, {DateTime? now}) {
-  final breed = pet.breed?.trim() ?? '';
-  final age = pet.ageLabelAt(now ?? DateTime.now());
-  return [
-    pet.species.label,
-    if (breed.isNotEmpty) breed,
-    if (age != null) '${age[0].toLowerCase()}${age.substring(1)}',
-  ].join(' · ');
-}
-
-/// What "Mixed or not sure" stores as the breed.
-const kMixedBreed = 'Mixed';
-
-enum AgeUnit {
-  years('years'),
-  months('months');
-
-  const AgeUnit(this.label);
-
-  final String label;
-}
+/// The unit of an approximate age: "about 3 years", "about 4 months".
+enum AgeUnit { years, months }
 
 /// The parts of the "about the pet" form.
 enum BasicsSection { age, weight, sex, neutered, breed }
@@ -87,7 +54,7 @@ class PetBasicsController extends ChangeNotifier {
   bool get weightInGrams => petWeighsInGrams(_species);
 
   static String _weightText(double kg, PetSpecies species) =>
-      petWeighsInGrams(species) ? _trimmed(kg * 1000, 0) : _trimmed(kg, 3);
+      petWeighsInGrams(species) ? trimmedNumber(kg * 1000, 0) : trimmedNumber(kg, 3);
 
   static void _show(TextEditingController field, String text) {
     if (field.text != text) field.text = text;
@@ -118,7 +85,7 @@ class PetBasicsController extends ChangeNotifier {
         } else if (pet.ageYears != null) {
           // An age given directly (the sample pets): shown, and kept as it
           // is unless the owner changes it.
-          amount = _trimmed(pet.ageYears!, 1);
+          amount = trimmedNumber(pet.ageYears!, 1);
         }
         _show(ageAmount, amount);
       case BasicsSection.weight:
@@ -215,21 +182,23 @@ class PetBasicsController extends ChangeNotifier {
     return petWeighsInGrams(_species) ? value / 1000 : value;
   }
 
-  String? validateWeight(String? text) {
+  /// What is wrong with the typed weight, in the words of [l10n]; `null`
+  /// when it is fine (or empty: every field may be left out).
+  String? validateWeight(PetsL10n l10n, String? text) {
     if ((text ?? '').trim().isEmpty) return null;
     final value = _number(text!);
-    if (value == null || value <= 0) return 'Enter a number, for example ${weightInGrams ? '35' : '18'}.';
+    if (value == null || value <= 0) return l10n.enterANumberLike(weightInGrams ? 35 : 18);
     final kg = weightInGrams ? value / 1000 : value;
-    if (kg > 2000) return 'That looks too heavy. Please check the number.';
+    if (kg > 2000) return l10n.tooHeavy;
     return null;
   }
 
-  String? validateAgeAmount(String? text) {
+  String? validateAgeAmount(PetsL10n l10n, String? text) {
     if (!_ageApprox || (text ?? '').trim().isEmpty) return null;
     final value = _number(text!);
-    if (value == null || value <= 0) return 'Enter a number.';
+    if (value == null || value <= 0) return l10n.enterANumber;
     final years = _ageUnit == AgeUnit.years ? value : value / 12;
-    if (years > 120) return 'Please check the number.';
+    if (years > 120) return l10n.checkTheNumber;
     return null;
   }
 
@@ -318,7 +287,7 @@ class PetBasicsFields extends StatelessWidget {
       initialDate: controller.birthDate ?? today,
       firstDate: DateTime(today.year - 120),
       lastDate: today,
-      helpText: 'Birthday',
+      helpText: context.petsL10n.birthday,
     );
     if (picked != null) controller.birthDate = picked;
   }
@@ -329,14 +298,15 @@ class PetBasicsFields extends StatelessWidget {
       listenable: controller,
       builder: (context, _) {
         final c = controller;
+        final l10n = context.petsL10n;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (sections.contains(BasicsSection.age)) ...[
-              if (showLabels) const PetsLabel('Birthday or age', level: FieldLevel.essential),
+              if (showLabels) PetsLabel(l10n.birthdayOrAge, level: FieldLevel.essential),
               TwoWaySwitch(
-                first: 'I know the date',
-                second: 'About…',
+                first: l10n.iKnowTheDate,
+                second: l10n.aboutEllipsis,
                 secondSelected: c.ageApprox,
                 onChanged: (approx) => c.ageApprox = approx,
               ),
@@ -352,8 +322,8 @@ class PetBasicsFields extends StatelessWidget {
                         controller: c.ageAmount,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [_numberInput],
-                        decoration: const InputDecoration(labelText: 'About', errorMaxLines: 3),
-                        validator: c.validateAgeAmount,
+                        decoration: InputDecoration(labelText: l10n.aboutField, errorMaxLines: 3),
+                        validator: (text) => c.validateAgeAmount(l10n, text),
                         onChanged: (_) => c.touch(BasicsSection.age),
                       ),
                     ),
@@ -363,7 +333,7 @@ class PetBasicsFields extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 6),
                         child: ChoiceChips<AgeUnit>(
                           options: AgeUnit.values,
-                          labelOf: (unit) => unit.label,
+                          labelOf: (unit) => unit == AgeUnit.years ? l10n.unitYears : l10n.unitMonths,
                           selected: c.ageUnit,
                           allowClear: false,
                           onSelected: (unit) => c.ageUnit = unit!,
@@ -373,7 +343,7 @@ class PetBasicsFields extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 6),
-                const PetsFinePrint('A guess is fine. Shown as "About 3 years", and it keeps counting.'),
+                PetsFinePrint(l10n.ageGuessNote),
               ] else
                 _DateField(
                   key: const Key('pet-age-date'),
@@ -382,59 +352,59 @@ class PetBasicsFields extends StatelessWidget {
                 ),
             ],
             if (sections.contains(BasicsSection.weight)) ...[
-              if (showLabels) const PetsLabel('Weight', level: FieldLevel.essential),
+              if (showLabels) PetsLabel(l10n.itemWeight, level: FieldLevel.essential),
               TextFormField(
                 key: const Key('pet-weight'),
                 controller: c.weight,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [_numberInput],
                 decoration: InputDecoration(
-                  labelText: 'A rough number is fine',
-                  suffixText: c.weightInGrams ? 'g' : 'kg',
+                  labelText: l10n.hintWeight,
+                  suffixText: c.weightInGrams ? l10n.unitG : l10n.unitKg,
                   errorMaxLines: 3,
                 ),
-                validator: c.validateWeight,
+                validator: (text) => c.validateWeight(l10n, text),
                 onChanged: (_) => c.touch(BasicsSection.weight),
               ),
             ],
             if (sections.contains(BasicsSection.sex)) ...[
-              if (showLabels) const PetsLabel('Sex'),
+              if (showLabels) PetsLabel(l10n.sex),
               ChoiceChips<PetSex>(
                 options: PetSex.values,
-                labelOf: (sex) => sex.label,
+                labelOf: (sex) => petSexText(l10n, sex),
                 selected: c.sex,
                 onSelected: (sex) => c.sex = sex,
               ),
             ],
             if (sections.contains(BasicsSection.neutered)) ...[
-              if (showLabels) const PetsLabel('Neutered or spayed'),
+              if (showLabels) PetsLabel(l10n.neuteredOrSpayed),
               ChoiceChips<Neutered>(
                 options: Neutered.values,
-                labelOf: (neutered) => neutered.label,
+                labelOf: (neutered) => petNeuteredText(l10n, neutered),
                 selected: c.neutered,
                 onSelected: (neutered) => c.neutered = neutered,
               ),
             ],
             if (sections.contains(BasicsSection.breed)) ...[
-              if (showLabels) const PetsLabel('Breed'),
+              if (showLabels) PetsLabel(l10n.itemBreed),
               TextFormField(
                 key: const Key('pet-breed'),
                 controller: c.breed,
                 enabled: !c.mixedBreed,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  labelText: c.mixedBreed ? 'Mixed or not sure' : 'Breed (optional)',
-                  hintText: 'e.g. Labrador',
+                  labelText: c.mixedBreed ? l10n.mixedOrNotSure : l10n.breedOptional,
+                  hintText: l10n.breedExample,
                   errorMaxLines: 3,
                 ),
-                validator: (text) => (text?.trim().length ?? 0) > 60 ? 'Keep the breed under 60 characters.' : null,
+                validator: (text) => (text?.trim().length ?? 0) > 60 ? l10n.breedTooLong(60) : null,
                 onChanged: (_) => c.touch(BasicsSection.breed),
               ),
               const SizedBox(height: 8),
               Align(
                 alignment: AlignmentDirectional.centerStart,
                 child: FilterChip(
-                  label: const Text('Mixed or not sure'),
+                  label: Text(l10n.mixedOrNotSure),
                   selected: c.mixedBreed,
                   showCheckmark: false,
                   onSelected: (mixed) => c.mixedBreed = mixed,
@@ -463,12 +433,12 @@ class _DateField extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
         child: InputDecorator(
-          decoration: const InputDecoration(
-            labelText: 'Birthday',
-            suffixIcon: Icon(Icons.calendar_month_rounded, color: AppColors.brown),
+          decoration: InputDecoration(
+            labelText: context.petsL10n.birthday,
+            suffixIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.brown),
           ),
           child: Text(
-            text ?? 'Choose the date',
+            text ?? context.petsL10n.chooseTheDate,
             style: AppText.body.copyWith(
               fontSize: 16,
               color: text == null ? AppColors.brown.withValues(alpha: 0.7) : AppColors.ink,

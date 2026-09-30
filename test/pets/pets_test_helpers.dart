@@ -15,9 +15,14 @@ import 'package:pet_companion/features/pets/data/fake_pets_repository.dart';
 import 'package:pet_companion/features/pets/data/pets_repository.dart';
 import 'package:pet_companion/features/pets/data/pets_repository_provider.dart';
 import 'package:pet_companion/features/pets/data/photo_services.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 import 'package:pet_companion/theme/app_theme.dart';
+
+/// The Pets strings in English and in Hebrew, for tests that name a text.
+final en = lookupPetsL10n(englishLocale);
+final he = lookupPetsL10n(hebrewLocale);
 
 /// The instant every Pets test runs at: the Health sample data's day.
 final petsNow = DateTime(2025, 6, 10, 17, 40);
@@ -61,8 +66,12 @@ class FakePetPhotoCropper implements PetPhotoCropper {
 
 /// Everything a Pets test can swap out. All fakes answer at once.
 class PetsHarness {
-  PetsHarness({FakePetsRepository? pets, FakeHealthRepository? health, List<Override> extra = const []})
-      : pets = pets ?? FakePetsRepository(latency: Duration.zero),
+  PetsHarness({
+    FakePetsRepository? pets,
+    FakeHealthRepository? health,
+    List<Override> extra = const [],
+    this.language = AppLanguage.english,
+  })  : pets = pets ?? FakePetsRepository(latency: Duration.zero),
         health = health ?? FakeHealthRepository(latency: Duration.zero, now: () => petsNow),
         _extra = extra;
 
@@ -72,6 +81,11 @@ class PetsHarness {
   final FakePetPhotoPicker picker = FakePetPhotoPicker();
   final FakePetPhotoCropper cropper = FakePetPhotoCropper();
   final List<Override> _extra;
+
+  /// The language the app (or the host page) is shown in.
+  final AppLanguage language;
+
+  bool get isHebrew => language == AppLanguage.hebrew;
 
   DateTime now = petsNow;
 
@@ -83,6 +97,7 @@ class PetsHarness {
         petPhotoCropperProvider.overrideWithValue(cropper),
         healthClockProvider.overrideWithValue(() => now),
         healthRepositoryProvider.overrideWithValue(health),
+        settingsStoreProvider.overrideWithValue(MemorySettingsStore({languageSettingKey: ?language.code})),
         ..._extra,
       ];
 
@@ -143,6 +158,9 @@ Future<PetsHarness> pumpPetsHost(
       overrides: h.overrides(),
       child: MaterialApp(
         theme: AppTheme.light(),
+        locale: h.isHebrew ? hebrewLocale : englishLocale,
+        supportedLocales: appSupportedLocales,
+        localizationsDelegates: appLocalizationsDelegates,
         home: Scaffold(body: SafeArea(child: SingleChildScrollView(child: child))),
       ),
     ),

@@ -3,10 +3,11 @@ import 'dart:typed_data';
 import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/photo_services.dart';
-import '../data/pets_repository_provider.dart';
+import '../pet_words.dart';
 
 /// Fits a photo into the round profile shape: the photo moves and zooms
 /// under a fixed round window, and two small previews show the result at
@@ -54,7 +55,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
       if (!mounted) return;
       setState(() {
         _working = false;
-        _error = e is StateError ? 'Could not crop that photo. Please try another one.' : petsErrorMessage(e);
+        _error = e is StateError ? context.petsL10n.cropFailed : petsErrorOf(context, e);
       });
     }
   }
@@ -69,12 +70,12 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(8, 4, 20, 4),
+              padding: const EdgeInsetsDirectional.fromSTEB(8, 4, 20, 4),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(const CropOutcome.cancelled()),
-                    tooltip: 'Back',
+                    tooltip: context.l10n.commonBack,
                     icon: const Icon(Icons.arrow_back_rounded),
                     color: AppColors.white,
                     constraints: const BoxConstraints.tightFor(width: 48, height: 48),
@@ -82,7 +83,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      'Move and zoom',
+                      context.petsL10n.cropTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppText.appTitle.copyWith(fontSize: 20, color: AppColors.white),
@@ -92,27 +93,32 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
               ),
             ),
             Expanded(
-              child: Crop(
-                image: widget.photo,
-                controller: _controller,
-                onCropped: _cropped,
-                withCircleUi: true,
-                interactive: true,
-                fixCropRect: true,
-                baseColor: Colors.black,
-                maskColor: const Color(0xAD1E140C),
-                initialRectBuilder: InitialRectBuilder.withSizeAndRatio(size: 0.9, aspectRatio: 1),
-                cornerDotBuilder: (_, _) => const SizedBox.shrink(),
-                progressIndicator: const CircularProgressIndicator(color: AppColors.yellow),
-                onStatusChanged: (status) {
-                  if (mounted && status == CropStatus.ready && !_ready) setState(() => _ready = true);
-                },
-                onMoved: (window, _) {
-                  if (mounted) setState(() => _window = window);
-                },
-                onImageMoved: (photoRect) {
-                  if (mounted) setState(() => _photoRect = photoRect);
-                },
+              // A photo has no reading direction: the editor works in
+              // screen coordinates, the same in every language.
+              child: Directionality(
+                textDirection: TextDirection.ltr,
+                child: Crop(
+                  image: widget.photo,
+                  controller: _controller,
+                  onCropped: _cropped,
+                  withCircleUi: true,
+                  interactive: true,
+                  fixCropRect: true,
+                  baseColor: Colors.black,
+                  maskColor: const Color(0xAD1E140C),
+                  initialRectBuilder: InitialRectBuilder.withSizeAndRatio(size: 0.9, aspectRatio: 1),
+                  cornerDotBuilder: (_, _) => const SizedBox.shrink(),
+                  progressIndicator: const CircularProgressIndicator(color: AppColors.yellow),
+                  onStatusChanged: (status) {
+                    if (mounted && status == CropStatus.ready && !_ready) setState(() => _ready = true);
+                  },
+                  onMoved: (window, _) {
+                    if (mounted) setState(() => _window = window);
+                  },
+                  onImageMoved: (photoRect) {
+                    if (mounted) setState(() => _photoRect = photoRect);
+                  },
+                ),
               ),
             ),
             Padding(
@@ -126,7 +132,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                     constraints: const BoxConstraints(minHeight: 36),
                     child: Center(
                       child: Text(
-                        _error ?? 'Drag to move · pinch to zoom',
+                        _error ?? context.petsL10n.cropHint,
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -141,7 +147,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                     spacing: 18,
                     runSpacing: 8,
                     children: [
-                      Text('Preview', style: AppText.label.copyWith(color: white)),
+                      Text(context.petsL10n.cropPreview, style: AppText.label.copyWith(color: white)),
                       _CropPreview(photo: widget.photo, window: _window, photoRect: _photoRect, size: 22),
                       _CropPreview(
                         photo: widget.photo,
@@ -164,7 +170,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                             minimumSize: const Size.fromHeight(50),
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                           ),
-                          child: const Text('Choose another', textAlign: TextAlign.center),
+                          child: Text(context.petsL10n.cropChooseAnother, textAlign: TextAlign.center),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -185,7 +191,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                                   height: 20,
                                   child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.ink),
                                 )
-                              : const Text('Use photo', textAlign: TextAlign.center),
+                              : Text(context.petsL10n.cropUsePhoto, textAlign: TextAlign.center),
                         ),
                       ),
                     ],

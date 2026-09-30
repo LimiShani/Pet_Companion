@@ -30,7 +30,8 @@ enum PetIcon {
   /// The stored name, e.g. `dog_floppy`.
   final String key;
 
-  /// What a screen reader says.
+  /// What a screen reader says. The names of the icons stay in English in
+  /// every language for now; they are never shown as text.
   final String label;
 
   static PetIcon? fromKey(String? key) {
@@ -56,15 +57,14 @@ enum PetIcon {
 
 /// The four backgrounds an icon can sit on.
 enum PetIconBackground {
-  yellow(AppColors.yellow, 'Yellow'),
-  sage(AppColors.sage, 'Green'),
-  peach(AppColors.peach, 'Peach'),
-  white(AppColors.white, 'White');
+  yellow(AppColors.yellow),
+  sage(AppColors.sage),
+  peach(AppColors.peach),
+  white(AppColors.white);
 
-  const PetIconBackground(this.color, this.label);
+  const PetIconBackground(this.color);
 
   final Color color;
-  final String label;
 
   static PetIconBackground? fromName(String? name) {
     for (final background in values) {

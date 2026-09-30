@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/pets_repository_provider.dart';
+import '../pet_words.dart';
 import '../widgets/pet_basics_fields.dart';
 import '../widgets/pets_widgets.dart';
 
@@ -67,7 +69,7 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _error = petsErrorMessage(e);
+        _error = petsErrorOf(context, e);
       });
     }
   }
@@ -94,7 +96,7 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
             Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
           ],
           const SizedBox(height: 18),
-          PrimaryButton(label: 'Save', loading: _saving, onPressed: _save),
+          PrimaryButton(label: context.l10n.commonSave, loading: _saving, onPressed: _save),
         ],
       ),
     );

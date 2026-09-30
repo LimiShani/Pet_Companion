@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../auth/auth_controller.dart';
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
-import 'data/pets_repository_provider.dart';
 import 'icons/pet_icon_bank.dart';
+import 'pet_words.dart';
 import 'pets_routes.dart';
 import 'widgets/pet_avatar.dart';
 import 'widgets/pets_widgets.dart';
@@ -40,7 +41,7 @@ class WelcomeScreen extends ConsumerWidget {
                 24 + MediaQuery.paddingOf(context).bottom,
               ),
               child: failed
-                  ? _LoadFailed(message: pets.error ?? 'Something went wrong. Please try again.')
+                  ? _LoadFailed(message: petsErrorOf(context, pets.cause))
                   : _FirstPet(name: name, archived: pets.archived),
             ),
           ],
@@ -92,7 +93,7 @@ class _Hello extends StatelessWidget {
                     children: [
                       const Icon(Icons.pets_rounded, color: AppColors.white, size: 22),
                       const SizedBox(width: 8),
-                      Text('Pet Companion', style: AppText.appTitle.copyWith(color: AppColors.white)),
+                      Text(context.l10n.appName, style: AppText.appTitle.copyWith(color: AppColors.white)),
                     ],
                   ),
                 ),
@@ -138,33 +139,34 @@ class _FirstPet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.petsL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PetsHeading(name.isEmpty ? 'Welcome' : 'Welcome, $name', center: true, size: 24),
+        PetsHeading(name.isEmpty ? l10n.welcomeTitle : l10n.welcomeTitleNamed(name), center: true, size: 24),
         const SizedBox(height: 6),
         Text(
-          "Let's meet your first pet. A name and a kind are enough to start; the rest takes about a minute.",
+          l10n.welcomeIntro,
           textAlign: TextAlign.center,
           style: AppText.body.copyWith(color: AppColors.brown),
         ),
         const SizedBox(height: 20),
-        const PetsCard(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        PetsCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Column(
             children: [
-              _Why(Icons.photo_camera_rounded, 'A photo, or a friendly icon'),
-              SizedBox(height: 10),
-              _Why(Icons.call_rounded, "The vet's number, ready for an emergency"),
-              SizedBox(height: 10),
-              _Why(Icons.fact_check_rounded, 'Allergies and conditions: what a vet asks first'),
+              _Why(Icons.photo_camera_rounded, l10n.welcomeWhyPhoto),
+              const SizedBox(height: 10),
+              _Why(Icons.call_rounded, l10n.welcomeWhyVet),
+              const SizedBox(height: 10),
+              _Why(Icons.fact_check_rounded, l10n.welcomeWhyHealth),
             ],
           ),
         ),
         const SizedBox(height: 20),
-        PrimaryButton(label: 'Add my first pet', onPressed: () => context.go(PetsRoutes.addPet)),
+        PrimaryButton(label: l10n.welcomeAddFirst, onPressed: () => context.go(PetsRoutes.addPet)),
         if (archived.isNotEmpty) ...[
-          const PetsLabel('Archived pets', topGap: 22),
+          PetsLabel(l10n.welcomeArchivedPets, topGap: 22),
           for (final pet in archived)
             Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -217,7 +219,7 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
-      showPetsSnack(context, petsErrorMessage(e));
+      showPetsSnack(context, petsErrorOf(context, e));
     }
   }
 
@@ -226,8 +228,8 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
     return PetsRow(
       leading: PetAvatar(pet: widget.pet, size: 44, dimmed: true),
       title: widget.pet.name,
-      subtitle: widget.pet.species.label,
-      trailing: PillButton('Restore', outlined: true, onPressed: _busy ? null : _restore),
+      subtitle: petSpeciesText(context.petsL10n, widget.pet.species),
+      trailing: PillButton(context.petsL10n.restore, outlined: true, onPressed: _busy ? null : _restore),
     );
   }
 }
@@ -242,11 +244,11 @@ class _LoadFailed extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const PetsHeading('Could not load your pets', center: true, size: 22),
+        PetsHeading(context.petsL10n.welcomeLoadFailed, center: true, size: 22),
         const SizedBox(height: 6),
         Text(message, textAlign: TextAlign.center, style: AppText.body.copyWith(color: AppColors.brown)),
         const SizedBox(height: 20),
-        PrimaryButton(label: 'Try again', onPressed: () => ref.read(petsStoreProvider.notifier).retry()),
+        PrimaryButton(label: context.l10n.commonTryAgain, onPressed: () => ref.read(petsStoreProvider.notifier).retry()),
         const SizedBox(height: 6),
         const _SignOut(),
       ],
@@ -259,6 +261,6 @@ class _SignOut extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PetsTextButton('Sign out', onPressed: () => ref.read(authControllerProvider.notifier).signOut());
+    return PetsTextButton(context.l10n.accountSignOut, onPressed: () => ref.read(authControllerProvider.notifier).signOut());
   }
 }

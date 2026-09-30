@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/primary_button.dart';
@@ -25,17 +26,25 @@ class _IconBankScreenState extends State<IconBankScreen> {
   late PetIcon _icon = widget.initial?.icon ?? PetIcon.defaultFor(widget.species);
   late PetIconBackground _background = widget.initial?.background ?? PetIconBackground.yellow;
 
-  static String _forKind(PetSpecies species) => switch (species) {
-        PetSpecies.dog => 'For a dog',
-        PetSpecies.cat => 'For a cat',
-        PetSpecies.bird => 'For a bird',
-        PetSpecies.rabbit => 'For a rabbit',
-        PetSpecies.reptile => 'For a reptile',
-        PetSpecies.other => 'Suggested',
+  static String _forKind(PetsL10n l10n, PetSpecies species) => switch (species) {
+        PetSpecies.dog => l10n.iconsForDog,
+        PetSpecies.cat => l10n.iconsForCat,
+        PetSpecies.bird => l10n.iconsForBird,
+        PetSpecies.rabbit => l10n.iconsForRabbit,
+        PetSpecies.reptile => l10n.iconsForReptile,
+        PetSpecies.other => l10n.iconsSuggested,
+      };
+
+  static String _backgroundLabel(PetsL10n l10n, PetIconBackground background) => switch (background) {
+        PetIconBackground.yellow => l10n.iconsBackgroundYellow,
+        PetIconBackground.sage => l10n.iconsBackgroundGreen,
+        PetIconBackground.peach => l10n.iconsBackgroundPeach,
+        PetIconBackground.white => l10n.iconsBackgroundWhite,
       };
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.petsL10n;
     final own = PetIcon.forSpecies(widget.species);
     final others = [
       for (final icon in PetIcon.values)
@@ -61,7 +70,7 @@ class _IconBankScreenState extends State<IconBankScreen> {
         );
 
     return PetsPage(
-      title: 'Pick an icon',
+      title: l10n.pickAnIcon,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -73,11 +82,11 @@ class _IconBankScreenState extends State<IconBankScreen> {
               borderWidth: 4,
             ),
           ),
-          PetsLabel(_forKind(widget.species)),
+          PetsLabel(_forKind(l10n, widget.species)),
           bank(own),
-          const PetsLabel('All animals'),
+          PetsLabel(l10n.iconsAll),
           bank(others),
-          const PetsLabel('Background'),
+          PetsLabel(l10n.iconsBackground),
           Wrap(
             spacing: 14,
             runSpacing: 14,
@@ -85,7 +94,7 @@ class _IconBankScreenState extends State<IconBankScreen> {
               for (final background in PetIconBackground.values)
                 _Selectable(
                   key: Key('icon-bg-${background.name}'),
-                  label: '${background.label} background',
+                  label: _backgroundLabel(l10n, background),
                   selected: background == _background,
                   onTap: () => setState(() => _background = background),
                   child: Container(
@@ -102,7 +111,7 @@ class _IconBankScreenState extends State<IconBankScreen> {
           ),
           const SizedBox(height: 24),
           PrimaryButton(
-            label: 'Use this icon',
+            label: l10n.iconsUse,
             onPressed: () => Navigator.of(context).pop(PetIconChoice(_icon, _background)),
           ),
         ],

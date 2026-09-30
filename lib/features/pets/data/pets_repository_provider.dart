@@ -21,6 +21,7 @@ final petsRepositoryProvider = Provider<PetsRepository>((ref) => AppConfig.hasSu
 /// archive date). Tests override it with a fixed instant.
 final petsClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
-/// User-facing text for a pets failure.
-String petsErrorMessage(Object error) =>
-    error is PetsException ? error.message : 'Something went wrong. Please try again.';
+/// A pets failure in plain English, for logs and tests. On screen use
+/// `petsErrorText` / `petsErrorOf` (`pet_words.dart`), which speak the app's
+/// language.
+String petsErrorMessage(Object error) => error is PetsException ? error.message : PetsFailure.unknown.english;

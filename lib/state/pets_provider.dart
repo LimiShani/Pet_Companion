@@ -11,7 +11,7 @@ enum PetsStatus { loading, ready, failed }
 
 /// Every pet of the signed-in owner, archived ones included.
 class PetsState {
-  PetsState({required this.status, this.all = const [], this.error})
+  PetsState({required this.status, this.all = const [], this.error, this.cause})
       : visible = [
           for (final pet in all)
             if (!pet.isArchived) pet,
@@ -30,9 +30,13 @@ class PetsState {
   final List<Pet> visible;
   final List<Pet> archived;
 
-  /// Why loading failed, in words safe to show; set when [status] is
+  /// Why loading failed, in plain English (for logs); set when [status] is
   /// [PetsStatus.failed].
   final String? error;
+
+  /// What failed, for the screen to put into words in the app's language
+  /// (`petsErrorText`); set together with [error].
+  final Object? cause;
 
   Pet? byId(String id) {
     for (final pet in all) {
@@ -71,7 +75,7 @@ class PetsStore extends Notifier<PetsState> {
     try {
       next = PetsState(status: PetsStatus.ready, all: await repository.fetchPets(ownerId));
     } catch (e) {
-      next = PetsState(status: PetsStatus.failed, error: petsErrorMessage(e));
+      next = PetsState(status: PetsStatus.failed, error: petsErrorMessage(e), cause: e);
     }
     // Another owner signed in, or the app closed, while this was on its way.
     if (!ref.mounted || load != _load) return;
@@ -110,7 +114,7 @@ class PetsStore extends Notifier<PetsState> {
   /// storage path. Throws a [PetsException] when that fails.
   Future<String> uploadPhoto(String petId, Uint8List jpeg) async {
     final ownerId = _ownerId;
-    if (ownerId == null) throw const PetsException('Please sign in again.');
+    if (ownerId == null) throw PetsException.of(PetsFailure.signInAgain);
     return ref.read(petsRepositoryProvider).uploadPhoto(ownerId, petId, jpeg);
   }
 

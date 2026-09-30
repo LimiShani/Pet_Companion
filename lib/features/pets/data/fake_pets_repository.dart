@@ -60,7 +60,7 @@ class FakePetsRepository implements PetsRepository {
   @override
   Future<Pet> savePet(String ownerId, Pet pet) async {
     await _wait();
-    if (pet.name.trim().isEmpty) throw const PetsException('A pet needs a name.');
+    if (pet.name.trim().isEmpty) throw PetsException.of(PetsFailure.nameMissing);
     final pets = _of(ownerId);
     final index = pets.indexWhere((p) => p.id == pet.id);
     if (index < 0) {
@@ -96,7 +96,7 @@ class FakePetsRepository implements PetsRepository {
   Future<PetPhotoData> loadPhoto(String path) async {
     await _wait();
     final bytes = _photos[path];
-    if (bytes == null) throw const PetsException('That photo is no longer available.');
+    if (bytes == null) throw PetsException.of(PetsFailure.photoGone);
     return PetPhotoData.bytes(bytes);
   }
 }

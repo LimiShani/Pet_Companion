@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import 'data/pets_repository_provider.dart';
 import 'pet_actions.dart';
+import 'pet_words.dart';
 import 'profile/remove_pet.dart';
 import 'state/pet_completeness.dart';
 import 'widgets/pet_avatar.dart';
-import 'widgets/pet_basics_fields.dart';
 import 'widgets/pet_essentials_keeper.dart';
 import 'widgets/pets_widgets.dart';
 
@@ -27,7 +27,7 @@ class MyPetsScreen extends ConsumerWidget {
     final now = ref.watch(petsClockProvider)();
 
     return PetsPage(
-      title: 'My pets',
+      title: context.petsL10n.myPetsTitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -39,18 +39,18 @@ class MyPetsScreen extends ConsumerWidget {
           PetsRow(
             dashed: true,
             leading: const PetsDisc(Icons.add_rounded),
-            title: 'Add a pet',
+            title: context.petsL10n.addPetTitle,
             onTap: () => openAddPet(context),
           ),
           if (archived.isNotEmpty) ...[
-            const PetsLabel('Archived', topGap: 26),
+            PetsLabel(context.petsL10n.archived, topGap: 26),
             for (final pet in archived)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: _ArchivedRow(pet: pet),
               ),
             const SizedBox(height: 4),
-            const PetsFinePrint('Archived pets keep all their records and are hidden from the rest of the app.'),
+            PetsFinePrint(context.petsL10n.archivedNote),
           ],
         ],
       ),
@@ -73,11 +73,11 @@ class _PetRow extends ConsumerWidget {
       onTap: () => openPetProfile(context, pet.id, fromMyPets: true),
       padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 10, 10),
       // Stays up to date while a profile covers this page.
-      child: PetEssentialsKeeper(petId: pet.id, child: _content(info)),
+      child: PetEssentialsKeeper(petId: pet.id, child: _content(context.petsL10n, info)),
     );
   }
 
-  Widget _content(PetCompleteness info) {
+  Widget _content(PetsL10n l10n, PetCompleteness info) {
     final missing = info.missing.length;
     return Row(
       children: [
@@ -88,13 +88,13 @@ class _PetRow extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(pet.name, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
-              Text(petSummaryLine(pet, now: now), style: AppText.secondary.copyWith(color: AppColors.brown)),
+              Text(petSummaryLine(l10n, pet, now: now), style: AppText.secondary.copyWith(color: AppColors.brown)),
               if (info.isKnown) ...[
                 const SizedBox(height: 5),
                 if (info.isComplete)
-                  const PetsTag('Complete', tone: TagTone.green, icon: Icons.check_rounded)
+                  PetsTag(l10n.complete, tone: TagTone.green, icon: Icons.check_rounded)
                 else
-                  PetsTag(missing == 1 ? '1 essential to add' : '$missing essentials to add', tone: TagTone.yellow),
+                  PetsTag(l10n.essentialsToAdd(missing), tone: TagTone.yellow),
               ],
             ],
           ),
@@ -122,11 +122,11 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
     setState(() => _busy = true);
     try {
       await restorePet(ProviderScope.containerOf(context, listen: false), pet);
-      if (mounted) showPetsSnack(context, '${pet.name} is back');
+      if (mounted) showPetsSnack(context, context.petsL10n.petIsBack(pet.name));
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
-      showPetsSnack(context, petsErrorMessage(e));
+      showPetsSnack(context, petsErrorOf(context, e));
     }
   }
 
@@ -134,15 +134,14 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
   Widget build(BuildContext context) {
     final pet = widget.pet;
     final when = pet.archivedAt;
+    final l10n = context.petsL10n;
+    final kind = petSpeciesText(l10n, pet.species);
     return PetsRow(
       leading: PetAvatar(pet: pet, size: 56, dimmed: true),
       title: pet.name,
-      subtitle: [
-        pet.species.label,
-        if (when != null) 'archived ${DateFormat('dd.MM.yy').format(when)}',
-      ].join(' · '),
+      subtitle: when == null ? kind : l10n.archivedRow(kind, AppFormat.of(context).date(when)),
       trailing: PillButton(
-        'Restore',
+        l10n.restore,
         key: Key('restore-${pet.id}'),
         outlined: true,
         onPressed: _busy ? null : _restore,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
@@ -85,7 +86,7 @@ class _Header extends StatelessWidget {
                 constraints: const BoxConstraints(minHeight: 44),
                 child: Row(
                   children: [
-                    CoralHeaderAction(icon: Icons.arrow_back_rounded, tooltip: 'Back', onPressed: onBack),
+                    CoralHeaderAction(icon: Icons.arrow_back_rounded, tooltip: context.l10n.commonBack, onPressed: onBack),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -154,7 +155,7 @@ class StepProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Step $step of $total',
+      label: context.petsL10n.stepOf(step, total),
       child: ExcludeSemantics(
         child: Row(
           children: [
@@ -172,7 +173,7 @@ class StepProgress extends StatelessWidget {
             ],
             const SizedBox(width: 6),
             Text(
-              'Step $step of $total',
+              context.petsL10n.stepOf(step, total),
               style: AppText.secondary.copyWith(color: AppColors.white, fontWeight: FontWeight.w800),
             ),
           ],
@@ -256,8 +257,8 @@ class PetsLabel extends StatelessWidget {
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           Text(text, style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w800)),
-          if (level == FieldLevel.essential) const PetsTag('Essential', tone: TagTone.yellow),
-          if (level == FieldLevel.optional) const PetsTag('Optional'),
+          if (level == FieldLevel.essential) PetsTag(context.petsL10n.tagEssential, tone: TagTone.yellow),
+          if (level == FieldLevel.optional) PetsTag(context.petsL10n.tagOptional),
         ],
       ),
     );
@@ -414,7 +415,7 @@ class PetsRow extends StatelessWidget {
         ],
       ),
     );
-    if (!dashed) return PetsCard(onTap: onTap, padding: const EdgeInsets.fromLTRB(14, 10, 12, 10), child: content);
+    if (!dashed) return PetsCard(onTap: onTap, padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 12, 10), child: content);
     return CustomPaint(
       painter: const _DashedOutline(),
       child: Material(
@@ -423,7 +424,7 @@ class PetsRow extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          child: Padding(padding: const EdgeInsets.fromLTRB(14, 12, 12, 12), child: content),
+          child: Padding(padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 12, 12), child: content),
         ),
       ),
     );

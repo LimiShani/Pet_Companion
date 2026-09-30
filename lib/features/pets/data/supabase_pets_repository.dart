@@ -28,13 +28,13 @@ class SupabasePetsRepository implements PetsRepository {
   List<Pet>? cachedPets(String? ownerId) => ownerId == null ? const [] : null;
 
   @override
-  Future<List<Pet>> fetchPets(String ownerId) => _guard('load your pets', () async {
+  Future<List<Pet>> fetchPets(String ownerId) => _guard(PetsFailure.load, () async {
         final rows = await _client.from(_table).select().eq('owner_id', ownerId).order('created_at');
         return [for (final row in rows) petFromRow(row)];
       });
 
   @override
-  Future<Pet> savePet(String ownerId, Pet pet) => _guard('save your pet', () async {
+  Future<Pet> savePet(String ownerId, Pet pet) => _guard(PetsFailure.save, () async {
         final row = await _client.from(_table).upsert(petToRow(ownerId, pet)).select().single();
         // Today's feeding, activity and health events are not stored in
         // this table: keep what the app had.
@@ -51,7 +51,7 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<void> deletePet(String ownerId, Pet pet) => _guard('delete your pet', () async {
+  Future<void> deletePet(String ownerId, Pet pet) => _guard(PetsFailure.delete, () async {
         // Files first: once the row is gone nothing points at them any more.
         final folder = '$ownerId/${pet.id}';
         final files = await _client.storage.from(photoBucket).list(path: folder);
@@ -62,7 +62,7 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<String> uploadPhoto(String ownerId, String petId, Uint8List jpeg) => _guard('save the photo', () async {
+  Future<String> uploadPhoto(String ownerId, String petId, Uint8List jpeg) => _guard(PetsFailure.photoSave, () async {
         // A new name for every photo, so a cached older one is never shown.
         final path = '$ownerId/$petId/avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
         await _client.storage.from(photoBucket).uploadBinary(
@@ -74,69 +74,64 @@ class SupabasePetsRepository implements PetsRepository {
       });
 
   @override
-  Future<void> deletePhoto(String path) => _guard('remove the photo', () async {
+  Future<void> deletePhoto(String path) => _guard(PetsFailure.photoRemove, () async {
         await _client.storage.from(photoBucket).remove([path]);
       });
 
   @override
-  Future<PetPhotoData> loadPhoto(String path) => _guard('load the photo', () async {
+  Future<PetPhotoData> loadPhoto(String path) => _guard(PetsFailure.photoLoad, () async {
         final url = await _client.storage.from(photoBucket).createSignedUrl(path, _signedUrlSeconds);
         return PetPhotoData.url(Uri.parse(url));
       });
 
-  /// Runs [action], turning backend failures into a [PetsException] with
-  /// copy that fits the app's tone. [doing] finishes "Could not …".
-  Future<T> _guard<T>(String doing, Future<T> Function() action) async {
+  /// Runs [action], turning backend failures into a [PetsException] that
+  /// says why. [during] is the reason to give when the backend says
+  /// nothing more specific.
+  Future<T> _guard<T>(PetsFailure during, Future<T> Function() action) async {
     try {
       return await action().timeout(_timeout);
     } catch (e) {
-      throw petsExceptionFor(e, doing: doing);
+      throw petsExceptionFor(e, during: during);
     }
   }
 
   static const _timeout = Duration(seconds: 25);
 }
 
-const _offline = 'Cannot reach the server. Check your connection and try again.';
-
-/// What to tell the owner when the backend failed while [doing] something
-/// ("save your pet", "load your pets"): plain words, never a raw error.
-PetsException petsExceptionFor(Object error, {String doing = 'save your pet'}) {
+/// Why the backend failed, as a [PetsException]: a reason the screen can
+/// put into words, never a raw error. [during] is what was being done
+/// ([PetsFailure.save], [PetsFailure.load]...), used when the backend gives
+/// no more specific reason.
+PetsException petsExceptionFor(Object error, {PetsFailure during = PetsFailure.save}) {
   if (error is PetsException) return error;
   if (error is sb.PostgrestException) {
     final code = error.code ?? '';
     final message = error.message.toLowerCase();
-    if (code == '42501' || message.contains('row-level security')) {
-      return const PetsException('You can only change your own pets. Please sign in again.');
-    }
-    if (code == '23514') {
-      return const PetsException('Some of that information is not valid. Please check it and try again.');
-    }
-    if (code == '42703' || code == 'PGRST204') {
-      return const PetsException('The database is not up to date for pets yet (migration 0005 has not been run).');
-    }
-    if (code == 'PGRST301' || message.contains('jwt')) return const PetsException('Please sign in again.');
-    return PetsException('Could not $doing. Please try again.');
+    if (code == '42501' || message.contains('row-level security')) return PetsException.of(PetsFailure.notYours);
+    if (code == '23514') return PetsException.of(PetsFailure.invalid);
+    if (code == '42703' || code == 'PGRST204') return PetsException.of(PetsFailure.databaseOutdated);
+    if (code == 'PGRST301' || message.contains('jwt')) return PetsException.of(PetsFailure.signInAgain);
+    return PetsException.of(during);
   }
   if (error is sb.StorageException) {
     final message = error.message.toLowerCase();
     if (message.contains('size') || message.contains('too large') || error.statusCode == '413') {
-      return const PetsException('That photo is too large.');
+      return PetsException.of(PetsFailure.photoTooLarge);
     }
-    if (message.contains('mime')) return const PetsException('That kind of picture is not supported.');
-    if (message.contains('not found')) return const PetsException('That photo is no longer available.');
+    if (message.contains('mime')) return PetsException.of(PetsFailure.photoUnsupported);
+    if (message.contains('not found')) return PetsException.of(PetsFailure.photoGone);
     if (message.contains('row-level security') || error.statusCode == '403') {
-      return const PetsException('You can only change your own pets. Please sign in again.');
+      return PetsException.of(PetsFailure.notYours);
     }
-    return PetsException('Could not $doing. Please try again.');
+    return PetsException.of(during);
   }
-  if (error is sb.AuthException) return const PetsException('Please sign in again.');
-  if (error is TimeoutException) return const PetsException(_offline);
+  if (error is sb.AuthException) return PetsException.of(PetsFailure.signInAgain);
+  if (error is TimeoutException) return PetsException.of(PetsFailure.offline);
   final text = error.toString().toLowerCase();
   if (text.contains('socket') || text.contains('failed host lookup') || text.contains('network')) {
-    return const PetsException(_offline);
+    return PetsException.of(PetsFailure.offline);
   }
-  return const PetsException('Something went wrong. Please try again.');
+  return PetsException.of(PetsFailure.unknown);
 }
 
 /// A `pets` row as a [Pet].

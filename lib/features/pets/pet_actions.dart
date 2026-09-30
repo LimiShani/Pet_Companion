@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../health/emergency/emergency.dart';
 import 'add_pet/add_pet_screen.dart';
-import 'data/pets_repository_provider.dart';
 import 'icons/pet_icon_bank.dart';
 import 'my_pets_screen.dart';
+import 'pet_words.dart';
 import 'pets_routes.dart';
 import 'picture/pet_picture.dart';
 import 'profile/basics_sheet.dart';
@@ -81,7 +82,7 @@ Future<void> changePetPicture(BuildContext context, String petId) async {
     final current = container.read(petsStoreProvider).byId(petId) ?? pet;
     await savePetPicture(container.read(petsStoreProvider.notifier), current, picture);
   } catch (e) {
-    if (context.mounted) showPetsSnack(context, petsErrorMessage(e));
+    if (context.mounted) showPetsSnack(context, petsErrorOf(context, e));
   }
 }
 
@@ -92,6 +93,7 @@ Future<void> changePetPicture(BuildContext context, String petId) async {
 Future<void> openPetInfoItem(BuildContext context, {required String petId, required PetInfoItem item}) async {
   final pet = _petOf(context, petId, 'openPetInfoItem');
   if (pet == null) return;
+  final l10n = context.petsL10n;
   switch (item) {
     case PetInfoItem.vetPhone:
       await openHealthCriticalItem(context, petId: petId, item: HealthCriticalItem.vetPhone);
@@ -107,31 +109,31 @@ Future<void> openPetInfoItem(BuildContext context, {required String petId, requi
       await showPetBasicsSheet(
         context,
         pet: pet,
-        title: "${pet.name}'s age",
-        note: 'A birthday, or a guess: both count.',
+        title: l10n.petAgeTitle(pet.name),
+        note: l10n.petAgeNote,
         sections: const {BasicsSection.age},
       );
     case PetInfoItem.weight:
       await showPetBasicsSheet(
         context,
         pet: pet,
-        title: "${pet.name}'s weight",
-        note: 'Every dose starts with the weight.',
+        title: l10n.petWeightTitle(pet.name),
+        note: l10n.petWeightNote,
         sections: const {BasicsSection.weight},
       );
     case PetInfoItem.breed:
       await showPetBasicsSheet(
         context,
         pet: pet,
-        title: "${pet.name}'s breed",
+        title: l10n.petBreedTitle(pet.name),
         sections: const {BasicsSection.breed},
       );
     case PetInfoItem.sexAndNeutering:
       await showPetBasicsSheet(
         context,
         pet: pet,
-        title: 'Sex and neutering',
-        note: '"Not sure" is an answer too.',
+        title: l10n.itemSexAndNeutering,
+        note: l10n.sexAndNeuteringNote,
         sections: const {BasicsSection.sex, BasicsSection.neutered},
       );
     case PetInfoItem.photo:

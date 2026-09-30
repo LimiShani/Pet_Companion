@@ -37,15 +37,11 @@ class DevicePetPhotoPicker implements PetPhotoPicker {
       );
       return file == null ? null : await file.readAsBytes();
     } on PlatformException {
-      throw PetsException(
-        source == PetPhotoSource.camera
-            ? 'Cannot open the camera. Check that Pet Companion is allowed to use it.'
-            : 'Cannot open your photos. Check that Pet Companion is allowed to see them.',
+      throw PetsException.of(
+        source == PetPhotoSource.camera ? PetsFailure.cameraNotAllowed : PetsFailure.photosNotAllowed,
       );
     } catch (_) {
-      throw PetsException(
-        source == PetPhotoSource.camera ? 'Could not open the camera.' : 'Could not open your photos.',
-      );
+      throw PetsException.of(source == PetPhotoSource.camera ? PetsFailure.camera : PetsFailure.photos);
     }
   }
 }
@@ -85,7 +81,7 @@ class ScreenPetPhotoCropper implements PetPhotoCropper {
   Future<CropOutcome> crop(BuildContext context, Uint8List photo) async {
     // The crop screen could only wait forever on a file it cannot read.
     if (!isReadablePhoto(photo)) {
-      throw const PetsException('That kind of picture is not supported. Please choose another one.');
+      throw PetsException.of(PetsFailure.photoUnsupportedChooseAnother);
     }
     final outcome = await Navigator.of(context, rootNavigator: true).push<CropOutcome>(
       PageRouteBuilder(
@@ -121,7 +117,7 @@ Uint8List squarePetPhoto(Uint8List cropped) {
   } catch (_) {
     // Not a picture at all: reported below.
   }
-  if (image == null) throw const PetsException('That kind of picture is not supported.');
+  if (image == null) throw PetsException.of(PetsFailure.photoUnsupported);
   final resized = img.copyResize(
     image,
     width: kPetPhotoSide,
