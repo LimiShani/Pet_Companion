@@ -10,6 +10,8 @@ import '../features/community/community_routes.dart';
 import '../features/health/health_routes.dart';
 import '../features/home/home_screen.dart';
 import '../features/pets/pets_routes.dart';
+import '../features/settings/settings_routes.dart';
+import '../features/settings/side_menu.dart';
 import '../features/store/store_routes.dart';
 import '../state/pets_provider.dart';
 import '../widgets/app_bottom_nav.dart';
@@ -59,6 +61,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // The first-pet welcome, the add-a-pet flow, the pet profile and "My
       // pets": full screen, beside the tabs (see pets_routes.dart).
       ...petsRoutes,
+      // The Settings page: full screen too, opened from the side menu and
+      // the account sheet.
+      ...settingsRoutes,
     ],
   );
 });
@@ -93,16 +98,26 @@ class _RouterRefresh extends ChangeNotifier {
 }
 
 /// Scaffold shared by the four tabs: keeps each tab's state and hosts the
-/// bottom navigation bar.
+/// bottom navigation bar and the side menu.
+///
+/// The menu is this scaffold's drawer, so it covers the bottom bar and
+/// comes in from the start side (the left in English, the right in Hebrew).
+/// Its button is on Home, and only there can it also be pulled in from the
+/// screen's edge.
 class _AppShell extends StatelessWidget {
   const _AppShell({required this.shell});
 
   final StatefulNavigationShell shell;
 
+  /// The index of the Home branch.
+  static const _homeTab = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: shell,
+      drawer: const AppSideMenu(),
+      drawerEnableOpenDragGesture: shell.currentIndex == _homeTab,
       bottomNavigationBar: AppBottomNav(
         currentIndex: shell.currentIndex,
         onSelect: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),

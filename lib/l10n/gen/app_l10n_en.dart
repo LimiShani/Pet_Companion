@@ -228,6 +228,50 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get menuMyPets => 'My pets';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsSummary => 'Language, week';
+
+  @override
+  String get settingsWeek => 'Week';
+
+  @override
+  String get settingsFirstDay => 'First day of the week';
+
+  @override
+  String get settingsDaySaturday => 'Saturday';
+
+  @override
+  String get settingsDaySunday => 'Sunday';
+
+  @override
+  String get settingsDayMonday => 'Monday';
+
+  @override
+  String get settingsWeekdays => 'Weekdays';
+
+  @override
+  String get settingsWeekdaysSunThu => 'Sunday to Thursday';
+
+  @override
+  String get settingsWeekdaysMonFri => 'Monday to Friday';
+
+  @override
+  String settingsWeekendIs(String days) {
+    return 'The weekend: $days';
+  }
+
+  @override
+  String get settingsWeekNote => 'Sets the order of the day chips and what \"Weekdays\" and \"Weekends\" mean in the schedule. The dimmed days are the weekend.';
+
+  @override
+  String get settingsSavedNote => 'These settings are saved on this phone.';
+
+  @override
   String get homeMenu => 'Menu';
 
   @override

@@ -12,9 +12,10 @@ import '../../../widgets/pet_selector.dart';
 import '../../auth/widgets/account_sheet.dart';
 import '../../health/emergency/emergency.dart';
 import '../../pets/pets.dart';
+import '../../settings/side_menu.dart';
 
-/// The pinned top bar of the dashboard: menu, branding, the Emergency pill
-/// for the selected pet and the account avatar.
+/// The pinned top bar of the dashboard: the button of the side menu,
+/// branding, the Emergency pill for the selected pet and the account avatar.
 ///
 /// It stays in place while the dashboard scrolls under it, so the emergency
 /// actions are always one tap away. The pill and everything it opens belong
@@ -66,7 +67,7 @@ class HomeTopBar extends ConsumerWidget {
             child: Row(
               children: [
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () => AppSideMenu.open(context),
                   tooltip: context.l10n.homeMenu,
                   icon: const Icon(Icons.menu_rounded, size: 26),
                   color: AppColors.white,
