@@ -11,6 +11,7 @@ final _time = DateFormat('HH:mm');
 final _month = DateFormat('MMMM yyyy');
 final _weekdayDate = DateFormat('EEE dd.MM.yy');
 final _longDay = DateFormat('EEEE d MMMM');
+final _shortDay = DateFormat('EEE d MMMM');
 final _monthShort = DateFormat('MMM');
 final _yearShort = DateFormat('yy');
 
@@ -23,6 +24,12 @@ String formatMonth(DateTime d) => _month.format(d);
 
 /// "Tuesday 10 June".
 String formatLongDay(DateTime d) => _longDay.format(d);
+
+/// "Tue 10 June".
+String formatShortDay(DateTime d) => _shortDay.format(d);
+
+/// "Mon 09.06.25".
+String formatWeekdayDate(DateTime d) => _weekdayDate.format(d);
 
 /// "Jun", and "Mar 26" when [d] is not in [now]'s year.
 String formatBadgeMonth(DateTime d, DateTime now) =>

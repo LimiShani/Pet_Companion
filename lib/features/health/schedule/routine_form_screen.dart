@@ -1,0 +1,213 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../../models/pet.dart';
+import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
+import '../../../widgets/coral_header.dart';
+import '../../../widgets/primary_button.dart';
+import '../data/health_models.dart';
+import '../data/species_settings.dart';
+import '../health_format.dart';
+import '../state/health_providers.dart';
+import '../widgets/health_widgets.dart';
+import 'schedule_form_widgets.dart';
+
+/// Opens the add / edit routine page over the whole app. Returns the saved
+/// routine, or `null` when the owner went back or deleted it.
+Future<CarePlanItem?> openRoutineForm(BuildContext context, Pet pet, {CarePlanItem? item}) =>
+    pushHealthPage<CarePlanItem>(context, RoutineFormScreen(pet: pet, item: item));
+
+/// A daily routine (feeding, walk, grooming, cleaning...): a title, a time
+/// and the weekdays. It is ticked with one tap in the Schedule and never
+/// goes to "Needs review".
+class RoutineFormScreen extends ConsumerStatefulWidget {
+  const RoutineFormScreen({super.key, required this.pet, this.item});
+
+  final Pet pet;
+
+  /// The routine being edited, or `null` to add one.
+  final CarePlanItem? item;
+
+  @override
+  ConsumerState<RoutineFormScreen> createState() => _RoutineFormScreenState();
+}
+
+class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
+  final _form = GlobalKey<FormState>();
+  late final _title = TextEditingController(text: widget.item?.title ?? '');
+  late CareKind _kind;
+  late TimeOfDay _time = widget.item?.time ?? const TimeOfDay(hour: 8, minute: 0);
+  late Set<int> _days = widget.item?.days ?? CarePlanItem.everyDay;
+  late bool _active = widget.item?.active ?? true;
+  bool _saving = false;
+  String? _error;
+
+  bool get _editing => widget.item != null;
+  String get _petId => widget.pet.id;
+
+  @override
+  void initState() {
+    super.initState();
+    _kind = widget.item?.kind ?? SpeciesSettings.of(widget.pet.species).routineKinds.first;
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickTime() async {
+    final picked = await showTimePicker(context: context, initialTime: _time, helpText: 'Time of the routine');
+    if (picked != null && mounted) setState(() => _time = picked);
+  }
+
+  Future<void> _save() async {
+    if (!_form.currentState!.validate()) return;
+    if (_days.isEmpty) {
+      setState(() => _error = 'Choose at least one day.');
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    final existing = widget.item;
+    try {
+      final saved = await ref
+          .read(carePlanProvider(_petId).notifier)
+          .saveRoutine(
+            CarePlanItem(
+              id: existing?.id ?? '',
+              petId: _petId,
+              kind: _kind,
+              title: _title.text.trim(),
+              time: _time,
+              days: _days,
+              startsOn: existing?.startsOn,
+              endsOn: existing?.endsOn,
+              active: _active,
+            ),
+          );
+      if (mounted) Navigator.of(context).pop(saved);
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = healthErrorMessage(error);
+        });
+      }
+    }
+  }
+
+  Future<void> _delete() async {
+    final item = widget.item!;
+    final confirmed = await confirmDelete(
+      context,
+      title: 'Delete this routine?',
+      message: '"${item.title}" leaves the Schedule. What was already ticked stays in the log.',
+    );
+    if (!confirmed || !mounted) return;
+    setState(() => _saving = true);
+    try {
+      await ref.read(carePlanProvider(_petId).notifier).deleteRoutine(item.id);
+      if (mounted) Navigator.of(context).pop();
+    } catch (error) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = healthErrorMessage(error);
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final offered = SpeciesSettings.of(widget.pet.species).routineKinds;
+    final kinds = [...offered, if (!offered.contains(_kind)) _kind];
+
+    return HealthPage(
+      petId: _petId,
+      title: _editing ? 'Edit routine' : 'New routine',
+      actions: [
+        if (_editing)
+          CoralHeaderAction(
+            icon: Icons.delete_outline_rounded,
+            tooltip: 'Delete routine',
+            onPressed: _saving ? null : _delete,
+          ),
+      ],
+      child: Form(
+        key: _form,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const FormLabel('What kind of routine?'),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                for (final kind in kinds)
+                  ChoiceChip(
+                    key: ValueKey('routine-kind-${kind.name}'),
+                    avatar: Icon(careKindIcon(kind), size: 18, color: AppColors.ink),
+                    label: Text(kind.label),
+                    selected: kind == _kind,
+                    showCheckmark: false,
+                    onSelected: (_) => setState(() {
+                      // The title follows the kind until the owner types one.
+                      if (_title.text.trim().isEmpty || _title.text.trim() == _kind.label) _title.text = kind.label;
+                      _kind = kind;
+                    }),
+                  ),
+              ],
+            ),
+            const FormLabel('Details'),
+            TextFormField(
+              key: const Key('routine-title'),
+              controller: _title,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: const InputDecoration(labelText: 'Title', hintText: 'Breakfast, evening walk...'),
+              validator: (value) {
+                final v = value?.trim() ?? '';
+                if (v.isEmpty) return 'Give the routine a title.';
+                if (v.length > 80) return 'Keep the title under 80 characters.';
+                return null;
+              },
+            ),
+            const SizedBox(height: 10),
+            PickerTile(
+              key: const Key('routine-time'),
+              icon: Icons.schedule_rounded,
+              label: 'Time',
+              value: formatTimeOfDay(_time),
+              onTap: _pickTime,
+            ),
+            const FormLabel('Days'),
+            DaysPicker(days: _days, onChanged: (days) => setState(() => _days = days)),
+            const SizedBox(height: 8),
+            SwitchListTile(
+              key: const Key('routine-active'),
+              value: _active,
+              onChanged: (value) => setState(() => _active = value),
+              contentPadding: EdgeInsets.zero,
+              title: Text('Show it in the Schedule', style: AppText.body.copyWith(color: AppColors.ink)),
+              subtitle: Text(
+                _active ? 'On' : 'Paused: kept here, but not due',
+                style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+              ),
+            ),
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+            ],
+            const SizedBox(height: 22),
+            PrimaryButton(label: 'Save routine', loading: _saving, onPressed: _save),
+          ],
+        ),
+      ),
+    );
+  }
+}

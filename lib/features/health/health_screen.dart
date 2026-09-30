@@ -13,6 +13,9 @@ import 'records/record_detail_screen.dart';
 import 'records/record_form_screen.dart';
 import 'sections/history_section.dart';
 import 'sections/overview_section.dart';
+import 'sections/schedule_section.dart';
+import 'schedule/medicine_form_screen.dart';
+import 'schedule/record_dose_sheet.dart';
 import 'share/share_actions.dart';
 import 'state/health_keeper.dart';
 import 'state/health_providers.dart';
@@ -93,11 +96,15 @@ class HealthScreen extends ConsumerWidget {
           onShare: () => shareHealthSummary(context, pet),
           onAddDocument: () => openRecordForm(context, pet, kind: RecordKind.document),
           onAddAppointment: () => openRecordForm(context, pet, kind: RecordKind.checkup, planned: true),
+          onAddMedicine: () => openMedicineForm(context, pet),
+          onRecordDose: (entry) => showRecordDoseSheet(context, pet, entry: entry),
           onOpenRecord: (record) => openRecordDetail(context, pet, record),
+          onOpenMedicine: (medication) => openMedicineForm(context, pet, medication: medication),
         ),
       ),
+      HealthSection.schedule => ScheduleSection(pet: pet, data: data),
       HealthSection.history => HistorySection(pet: pet, data: data),
-      // The other two sections arrive with the next milestones.
+      // The last section arrives with the next milestone.
       _ => Padding(
         padding: const EdgeInsets.symmetric(vertical: 48),
         child: Text('${section.label} is on its way.', textAlign: TextAlign.center, style: AppText.body),

@@ -199,6 +199,10 @@ Future<void> openHealthTab(WidgetTester tester) async {
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
+  // A text field that was just typed in scrolls itself back into view
+  // once; the second pass wins.
+  await tester.ensureVisible(finder);
+  await tester.pump();
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }
