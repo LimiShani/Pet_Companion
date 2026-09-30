@@ -9,13 +9,15 @@ import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_selector.dart';
 import 'data/health_models.dart';
 import 'emergency/emergency_button.dart';
+import 'insights/quick_log_sheet.dart';
 import 'records/record_detail_screen.dart';
 import 'records/record_form_screen.dart';
-import 'sections/history_section.dart';
-import 'sections/overview_section.dart';
-import 'sections/schedule_section.dart';
 import 'schedule/medicine_form_screen.dart';
 import 'schedule/record_dose_sheet.dart';
+import 'sections/history_section.dart';
+import 'sections/insights_section.dart';
+import 'sections/overview_section.dart';
+import 'sections/schedule_section.dart';
 import 'share/share_actions.dart';
 import 'state/health_keeper.dart';
 import 'state/health_providers.dart';
@@ -39,11 +41,22 @@ class HealthScreen extends ConsumerWidget {
     final section = ref.watch(healthSectionProvider);
     final data = ref.watch(petHealthDataProvider(pet.id));
     final value = data.value;
+    // On the Overview the Quick log is the first quick action instead.
+    final quickLogButton = value != null && section != HealthSection.overview;
 
     return HealthKeeper(
       petId: pet.id,
       keep: HealthKeep.everything,
       child: Scaffold(
+        floatingActionButton: quickLogButton
+            ? FloatingActionButton.extended(
+                key: const Key('quick-log-button'),
+                heroTag: null,
+                onPressed: () => showQuickLog(context, pet),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Quick log'),
+              )
+            : null,
         body: Column(
           children: [
             CoralHeader(
@@ -75,8 +88,9 @@ class HealthScreen extends ConsumerWidget {
                     )
                   : SingleChildScrollView(
                       key: PageStorageKey('health-${pet.id}-${section.name}'),
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 24),
-                      child: _section(context, ref, pet, section, value),
+                      // Room for the Quick log button under the last item.
+                      padding: EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, quickLogButton ? 96 : 24),
+                      child: _section(context, pet, section, value),
                     ),
             ),
           ],
@@ -85,13 +99,14 @@ class HealthScreen extends ConsumerWidget {
     );
   }
 
-  Widget _section(BuildContext context, WidgetRef ref, Pet pet, HealthSection section, PetHealthData data) {
+  Widget _section(BuildContext context, Pet pet, HealthSection section, PetHealthData data) {
     return switch (section) {
       HealthSection.overview => OverviewSection(
         pet: pet,
         data: data,
         reminder: petReminderSlot(pet),
         actions: OverviewActions(
+          onQuickLog: () => showQuickLog(context, pet),
           onAddRecord: () => openRecordForm(context, pet),
           onShare: () => shareHealthSummary(context, pet),
           onAddDocument: () => openRecordForm(context, pet, kind: RecordKind.document),
@@ -104,11 +119,7 @@ class HealthScreen extends ConsumerWidget {
       ),
       HealthSection.schedule => ScheduleSection(pet: pet, data: data),
       HealthSection.history => HistorySection(pet: pet, data: data),
-      // The last section arrives with the next milestone.
-      _ => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 48),
-        child: Text('${section.label} is on its way.', textAlign: TextAlign.center, style: AppText.body),
-      ),
+      HealthSection.insights => InsightsSection(pet: pet, data: data),
     };
   }
 }

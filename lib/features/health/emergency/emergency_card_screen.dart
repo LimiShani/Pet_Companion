@@ -8,6 +8,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../share/share_actions.dart';
 import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
@@ -33,13 +34,15 @@ class EmergencyCardScreen extends ConsumerWidget {
 
   final Pet pet;
 
-  /// Shares the summary (wired by the Insights milestone).
+  /// Replaces what "Share summary" does. By default it hands the pet's
+  /// health summary, as a PDF, to the phone's share sheet.
   final void Function(BuildContext context, HealthSummary summary)? onShare;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(healthSummaryProvider(pet.id));
     final contacts = ref.watch(emergencyContactsProvider(pet.id));
+    final onShare = this.onShare ?? (BuildContext context, HealthSummary _) => shareHealthSummary(context, pet);
 
     return HealthKeeper(
       petId: pet.id,
@@ -51,11 +54,11 @@ class EmergencyCardScreen extends ConsumerWidget {
               title: 'Emergency card',
               showBack: true,
               actions: [
-                if (onShare != null && summary.hasValue)
+                if (summary.hasValue)
                   CoralHeaderAction(
                     icon: Icons.ios_share_rounded,
                     tooltip: 'Share summary',
-                    onPressed: () => onShare!(context, summary.value!),
+                    onPressed: () => onShare(context, summary.value!),
                   ),
               ],
             ),
@@ -91,7 +94,7 @@ class _Card extends StatelessWidget {
   final Pet pet;
   final HealthSummary summary;
   final EmergencyContacts? contacts;
-  final void Function(BuildContext context, HealthSummary summary)? onShare;
+  final void Function(BuildContext context, HealthSummary summary) onShare;
 
   @override
   Widget build(BuildContext context) {
@@ -187,16 +190,14 @@ class _Card extends StatelessWidget {
           ),
         const SizedBox(height: 12),
         if (contacts != null) EmergencyContactList(pet: pet, contacts: contacts!) else const HealthLoading(),
-        if (onShare != null) ...[
-          OutlinedButton.icon(
-            key: const Key('share-summary'),
-            onPressed: () => onShare!(context, summary),
-            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-            icon: const Icon(Icons.ios_share_rounded),
-            label: const Text('Share summary'),
-          ),
-          const SizedBox(height: 4),
-        ],
+        OutlinedButton.icon(
+          key: const Key('share-summary'),
+          onPressed: () => onShare(context, summary),
+          style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+          icon: const Icon(Icons.ios_share_rounded),
+          label: const Text('Share summary'),
+        ),
+        const SizedBox(height: 4),
         Wrap(
           alignment: WrapAlignment.center,
           children: [
