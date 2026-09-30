@@ -5,8 +5,12 @@ import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/data/sample_deals.dart';
 import 'package:pet_companion/features/store/data/store_repository.dart';
 import 'package:pet_companion/features/store/store_format.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 
 final _now = DateTime(2026, 9, 30, 12);
+
+/// Money and times as the English screens show them.
+final _format = StoreFormat.forLocale(englishLocale);
 
 Deal _deal(
   String id, {
@@ -148,13 +152,13 @@ void main() {
 
   group('StoreFormat', () {
     test('money drops the decimals of a whole amount', () {
-      expect(StoreFormat.money(179, 'ILS'), '₪179');
-      expect(StoreFormat.money(39.9, 'ILS'), '₪39.90');
-      expect(StoreFormat.money(1299, 'USD'), r'$1,299');
+      expect(_format.money(179, 'ILS'), '₪179');
+      expect(_format.money(39.9, 'ILS'), '₪39.90');
+      expect(_format.money(1299, 'USD'), r'$1,299');
     });
 
     test('time ago', () {
-      String ago(Duration d) => StoreFormat.timeAgo(_now.subtract(d), _now);
+      String ago(Duration d) => _format.timeAgo(_now.subtract(d), _now);
       expect(ago(const Duration(seconds: 20)), 'Just now');
       expect(ago(const Duration(minutes: 30)), '30 min ago');
       expect(ago(const Duration(hours: 1)), '1 hour ago');
@@ -165,11 +169,11 @@ void main() {
     });
 
     test('end of a deal', () {
-      expect(StoreFormat.ends(null, _now), 'No end date');
-      expect(StoreFormat.ends(_now.add(const Duration(days: 12)), _now), '12.10.26 · 12 days left');
-      expect(StoreFormat.ends(_now.add(const Duration(days: 1)), _now), '01.10.26 · 1 day left');
-      expect(StoreFormat.ends(_now.add(const Duration(hours: 2)), _now), '30.09.26 · ends today');
-      expect(StoreFormat.ends(_now.subtract(const Duration(days: 2)), _now), 'Ended 28.09.26');
+      expect(_format.ends(null, _now), 'No end date');
+      expect(_format.ends(_now.add(const Duration(days: 12)), _now), '12.10.26 · 12 days left');
+      expect(_format.ends(_now.add(const Duration(days: 1)), _now), '01.10.26 · 1 day left');
+      expect(_format.ends(_now.add(const Duration(hours: 2)), _now), '30.09.26 · ends today');
+      expect(_format.ends(_now.subtract(const Duration(days: 2)), _now), 'Ended 28.09.26');
     });
   });
 

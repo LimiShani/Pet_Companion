@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../data/deal.dart';
@@ -23,10 +24,6 @@ final storeRepositoryProvider = Provider<StoreRepository>(
       ? SupabaseStoreRepository(sb.Supabase.instance.client)
       : FakeStoreRepository(now: ref.watch(storeClockProvider)),
 );
-
-/// User-facing text for a Store failure.
-String storeErrorMessage(Object error) =>
-    error is StoreException ? error.message : StoreStrings.somethingWentWrong;
 
 // Riverpod retries failed providers on its own by default; here a failure
 // is shown with a "Try again" button instead.
@@ -56,7 +53,7 @@ class DealsController extends AsyncNotifier<List<Deal>> {
   /// when it cannot be stored.
   Future<Deal> share(DealDraft draft) async {
     final user = ref.read(authControllerProvider).value;
-    if (user == null) throw const StoreException(StoreStrings.signInToShare);
+    if (user == null) throw const StoreException(StoreFailure.signInToShare);
     final deal = await ref
         .read(storeRepositoryProvider)
         .shareDeal(userId: user.id, userName: user.displayName, draft: draft);
@@ -68,7 +65,7 @@ class DealsController extends AsyncNotifier<List<Deal>> {
   /// [StoreException] when it cannot be removed.
   Future<void> delete(String dealId) async {
     final user = ref.read(authControllerProvider).value;
-    if (user == null) throw const StoreException(StoreStrings.signInToDelete);
+    if (user == null) throw const StoreException(StoreFailure.signInToDelete);
     await ref.read(storeRepositoryProvider).deleteDeal(userId: user.id, dealId: dealId);
     if (!ref.mounted) return;
     state = AsyncData([
@@ -139,7 +136,7 @@ class ReportedDealsController extends AsyncNotifier<Set<String>> {
   /// Records a report. Throws a [StoreException] when it cannot be stored.
   Future<void> report(String dealId) async {
     final userId = ref.read(authControllerProvider).value?.id;
-    if (userId == null) throw const StoreException(StoreStrings.signInToReport);
+    if (userId == null) throw const StoreException(StoreFailure.signInToReport);
     await ref.read(storeRepositoryProvider).reportExpired(userId: userId, dealId: dealId);
     if (ref.mounted) state = AsyncData({...?state.value, dealId});
   }
@@ -177,12 +174,16 @@ final storePetSpeciesProvider = Provider<PetSpecies>(
 );
 
 /// The catalogue as the Store grid shows it: what suits the selected pet
-/// (or every animal), filtered, sorted, expired last.
+/// (or every animal), filtered, sorted, expired last. The search matches a
+/// category by its name in the language on screen.
 final visibleDealsProvider = Provider<AsyncValue<List<Deal>>>((ref) {
   final filter = ref.watch(storeFilterProvider);
   final now = ref.watch(storeClockProvider)();
   final pet = ref.watch(storePetSpeciesProvider);
-  return ref.watch(dealsProvider).whenData((deals) => visibleDeals(deals, filter, now, pet: pet));
+  final words = ref.watch(storeL10nProvider);
+  return ref
+      .watch(dealsProvider)
+      .whenData((deals) => visibleDeals(deals, filter, now, pet: pet, categoryLabel: words.category));
 });
 
 /// How many deals match the search and the category when every animal is
@@ -192,7 +193,8 @@ final allAnimalsDealCountProvider = Provider<int>((ref) {
   final filter = ref.watch(storeFilterProvider).withAllAnimals(true);
   final now = ref.watch(storeClockProvider)();
   final deals = ref.watch(dealsProvider).value ?? const <Deal>[];
-  return visibleDeals(deals, filter, now).length;
+  final words = ref.watch(storeL10nProvider);
+  return visibleDeals(deals, filter, now, categoryLabel: words.category).length;
 });
 
 /// The signed-in user's saved deals, newest first, expired last.

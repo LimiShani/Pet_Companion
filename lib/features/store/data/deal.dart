@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../models/pet.dart';
-import '../store_strings.dart';
 
 /// The currency new deals are shared in, and the one the sample data uses.
 /// Each deal stores its own code, so changing this only affects new deals.
@@ -11,7 +10,8 @@ const String kStoreDefaultCurrency = 'ILS';
 /// A price checked longer ago than this gets a "may have changed" note.
 const Duration kPriceCheckStaleAfter = Duration(days: 30);
 
-/// What a deal is about, in the order the chips are shown.
+/// What a deal is about, in the order the chips are shown. Its name in
+/// words comes from the strings files (`StoreL10n.category`).
 enum DealCategory {
   food('food'),
   treats('treats'),
@@ -26,9 +26,6 @@ enum DealCategory {
 
   /// The value stored in the `category` column.
   final String code;
-
-  /// Shown on chips and in the detail page.
-  String get label => StoreStrings.category(this);
 
   static DealCategory fromCode(String? code) => DealCategory.values.firstWhere(
         (c) => c.code == code,
@@ -56,9 +53,6 @@ enum PackageUnit {
 
   /// How many base units (kg, litre, one item) one of this unit is.
   final double toBase;
-
-  /// As picked in the share form.
-  String get label => StoreStrings.unit(this);
 
   static PackageUnit? fromCode(String? code) {
     for (final unit in values) {
@@ -328,12 +322,4 @@ class DealDraft {
 
 /// How the catalogue is ordered, in the order the sort menu shows. Expired
 /// deals always come last.
-enum DealSort {
-  biggestDiscount,
-  lowestPrice,
-  lowestUnitPrice,
-  newest,
-  endingSoon;
-
-  String get label => StoreStrings.sort(this);
-}
+enum DealSort { biggestDiscount, lowestPrice, lowestUnitPrice, newest, endingSoon }

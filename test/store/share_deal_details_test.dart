@@ -5,12 +5,16 @@ import 'package:pet_companion/features/store/data/deal.dart';
 import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/deal_detail_screen.dart';
 import 'package:pet_companion/features/store/share_deal_screen.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 
 import 'store_test_helpers.dart';
 
 /// The parts of the "Share a deal" form added in phase 1: the animals, the
 /// package size and the delivery cost.
+/// The form's checks, answering in English.
+final _valid = DealValidators(lookupStoreL10n(englishLocale));
+
 void main() {
   setUpAll(() {
     GoogleFonts.config.allowRuntimeFetching = false;
@@ -245,18 +249,18 @@ void main() {
     expect(DealValidators.parseAmount('0.0354'), 0.035);
     expect(DealValidators.parseAmount('x'), isNull);
 
-    expect(DealValidators.packageAmount(''), isNull);
-    expect(DealValidators.packageAmount('  '), isNull);
-    expect(DealValidators.packageAmount('12'), isNull);
-    expect(DealValidators.packageAmount('-1'), 'Enter a size above zero, like 2.5.');
+    expect(_valid.packageAmount(''), isNull);
+    expect(_valid.packageAmount('  '), isNull);
+    expect(_valid.packageAmount('12'), isNull);
+    expect(_valid.packageAmount('-1'), 'Enter a size above zero, like 2.5.');
 
-    expect(DealValidators.packageUnit(null, ''), isNull);
-    expect(DealValidators.packageUnit(PackageUnit.kg, ''), isNull);
-    expect(DealValidators.packageUnit(PackageUnit.kg, '3'), isNull);
-    expect(DealValidators.packageUnit(null, '3'), 'Choose a unit: kg, g, litre, ml or units.');
+    expect(_valid.packageUnit(null, ''), isNull);
+    expect(_valid.packageUnit(PackageUnit.kg, ''), isNull);
+    expect(_valid.packageUnit(PackageUnit.kg, '3'), isNull);
+    expect(_valid.packageUnit(null, '3'), 'Choose a unit: kg, g, litre, ml or units.');
 
-    expect(DealValidators.deliveryCost(''), 'Enter the delivery cost.');
-    expect(DealValidators.deliveryCost('-3'), 'Enter a number above zero, or pick Free.');
-    expect(DealValidators.deliveryCost('19,90'), isNull);
+    expect(_valid.deliveryCost(''), 'Enter the delivery cost.');
+    expect(_valid.deliveryCost('-3'), 'Enter a number above zero, or pick Free.');
+    expect(_valid.deliveryCost('19,90'), isNull);
   });
 }

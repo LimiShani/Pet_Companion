@@ -1,13 +1,44 @@
 import 'deal.dart';
 
-/// Thrown by a [StoreRepository] with a message safe to show to the user.
-class StoreException implements Exception {
-  const StoreException(this.message);
+/// Why a Store action failed. Repositories report the reason; the screen
+/// puts it into words in the app's language (see `storeErrorText`).
+enum StoreFailure {
+  /// The server could not be reached, or answered with something unexpected.
+  network,
+  signInToShare,
+  signInToDelete,
+  signInToReport,
+  needsTitleAndSeller,
+  priceNotBelowOriginal,
+  linkNotHttps,
+  packageNotValid,
+  deliveryNotValid,
+  onlyDeleteOwn,
 
-  final String message;
+  /// Refused by the database's access rules.
+  notAllowed,
+  detailsNotValid,
+  dealNoLongerAvailable,
+  sessionEnded,
+
+  /// The database is older than the app (a migration has not been run).
+  storeNeedsUpdate,
+
+  /// Anything the app has no words of its own for.
+  unknown,
+}
+
+/// Thrown by a [StoreRepository] and by the Store's controllers. [failure]
+/// says what went wrong; the words shown to the user come from the strings
+/// files. [detail] is for logs only (the backend's own explanation).
+class StoreException implements Exception {
+  const StoreException(this.failure, [this.detail]);
+
+  final StoreFailure failure;
+  final String? detail;
 
   @override
-  String toString() => message;
+  String toString() => detail == null ? 'StoreException(${failure.name})' : 'StoreException(${failure.name}: $detail)';
 }
 
 /// The deals catalogue and what a member can do with it. The screens talk

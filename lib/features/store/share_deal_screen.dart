@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
@@ -14,8 +15,16 @@ import 'state/store_providers.dart';
 import 'store_format.dart';
 import 'store_strings.dart';
 
-/// Checks for the "Share a deal" form. Each returns `null` when valid.
-abstract final class DealValidators {
+/// Checks for the "Share a deal" form, answering in the language of the
+/// strings they are given: `DealValidators(context.storeL10n).title`. Each
+/// returns `null` when the value is valid.
+class DealValidators {
+  const DealValidators(this._l10n);
+
+  final StoreL10n _l10n;
+
+  static const minTitleLength = 3;
+
   /// A typed price, or `null` when it is not a number. Accepts a comma as
   /// the decimal separator and keeps two decimals.
   static double? parsePrice(String? text) => _parse(text, decimals: 2);
@@ -31,62 +40,62 @@ abstract final class DealValidators {
     return (value * scale).round() / scale;
   }
 
-  static String? title(String? value) {
+  String? title(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return StoreStrings.titleRequired;
-    if (v.length < 3) return StoreStrings.titleTooShort;
+    if (v.isEmpty) return _l10n.validTitleRequired;
+    if (v.length < minTitleLength) return _l10n.validTitleTooShort(minTitleLength);
     return null;
   }
 
-  static String? seller(String? value) => (value?.trim() ?? '').isEmpty ? StoreStrings.sellerRequired : null;
+  String? seller(String? value) => (value?.trim() ?? '').isEmpty ? _l10n.validSellerRequired : null;
 
-  static String? category(DealCategory? value) => value == null ? StoreStrings.categoryRequired : null;
+  String? category(DealCategory? value) => value == null ? _l10n.validCategoryRequired : null;
 
   /// The old price: a number above zero.
-  static String? originalPrice(String? value) {
-    if ((value?.trim() ?? '').isEmpty) return StoreStrings.originalPriceRequired;
+  String? originalPrice(String? value) {
+    if ((value?.trim() ?? '').isEmpty) return _l10n.validOriginalPriceRequired;
     final price = parsePrice(value);
-    if (price == null) return StoreStrings.notANumber;
-    if (price <= 0) return StoreStrings.priceAboveZero;
+    if (price == null) return _l10n.validNotANumber;
+    if (price <= 0) return _l10n.validPriceAboveZero;
     return null;
   }
 
   /// The deal price: a number above zero and below the old price typed in
   /// [originalText].
-  static String? price(String? value, String originalText) {
-    if ((value?.trim() ?? '').isEmpty) return StoreStrings.priceRequired;
+  String? price(String? value, String originalText) {
+    if ((value?.trim() ?? '').isEmpty) return _l10n.validPriceRequired;
     final price = parsePrice(value);
-    if (price == null) return StoreStrings.notANumber;
-    if (price <= 0) return StoreStrings.priceAboveZero;
+    if (price == null) return _l10n.validNotANumber;
+    if (price <= 0) return _l10n.validPriceAboveZero;
     final original = parsePrice(originalText);
-    if (original != null && price >= original) return StoreStrings.priceBelowOriginal;
+    if (original != null && price >= original) return _l10n.validPriceBelowOriginal;
     return null;
   }
 
-  static String? link(String? value) {
+  String? link(String? value) {
     final v = value?.trim() ?? '';
-    if (v.isEmpty) return StoreStrings.linkRequired;
+    if (v.isEmpty) return _l10n.validLinkRequired;
     final uri = safeDealLink(v);
-    if (uri == null || !uri.host.contains('.')) return StoreStrings.linkNotHttps;
+    if (uri == null || !uri.host.contains('.')) return _l10n.validLinkNotHttps(httpsPrefix);
     return null;
   }
 
   /// The package amount is optional; when typed it is a number above zero.
-  static String? packageAmount(String? value) {
+  String? packageAmount(String? value) {
     if ((value?.trim() ?? '').isEmpty) return null;
     final amount = parseAmount(value);
-    return amount == null || amount <= 0 ? StoreStrings.packageAmountInvalid : null;
+    return amount == null || amount <= 0 ? _l10n.validPackageAmount : null;
   }
 
   /// A typed package amount needs a unit. A unit on its own is ignored.
-  static String? packageUnit(PackageUnit? unit, String amountText) =>
-      unit == null && amountText.trim().isNotEmpty ? StoreStrings.packageUnitRequired : null;
+  String? packageUnit(PackageUnit? unit, String amountText) =>
+      unit == null && amountText.trim().isNotEmpty ? _l10n.validPackageUnit : null;
 
   /// What a paid delivery costs: a number above zero.
-  static String? deliveryCost(String? value) {
-    if ((value?.trim() ?? '').isEmpty) return StoreStrings.deliveryCostRequired;
+  String? deliveryCost(String? value) {
+    if ((value?.trim() ?? '').isEmpty) return _l10n.validDeliveryCostRequired;
     final cost = parsePrice(value);
-    return cost == null || cost <= 0 ? StoreStrings.deliveryCostInvalid : null;
+    return cost == null || cost <= 0 ? _l10n.validDeliveryCostInvalid : null;
   }
 }
 
@@ -117,7 +126,9 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   _Delivery _delivery = _Delivery.notSure;
   DateTime? _endDate;
   bool _sending = false;
-  String? _error;
+
+  /// Why the last attempt to share failed; shown above the button.
+  Object? _error;
 
   /// The animals the deal is for; empty means every pet. Starts on the kind
   /// of the pet being shopped for.
@@ -126,8 +137,6 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   // Quiet until the first attempt to send, then problems update as they
   // are fixed.
   AutovalidateMode _validation = AutovalidateMode.disabled;
-
-  static final _symbol = StoreFormat.currencySymbol(kStoreDefaultCurrency);
 
   Set<PetSpecies> _initialSpecies() {
     final pet = ref.read(selectedPetProvider);
@@ -151,7 +160,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
       firstDate: today,
       lastDate: today.add(const Duration(days: 365)),
       currentDate: today,
-      helpText: StoreStrings.lastDayOfDeal,
+      helpText: context.storeL10n.lastDayOfDeal,
     );
     if (picked != null && mounted) setState(() => _endDate = picked);
   }
@@ -213,7 +222,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
       if (mounted) {
         setState(() {
           _sending = false;
-          _error = storeErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -221,13 +230,18 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
+    final format = StoreFormat.of(context);
+    final valid = DealValidators(l10n);
+    final symbol = format.currencySymbol(kStoreDefaultCurrency);
     final today = ref.watch(storeClockProvider)();
+    final error = _error;
 
     return Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CoralHeader(title: StoreStrings.shareADeal, showBack: true),
+          CoralHeader(title: l10n.shareADeal, showBack: true),
           Expanded(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -240,46 +254,46 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(StoreStrings.shareIntro, style: AppText.body.copyWith(color: AppColors.brown)),
+                      Text(l10n.shareIntro, style: AppText.body.copyWith(color: AppColors.brown)),
                       const SizedBox(height: 14),
                       _Labeled(
-                        label: StoreStrings.titleLabel,
+                        label: l10n.fieldTitle,
                         child: TextFormField(
                           key: const Key('share-title'),
                           controller: _title,
-                          validator: DealValidators.title,
+                          validator: valid.title,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.sentences,
                           inputFormatters: [LengthLimitingTextInputFormatter(120)],
-                          decoration: const InputDecoration(hintText: StoreStrings.titleHint, errorMaxLines: 3),
+                          decoration: InputDecoration(hintText: l10n.fieldTitleHint, errorMaxLines: 3),
                         ),
                       ),
                       _Labeled(
-                        label: StoreStrings.categoryLabel,
+                        label: l10n.fieldCategory,
                         child: DropdownButtonFormField<DealCategory>(
                           key: const Key('share-category'),
                           initialValue: _category,
                           isExpanded: true,
-                          validator: DealValidators.category,
+                          validator: valid.category,
                           onChanged: (value) => setState(() => _category = value),
                           icon: const Icon(Icons.expand_more_rounded, color: AppColors.brown),
                           dropdownColor: AppColors.white,
                           borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
                           style: _fieldStyle,
                           decoration: const InputDecoration(errorMaxLines: 3),
-                          hint: const _DropdownHint(StoreStrings.categoryHint),
+                          hint: _DropdownHint(l10n.fieldCategoryHint),
                           items: [
                             for (final category in DealCategory.values)
                               DropdownMenuItem(
                                 value: category,
-                                child: Text(category.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                child: Text(l10n.category(category), maxLines: 1, overflow: TextOverflow.ellipsis),
                               ),
                           ],
                         ),
                       ),
                       _Labeled(
-                        label: StoreStrings.animalsLabel,
-                        help: StoreStrings.animalsHelp,
+                        label: l10n.fieldAnimals,
+                        help: l10n.fieldAnimalsHelp,
                         child: _AnimalChips(selected: _species, onToggle: _toggleSpecies),
                       ),
                       Row(
@@ -287,11 +301,11 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                         children: [
                           Expanded(
                             child: _Labeled(
-                              label: StoreStrings.priceNowLabel(_symbol),
+                              label: l10n.fieldPriceNow(symbol),
                               child: TextFormField(
                                 key: const Key('share-price'),
                                 controller: _price,
-                                validator: (value) => DealValidators.price(value, _original.text),
+                                validator: (value) => valid.price(value, _original.text),
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 textInputAction: TextInputAction.next,
                                 decoration: const InputDecoration(hintText: '0', errorMaxLines: 4),
@@ -301,11 +315,11 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: _Labeled(
-                              label: StoreStrings.priceBeforeLabel(_symbol),
+                              label: l10n.fieldPriceBefore(symbol),
                               child: TextFormField(
                                 key: const Key('share-original-price'),
                                 controller: _original,
-                                validator: DealValidators.originalPrice,
+                                validator: valid.originalPrice,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 textInputAction: TextInputAction.next,
                                 decoration: const InputDecoration(hintText: '0', errorMaxLines: 4),
@@ -320,12 +334,12 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           final now = DealValidators.parsePrice(_price.text);
                           final before = DealValidators.parsePrice(_original.text);
                           if (now == null || before == null || now <= 0 || now >= before) return null;
-                          return StoreStrings.percentOff(((1 - now / before) * 100).round());
+                          return l10n.hintPercentOff(((1 - now / before) * 100).round());
                         },
                       ),
                       _Labeled(
-                        label: StoreStrings.packageSizeLabel,
-                        help: StoreStrings.packageHelp,
+                        label: l10n.fieldPackageSize,
+                        help: l10n.fieldPackageHelp,
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -333,17 +347,14 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                               child: TextFormField(
                                 key: const Key('share-package-amount'),
                                 controller: _packageAmount,
-                                validator: DealValidators.packageAmount,
+                                validator: valid.packageAmount,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 textInputAction: TextInputAction.next,
                                 // The unit's "choose a unit" problem depends on this field.
                                 onChanged: (_) {
                                   if (_validation != AutovalidateMode.disabled) _form.currentState?.validate();
                                 },
-                                decoration: const InputDecoration(
-                                  hintText: StoreStrings.packageAmountHint,
-                                  errorMaxLines: 4,
-                                ),
+                                decoration: InputDecoration(hintText: l10n.fieldPackageAmountHint, errorMaxLines: 4),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -352,19 +363,19 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 key: const Key('share-package-unit'),
                                 initialValue: _packageUnit,
                                 isExpanded: true,
-                                validator: (unit) => DealValidators.packageUnit(unit, _packageAmount.text),
+                                validator: (unit) => valid.packageUnit(unit, _packageAmount.text),
                                 onChanged: (value) => setState(() => _packageUnit = value),
                                 icon: const Icon(Icons.expand_more_rounded, color: AppColors.brown),
                                 dropdownColor: AppColors.white,
                                 borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
                                 style: _fieldStyle,
                                 decoration: const InputDecoration(errorMaxLines: 4),
-                                hint: const _DropdownHint(StoreStrings.packageUnitHint),
+                                hint: _DropdownHint(l10n.fieldPackageUnitHint),
                                 items: [
                                   for (final unit in PackageUnit.values)
                                     DropdownMenuItem(
                                       value: unit,
-                                      child: Text(unit.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      child: Text(l10n.unit(unit), maxLines: 1, overflow: TextOverflow.ellipsis),
                                     ),
                                 ],
                               ),
@@ -380,11 +391,11 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           final size = _package;
                           if (price == null || price <= 0 || size == null) return null;
                           final unitPrice = UnitPrice(price / size.inBaseUnits, size.unit.kind);
-                          return StoreStrings.thatIsUnitPrice(StoreFormat.unitPrice(unitPrice, kStoreDefaultCurrency));
+                          return l10n.hintUnitPrice(format.unitPrice(unitPrice, kStoreDefaultCurrency));
                         },
                       ),
                       _Labeled(
-                        label: StoreStrings.deliveryOptionalLabel,
+                        label: l10n.fieldDelivery,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
@@ -392,10 +403,10 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                               spacing: 8,
                               runSpacing: 4,
                               children: [
-                                for (final (option, label) in const [
-                                  (_Delivery.notSure, StoreStrings.deliveryNotSure),
-                                  (_Delivery.free, StoreStrings.deliveryFree),
-                                  (_Delivery.paid, StoreStrings.deliveryPaid),
+                                for (final (option, label) in [
+                                  (_Delivery.notSure, l10n.deliveryNotSure),
+                                  (_Delivery.free, l10n.deliveryFree),
+                                  (_Delivery.paid, l10n.deliveryPaid),
                                 ])
                                   ChoiceChip(
                                     key: Key('share-delivery-${option.name}'),
@@ -411,13 +422,10 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                               TextFormField(
                                 key: const Key('share-delivery-cost'),
                                 controller: _deliveryCost,
-                                validator: DealValidators.deliveryCost,
+                                validator: valid.deliveryCost,
                                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                                 textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                  hintText: StoreStrings.deliveryCostLabel(_symbol),
-                                  errorMaxLines: 3,
-                                ),
+                                decoration: InputDecoration(hintText: l10n.fieldDeliveryCost(symbol), errorMaxLines: 3),
                               ),
                             ],
                           ],
@@ -430,37 +438,42 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           final price = DealValidators.parsePrice(_price.text);
                           final delivery = _deliveryAmount;
                           if (price == null || price <= 0 || delivery == null || delivery < 0) return null;
-                          return StoreStrings.finalPriceHint(StoreFormat.money(price + delivery, kStoreDefaultCurrency));
+                          return l10n.hintFinalPrice(format.money(price + delivery, kStoreDefaultCurrency));
                         },
                       ),
                       _Labeled(
-                        label: StoreStrings.sellerLabel,
+                        label: l10n.sellerLabel,
                         child: TextFormField(
                           key: const Key('share-seller'),
                           controller: _seller,
-                          validator: DealValidators.seller,
+                          validator: valid.seller,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
                           inputFormatters: [LengthLimitingTextInputFormatter(80)],
-                          decoration: const InputDecoration(hintText: StoreStrings.sellerHint, errorMaxLines: 3),
+                          decoration: InputDecoration(hintText: l10n.fieldSellerHint, errorMaxLines: 3),
                         ),
                       ),
                       _Labeled(
-                        label: StoreStrings.linkLabel,
+                        label: l10n.fieldLink,
                         child: TextFormField(
                           key: const Key('share-link'),
                           controller: _link,
-                          validator: DealValidators.link,
+                          validator: valid.link,
                           keyboardType: TextInputType.url,
                           textInputAction: TextInputAction.next,
                           autocorrect: false,
-                          // A link reads left to right in every language.
+                          // A link reads left to right in every language,
+                          // and so does the hint that shows how it starts.
                           textDirection: TextDirection.ltr,
-                          decoration: const InputDecoration(hintText: 'https://', errorMaxLines: 3),
+                          decoration: const InputDecoration(
+                            hintText: httpsPrefix,
+                            hintTextDirection: TextDirection.ltr,
+                            errorMaxLines: 3,
+                          ),
                         ),
                       ),
                       _Labeled(
-                        label: StoreStrings.descriptionLabel,
+                        label: l10n.fieldDescription,
                         child: TextFormField(
                           key: const Key('share-description'),
                           controller: _description,
@@ -468,32 +481,32 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           maxLines: 6,
                           textCapitalization: TextCapitalization.sentences,
                           inputFormatters: [LengthLimitingTextInputFormatter(1000)],
-                          decoration: const InputDecoration(hintText: StoreStrings.descriptionHint),
+                          decoration: InputDecoration(hintText: l10n.fieldDescriptionHint),
                         ),
                       ),
                       _Labeled(
-                        label: StoreStrings.endDateLabel,
+                        label: l10n.fieldEndDate,
                         child: _EndDateField(
                           date: _endDate,
                           onPick: _pickEndDate,
                           onClear: () => setState(() => _endDate = null),
                         ),
                       ),
-                      if (_error != null) ...[
+                      if (error != null) ...[
                         Text(
-                          _error!,
+                          storeErrorText(context, error),
                           style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
                       ],
                       Text(
-                        StoreStrings.checkedTodayNote(StoreFormat.date(today)),
+                        l10n.checkedTodayNote(format.date(today)),
                         style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
-                      PrimaryButton(label: StoreStrings.shareDealButton, onPressed: _submit, loading: _sending),
+                      PrimaryButton(label: l10n.shareDealButton, onPressed: _submit, loading: _sending),
                     ],
                   ),
                 ),
@@ -569,20 +582,21 @@ class _AnimalChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
     return Wrap(
       spacing: 8,
       runSpacing: 4,
       children: [
         FilterChip(
           key: const Key('share-animals-all'),
-          label: const Text(StoreStrings.allPets),
+          label: Text(l10n.allPets),
           selected: selected.isEmpty,
           onSelected: (_) => onToggle(null),
         ),
         for (final kind in PetSpecies.values)
           FilterChip(
             key: Key('share-animals-${kind.name}'),
-            label: Text(StoreStrings.animals(kind)),
+            label: Text(l10n.animals(kind)),
             selected: selected.contains(kind),
             onSelected: (_) => onToggle(kind),
           ),
@@ -633,6 +647,7 @@ class _EndDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
     final picked = date;
     return Material(
       color: AppColors.white,
@@ -649,7 +664,7 @@ class _EndDateField extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    picked == null ? StoreStrings.addEndDate : StoreStrings.endsDate(StoreFormat.date(picked)),
+                    picked == null ? l10n.addEndDate : l10n.endsDate(StoreFormat.of(context).date(picked)),
                     style: AppText.body.copyWith(
                       fontSize: 16,
                       color: picked == null ? AppColors.brown : AppColors.ink,
@@ -665,7 +680,7 @@ class _EndDateField extends StatelessWidget {
                   )
                 else
                   IconButton(
-                    tooltip: StoreStrings.removeEndDate,
+                    tooltip: l10n.removeEndDate,
                     onPressed: onClear,
                     icon: const Icon(Icons.close_rounded, color: AppColors.brown),
                   ),

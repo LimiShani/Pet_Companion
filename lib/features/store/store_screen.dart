@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
@@ -42,14 +43,14 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   Future<void> _refresh() async {
     final ok = await ref.read(dealsProvider.notifier).refresh();
-    if (!ok && mounted) showStoreMessage(context, StoreStrings.couldNotRefresh);
+    if (!ok && mounted) showStoreMessage(context, context.storeL10n.couldNotRefresh);
   }
 
   Future<void> _shareDeal() async {
     final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
       MaterialPageRoute(fullscreenDialog: true, builder: (context) => const ShareDealScreen()),
     );
-    if (deal != null && mounted) showStoreMessage(context, StoreStrings.dealIsLive);
+    if (deal != null && mounted) showStoreMessage(context, context.storeL10n.dealIsLive);
   }
 
   void _clearFilters() {
@@ -59,6 +60,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
     final species = ref.watch(storePetSpeciesProvider);
@@ -82,17 +84,17 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _shareDeal,
         icon: const Icon(Icons.add_rounded),
-        label: const Text(StoreStrings.shareADeal),
+        label: Text(l10n.shareADeal),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CoralHeader(
-            title: StoreStrings.storeTitle,
+            title: l10n.tabTitle,
             actions: [
               CoralHeaderAction(
                 icon: Icons.favorite_border_rounded,
-                tooltip: StoreStrings.savedDealsTooltip,
+                tooltip: l10n.savedDeals,
                 onPressed: () => context.push(StoreRoutes.saved),
               ),
             ],
@@ -123,9 +125,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                       hasScrollBody: false,
                       child: EmptyState(
                         icon: Icons.cloud_off_rounded,
-                        title: StoreStrings.couldNotLoadDeals,
-                        message: storeErrorMessage(deals.error!),
-                        actionLabel: StoreStrings.tryAgain,
+                        title: l10n.couldNotLoadDeals,
+                        message: storeErrorText(context, deals.error!),
+                        actionLabel: context.l10n.commonTryAgain,
                         onAction: () => ref.read(dealsProvider.notifier).refresh(),
                       ),
                     )
@@ -136,8 +138,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     SliverToBoxAdapter(
                       child: _SortRow(
                         countText: filter.allAnimals
-                            ? StoreStrings.dealCount(shown.length)
-                            : StoreStrings.dealCountFor(shown.length, species),
+                            ? l10n.dealCount(shown.length)
+                            : l10n.dealsFor(shown.length, species),
                         sort: filter.sort,
                         onSort: filters.setSort,
                       ),
@@ -260,7 +262,7 @@ class _AllAnimalsPill extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  StoreStrings.allAnimals,
+                  context.storeL10n.allAnimals,
                   style: AppText.cardTitle.copyWith(color: selected ? AppColors.ink : AppColors.white),
                 ),
               ],
@@ -288,13 +290,13 @@ class _SearchField extends StatelessWidget {
         textInputAction: TextInputAction.search,
         style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
         decoration: InputDecoration(
-          hintText: StoreStrings.searchHint,
+          hintText: context.storeL10n.searchHint,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
           suffixIcon: controller.text.isEmpty
               ? null
               : IconButton(
-                  tooltip: StoreStrings.clearSearch,
+                  tooltip: context.storeL10n.clearSearch,
                   icon: const Icon(Icons.close_rounded, color: AppColors.brown),
                   onPressed: () {
                     controller.clear();
@@ -315,6 +317,8 @@ class _CategoryChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
+
     Widget chip(String label, DealCategory? category) {
       final on = selected == category;
       return Padding(
@@ -335,8 +339,8 @@ class _CategoryChips extends StatelessWidget {
       padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 12, AppSpacing.screen - 8, 0),
       child: Row(
         children: [
-          chip(StoreStrings.allCategories, null),
-          for (final category in DealCategory.values) chip(category.label, category),
+          chip(l10n.allCategories, null),
+          for (final category in DealCategory.values) chip(l10n.category(category), category),
         ],
       ),
     );
@@ -353,6 +357,7 @@ class _SortRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 6, AppSpacing.screen, 10),
       child: SizedBox(
@@ -369,7 +374,7 @@ class _SortRow extends StatelessWidget {
               style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
             ),
             PopupMenuButton<DealSort>(
-              tooltip: StoreStrings.sortTooltip,
+              tooltip: l10n.sortTooltip,
               initialValue: sort,
               onSelected: onSort,
               color: AppColors.white,
@@ -379,7 +384,7 @@ class _SortRow extends StatelessWidget {
                   PopupMenuItem(
                     value: option,
                     child: Text(
-                      option.label,
+                      l10n.sort(option),
                       style: AppText.body.copyWith(
                         color: AppColors.ink,
                         fontWeight: option == sort ? FontWeight.w800 : FontWeight.w600,
@@ -400,7 +405,7 @@ class _SortRow extends StatelessWidget {
                   children: [
                     Flexible(
                       child: Text(
-                        sort.label,
+                        l10n.sort(sort),
                         style: AppText.secondary.copyWith(color: AppColors.ink, fontWeight: FontWeight.w800),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -435,8 +440,10 @@ class _NoDeals extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.storeL10n;
     final query = filter.query.trim();
-    final category = filter.category?.label;
+    final picked = filter.category;
+    final category = picked == null ? null : l10n.category(picked);
 
     // Nothing for this pet, but other animals have deals here: the way out
     // is "All animals", not clearing the search.
@@ -444,38 +451,38 @@ class _NoDeals extends ConsumerWidget {
     if (others > 0) {
       return EmptyState(
         icon: Icons.pets_rounded,
-        title: StoreStrings.noDealsForAnimalsTitle(species),
-        message: StoreStrings.noDealsForAnimalsMessage(
+        title: l10n.noDealsForTitle(species),
+        message: l10n.noDealsForMessage(
           species: species,
           query: query,
           category: category,
           othersCount: others,
         ),
-        actionLabel: StoreStrings.showAllAnimals,
+        actionLabel: l10n.showAllAnimals,
         onAction: onShowAllAnimals,
       );
     }
 
     if (!filter.isNarrowed) {
-      return const EmptyState(
+      return EmptyState(
         icon: Icons.shopping_bag_rounded,
-        title: StoreStrings.noDealsYetTitle,
-        message: StoreStrings.noDealsYetMessage,
+        title: l10n.noDealsYetTitle,
+        message: l10n.noDealsYetMessage,
       );
     }
     final String message;
     if (query.isEmpty) {
-      message = StoreStrings.noDealsInCategory(category!);
+      message = l10n.noDealsInCategory(category!);
     } else if (category == null) {
-      message = StoreStrings.nothingMatches(query);
+      message = l10n.nothingMatches(query);
     } else {
-      message = StoreStrings.nothingMatchesInCategory(query, category);
+      message = l10n.nothingMatchesInCategory(query, category);
     }
     return EmptyState(
       icon: Icons.search_rounded,
-      title: StoreStrings.noDealsFoundTitle,
+      title: l10n.noDealsFoundTitle,
       message: message,
-      actionLabel: StoreStrings.clearFilters,
+      actionLabel: l10n.clearFilters,
       onAction: onClear,
     );
   }

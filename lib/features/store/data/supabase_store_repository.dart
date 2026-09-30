@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
-import '../store_strings.dart';
 import 'deal.dart';
 import 'store_repository.dart';
 
@@ -60,7 +59,7 @@ class SupabaseStoreRepository implements StoreRepository {
   @override
   Future<void> deleteDeal({required String userId, required String dealId}) => _guard(() async {
         final removed = await _client.from(_deals).delete().eq('id', dealId).eq('shared_by', userId).select('id');
-        if (removed.isEmpty) throw const StoreException(StoreStrings.onlyDeleteOwn);
+        if (removed.isEmpty) throw const StoreException(StoreFailure.onlyDeleteOwn);
       });
 
   @override
@@ -78,38 +77,38 @@ class SupabaseStoreRepository implements StoreRepository {
         );
       });
 
-  /// Runs [action], turning backend failures into a [StoreException] with
-  /// copy that fits the app's tone.
+  /// Runs [action], turning backend failures into a [StoreException] that
+  /// says what went wrong.
   static Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();
     } on StoreException {
       rethrow;
     } on sb.PostgrestException catch (e) {
-      throw StoreException(_friendly(e));
-    } catch (_) {
+      throw StoreException(_failure(e), e.message);
+    } catch (e) {
       // No connection, a timeout, or a response that was not what we expect.
-      throw const StoreException(StoreStrings.cannotReachServer);
+      throw StoreException(StoreFailure.network, '$e');
     }
   }
 
-  static String _friendly(sb.PostgrestException e) {
+  static StoreFailure _failure(sb.PostgrestException e) {
     final message = e.message.toLowerCase();
     // 42501: refused by row level security. 23514: a check constraint.
-    if (e.code == '42501' || message.contains('row-level security')) return StoreStrings.notAllowed;
+    if (e.code == '42501' || message.contains('row-level security')) return StoreFailure.notAllowed;
     if (e.code == '23514') {
       // The message names the constraint that refused the row.
-      if (message.contains('package')) return StoreStrings.packageNotValid;
-      if (message.contains('delivery')) return StoreStrings.deliveryNotValid;
-      if (message.contains('price')) return StoreStrings.priceBelowOriginal;
-      if (message.contains('link')) return StoreStrings.linkMustBeHttps;
-      return StoreStrings.detailsNotValid;
+      if (message.contains('package')) return StoreFailure.packageNotValid;
+      if (message.contains('delivery')) return StoreFailure.deliveryNotValid;
+      if (message.contains('price')) return StoreFailure.priceNotBelowOriginal;
+      if (message.contains('link')) return StoreFailure.linkNotHttps;
+      return StoreFailure.detailsNotValid;
     }
-    if (e.code == '23503') return StoreStrings.dealNoLongerAvailable;
-    if (e.code == 'PGRST301' || message.contains('jwt')) return StoreStrings.sessionEnded;
+    if (e.code == '23503') return StoreFailure.dealNoLongerAvailable;
+    if (e.code == 'PGRST301' || message.contains('jwt')) return StoreFailure.sessionEnded;
     // PGRST204: a column the app sends is not in the database yet, which
     // means `0008_store_phase1.sql` has not been run.
-    if (e.code == 'PGRST204') return StoreStrings.storeNeedsUpdate;
-    return StoreStrings.somethingWentWrong;
+    if (e.code == 'PGRST204') return StoreFailure.storeNeedsUpdate;
+    return StoreFailure.unknown;
   }
 }

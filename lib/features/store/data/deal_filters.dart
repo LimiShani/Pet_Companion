@@ -57,13 +57,25 @@ class StoreFilter {
 /// Unless the filter asks for all animals, only deals that suit [pet] are
 /// kept: those that name its kind and those for every pet. Without a [pet]
 /// nothing is left out.
-List<Deal> visibleDeals(List<Deal> deals, StoreFilter filter, DateTime now, {PetSpecies? pet}) {
+///
+/// The search also matches a deal's category by name: [categoryLabel] gives
+/// that name in the language on screen ("Food", "מזון"). Without it the
+/// stored code is used ("litter and cleaning").
+List<Deal> visibleDeals(
+  List<Deal> deals,
+  StoreFilter filter,
+  DateTime now, {
+  PetSpecies? pet,
+  String Function(DealCategory category)? categoryLabel,
+}) {
+  String nameOf(DealCategory category) => categoryLabel?.call(category) ?? category.code.replaceAll('_', ' ');
+
   final words = filter.query.toLowerCase().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
   final matching = deals.where((deal) {
     if (pet != null && !filter.allAnimals && !deal.suits(pet)) return false;
     if (filter.category != null && deal.category != filter.category) return false;
     if (words.isEmpty) return true;
-    final haystack = '${deal.title} ${deal.description} ${deal.sellerName} ${deal.category.label}'.toLowerCase();
+    final haystack = '${deal.title} ${deal.description} ${deal.sellerName} ${nameOf(deal.category)}'.toLowerCase();
     return words.every(haystack.contains);
   });
   return sortDeals(matching, filter.sort, now);

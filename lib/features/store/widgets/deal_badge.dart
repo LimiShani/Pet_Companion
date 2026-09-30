@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../data/deal.dart';
-import '../store_strings.dart';
+import '../store_format.dart';
 
 /// The pill on a deal's picture: "-40%", or "Expired" once the deal is
 /// over. White text on a dark pill, so it reads on every tile colour.
@@ -23,7 +24,7 @@ class DealBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        expired ? StoreStrings.expired : StoreStrings.discountBadge(deal.discountPercent),
+        expired ? context.storeL10n.expired : StoreFormat.of(context).discount(deal.discountPercent),
         style: TextStyle(fontSize: large ? 15 : 12, fontWeight: FontWeight.w800, color: AppColors.white),
       ),
     );

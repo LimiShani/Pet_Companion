@@ -4,8 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/store/data/deal.dart';
 import 'package:pet_companion/features/store/deal_detail_screen.dart';
 import 'package:pet_companion/features/store/share_deal_screen.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 
 import 'store_test_helpers.dart';
+
+/// The form's checks, answering in English.
+final _valid = DealValidators(lookupStoreL10n(englishLocale));
 
 void main() {
   setUpAll(() {
@@ -99,15 +103,15 @@ void main() {
     expect(DealValidators.parsePrice('39,90'), 39.9);
     expect(DealValidators.parsePrice(' 12.345 '), 12.35);
     expect(DealValidators.parsePrice('abc'), isNull);
-    expect(DealValidators.price('0', '10'), 'The price must be above zero.');
-    expect(DealValidators.price('10', '10'), 'The deal price must be below the original price.');
-    expect(DealValidators.price('9.99', '10'), isNull);
-    expect(DealValidators.originalPrice('-5'), 'The price must be above zero.');
-    expect(DealValidators.title('ab'), 'Use at least 3 characters.');
-    expect(DealValidators.link('www.example.com/x'), 'Use a full link that starts with https://');
-    expect(DealValidators.link('https://localhost'), 'Use a full link that starts with https://');
-    expect(DealValidators.link('javascript:alert(1)'), 'Use a full link that starts with https://');
-    expect(DealValidators.link(' https://shop.example.com/x?y=1 '), isNull);
+    expect(_valid.price('0', '10'), 'The price must be above zero.');
+    expect(_valid.price('10', '10'), 'The deal price must be below the original price.');
+    expect(_valid.price('9.99', '10'), isNull);
+    expect(_valid.originalPrice('-5'), 'The price must be above zero.');
+    expect(_valid.title('ab'), 'Use at least 3 characters.');
+    expect(_valid.link('www.example.com/x'), 'Use a full link that starts with https://');
+    expect(_valid.link('https://localhost'), 'Use a full link that starts with https://');
+    expect(_valid.link('javascript:alert(1)'), 'Use a full link that starts with https://');
+    expect(_valid.link(' https://shop.example.com/x?y=1 '), isNull);
   });
 
   testWidgets('sharing a valid deal adds it to the catalogue as the user\'s own', (tester) async {

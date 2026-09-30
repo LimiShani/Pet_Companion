@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
@@ -18,6 +19,7 @@ class SavedDealsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.storeL10n;
     final saved = ref.watch(savedDealsProvider);
     final savedIds = ref.watch(savedDealIdsProvider);
 
@@ -31,9 +33,9 @@ class SavedDealsScreen extends ConsumerWidget {
     } else if (failed) {
       body = EmptyState(
         icon: Icons.cloud_off_rounded,
-        title: StoreStrings.couldNotLoadSaved,
-        message: storeErrorMessage((saved.error ?? savedIds.error)!),
-        actionLabel: StoreStrings.tryAgain,
+        title: l10n.couldNotLoadSaved,
+        message: storeErrorText(context, (saved.error ?? savedIds.error)!),
+        actionLabel: context.l10n.commonTryAgain,
         onAction: () {
           ref.invalidate(savedDealIdsProvider);
           ref.read(dealsProvider.notifier).refresh();
@@ -42,9 +44,9 @@ class SavedDealsScreen extends ConsumerWidget {
     } else if (deals.isEmpty) {
       body = EmptyState(
         icon: Icons.favorite_border_rounded,
-        title: StoreStrings.noSavedDealsTitle,
-        message: StoreStrings.noSavedDealsMessage,
-        actionLabel: StoreStrings.browseDeals,
+        title: l10n.noSavedDealsTitle,
+        message: l10n.noSavedDealsMessage,
+        actionLabel: l10n.browseDeals,
         onAction: () => Navigator.of(context).maybePop(),
       );
     } else {
@@ -54,7 +56,7 @@ class SavedDealsScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 12),
               child: Text(
-                StoreStrings.savedCount(deals.length),
+                l10n.savedCount(deals.length),
                 style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
               ),
             ),
@@ -69,7 +71,7 @@ class SavedDealsScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CoralHeader(title: StoreStrings.savedDealsTitle, showBack: true),
+          CoralHeader(title: l10n.savedDeals, showBack: true),
           Expanded(child: body),
         ],
       ),
