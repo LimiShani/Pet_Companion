@@ -1,4 +1,3 @@
-import '../store_strings.dart';
 import 'deal.dart';
 import 'sample_deals.dart';
 import 'store_repository.dart';
@@ -46,13 +45,13 @@ class FakeStoreRepository implements StoreRepository {
   }
 
   void _checkWrite() {
-    if (failWrites) throw const StoreException(StoreStrings.cannotReachServer);
+    if (failWrites) throw const StoreException(StoreFailure.network);
   }
 
   @override
   Future<List<Deal>> fetchDeals() async {
     await _wait();
-    if (failFetches) throw const StoreException(StoreStrings.cannotReachServer);
+    if (failFetches) throw const StoreException(StoreFailure.network);
     return List.unmodifiable(_deals);
   }
 
@@ -79,18 +78,18 @@ class FakeStoreRepository implements StoreRepository {
     await _wait();
     _checkWrite();
     if (draft.title.trim().isEmpty || draft.sellerName.trim().isEmpty) {
-      throw const StoreException(StoreStrings.dealNeedsTitleAndSeller);
+      throw const StoreException(StoreFailure.needsTitleAndSeller);
     }
     if (draft.price <= 0 || draft.originalPrice <= 0 || draft.price > draft.originalPrice) {
-      throw const StoreException(StoreStrings.priceBelowOriginal);
+      throw const StoreException(StoreFailure.priceNotBelowOriginal);
     }
     if (Uri.tryParse(draft.link)?.scheme != 'https') {
-      throw const StoreException(StoreStrings.linkMustBeHttps);
+      throw const StoreException(StoreFailure.linkNotHttps);
     }
     final size = draft.package;
-    if (size != null && !(size.amount > 0)) throw const StoreException(StoreStrings.packageNotValid);
+    if (size != null && !(size.amount > 0)) throw const StoreException(StoreFailure.packageNotValid);
     final delivery = draft.deliveryCost;
-    if (delivery != null && !(delivery >= 0)) throw const StoreException(StoreStrings.deliveryNotValid);
+    if (delivery != null && !(delivery >= 0)) throw const StoreException(StoreFailure.deliveryNotValid);
 
     final name = userName?.trim() ?? '';
     final now = _now();
@@ -124,7 +123,7 @@ class FakeStoreRepository implements StoreRepository {
     _checkWrite();
     final index = _deals.indexWhere((d) => d.id == dealId);
     if (index < 0) return;
-    if (_deals[index].sharedBy != userId) throw const StoreException(StoreStrings.onlyDeleteOwn);
+    if (_deals[index].sharedBy != userId) throw const StoreException(StoreFailure.onlyDeleteOwn);
     _deals.removeAt(index);
     for (final ids in _savedByUser.values) {
       ids.remove(dealId);

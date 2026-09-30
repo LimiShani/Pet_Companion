@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/directional_icon.dart';
 import '../data/deal.dart';
 import '../store_format.dart';
 import '../store_strings.dart';
@@ -11,6 +13,10 @@ import 'deal_image.dart';
 /// One deal in the grid: picture, discount badge, title, the price with the
 /// old price struck through, the unit price and delivery when they are
 /// known, and the seller.
+///
+/// The title and the seller are content: they are shown as they were
+/// written, in the direction of their own text, whatever the language of
+/// the screen.
 class DealCard extends StatelessWidget {
   const DealCard({
     super.key,
@@ -36,6 +42,8 @@ class DealCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.storeL10n;
+    final format = StoreFormat.of(context);
     final textColor = expired ? AppColors.brown : AppColors.ink;
     final unitPrice = deal.unitPrice;
     final delivery = deal.deliveryCost;
@@ -63,7 +71,7 @@ class DealCard extends StatelessWidget {
                       alignment: AlignmentDirectional.centerStart,
                       child: AnimalsTag(
                         key: ValueKey('animals-${deal.id}'),
-                        label: StoreStrings.animalsTag(deal.speciesInOrder),
+                        label: l10n.animalsTag(deal.speciesInOrder),
                         color: AppColors.white.withValues(alpha: 0.94),
                       ),
                     ),
@@ -77,6 +85,7 @@ class DealCard extends StatelessWidget {
                 children: [
                   Text(
                     deal.title,
+                    textDirection: contentDirection(context, deal.title),
                     style: AppText.cardTitle.copyWith(color: textColor, height: 1.25),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -85,19 +94,22 @@ class DealCard extends StatelessWidget {
                   DealPrices(deal: deal, color: textColor),
                   if (unitPrice != null) ...[
                     const SizedBox(height: 5),
-                    _UnitPricePill(text: StoreFormat.unitPrice(unitPrice, deal.currency), color: textColor),
+                    _UnitPricePill(text: format.unitPrice(unitPrice, deal.currency), color: textColor),
                   ],
                   if (delivery != null) ...[
                     const SizedBox(height: 5),
                     _SmallLine(
-                      icon: Icons.local_shipping_outlined,
-                      text: delivery == 0
-                          ? StoreStrings.freeDelivery
-                          : StoreStrings.plusDelivery(StoreFormat.money(delivery, deal.currency)),
+                      // A vehicle drives the way the language reads.
+                      icon: const MirroredIcon(Icons.local_shipping_outlined, size: 14, color: AppColors.brown),
+                      text: delivery == 0 ? l10n.freeDelivery : l10n.plusDelivery(format.money(delivery, deal.currency)),
                     ),
                   ],
                   const SizedBox(height: 6),
-                  _SmallLine(icon: Icons.storefront_rounded, text: deal.sellerName),
+                  _SmallLine(
+                    icon: const Icon(Icons.storefront_rounded, size: 14, color: AppColors.brown),
+                    text: deal.sellerName,
+                    isContent: true,
+                  ),
                 ],
               ),
             ),
@@ -132,20 +144,27 @@ class _UnitPricePill extends StatelessWidget {
 
 /// A small brown line with an icon: the seller, the delivery cost.
 class _SmallLine extends StatelessWidget {
-  const _SmallLine({required this.icon, required this.text});
+  const _SmallLine({required this.icon, required this.text, this.isContent = false});
 
-  final IconData icon;
+  final Widget icon;
   final String text;
+
+  /// The text is something somebody wrote (a seller's name), shown in its
+  /// own direction, rather than one of the app's own texts.
+  final bool isContent;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: AppColors.brown),
+        icon,
         const SizedBox(width: 5),
-        Expanded(
+        // Flexible, not Expanded: the text stays beside its icon even when
+        // it reads the other way from the screen.
+        Flexible(
           child: Text(
             text,
+            textDirection: isContent ? contentDirection(context, text) : null,
             style: AppText.label.copyWith(color: AppColors.brown),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -167,20 +186,21 @@ class DealPrices extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final format = StoreFormat.of(context);
     final showOriginal = deal.originalPrice > deal.price;
     return Wrap(
       spacing: 8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
-          StoreFormat.money(deal.price, deal.currency),
+          format.money(deal.price, deal.currency),
           style: (large ? AppText.metric : AppText.pillValue).copyWith(color: color),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
         if (showOriginal)
           Text(
-            StoreFormat.money(deal.originalPrice, deal.currency),
+            format.money(deal.originalPrice, deal.currency),
             style: (large ? AppText.cardTitle : AppText.secondary).copyWith(
               color: large ? AppColors.ink : AppColors.brown,
               fontWeight: FontWeight.w600,

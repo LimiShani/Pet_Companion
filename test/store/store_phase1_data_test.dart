@@ -6,11 +6,16 @@ import 'package:pet_companion/features/store/data/sample_deals.dart';
 import 'package:pet_companion/features/store/data/store_repository.dart';
 import 'package:pet_companion/features/store/store_format.dart';
 import 'package:pet_companion/features/store/store_strings.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 
 /// The data side of phase 1: package sizes and unit prices, delivery, the
 /// checked date, the animals a deal is for, and the new category.
 final _now = DateTime(2026, 9, 30, 12);
+
+/// The English words and formats.
+final _words = lookupStoreL10n(englishLocale);
+final _format = StoreFormat.forLocale(englishLocale);
 
 Deal _deal(
   String id, {
@@ -77,7 +82,7 @@ void main() {
 
     test('is formatted with its unit', () {
       String text(double price, PackageSize size) =>
-          StoreFormat.unitPrice(_deal('a', price: price, package: size).unitPrice!, 'ILS');
+          _format.unitPrice(_deal('a', price: price, package: size).unitPrice!, 'ILS');
 
       expect(text(189, const PackageSize(10, PackageUnit.kg)), '₪18.90 per kg');
       expect(text(54, const PackageSize(2, PackageUnit.kg)), '₪27 per kg');
@@ -89,14 +94,14 @@ void main() {
     });
 
     test('package sizes read naturally', () {
-      expect(StoreFormat.package(const PackageSize(12, PackageUnit.kg)), '12 kg');
-      expect(StoreFormat.package(const PackageSize(4.8, PackageUnit.kg)), '4.8 kg');
-      expect(StoreFormat.package(const PackageSize(1020, PackageUnit.g)), '1,020 g');
-      expect(StoreFormat.package(const PackageSize(1, PackageUnit.litre)), '1 litre');
-      expect(StoreFormat.package(const PackageSize(60, PackageUnit.litre)), '60 litres');
-      expect(StoreFormat.package(const PackageSize(500, PackageUnit.ml)), '500 ml');
-      expect(StoreFormat.package(const PackageSize(1, PackageUnit.unit)), '1 unit');
-      expect(StoreFormat.package(const PackageSize(28, PackageUnit.unit)), '28 units');
+      expect(_format.package(const PackageSize(12, PackageUnit.kg)), '12 kg');
+      expect(_format.package(const PackageSize(4.8, PackageUnit.kg)), '4.8 kg');
+      expect(_format.package(const PackageSize(1020, PackageUnit.g)), '1,020 g');
+      expect(_format.package(const PackageSize(1, PackageUnit.litre)), '1 litre');
+      expect(_format.package(const PackageSize(60, PackageUnit.litre)), '60 litres');
+      expect(_format.package(const PackageSize(500, PackageUnit.ml)), '500 ml');
+      expect(_format.package(const PackageSize(1, PackageUnit.unit)), '1 unit');
+      expect(_format.package(const PackageSize(28, PackageUnit.unit)), '28 units');
     });
   });
 
@@ -126,9 +131,9 @@ void main() {
     });
 
     test('is shown with how long ago it was', () {
-      expect(StoreFormat.checked(_now.subtract(const Duration(hours: 2)), _now), '30.09.26 · today');
-      expect(StoreFormat.checked(_now.subtract(const Duration(hours: 20)), _now), '29.09.26 · yesterday');
-      expect(StoreFormat.checked(_now.subtract(const Duration(days: 49)), _now), '12.08.26 · 49 days ago');
+      expect(_format.checked(_now.subtract(const Duration(hours: 2)), _now), '30.09.26 · today');
+      expect(_format.checked(_now.subtract(const Duration(hours: 20)), _now), '29.09.26 · yesterday');
+      expect(_format.checked(_now.subtract(const Duration(days: 49)), _now), '12.08.26 · 49 days ago');
     });
   });
 
@@ -149,12 +154,12 @@ void main() {
     test('are named in the usual order', () {
       final deal = _deal('a', species: const {PetSpecies.rabbit, PetSpecies.cat, PetSpecies.dog});
       expect(deal.speciesInOrder, [PetSpecies.dog, PetSpecies.cat, PetSpecies.rabbit]);
-      expect(StoreStrings.forAnimals(deal.speciesInOrder), 'For dogs, cats and rabbits');
-      expect(StoreStrings.animalsTag(deal.speciesInOrder), 'Dogs, cats, rabbits');
-      expect(StoreStrings.forAnimals(const [PetSpecies.cat]), 'For cats');
-      expect(StoreStrings.forAnimals(const [PetSpecies.dog, PetSpecies.cat]), 'For dogs and cats');
-      expect(StoreStrings.forAnimals(const []), 'For all pets');
-      expect(StoreStrings.animalsTag(const [PetSpecies.other]), 'Other');
+      expect(_words.forWhom(deal.speciesInOrder), 'For dogs, cats and rabbits');
+      expect(_words.animalsTag(deal.speciesInOrder), 'Dogs, cats, rabbits');
+      expect(_words.forWhom(const [PetSpecies.cat]), 'For cats');
+      expect(_words.forWhom(const [PetSpecies.dog, PetSpecies.cat]), 'For dogs and cats');
+      expect(_words.forWhom(const []), 'For all pets');
+      expect(_words.animalsTag(const [PetSpecies.other]), 'Other');
     });
 
     test('the pet filter keeps what suits the pet, unless all animals are asked for', () {
@@ -203,7 +208,7 @@ void main() {
 
     test('the sort orders are listed as the menu shows them', () {
       expect(
-        [for (final sort in DealSort.values) sort.label],
+        [for (final sort in DealSort.values) _words.sort(sort)],
         ['Biggest discount', 'Lowest price', 'Lowest unit price', 'Newest', 'Ending soon'],
       );
     });
@@ -399,7 +404,7 @@ void main() {
       final small = byId('d-cat-dry-chicken-4kg');
       expect(big.unitPrice!.amount, lessThan(small.unitPrice!.amount));
       expect(big.discountPercent, lessThan(small.discountPercent));
-      expect(StoreFormat.unitPrice(byId('d-cat-wet-pouches').unitPrice!, 'ILS'), '₪34.22 per kg');
+      expect(_format.unitPrice(byId('d-cat-wet-pouches').unitPrice!, 'ILS'), '₪34.22 per kg');
     });
   });
 }
