@@ -300,7 +300,7 @@ void main() {
     expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
 
     await openSection(tester, 'Schedule');
-    expect(find.textContaining('Tue 10 June'), findsOneWidget);
+    expect(find.textContaining('Tue, Jun 10'), findsOneWidget);
     await openSection(tester, 'History');
     expect(find.text('12 records'), findsOneWidget);
     await openSection(tester, 'Insights');

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/auth_controller.dart';
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -39,7 +40,10 @@ class RecordDoseSheet extends ConsumerStatefulWidget {
 class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
   final _note = TextEditingController();
   bool _busy = false;
-  String? _error;
+
+  /// What is wrong: a message of the sheet, or what saving threw (worded
+  /// when it is shown).
+  Object? _error;
 
   @override
   void dispose() {
@@ -70,16 +74,17 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
+      final l10n = context.healthL10n;
       showHealthSnack(context, switch (status) {
-        CareLogStatus.done => 'Dose recorded as given.',
-        CareLogStatus.skipped => 'Recorded as not given.',
-        CareLogStatus.unknown => 'Recorded as not sure.',
+        CareLogStatus.done => l10n.doseRecordedGiven,
+        CareLogStatus.skipped => l10n.doseRecordedNotGiven,
+        CareLogStatus.unknown => l10n.doseRecordedNotSure,
       });
     } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -90,12 +95,12 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
     final picked = await showTimePicker(
       context: context,
       initialTime: widget.entry?.item.time ?? TimeOfDay.fromDateTime(now),
-      helpText: 'When was it given?',
+      helpText: context.healthL10n.whenWasItGiven,
     );
     if (picked == null || !mounted) return;
     final at = atTime(_day, picked);
     if (at.isAfter(now)) {
-      setState(() => _error = 'That time is still ahead. Record the dose once it is given.');
+      setState(() => _error = context.healthL10n.validTimeAhead);
       return;
     }
     await _record(CareLogStatus.done, doneAt: at);
@@ -107,22 +112,31 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
     final medication = widget.medication;
     final now = ref.watch(healthClockProvider)();
     final name = ref.watch(authControllerProvider.select((auth) => auth.value?.displayName.trim() ?? ''));
-    final instructions = medication?.instructionLine ?? '';
     final notes = medication?.instructions.trim() ?? '';
     final by = medication?.prescribedBy.trim() ?? '';
     final wide = FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget));
     final wideOutlined = OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget));
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final error = _error;
+    final String subtitle;
+    if (entry == null) {
+      subtitle = l10n.doseGivenWhenNeeded(widget.pet.name);
+    } else {
+      final time = format.time(entry.due);
+      subtitle = switch (dateOnly(entry.due).difference(dateOnly(now)).inDays) {
+        0 => l10n.reminderForToday(time),
+        -1 => l10n.reminderForYesterday(time),
+        _ => l10n.reminderForDay(format.weekdayDate(entry.due), time),
+      };
+    }
+    final instructions = medication == null ? '' : format.instructions(medication);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SheetTitle(
-          medication?.displayName ?? entry?.item.title ?? 'Medicine',
-          subtitle: entry == null
-              ? 'Given when needed · ${widget.pet.name}'
-              : 'Reminder for ${formatRelativeDay(entry.due, now).toLowerCase()} · ${formatTime(entry.due)}',
-        ),
+        SheetTitle(medication?.displayName ?? entry?.item.title ?? l10n.medicine, subtitle: subtitle),
         if (instructions.isNotEmpty || notes.isNotEmpty || by.isNotEmpty) ...[
           const SizedBox(height: 12),
           HealthCard(
@@ -133,9 +147,9 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (instructions.isNotEmpty) Text("Vet's instructions: $instructions.", style: AppText.body),
-                if (notes.isNotEmpty) Text(notes, style: AppText.body),
-                if (by.isNotEmpty) Text(by, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                if (instructions.isNotEmpty) Text(l10n.vetsInstructions(instructions), style: AppText.body),
+                if (notes.isNotEmpty) TypedText(notes, style: AppText.body),
+                if (by.isNotEmpty) TypedText(by, style: AppText.secondary.copyWith(color: AppColors.brown)),
               ],
             ),
           ),
@@ -146,7 +160,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           onPressed: _busy ? null : () => _record(CareLogStatus.done),
           style: wide,
           icon: const Icon(Icons.check_rounded),
-          label: Text('Given now · ${formatTime(now)}'),
+          label: Text(l10n.givenNowAt(format.time(now))),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -154,7 +168,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           onPressed: _busy ? null : _givenAtAnotherTime,
           style: wideOutlined,
           icon: const Icon(Icons.schedule_rounded),
-          label: const Text('Given at another time'),
+          label: Text(l10n.givenAtAnotherTime),
         ),
         const SizedBox(height: 8),
         OutlinedButton.icon(
@@ -162,11 +176,11 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           onPressed: _busy ? null : () => _record(CareLogStatus.skipped),
           style: wideOutlined,
           icon: const Icon(Icons.close_rounded),
-          label: const Text('Not given'),
+          label: Text(l10n.notGiven),
         ),
         Center(
           child: HealthLink(
-            'Not sure',
+            l10n.notSure,
             key: const Key('dose-not-sure'),
             onPressed: _busy ? null : () => _record(CareLogStatus.unknown),
           ),
@@ -177,17 +191,17 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           textCapitalization: TextCapitalization.sentences,
           maxLines: 2,
           minLines: 1,
-          decoration: const InputDecoration(labelText: 'Note (optional)', hintText: 'For example: hidden in cheese'),
+          decoration: InputDecoration(labelText: l10n.noteOptional, hintText: l10n.doseNoteHint),
         ),
-        if (_error != null) ...[
+        if (error != null) ...[
           const SizedBox(height: 10),
-          Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+          Text(
+            error is String ? error : format.error(error),
+            style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+          ),
         ],
         const SizedBox(height: 12),
-        FinePrint(
-          'Saved as logged by ${name.isEmpty ? 'you' : name}, with the time. '
-          'If you are unsure about a dose, ask your vet.',
-        ),
+        FinePrint(name.isEmpty ? l10n.doseFinePrintYou : l10n.doseFinePrintNamed(name)),
       ],
     );
   }
