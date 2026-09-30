@@ -43,9 +43,7 @@ class DeviceAttachmentPicker implements AttachmentPicker {
         bytes: await file.readAsBytes(),
       );
     } catch (_) {
-      throw HealthException(
-        source == ImageSource.camera ? 'Could not open the camera.' : 'Could not open your photos.',
-      );
+      throw HealthException.of(source == ImageSource.camera ? HealthFailure.camera : HealthFailure.photos);
     }
   }
 
@@ -66,12 +64,12 @@ class DeviceAttachmentPicker implements AttachmentPicker {
       final file = result == null || result.files.isEmpty ? null : result.files.first;
       if (file == null) return null;
       final bytes = file.bytes;
-      if (bytes == null) throw const HealthException('Could not read that file.');
+      if (bytes == null) throw HealthException.of(HealthFailure.fileUnreadable);
       return PickedFile(name: file.name, mimeType: 'application/pdf', bytes: bytes);
     } on HealthException {
       rethrow;
     } catch (_) {
-      throw const HealthException('Could not open your files.');
+      throw HealthException.of(HealthFailure.files);
     }
   }
 }

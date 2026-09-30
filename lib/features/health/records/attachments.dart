@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
@@ -300,8 +301,8 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return HealthLoadError(
-                    what: 'the photo',
-                    message: healthErrorMessage(snapshot.error!),
+                    title: context.healthL10n.loadFailedPhoto,
+                    error: snapshot.error!,
                     onRetry: () => setState(() => _bytes = _load()),
                   );
                 }

@@ -1,16 +1,59 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
+import '../../../widgets/directional_icon.dart';
 import '../../../widgets/empty_state.dart';
+import '../health_format.dart';
 import '../state/health_keeper.dart';
 
 /// Minimum size of anything tappable in Health.
 const kHealthTapTarget = 48.0;
 
-/// The line shown wherever the app offers to call or message someone.
-const kSafetyLine = 'Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.';
+/// Something a person typed (a name, a title, a note), shown in its own
+/// direction: an English title stays left-to-right on a Hebrew screen, and
+/// the other way round. Text without letters follows the screen.
+class TypedText extends StatelessWidget {
+  const TypedText(this.text, {super.key, this.style, this.maxLines, this.overflow, this.textAlign});
+
+  final String text;
+  final TextStyle? style;
+  final int? maxLines;
+  final TextOverflow? overflow;
+  final TextAlign? textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: style,
+      maxLines: maxLines,
+      overflow: overflow,
+      textAlign: textAlign,
+      textDirection: directionOfText(text, fallback: Directionality.of(context)),
+    );
+  }
+}
+
+/// [icon] as Health draws it: an icon that points forward (the walking
+/// figure) is mirrored on a right-to-left screen, and the question mark,
+/// which Flutter would mirror by itself, never is.
+class HealthIcon extends StatelessWidget {
+  const HealthIcon(this.icon, {super.key, this.size, this.color});
+
+  final IconData icon;
+  final double? size;
+  final Color? color;
+
+  @override
+  Widget build(BuildContext context) {
+    if (iconPointsForward(icon)) return MirroredIcon(icon, size: size, color: color);
+    if (icon == Icons.help_outline_rounded) return FixedIcon(icon, size: size, color: color);
+    return Icon(icon, size: size, color: color);
+  }
+}
 
 /// A section heading with an optional count pill and a trailing action.
 class HealthSectionTitle extends StatelessWidget {
@@ -82,7 +125,7 @@ class IconDisc extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, size: size * 0.55, color: iconColor),
+      child: HealthIcon(icon, size: size * 0.55, color: iconColor),
     );
   }
 }
@@ -196,7 +239,8 @@ class HealthLink extends StatelessWidget {
   }
 }
 
-/// A label above a value, for detail cards ("Date given / 14.03.25").
+/// A label above a value, for detail cards ("Date given / 14.03.25"). The
+/// value may be something the owner typed, so it keeps its own direction.
 class LabeledValue extends StatelessWidget {
   const LabeledValue(this.label, this.value, {super.key, this.trailing});
 
@@ -213,7 +257,7 @@ class LabeledValue extends StatelessWidget {
         children: [
           Text(label, style: AppText.label.copyWith(color: AppColors.brown)),
           const SizedBox(height: 2),
-          Text(value, style: AppText.cardTitle),
+          TypedText(value, style: AppText.cardTitle),
           if (trailing != null) trailing!,
         ],
       ),
@@ -301,9 +345,10 @@ class PickerTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
     return Semantics(
       button: true,
-      label: '$label: $value',
+      label: l10n.labelWithValue(label, value),
       excludeSemantics: true,
       child: Material(
         color: AppColors.white,
@@ -345,7 +390,7 @@ class PickerTile extends StatelessWidget {
                   if (onClear != null)
                     IconButton(
                       onPressed: onClear,
-                      tooltip: 'Clear $label',
+                      tooltip: l10n.clearField(label),
                       icon: const Icon(Icons.close_rounded, size: 20),
                       color: AppColors.brown,
                     )
@@ -398,7 +443,7 @@ class HealthPage extends StatelessWidget {
           CoralHeader(title: title, showBack: true, actions: actions),
           Expanded(
             child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
+              padding: EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.screen,
                 8,
                 AppSpacing.screen,
@@ -443,14 +488,15 @@ class HealthSheetBody extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: media.size.height * 0.9),
       child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(AppSpacing.screen, 0, AppSpacing.screen, 24 + media.viewInsets.bottom),
+        padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 0, AppSpacing.screen, 24 + media.viewInsets.bottom),
         child: child,
       ),
     );
   }
 }
 
-/// The title of a bottom sheet.
+/// The title of a bottom sheet. Both lines may carry something that was
+/// typed (a medicine's name, a phone number), so each keeps its direction.
 class SheetTitle extends StatelessWidget {
   const SheetTitle(this.title, {super.key, this.subtitle});
 
@@ -462,10 +508,10 @@ class SheetTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: AppText.petName.copyWith(fontSize: 20)),
+        TypedText(title, style: AppText.petName.copyWith(fontSize: 20)),
         if (subtitle != null) ...[
           const SizedBox(height: 2),
-          Text(subtitle!, style: AppText.secondary.copyWith(color: AppColors.brown)),
+          TypedText(subtitle!, style: AppText.secondary.copyWith(color: AppColors.brown)),
         ],
       ],
     );
@@ -473,11 +519,12 @@ class SheetTitle extends StatelessWidget {
 }
 
 /// Asks before something is deleted. Returns whether the owner confirmed.
+/// [confirmLabel] is "Delete" unless given.
 Future<bool> confirmDelete(
   BuildContext context, {
   required String title,
   required String message,
-  String confirmLabel = 'Delete',
+  String? confirmLabel,
 }) async {
   final confirmed = await showDialog<bool>(
     context: context,
@@ -485,8 +532,11 @@ Future<bool> confirmDelete(
       title: Text(title),
       content: Text(message),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
-        TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(confirmLabel)),
+        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(confirmLabel ?? context.l10n.commonDelete),
+        ),
       ],
     ),
   );
@@ -522,20 +572,22 @@ class HealthLoading extends StatelessWidget {
 
 /// The "could not load" state of a section, with a retry button.
 class HealthLoadError extends StatelessWidget {
-  const HealthLoadError({super.key, required this.what, required this.message, required this.onRetry});
+  const HealthLoadError({super.key, required this.title, required this.error, required this.onRetry});
 
-  /// What failed to load, e.g. "the schedule".
-  final String what;
-  final String message;
+  /// What failed, as a whole line: "Could not load the vets".
+  final String title;
+
+  /// What was thrown; it is put into words here.
+  final Object error;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     return EmptyState(
       icon: Icons.cloud_off_rounded,
-      title: 'Could not load $what',
-      message: message,
-      actionLabel: 'Try again',
+      title: title,
+      message: HealthFormat.of(context).error(error),
+      actionLabel: context.l10n.commonTryAgain,
       onAction: onRetry,
     );
   }

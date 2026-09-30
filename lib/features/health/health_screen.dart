@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_theme.dart';
@@ -46,6 +47,7 @@ class HealthScreen extends ConsumerWidget {
     final value = data.value;
     // On the Overview the Quick log is the first quick action instead.
     final quickLogButton = value != null && section != HealthSection.overview;
+    final l10n = context.healthL10n;
 
     return HealthKeeper(
       petId: pet.id,
@@ -57,13 +59,13 @@ class HealthScreen extends ConsumerWidget {
                 heroTag: null,
                 onPressed: () => showQuickLog(context, pet),
                 icon: const Icon(Icons.add_rounded),
-                label: const Text('Quick log'),
+                label: Text(l10n.quickLog),
               )
             : null,
         body: Column(
           children: [
             CoralHeader(
-              title: 'Health',
+              title: l10n.tabTitle,
               actions: [EmergencyButton(petId: pet.id)],
               bottom: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -71,7 +73,15 @@ class HealthScreen extends ConsumerWidget {
                   const PetSelector(),
                   const SizedBox(height: 12),
                   CoralSegmentedControl(
-                    labels: [for (final s in HealthSection.values) s.label],
+                    labels: [
+                      for (final s in HealthSection.values)
+                        switch (s) {
+                          HealthSection.overview => l10n.sectionOverview,
+                          HealthSection.schedule => l10n.sectionSchedule,
+                          HealthSection.history => l10n.sectionHistory,
+                          HealthSection.insights => l10n.sectionInsights,
+                        },
+                    ],
                     selectedIndex: section.index,
                     onChanged: (index) => ref.read(healthSectionProvider.notifier).show(HealthSection.values[index]),
                   ),
@@ -83,8 +93,8 @@ class HealthScreen extends ConsumerWidget {
                   ? SingleChildScrollView(
                       child: data.hasError
                           ? HealthLoadError(
-                              what: "${pet.name}'s health",
-                              message: healthErrorMessage(data.error!),
+                              title: l10n.loadFailedHealth(pet.name),
+                              error: data.error!,
                               onRetry: () => refreshHealth(ref, pet.id),
                             )
                           : const HealthLoading(),
@@ -92,7 +102,12 @@ class HealthScreen extends ConsumerWidget {
                   : SingleChildScrollView(
                       key: PageStorageKey('health-${pet.id}-${section.name}'),
                       // Room for the Quick log button under the last item.
-                      padding: EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, quickLogButton ? 96 : 24),
+                      padding: EdgeInsetsDirectional.fromSTEB(
+                        AppSpacing.screen,
+                        16,
+                        AppSpacing.screen,
+                        quickLogButton ? 96 : 24,
+                      ),
                       child: _section(context, pet, section, value),
                     ),
             ),

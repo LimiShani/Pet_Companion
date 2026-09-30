@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../records/pet_documents_screen.dart';
 import '../state/emergency_kit.dart';
 import '../state/health_providers.dart';
@@ -24,8 +26,7 @@ Future<void> openEmergencyKit(BuildContext context, String petId) {
 }
 
 /// "3 of 6 ready", or "All 6 ready".
-String kitCountLabel(EmergencyKit kit) =>
-    kit.isComplete ? 'All ${kit.total} ready' : '${kit.ready} of ${kit.total} ready';
+String kitCountLabel(HealthL10n l10n, EmergencyKit kit) => l10n.kitCount(ready: kit.ready, total: kit.total);
 
 /// The row that leads to the kit from the emergency sheet and the
 /// Emergency card: its name and how much of it is ready.
@@ -37,6 +38,7 @@ class EmergencyKitRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final kit = ref.watch(emergencyKitProvider(pet.id)).value;
+    final l10n = context.healthL10n;
     return HealthCard(
       key: const Key('open-emergency-kit'),
       onTap: () => openEmergencyKit(context, pet.id),
@@ -49,9 +51,9 @@ class EmergencyKitRow extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Emergency kit', style: AppText.cardTitle),
+                Text(l10n.emergencyKit, style: AppText.cardTitle),
                 Text(
-                  kit == null ? 'What to have ready' : kitCountLabel(kit),
+                  kit == null ? l10n.kitWhatToHaveReady : kitCountLabel(l10n, kit),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -71,42 +73,41 @@ class _KitText {
   final String title;
   final String detail;
 
-  static _KitText of(KitItem item, Pet pet, EmergencyKit kit, HealthProfile? profile) {
+  static _KitText of(HealthFormat format, KitItem item, Pet pet, EmergencyKit kit, HealthProfile? profile) {
+    final l10n = format.l10n;
     switch (item) {
       case KitItem.carrier:
         return _KitText(switch (pet.species) {
-          PetSpecies.dog => 'Carrier or crate, lead and harness',
-          PetSpecies.cat || PetSpecies.rabbit => 'Carrier',
-          PetSpecies.bird => 'Travel cage',
-          PetSpecies.reptile => 'Travel box',
-          PetSpecies.other => 'Carrier or travel cage',
-        }, 'Within reach, near the door.');
+          PetSpecies.dog => l10n.kitCarrierDog,
+          PetSpecies.cat || PetSpecies.rabbit => l10n.kitCarrier,
+          PetSpecies.bird => l10n.kitTravelCage,
+          PetSpecies.reptile => l10n.kitTravelBox,
+          PetSpecies.other => l10n.kitCarrierOrCage,
+        }, l10n.kitCarrierNote);
       case KitItem.foodWater:
-        return const _KitText('Food and water for three days', 'With a bowl, in one bag.');
+        return _KitText(l10n.kitFoodWater, l10n.kitFoodWaterNote);
       case KitItem.documents:
         return _KitText(
-          'Documents',
-          pet.species == PetSpecies.dog
-              ? 'Vaccination booklet and licence, on paper or as photos.'
-              : 'Vaccination booklet and vet papers, on paper or as photos.',
+          l10n.kitDocuments,
+          pet.species == PetSpecies.dog ? l10n.kitDocumentsNoteDog : l10n.kitDocumentsNote,
         );
       case KitItem.microchip:
         final number = profile?.microchip.trim() ?? '';
         return _KitText(
-          'Microchip details up to date',
+          l10n.kitMicrochip,
           number.isNotEmpty
-              ? '$number · your phone number in the chip registry is current.'
+              ? l10n.kitMicrochipNumber(format.ltrInLine(number))
               : (profile?.notChipped ?? false)
-              ? 'Marked as not chipped in the health profile.'
-              : 'No microchip number saved yet.',
+              ? l10n.kitMicrochipNotChipped
+              : l10n.kitMicrochipNone,
         );
       case KitItem.medicines:
         return _KitText(
-          'Medicines',
-          '${kit.medicines.map((m) => m.displayName).join(', ')} · a spare supply in the kit.',
+          l10n.kitMedicines,
+          l10n.kitMedicinesNote(format.commas([for (final m in kit.medicines) m.displayName])),
         );
       case KitItem.shelterPlan:
-        return _KitText('A plan for the protected room', 'Who takes ${pet.name}, and where the carrier is.');
+        return _KitText(l10n.kitShelterPlan, l10n.kitShelterPlanNote(pet.name));
     }
   }
 }
@@ -123,7 +124,7 @@ class EmergencyKitScreen extends ConsumerWidget {
     try {
       await ref.read(kitChecksProvider(pet.id).notifier).setReady(entry.item, !entry.isReady);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -133,18 +134,20 @@ class EmergencyKitScreen extends ConsumerWidget {
     final profile = ref.watch(healthProfileProvider(pet.id)).value;
     final data = ref.watch(petHealthDataProvider(pet.id)).value;
     final value = kit.value;
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
 
     // The files "Documents" can open right away.
     final documents = data?.documents.length ?? 0;
 
     return HealthPage(
       petId: pet.id,
-      title: "${pet.name}'s emergency kit",
+      title: l10n.petsEmergencyKit(pet.name),
       child: value == null
           ? kit.hasError
                 ? HealthLoadError(
-                    what: 'the emergency kit',
-                    message: healthErrorMessage(kit.error!),
+                    title: l10n.loadFailedKit,
+                    error: kit.error!,
                     onRetry: () {
                       ref.invalidate(kitChecksProvider(pet.id));
                       ref.invalidate(carePlanProvider(pet.id));
@@ -160,17 +163,17 @@ class EmergencyKitScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   _KitItemCard(
                     entry: entry,
-                    text: _KitText.of(entry.item, pet, value, profile),
+                    text: _KitText.of(format, entry.item, pet, value, profile),
                     onToggle: () => _toggle(context, ref, entry),
                     link: switch (entry.item) {
                       KitItem.documents when documents > 0 => HealthLink(
-                        documents == 1 ? '1 document saved here' : '$documents documents saved here',
+                        l10n.kitDocumentsSaved(documents),
                         key: const Key('kit-open-documents'),
                         icon: Icons.chevron_right_rounded,
                         onPressed: () => PetDocumentsScreen.open(context, pet),
                       ),
                       KitItem.microchip => HealthLink(
-                        'Health profile',
+                        l10n.healthProfile,
                         key: const Key('kit-open-profile'),
                         icon: Icons.chevron_right_rounded,
                         onPressed: () => HealthProfileScreen.open(context, pet),
@@ -181,10 +184,7 @@ class EmergencyKitScreen extends ConsumerWidget {
                   ),
                 ],
                 const SizedBox(height: 12),
-                const FinePrint(
-                  "Your own list, not official guidance. During an emergency follow the Home Front Command's "
-                  'instructions.',
-                ),
+                FinePrint(l10n.kitFinePrint),
               ],
             ),
     );
@@ -198,7 +198,8 @@ class _Summary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = kitCountLabel(kit);
+    final l10n = context.healthL10n;
+    final label = kitCountLabel(l10n, kit);
     return HealthCard(
       key: const Key('kit-summary'),
       color: AppColors.peach,
@@ -208,10 +209,7 @@ class _Summary extends StatelessWidget {
         children: [
           Text(label, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
           const SizedBox(height: 2),
-          const Text(
-            'For sirens, a quick move to the protected room, or leaving home in a hurry.',
-            style: AppText.secondary,
-          ),
+          Text(l10n.kitSummaryNote, style: AppText.secondary),
           const SizedBox(height: 10),
           ClipRRect(
             borderRadius: BorderRadius.circular(999),
@@ -220,7 +218,7 @@ class _Summary extends StatelessWidget {
               minHeight: 8,
               color: AppColors.coralDark,
               backgroundColor: AppColors.white.withValues(alpha: 0.6),
-              semanticsLabel: 'Emergency kit',
+              semanticsLabel: l10n.emergencyKit,
               semanticsValue: label,
             ),
           ),
@@ -264,7 +262,7 @@ class _KitItemCard extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsetsDirectional.only(top: 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -272,11 +270,11 @@ class _KitItemCard extends StatelessWidget {
                   Text(text.detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
                   if (checkedAt != null)
                     Text(
-                      'Ticked ${formatDate(checkedAt)}',
+                      context.healthL10n.kitTicked(HealthFormat.of(context).date(checkedAt)),
                       style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
                     ),
                   if (link != null) Align(alignment: AlignmentDirectional.centerStart, child: link),
-                  if (note != null) Padding(padding: const EdgeInsets.only(top: 8), child: note),
+                  if (note != null) Padding(padding: const EdgeInsetsDirectional.only(top: 8), child: note),
                 ],
               ),
             ),
@@ -323,7 +321,7 @@ class _PlanNoteState extends ConsumerState<_PlanNote> {
     try {
       await ref.read(kitChecksProvider(widget.petId).notifier).setNote(KitItem.shelterPlan, _text.text);
     } catch (error) {
-      if (mounted) showHealthSnack(context, healthErrorMessage(error));
+      if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
@@ -339,7 +337,11 @@ class _PlanNoteState extends ConsumerState<_PlanNote> {
       textCapitalization: TextCapitalization.sentences,
       textInputAction: TextInputAction.done,
       onSubmitted: (_) => _save(),
-      decoration: const InputDecoration(labelText: 'Our plan (optional)', fillColor: AppColors.cream, counterText: ''),
+      decoration: InputDecoration(
+        labelText: context.healthL10n.kitOurPlan,
+        fillColor: AppColors.cream,
+        counterText: '',
+      ),
     );
   }
 }

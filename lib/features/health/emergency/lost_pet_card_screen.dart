@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
@@ -39,7 +40,7 @@ class LostPetButton extends StatelessWidget {
       onPressed: () => openLostPetCard(context, pet.id),
       style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
       icon: const Icon(Icons.travel_explore_rounded),
-      label: Text('${pet.name} is lost'),
+      label: Text(context.healthL10n.petIsLost(pet.name)),
     );
   }
 }

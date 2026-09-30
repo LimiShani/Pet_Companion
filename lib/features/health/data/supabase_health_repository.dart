@@ -40,14 +40,12 @@ class SupabaseHealthRepository implements HealthRepository {
   static bool isStored(String id) => _uuid.hasMatch(id);
 
   static void _requireStored(String petId) {
-    if (!isStored(petId)) {
-      throw const HealthException('This pet is not saved to your account yet, so nothing can be stored for it.');
-    }
+    if (!isStored(petId)) throw HealthException.of(HealthFailure.petNotStored);
   }
 
   String get _userId {
     final id = _client.auth.currentUser?.id;
-    if (id == null) throw const HealthException('Your session has ended. Please sign in again.');
+    if (id == null) throw HealthException.of(HealthFailure.sessionEnded);
     return id;
   }
 
@@ -67,13 +65,13 @@ class SupabaseHealthRepository implements HealthRepository {
     String id,
     Row row,
     T Function(Row row) read, {
-    required String gone,
+    required HealthFailure gone,
     String? petId,
   }) => _guard(() async {
     if (petId != null) _requireStored(petId);
     if (id.isEmpty) return read(await _client.from(table).insert(row).select().single());
     final updated = await _client.from(table).update(row).eq('id', id).select().maybeSingle();
-    if (updated == null) throw HealthException(gone);
+    if (updated == null) throw HealthException.of(gone);
     return read(updated);
   });
 
@@ -94,7 +92,7 @@ class SupabaseHealthRepository implements HealthRepository {
     record.id,
     recordToRow(record),
     recordFromRow,
-    gone: 'That record no longer exists.',
+    gone: HealthFailure.recordGone,
     petId: record.petId,
   );
 
@@ -124,8 +122,8 @@ class SupabaseHealthRepository implements HealthRepository {
   Future<HealthDocument> addDocument({required String petId, required String recordId, required PickedFile file}) {
     return _guard(() async {
       _requireStored(petId);
-      final problem = file.problem;
-      if (problem != null) throw HealthException(problem);
+      final problem = file.failure;
+      if (problem != null) throw HealthException.of(problem);
       // <user id>/<pet id>/<record id>/<random>.<ext>: the bucket's policies
       // key off the first folder.
       final path = '$_userId/$petId/$recordId/${const Uuid().v4()}.${_extension(file.mimeType)}';
@@ -196,7 +194,7 @@ class SupabaseHealthRepository implements HealthRepository {
   });
 
   @override
-  Future<Vet> saveVet(Vet vet) => _save(_vets, vet.id, vetToRow(vet), vetFromRow, gone: 'That vet no longer exists.');
+  Future<Vet> saveVet(Vet vet) => _save(_vets, vet.id, vetToRow(vet), vetFromRow, gone: HealthFailure.vetGone);
 
   @override
   Future<void> deleteVet(String vetId) => _delete(_vets, vetId);
@@ -229,7 +227,7 @@ class SupabaseHealthRepository implements HealthRepository {
     medication.id,
     medicationToRow(medication),
     medicationFromRow,
-    gone: 'That medicine no longer exists.',
+    gone: HealthFailure.medicineGone,
     petId: medication.petId,
   );
 
@@ -247,7 +245,7 @@ class SupabaseHealthRepository implements HealthRepository {
     item.id,
     planItemToRow(item),
     planItemFromRow,
-    gone: 'That reminder no longer exists.',
+    gone: HealthFailure.reminderGone,
     petId: item.petId,
   );
 
@@ -272,7 +270,7 @@ class SupabaseHealthRepository implements HealthRepository {
   Future<CareLog> saveLog(CareLog log) {
     final row = logToRow(log);
     if (!log.isNew) {
-      return _save(_logs, log.id, row, logFromRow, gone: 'That entry no longer exists.', petId: log.petId);
+      return _save(_logs, log.id, row, logFromRow, gone: HealthFailure.entryGone, petId: log.petId);
     }
     return _guard(() async {
       _requireStored(log.petId);
@@ -299,7 +297,7 @@ class SupabaseHealthRepository implements HealthRepository {
     observation.id,
     observationToRow(observation),
     observationFromRow,
-    gone: 'That entry no longer exists.',
+    gone: HealthFailure.entryGone,
     petId: observation.petId,
   );
 
@@ -340,49 +338,45 @@ class SupabaseHealthRepository implements HealthRepository {
 
   // ---------------------------------------------------------------- errors
 
-  /// Runs [action], turning backend failures into a [HealthException] with
-  /// copy that fits the app's tone.
+  /// Runs [action], turning backend failures into a [HealthException] that
+  /// carries the reason; the screen words it.
   static Future<T> _guard<T>(Future<T> Function() action) async {
     try {
       return await action();
     } on HealthException {
       rethrow;
     } on sb.PostgrestException catch (e) {
-      throw HealthException(_friendly(e));
+      throw HealthException.of(_reason(e));
     } on sb.StorageException catch (e) {
-      throw HealthException(_friendlyStorage(e));
+      throw HealthException.of(_storageReason(e));
     } catch (_) {
       // No connection, a timeout, or a response that was not what we expect.
-      throw const HealthException('Could not reach the server. Check your connection and try again.');
+      throw HealthException.of(HealthFailure.offline);
     }
   }
 
-  static String _friendly(sb.PostgrestException e) {
+  static HealthFailure _reason(sb.PostgrestException e) {
     final message = e.message.toLowerCase();
     // 42501: refused by row level security. 23514: a check constraint.
     // 23503: a row it points to is gone. 22P02: an id that is not an id.
-    if (e.code == '42501' || message.contains('row-level security')) {
-      return 'You are not allowed to do that. Please sign in again.';
-    }
-    if (e.code == 'PGRST301' || message.contains('jwt')) return 'Your session has ended. Please sign in again.';
-    if (e.code == '23514') return 'Some of the details are not valid. Please check them and try again.';
-    if (e.code == '23503') return 'That item no longer exists. Go back and open it again.';
-    if (e.code == '22P02') return 'This pet is not saved to your account yet, so nothing can be stored for it.';
-    return 'Something went wrong. Please try again.';
+    if (e.code == '42501' || message.contains('row-level security')) return HealthFailure.notAllowed;
+    if (e.code == 'PGRST301' || message.contains('jwt')) return HealthFailure.sessionEnded;
+    if (e.code == '23514') return HealthFailure.invalid;
+    if (e.code == '23503') return HealthFailure.itemGone;
+    if (e.code == '22P02') return HealthFailure.petNotStored;
+    return HealthFailure.unknown;
   }
 
-  static String _friendlyStorage(sb.StorageException e) {
+  static HealthFailure _storageReason(sb.StorageException e) {
     final message = e.message.toLowerCase();
     if (e.statusCode == '413' || message.contains('exceeded') || message.contains('too large')) {
-      return 'That file is larger than 5 MB. Please choose a smaller one.';
+      return HealthFailure.fileTooLarge;
     }
-    if (e.statusCode == '415' || message.contains('mime')) {
-      return 'Only photos (JPEG, PNG, WebP) and PDF files can be attached.';
-    }
-    if (e.statusCode == '404' || message.contains('not found')) return 'That file is no longer available.';
+    if (e.statusCode == '415' || message.contains('mime')) return HealthFailure.fileType;
+    if (e.statusCode == '404' || message.contains('not found')) return HealthFailure.fileGone;
     if (e.statusCode == '401' || e.statusCode == '403' || message.contains('row-level security')) {
-      return 'You are not allowed to do that. Please sign in again.';
+      return HealthFailure.notAllowed;
     }
-    return 'The file could not be stored. Please try again.';
+    return HealthFailure.fileNotStored;
   }
 }

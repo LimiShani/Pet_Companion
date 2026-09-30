@@ -71,7 +71,7 @@ abstract class LostCardRenderer {
 class WidgetLostCardRenderer implements LostCardRenderer {
   const WidgetLostCardRenderer();
 
-  static const _failed = HealthException('Could not prepare the card. Please try again.');
+  static final _failed = HealthException.of(HealthFailure.lostCard);
 
   @override
   Future<Uint8List> png(GlobalKey boundary, {double width = 1080}) async {

@@ -5,6 +5,8 @@ import 'health_providers.dart';
 
 /// What a health cost was for. Finer than a budget needs, so a reader can
 /// group them as it likes (for example everything under "Vet and medicines").
+/// [label] is the English name, for logs; a screen says it in its own
+/// language with `HealthWords.costCategory`.
 enum HealthCostCategory {
   vetVisit('Vet visits'),
   vaccination('Vaccinations'),

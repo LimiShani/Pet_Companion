@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
+import '../../pets/pets.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
 import '../state/health_providers.dart';
@@ -21,55 +23,69 @@ class MessageLine {
   final String text;
 }
 
-/// The essentials a vet needs, one line each. Lines with nothing to say
-/// are left out; nothing is invented.
-List<MessageLine> emergencyMessageLines(HealthSummary summary) {
+String _lowerFirst(String text) => text.isEmpty ? text : '${text[0].toLowerCase()}${text.substring(1)}';
+
+/// The essentials a vet needs, one line each, in the language of [format]
+/// (the app's language: the owner reads the message before it goes out).
+/// Lines with nothing to say are left out; nothing is invented.
+///
+/// In Hebrew every name and number is kept in one piece with invisible
+/// direction marks. They stay in the text that is handed to the messaging
+/// app, so the lines read in the right order there too.
+List<MessageLine> emergencyMessageLines(HealthFormat format, HealthSummary summary) {
+  final l10n = format.l10n;
   final pet = summary.pet;
   final profile = summary.profile;
   final grams = SpeciesSettings.of(pet.species).weightInGrams;
   final weight = summary.weightKg;
-  final facts = [
-    pet.species.label.toLowerCase(),
-    if ((pet.breed ?? '').trim().isNotEmpty) pet.breed!.trim(),
-    if (pet.ageYears != null) '${formatNumber(pet.ageYears!)} years',
-    if (weight != null) formatWeight(weight, grams: grams),
-  ];
+  final breed = petBreedText(format.pets, pet);
+  final age = petAgeText(format.pets, pet);
+  final facts = format.commas([
+    _lowerFirst(petSpeciesText(format.pets, pet.species)),
+    ?breed,
+    if (age != null) _lowerFirst(age),
+    if (weight != null) format.weight(weight, grams: grams),
+  ]);
   String list(List<String> items, bool noneKnown) => items.isNotEmpty
-      ? items.join('; ')
+      ? format.semicolons(items)
       : noneKnown
-      ? 'none known'
+      ? l10n.messageNoneKnown
       : '';
   final allergies = list(profile.allergies, profile.allergiesNoneKnown);
   final conditions = list(profile.conditions, profile.conditionsNoneKnown);
-  final medicines = [
+  final medicines = format.semicolons([
     for (final m in summary.medications)
-      m.instructionLine.isEmpty ? m.displayName : '${m.displayName}, ${m.instructionLine}',
-  ].join('; ');
+      format.instructions(m).isEmpty ? m.displayName : l10n.messageMedicineLine(m.displayName, format.instructions(m)),
+  ]);
+  final chip = profile.microchip.trim();
   return [
-    MessageLine('pet', '${pet.name}: ${facts.join(', ')}'),
-    if (allergies.isNotEmpty) MessageLine('allergies', 'Allergies: $allergies'),
-    if (conditions.isNotEmpty) MessageLine('conditions', 'Conditions: $conditions'),
-    if (medicines.isNotEmpty) MessageLine('medicines', 'Medicines: $medicines'),
-    if (profile.microchip.trim().isNotEmpty) MessageLine('microchip', 'Microchip: ${profile.microchip.trim()}'),
+    MessageLine('pet', l10n.messagePetLine(pet.name, facts)),
+    if (allergies.isNotEmpty) MessageLine('allergies', l10n.messageAllergies(allergies)),
+    if (conditions.isNotEmpty) MessageLine('conditions', l10n.messageConditions(conditions)),
+    if (medicines.isNotEmpty) MessageLine('medicines', l10n.messageMedicines(medicines)),
+    if (chip.isNotEmpty) MessageLine('microchip', l10n.messageMicrochip(format.ltrInLine(chip))),
   ];
 }
 
-/// "Hello, this is Alex, Kelly's owner."
-String emergencyGreeting({required String ownerName, required String petName}) {
+/// "Hello, this is Alex, Kelly's owner." [petName] is `null` while the
+/// pet's details are not at hand.
+String emergencyGreeting(HealthL10n l10n, {required String ownerName, required String? petName}) {
   final owner = ownerName.trim();
-  return owner.isEmpty ? "Hello, I am $petName's owner." : "Hello, this is $owner, $petName's owner.";
+  if (petName == null) return owner.isEmpty ? l10n.greetingOwnerNoPet : l10n.greetingNamedNoPet(owner);
+  return owner.isEmpty ? l10n.greetingOwner(petName) : l10n.greetingNamed(owner, petName);
 }
 
 /// The whole message: greeting, what the owner typed, then the [lines].
-String composeEmergencyMessage({
+String composeEmergencyMessage(
+  HealthL10n l10n, {
   required String ownerName,
-  required String petName,
+  required String? petName,
   required String whatHappened,
   required List<String> lines,
 }) {
   final typed = whatHappened.trim();
   return [
-    emergencyGreeting(ownerName: ownerName, petName: petName),
+    emergencyGreeting(l10n, ownerName: ownerName, petName: petName),
     if (typed.isNotEmpty) typed,
     if (lines.isNotEmpty) '',
     ...lines,
@@ -132,8 +148,8 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
     final opened = await launchOrExplain(
       context,
       launch: () => whatsApp ? launcher.whatsApp(widget.phone, message) : launcher.textMessage(widget.phone, message),
-      problem: whatsApp ? 'Could not open WhatsApp' : 'Could not open the messaging app',
-      copyLabel: 'Copy message',
+      problem: whatsApp ? context.healthL10n.couldNotOpenWhatsApp : context.healthL10n.couldNotOpenMessaging,
+      copyLabel: context.healthL10n.copyMessage,
       copyText: message,
     );
     if (opened && mounted) Navigator.of(context).pop();
@@ -143,14 +159,17 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
   Widget build(BuildContext context) {
     final summary = ref.watch(healthSummaryProvider(widget.petId));
     final data = summary.value;
-    final allLines = data == null ? const <MessageLine>[] : emergencyMessageLines(data);
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final allLines = data == null ? const <MessageLine>[] : emergencyMessageLines(format, data);
     final lines = [
       for (final line in allLines)
         if (!_removed.contains(line.key)) line,
     ];
-    final petName = data?.pet.name ?? 'my pet';
-    final greeting = emergencyGreeting(ownerName: data?.ownerName ?? '', petName: petName);
+    final petName = data?.pet.name;
+    final greeting = emergencyGreeting(l10n, ownerName: data?.ownerName ?? '', petName: petName);
     final message = composeEmergencyMessage(
+      l10n,
       ownerName: data?.ownerName ?? '',
       petName: petName,
       whatHappened: _typed.text,
@@ -161,7 +180,7 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SheetTitle('Message to ${widget.recipientName}', subtitle: widget.phone),
+        SheetTitle(l10n.messageTo(widget.recipientName), subtitle: format.ltrInLine(widget.phone)),
         const SizedBox(height: 12),
         TextField(
           key: const Key('message-what'),
@@ -169,9 +188,9 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
           minLines: 2,
           maxLines: 5,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'What is happening?'),
+          decoration: InputDecoration(labelText: l10n.whatIsHappening),
         ),
-        const FormLabel('This is what will be written'),
+        FormLabel(l10n.messagePreviewLabel),
         HealthCard(
           padding: const EdgeInsetsDirectional.only(start: 14, end: 6, top: 12, bottom: 8),
           radius: AppSpacing.fieldRadius,
@@ -186,18 +205,18 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
               if (_typed.text.trim().isNotEmpty)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 8, top: 2),
-                  child: Text(_typed.text.trim(), style: AppText.secondary.copyWith(fontWeight: FontWeight.w800)),
+                  child: TypedText(_typed.text.trim(), style: AppText.secondary.copyWith(fontWeight: FontWeight.w800)),
                 ),
               if (summary.isLoading && data == null)
                 const Padding(
-                  padding: EdgeInsets.all(12),
+                  padding: EdgeInsetsDirectional.all(12),
                   child: Center(child: CircularProgressIndicator()),
                 )
               else if (summary.hasError && data == null)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 8, top: 8),
                   child: Text(
-                    "${petName == 'my pet' ? 'The pet' : petName}'s details could not be loaded, so only your own words will be sent.",
+                    petName == null ? l10n.messageDetailsNotLoadedNoPet : l10n.messageDetailsNotLoaded(petName),
                     style: AppText.secondary.copyWith(color: AppColors.brown),
                   ),
                 ),
@@ -209,7 +228,7 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
                     IconButton(
                       key: ValueKey('remove-line-${line.key}'),
                       onPressed: () => setState(() => _removed.add(line.key)),
-                      tooltip: 'Remove this line',
+                      tooltip: l10n.removeThisLine,
                       icon: const Icon(Icons.close_rounded, size: 18),
                       color: AppColors.brown,
                       constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: 40),
@@ -219,23 +238,23 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
               if (_removed.isNotEmpty)
                 Align(
                   alignment: AlignmentDirectional.centerStart,
-                  child: HealthLink('Put the removed lines back', onPressed: () => setState(_removed.clear)),
+                  child: HealthLink(l10n.putRemovedLinesBack, onPressed: () => setState(_removed.clear)),
                 ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        PrimaryButton(label: 'Open in Messages', onPressed: () => _open(message, whatsApp: false)),
+        PrimaryButton(label: l10n.openInMessages, onPressed: () => _open(message, whatsApp: false)),
         if (widget.onWhatsApp) ...[
           const SizedBox(height: 10),
           OutlinedButton(
             onPressed: () => _open(message, whatsApp: true),
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-            child: const Text('Open in WhatsApp'),
+            child: Text(l10n.openInWhatsApp),
           ),
         ],
         const SizedBox(height: 12),
-        const FinePrint('Nothing is sent until you press send in that app. In an emergency, calling is faster.'),
+        FinePrint(l10n.messageFinePrint),
       ],
     );
   }

@@ -15,7 +15,9 @@ enum QuickLogScale {
   appearance,
 }
 
-/// The two short groups the Quick log's categories are shown in.
+/// The two short groups the Quick log's categories are shown in. [label]
+/// is its English name, for logs and tests; a screen says it with
+/// `HealthWords.quickLogGroup`.
 enum QuickLogGroup {
   /// Weight, appetite, coat... how the body is doing.
   body('Body'),
@@ -28,16 +30,69 @@ enum QuickLogGroup {
   final String label;
 }
 
+/// What a Quick log category is called. [english] is the name for logs and
+/// tests; a screen says it in its own language with
+/// `HealthWords.quickLogCategory`.
+enum QuickLogName {
+  weight('Weight'),
+  appetite('Appetite'),
+  energy('Energy'),
+  mobility('Mobility'),
+  digestion('Digestion'),
+  skinCoat('Skin or coat'),
+  dental('Dental'),
+  drinking('Drinking'),
+  diet('Diet'),
+  droppings('Droppings'),
+  feathers('Feathers'),
+  activity('Activity'),
+  environment('Environment'),
+  eating('Eating'),
+  feeding('Feeding'),
+  shedding('Shedding'),
+  temperature('Temperature'),
+  humidity('Humidity'),
+  lighting('Lighting'),
+  other('Other'),
+  sleep('Sleep'),
+  barking('Barking'),
+  meowing('Meowing'),
+  vocalisation('Vocalisation'),
+  biting('Biting'),
+  bitingScratching('Biting or scratching'),
+  leftAlone('When left alone'),
+  litterBox('Litter box use'),
+  otherBehaviour('Other behaviour');
+
+  const QuickLogName(this.english);
+
+  final String english;
+}
+
 /// One thing the owner can log about a pet.
 class QuickLogCategory {
-  const QuickLogCategory(this.key, this.label, this.icon, this.scale, [this.group = QuickLogGroup.body]);
+  const QuickLogCategory(this.key, QuickLogName this.name, this.icon, this.scale, [this.group = QuickLogGroup.body])
+    : _madeUpLabel = null;
+
+  /// A category the app has no name for (a key logged by a newer version):
+  /// it is called what its key says.
+  const QuickLogCategory.unnamed(this.key, String label, this.icon, this.scale)
+    : name = null,
+      _madeUpLabel = label,
+      group = QuickLogGroup.body;
 
   /// Stored in `health_observations.category`.
   final String key;
-  final String label;
+
+  /// What it is called, or `null` for a category the app does not know.
+  final QuickLogName? name;
+  final String? _madeUpLabel;
   final IconData icon;
   final QuickLogScale scale;
   final QuickLogGroup group;
+
+  /// The name in English, for logs and tests.
+  String get label => name?.english ?? _madeUpLabel ?? '';
 
   List<ObservationLevel> get levels => switch (scale) {
     QuickLogScale.weight => const [],
@@ -59,7 +114,7 @@ class SpeciesSettings {
     required this.quickLog,
     required this.routineKinds,
     this.weightInGrams = false,
-    this.routineLabels = const {},
+    this.cageIsEnclosure = false,
   });
 
   /// Every record kind, the most relevant for the species first.
@@ -74,8 +129,9 @@ class SpeciesSettings {
   /// Small animals are weighed in grams; the value is still stored in kg.
   final bool weightInGrams;
 
-  /// What a routine kind is called for this species, where it differs.
-  final Map<CareKind, String> routineLabels;
+  /// A reptile lives in an enclosure: "Cage cleaning" is called
+  /// "Enclosure cleaning" for it.
+  final bool cageIsEnclosure;
 
   /// The Quick log categories of one group, in the order they are offered.
   List<QuickLogCategory> quickLogIn(QuickLogGroup group) => [
@@ -83,8 +139,11 @@ class SpeciesSettings {
       if (c.group == group) c,
   ];
 
-  /// "Cage cleaning", or "Enclosure cleaning" for a reptile.
-  String routineLabel(CareKind kind) => routineLabels[kind] ?? kind.label;
+  /// "Cage cleaning", or "Enclosure cleaning" for a reptile: the English
+  /// name, for logs and tests. A screen says it with
+  /// `HealthWords.routineKind`.
+  String routineLabel(CareKind kind) =>
+      kind == CareKind.cageCleaning && cageIsEnclosure ? 'Enclosure cleaning' : kind.label;
 
   /// The category for [key], or a generic one for keys logged under
   /// another species or an older version.
@@ -95,8 +154,11 @@ class SpeciesSettings {
     for (final c in _allCategories) {
       if (c.key == key) return c;
     }
-    final label = key.isEmpty ? 'Other' : '${key[0].toUpperCase()}${key.substring(1).replaceAll('_', ' ')}';
-    return QuickLogCategory(key, label, Icons.edit_note_rounded, QuickLogScale.appearance);
+    if (key.isEmpty) {
+      return QuickLogCategory(key, QuickLogName.other, Icons.edit_note_rounded, QuickLogScale.appearance);
+    }
+    final label = '${key[0].toUpperCase()}${key.substring(1).replaceAll('_', ' ')}';
+    return QuickLogCategory.unnamed(key, label, Icons.edit_note_rounded, QuickLogScale.appearance);
   }
 
   static SpeciesSettings of(PetSpecies species) => _settings[species] ?? _settings[PetSpecies.other]!;
@@ -104,48 +166,111 @@ class SpeciesSettings {
 
 const _weight = QuickLogCategory(
   Observation.weightCategory,
-  'Weight',
+  QuickLogName.weight,
   Icons.monitor_weight_rounded,
   QuickLogScale.weight,
 );
-const _appetite = QuickLogCategory('appetite', 'Appetite', Icons.restaurant_rounded, QuickLogScale.amount);
-const _energy = QuickLogCategory('energy', 'Energy', Icons.bolt_rounded, QuickLogScale.amount);
-const _mobility = QuickLogCategory('mobility', 'Mobility', Icons.pets_rounded, QuickLogScale.amount);
-const _digestion = QuickLogCategory('digestion', 'Digestion', Icons.water_drop_rounded, QuickLogScale.appearance);
-const _skin = QuickLogCategory('skin_coat', 'Skin or coat', Icons.auto_awesome_rounded, QuickLogScale.appearance);
-const _dental = QuickLogCategory('dental', 'Dental', Icons.mood_rounded, QuickLogScale.appearance);
-const _drinking = QuickLogCategory('drinking', 'Drinking', Icons.local_drink_rounded, QuickLogScale.amount);
-const _diet = QuickLogCategory('diet', 'Diet', Icons.restaurant_rounded, QuickLogScale.amount);
-const _droppings = QuickLogCategory('droppings', 'Droppings', Icons.water_drop_rounded, QuickLogScale.appearance);
-const _feathers = QuickLogCategory('feathers', 'Feathers', Icons.flutter_dash_rounded, QuickLogScale.appearance);
-const _activity = QuickLogCategory('activity', 'Activity', Icons.bolt_rounded, QuickLogScale.amount);
-const _environment = QuickLogCategory('environment', 'Environment', Icons.thermostat_rounded, QuickLogScale.appearance);
-const _eating = QuickLogCategory('eating', 'Eating', Icons.restaurant_rounded, QuickLogScale.amount);
-const _feeding = QuickLogCategory('feeding', 'Feeding', Icons.restaurant_rounded, QuickLogScale.amount);
-const _shedding = QuickLogCategory('shedding', 'Shedding', Icons.auto_awesome_rounded, QuickLogScale.appearance);
-const _temperature = QuickLogCategory('temperature', 'Temperature', Icons.thermostat_rounded, QuickLogScale.appearance);
-const _humidity = QuickLogCategory('humidity', 'Humidity', Icons.water_drop_rounded, QuickLogScale.appearance);
-const _lighting = QuickLogCategory('lighting', 'Lighting', Icons.light_mode_rounded, QuickLogScale.appearance);
-const _other = QuickLogCategory('other', 'Other', Icons.edit_note_rounded, QuickLogScale.appearance);
+const _appetite = QuickLogCategory('appetite', QuickLogName.appetite, Icons.restaurant_rounded, QuickLogScale.amount);
+const _energy = QuickLogCategory('energy', QuickLogName.energy, Icons.bolt_rounded, QuickLogScale.amount);
+const _mobility = QuickLogCategory('mobility', QuickLogName.mobility, Icons.pets_rounded, QuickLogScale.amount);
+const _digestion = QuickLogCategory(
+  'digestion',
+  QuickLogName.digestion,
+  Icons.water_drop_rounded,
+  QuickLogScale.appearance,
+);
+const _skin = QuickLogCategory(
+  'skin_coat',
+  QuickLogName.skinCoat,
+  Icons.auto_awesome_rounded,
+  QuickLogScale.appearance,
+);
+const _dental = QuickLogCategory('dental', QuickLogName.dental, Icons.mood_rounded, QuickLogScale.appearance);
+const _drinking = QuickLogCategory('drinking', QuickLogName.drinking, Icons.local_drink_rounded, QuickLogScale.amount);
+const _diet = QuickLogCategory('diet', QuickLogName.diet, Icons.restaurant_rounded, QuickLogScale.amount);
+const _droppings = QuickLogCategory(
+  'droppings',
+  QuickLogName.droppings,
+  Icons.water_drop_rounded,
+  QuickLogScale.appearance,
+);
+const _feathers = QuickLogCategory(
+  'feathers',
+  QuickLogName.feathers,
+  Icons.flutter_dash_rounded,
+  QuickLogScale.appearance,
+);
+const _activity = QuickLogCategory('activity', QuickLogName.activity, Icons.bolt_rounded, QuickLogScale.amount);
+const _environment = QuickLogCategory(
+  'environment',
+  QuickLogName.environment,
+  Icons.thermostat_rounded,
+  QuickLogScale.appearance,
+);
+const _eating = QuickLogCategory('eating', QuickLogName.eating, Icons.restaurant_rounded, QuickLogScale.amount);
+const _feeding = QuickLogCategory('feeding', QuickLogName.feeding, Icons.restaurant_rounded, QuickLogScale.amount);
+const _shedding = QuickLogCategory(
+  'shedding',
+  QuickLogName.shedding,
+  Icons.auto_awesome_rounded,
+  QuickLogScale.appearance,
+);
+const _temperature = QuickLogCategory(
+  'temperature',
+  QuickLogName.temperature,
+  Icons.thermostat_rounded,
+  QuickLogScale.appearance,
+);
+const _humidity = QuickLogCategory(
+  'humidity',
+  QuickLogName.humidity,
+  Icons.water_drop_rounded,
+  QuickLogScale.appearance,
+);
+const _lighting = QuickLogCategory(
+  'lighting',
+  QuickLogName.lighting,
+  Icons.light_mode_rounded,
+  QuickLogScale.appearance,
+);
+const _other = QuickLogCategory('other', QuickLogName.other, Icons.edit_note_rounded, QuickLogScale.appearance);
 
 // Behaviour. The app records what the owner noticed and never interprets
 // it. A key is shared by every species; the label follows the animal
 // ("Barking" for a dog, "Meowing" for a cat).
 const _behave = QuickLogGroup.behaviour;
-const _sleep = QuickLogCategory('sleep', 'Sleep', Icons.bedtime_rounded, QuickLogScale.amount, _behave);
-const _barking = QuickLogCategory('vocalisation', 'Barking', Icons.volume_up_rounded, QuickLogScale.amount, _behave);
-const _meowing = QuickLogCategory('vocalisation', 'Meowing', Icons.volume_up_rounded, QuickLogScale.amount, _behave);
-const _vocalisation = QuickLogCategory(
+const _sleep = QuickLogCategory('sleep', QuickLogName.sleep, Icons.bedtime_rounded, QuickLogScale.amount, _behave);
+const _barking = QuickLogCategory(
   'vocalisation',
-  'Vocalisation',
+  QuickLogName.barking,
   Icons.volume_up_rounded,
   QuickLogScale.amount,
   _behave,
 );
-const _biting = QuickLogCategory('biting', 'Biting', Icons.warning_amber_rounded, QuickLogScale.amount, _behave);
+const _meowing = QuickLogCategory(
+  'vocalisation',
+  QuickLogName.meowing,
+  Icons.volume_up_rounded,
+  QuickLogScale.amount,
+  _behave,
+);
+const _vocalisation = QuickLogCategory(
+  'vocalisation',
+  QuickLogName.vocalisation,
+  Icons.volume_up_rounded,
+  QuickLogScale.amount,
+  _behave,
+);
+const _biting = QuickLogCategory(
+  'biting',
+  QuickLogName.biting,
+  Icons.warning_amber_rounded,
+  QuickLogScale.amount,
+  _behave,
+);
 const _bitingScratching = QuickLogCategory(
   'biting',
-  'Biting or scratching',
+  QuickLogName.bitingScratching,
   Icons.warning_amber_rounded,
   QuickLogScale.amount,
   _behave,
@@ -153,17 +278,23 @@ const _bitingScratching = QuickLogCategory(
 // "More than usual" says nothing here, so the answers are usual / different.
 const _leftAlone = QuickLogCategory(
   'left_alone',
-  'When left alone',
+  QuickLogName.leftAlone,
   Icons.door_front_door_rounded,
   QuickLogScale.appearance,
   _behave,
 );
 // How much the box is used. An entry logged earlier as "Different from
 // usual" keeps that answer.
-const _litter = QuickLogCategory('litter_box', 'Litter box use', Icons.inbox_rounded, QuickLogScale.amount, _behave);
+const _litter = QuickLogCategory(
+  'litter_box',
+  QuickLogName.litterBox,
+  Icons.inbox_rounded,
+  QuickLogScale.amount,
+  _behave,
+);
 const _behaviour = QuickLogCategory(
   'behaviour',
-  'Other behaviour',
+  QuickLogName.otherBehaviour,
   Icons.psychology_rounded,
   QuickLogScale.appearance,
   _behave,
@@ -226,7 +357,7 @@ final _settings = <PetSpecies, SpeciesSettings>{
     quickLog: const [_weight, _feeding, _shedding, _temperature, _humidity, _lighting, _other],
     routineKinds: const [CareKind.feeding, CareKind.cageCleaning, CareKind.other],
     weightInGrams: true,
-    routineLabels: const {CareKind.cageCleaning: 'Enclosure cleaning'},
+    cageIsEnclosure: true,
   ),
   PetSpecies.other: SpeciesSettings(
     recordKinds: _kinds(const [RecordKind.checkup, RecordKind.document, RecordKind.other]),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -31,8 +32,8 @@ class PetDocumentsScreen extends ConsumerWidget {
     if (value == null) {
       body = data.hasError
           ? HealthLoadError(
-              what: 'the documents',
-              message: healthErrorMessage(data.error!),
+              title: context.healthL10n.loadFailedDocuments,
+              error: data.error!,
               onRetry: () => refreshHealth(ref, pet.id),
             )
           : const HealthLoading();

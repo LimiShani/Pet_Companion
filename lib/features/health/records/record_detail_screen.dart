@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -58,8 +59,8 @@ class RecordDetailScreen extends ConsumerWidget {
                 ? const HealthLoading()
                 : records.hasError
                 ? HealthLoadError(
-                    what: 'the record',
-                    message: healthErrorMessage(records.error!),
+                    title: context.healthL10n.loadFailedRecord,
+                    error: records.error!,
                     onRetry: () => ref.invalidate(healthRecordsProvider(pet.id)),
                   )
                 : const EmptyState(

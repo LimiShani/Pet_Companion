@@ -4,11 +4,55 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_config.dart';
 
-/// Thrown by a `HealthRepository` with a message safe to show to the user.
+/// Why something in Health failed. The repositories and services report
+/// the reason; the screen puts it into words in the app's language (see
+/// `healthErrorText` in `health_strings.dart`). [english] is the same in
+/// plain English, for logs.
+enum HealthFailure {
+  offline('Could not reach the server. Check your connection and try again.'),
+  sessionEnded('Your session has ended. Please sign in again.'),
+  notAllowed('You are not allowed to do that. Please sign in again.'),
+  invalid('Some of the details are not valid. Please check them and try again.'),
+  petNotStored('This pet is not saved to your account yet, so nothing can be stored for it.'),
+  petGone('That pet is no longer in your list.'),
+  itemGone('That item no longer exists. Go back and open it again.'),
+  recordGone('That record no longer exists.'),
+  vetGone('That vet no longer exists.'),
+  medicineGone('That medicine no longer exists.'),
+  reminderGone('That reminder no longer exists.'),
+  entryGone('That entry no longer exists.'),
+  fileType('Only photos (JPEG, PNG, WebP) and PDF files can be attached.'),
+  fileEmpty('That file is empty.'),
+  fileTooLarge('That file is larger than 5 MB. Please choose a smaller one.'),
+  fileGone('That file is no longer available.'),
+  fileNotStored('The file could not be stored. Please try again.'),
+  fileUnreadable('Could not read that file.'),
+  camera('Could not open the camera.'),
+  photos('Could not open your photos.'),
+  files('Could not open your files.'),
+  pdf('Could not prepare the PDF. Please try again.'),
+  lostCard('Could not prepare the card. Please try again.'),
+
+  /// Anything the app has no words of its own for.
+  unknown('Something went wrong. Please try again.');
+
+  const HealthFailure(this.english);
+
+  final String english;
+}
+
+/// Thrown by a `HealthRepository` and the Health services. [failure] says
+/// what went wrong; [message] is the same in plain English, for logs and
+/// for a [HealthFailure.unknown] failure, where it is whatever explanation
+/// there is.
 class HealthException implements Exception {
-  const HealthException(this.message);
+  const HealthException(this.message, [this.failure = HealthFailure.unknown]);
+
+  /// The failure [failure], with its English words as the message.
+  HealthException.of(this.failure) : message = failure.english;
 
   final String message;
+  final HealthFailure failure;
 
   @override
   String toString() => message;
@@ -31,6 +75,10 @@ DateTime atTime(DateTime day, TimeOfDay time) => DateTime(day.year, day.month, d
 
 /// What a health record is about. [dbValue] is the `health_events.kind`
 /// column; anything unknown reads back as [other].
+///
+/// [label] and [plural] are English names for logs and tests; a screen
+/// says them in its own language with `HealthWords` (`health_strings.dart`).
+/// The same holds for the `label` of every other enum in this file.
 enum RecordKind {
   checkup('checkup', 'Vet visit', 'Vet visits'),
   vaccination('vaccination', 'Vaccination', 'Vaccinations'),
@@ -223,13 +271,16 @@ class PickedFile {
   /// The bucket's size limit per file.
   static const maxBytes = 5 * 1024 * 1024;
 
-  /// A message for the owner when this file cannot be attached, or `null`.
-  String? get problem {
-    if (!allowedMimeTypes.contains(mimeType)) return 'Only photos (JPEG, PNG, WebP) and PDF files can be attached.';
-    if (bytes.isEmpty) return 'That file is empty.';
-    if (bytes.length > maxBytes) return 'That file is larger than 5 MB. Please choose a smaller one.';
+  /// Why this file cannot be attached, or `null` when it can.
+  HealthFailure? get failure {
+    if (!allowedMimeTypes.contains(mimeType)) return HealthFailure.fileType;
+    if (bytes.isEmpty) return HealthFailure.fileEmpty;
+    if (bytes.length > maxBytes) return HealthFailure.fileTooLarge;
     return null;
   }
+
+  /// [failure] in plain English, for logs; `null` when the file is fine.
+  String? get problem => failure?.english;
 
   /// Mime type for a file name, or `null` when the type is not supported.
   static String? mimeTypeFor(String fileName) {
@@ -790,7 +841,8 @@ enum LostCardLanguage {
 
   final String code;
 
-  /// What the switch on the page calls it.
+  /// Its English name, for logs. The switch on the page names a language
+  /// in its own letters (`nativeLanguageName`).
   final String label;
 
   static LostCardLanguage fromCode(String? code) =>
