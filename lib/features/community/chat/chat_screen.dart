@@ -11,6 +11,8 @@ import '../community_time.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../feed/post_actions.dart' show showCommunitySnack;
+import '../widgets/advice_notice.dart';
+import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
 import 'chat_providers.dart';
 
@@ -64,6 +66,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           CoralHeader(title: name, showBack: true),
+          // Pinned: it stays in view while the conversation scrolls.
+          const Padding(
+            padding: EdgeInsets.fromLTRB(AppSpacing.screen, 10, AppSpacing.screen, 0),
+            child: AdviceNotice(),
+          ),
           Expanded(child: _Messages(channelId: widget.channelId)),
           MessageBar(
             controller: _message,
@@ -155,10 +162,12 @@ class _Bubble extends StatelessWidget {
       container: true,
       label: mine ? 'You' : null,
       child: Align(
-        alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+        // Own messages at the end of the line, other people's at the start:
+        // right and left in English, mirrored in a right-to-left layout.
+        alignment: mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
         child: FractionallySizedBox(
           widthFactor: 0.82,
-          alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
+          alignment: mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Column(
@@ -166,7 +175,7 @@ class _Bubble extends StatelessWidget {
               children: [
                 if (!mine)
                   Padding(
-                    padding: const EdgeInsets.only(left: 8, bottom: 3),
+                    padding: const EdgeInsetsDirectional.only(start: 8, bottom: 3),
                     child: Text(
                       message.authorName,
                       style: AppText.label.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown),
@@ -178,14 +187,14 @@ class _Bubble extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: mine ? AppColors.yellow : AppColors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: big,
-                      topRight: big,
-                      bottomLeft: mine ? big : small,
-                      bottomRight: mine ? small : big,
+                    borderRadius: BorderRadiusDirectional.only(
+                      topStart: big,
+                      topEnd: big,
+                      bottomStart: mine ? big : small,
+                      bottomEnd: mine ? small : big,
                     ),
                   ),
-                  child: Text(message.text, style: AppText.body.copyWith(fontSize: 15, height: 1.4)),
+                  child: AutoDirectionText(message.text, style: AppText.body.copyWith(fontSize: 15, height: 1.4)),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 3, 8, 0),
