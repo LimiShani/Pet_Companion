@@ -584,7 +584,7 @@ abstract class AppL10n {
   /// No description provided for @settingsWeekNote.
   ///
   /// In en, this message translates to:
-  /// **'Sets the order of the day chips and what \"Weekdays\" and \"Weekends\" mean in the schedule. The dimmed days are the weekend.'**
+  /// **'Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule will follow this choice soon; for now it is saved for it.'**
   String get settingsWeekNote;
 
   /// No description provided for @settingsSavedNote.

@@ -112,7 +112,7 @@
     "description": "Screen-reader text of the row of seven day letters; the days are short names, e.g. 'Fri, Sat'.",
     "placeholders": {"days": {"type": "String"}}
   },
-  "settingsWeekNote": "Sets the order of the day chips and what \"Weekdays\" and \"Weekends\" mean in the schedule. The dimmed days are the weekend.",
+  "settingsWeekNote": "Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule will follow this choice soon; for now it is saved for it.",
   "settingsSavedNote": "These settings are saved on this phone.",
 
   "homeMenu": "Menu",
