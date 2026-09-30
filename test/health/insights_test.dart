@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -291,6 +293,11 @@ void main() {
   });
 
   group('PDF file', () {
+    // The bundled fonts, read from the project (a plain test has no asset
+    // bundle).
+    Future<ByteData> fromDisk(String path) async => ByteData.sublistView(File(path).readAsBytesSync());
+    final builder = PdfHealthPdfBuilder(loadFont: fromDisk);
+
     const report = HealthReport(
       title: 'Kelly: health summary',
       subtitle: 'Dog · Mix · 13.6 years · 23 kg',
@@ -304,10 +311,11 @@ void main() {
       ],
     );
 
-    test('a report in western letters becomes a text PDF', () async {
-      final bytes = await const PdfHealthPdfBuilder().build(report);
+    test('a report in western letters becomes a text PDF, in the app font', () async {
+      final bytes = await builder.build(report);
       expect(latin1.decode(bytes.sublist(0, 5)), '%PDF-');
       expect(bytes.length, greaterThan(800));
+      expect(latin1.decode(bytes), contains('Nunito'));
     });
 
     test('a long history runs over several pages', () async {
@@ -328,18 +336,21 @@ void main() {
             ),
         ],
       );
-      final bytes = await const PdfHealthPdfBuilder().build(long);
+      final bytes = await builder.build(long);
       final text = latin1.decode(bytes);
       expect(RegExp('/Type ?/Page[^s]').allMatches(text).length, greaterThan(1));
     });
 
-    test('typographic punctuation is replaced, other scripts are detected', () {
+    test('typographic punctuation is replaced, and what each font draws is known', () async {
       expect(plainPunctuation('Kelly’s “big” walk – done…'), 'Kelly\'s "big" walk - done...');
-      expect(fitsBuiltInFont('Dr. Lévi · café'), isTrue);
-      expect(fitsBuiltInFont('ד"ר לוי'), isFalse);
+      final fonts = await HealthPdfFonts.load(fromDisk);
+      expect(fonts.nunitoCovers('Dr. Lévi · café'), isTrue);
+      expect(fonts.nunitoCovers('ד"ר לוי'), isFalse);
+      expect(fonts.fredokaCovers('ד״ר לוי · Dr. Levi · 23 ק״ג · ₪320'), isTrue);
+      expect(fonts.fredokaCovers('🐶'), isFalse);
     });
 
-    testWidgets('a report in another script is drawn onto the pages instead', (tester) async {
+    testWidgets('a left-to-right report with another script is drawn onto the pages instead', (tester) async {
       const hebrew = HealthReport(
         title: 'קלי: סיכום בריאות',
         subtitle: 'כלבה · מעורבת',
@@ -349,7 +360,7 @@ void main() {
         recordsTitle: 'Recent records',
         records: [HealthReportRow(date: '14.03.25', kind: 'Vaccination', title: 'חיסון כלבת', details: 'מרפאת הפארק')],
       );
-      final bytes = await tester.runAsync(() => const PdfHealthPdfBuilder().build(hebrew));
+      final bytes = await tester.runAsync(() => builder.build(hebrew));
       expect(latin1.decode(bytes!.sublist(0, 5)), '%PDF-');
       // A page picture makes the file much larger than a text PDF.
       expect(bytes.length, greaterThan(3000));

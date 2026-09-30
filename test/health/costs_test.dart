@@ -6,6 +6,7 @@ import 'package:pet_companion/features/health/costs.dart';
 import 'package:pet_companion/features/health/data/health_models.dart';
 import 'package:pet_companion/features/health/health_format.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 
 import 'health_test_helpers.dart';
 
@@ -28,9 +29,10 @@ void main() {
 
   group('money', () {
     test('an amount shows decimals only when it has them', () {
-      expect(formatMoney(320, 'ILS'), '₪320');
-      expect(formatMoney(649.9, 'ILS'), '₪649.90');
-      expect(formatMoney(12, 'EUR'), '€12');
+      final english = HealthFormat.forLocale(englishLocale);
+      expect(english.money(320, 'ILS'), '₪320');
+      expect(english.money(649.9, 'ILS'), '₪649.90');
+      expect(english.money(12, 'EUR'), '€12');
     });
 
     test('a typed amount accepts a comma and refuses anything else', () {

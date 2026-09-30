@@ -1,6 +1,7 @@
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 
 /// One line of a report's record table.
@@ -16,7 +17,12 @@ class HealthReportRow {
 }
 
 /// What goes on a shared PDF: plain text only, so it can be checked in
-/// tests and drawn by any [HealthPdfBuilder].
+/// tests and drawn by any `HealthPdfBuilder`.
+///
+/// The text is in the language of the screen the report was made from.
+/// In Hebrew a name, a number or anything typed is kept in one piece with
+/// invisible direction marks (see `HealthFormat`); the PDF builder reads
+/// them to put every piece in its place.
 class HealthReport {
   const HealthReport({
     required this.title,
@@ -26,7 +32,9 @@ class HealthReport {
     this.facts = const [],
     this.recordsTitle = '',
     this.records = const [],
-    this.footer = reportFooter,
+    this.footer = '',
+    this.columns = const [],
+    this.rightToLeft = false,
   });
 
   /// "Kelly: health summary".
@@ -51,6 +59,13 @@ class HealthReport {
   final List<HealthReportRow> records;
   final String footer;
 
+  /// The headings of the record table's four columns (date, kind, record,
+  /// details); no heading row when empty.
+  final List<String> columns;
+
+  /// The report reads right to left (Hebrew).
+  final bool rightToLeft;
+
   /// Every piece of text on the report, in reading order.
   List<String> get allText => [
     title,
@@ -58,94 +73,109 @@ class HealthReport {
     prepared,
     for (final fact in facts) ...[fact.$1, fact.$2],
     recordsTitle,
+    ...columns,
     for (final row in records) ...[row.date, row.kind, row.title, row.details],
     footer,
   ];
 }
 
-const reportFooter =
-    'Written by the owner in Pet Companion. It is a record of what was entered, not veterinary advice.';
-
 /// How many history records a summary carries.
 const summaryRecordLimit = 25;
 
-String _vetLine(Vet vet) =>
-    [vet.name, if (vet.hasPhone) vet.phone.trim(), if (vet.hasAddress) vet.address.trim()].join(' · ');
+String _vetLine(HealthFormat format, Vet vet) => format.dots([
+  vet.name,
+  if (vet.hasPhone) format.ltrInLine(vet.phone.trim()),
+  if (vet.hasAddress) vet.address.trim(),
+]);
 
 String _slug(String text) {
   final slug = text.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
   return slug.isEmpty ? 'pet' : slug;
 }
 
-/// A record as one table line.
-HealthReportRow reportRow(HealthRecord record) {
-  final details = [
-    if (record.productName.trim().isNotEmpty) record.productName.trim(),
-    if (record.clinic.trim().isNotEmpty) record.clinic.trim(),
-    if (record.nextDueOn != null) 'Next due ${formatDate(record.nextDueOn!)}',
-    if (!record.isDone) 'Planned',
-    if (record.notes.trim().isNotEmpty) record.notes.trim(),
-  ].join(' · ');
-  return HealthReportRow(date: formatDate(record.when), kind: record.kind.label, title: record.title, details: details);
+/// A record as one table line, in the words of [format].
+HealthReportRow reportRow(HealthFormat format, HealthRecord record) {
+  final l10n = format.l10n;
+  final details = format.dots([
+    record.productName.trim(),
+    record.clinic.trim(),
+    if (record.nextDueOn != null) l10n.nextDue(format.date(record.nextDueOn!)),
+    if (!record.isDone) l10n.reportPlanned,
+    record.notes.trim(),
+  ]);
+  return HealthReportRow(
+    date: format.date(record.when),
+    kind: l10n.recordKind(record.kind),
+    title: format.typed(record.title),
+    details: details,
+  );
 }
 
-/// The report of a pet: its details, allergies and conditions, active
-/// medicines and vets, then a table of [records] (the chosen ones, or the
-/// recent history). [single]: the report is about one record only.
+/// The report of a pet, in the language of [format]: its details,
+/// allergies and conditions, active medicines and vets, then a table of
+/// [records] (the chosen ones, or the recent history). [single]: the
+/// report is about one record only.
 HealthReport buildHealthReport({
+  required HealthFormat format,
   required HealthSummary summary,
   required List<HealthRecord> records,
   required DateTime now,
   bool single = false,
 }) {
+  final l10n = format.l10n;
   final pet = summary.pet;
   final profile = summary.profile;
   final grams = SpeciesSettings.of(pet.species).weightInGrams;
   final weight = summary.weightKg;
-  final contact = [
-    if (profile.contactName.trim().isNotEmpty) profile.contactName.trim(),
-    if (profile.contactPhone.trim().isNotEmpty) profile.contactPhone.trim(),
-  ].join(' · ');
+  final chip = profile.microchip.trim();
+  final contact = format.dots([
+    profile.contactName.trim(),
+    if (profile.contactPhone.trim().isNotEmpty) format.ltrInLine(profile.contactPhone.trim()),
+  ]);
 
   final facts = <(String, String)>[
-    if (profile.microchip.trim().isNotEmpty)
-      ('Microchip', profile.microchip.trim())
+    if (chip.isNotEmpty)
+      (l10n.microchip, format.ltrInLine(chip))
     else if (profile.notChipped)
-      ('Microchip', 'Not chipped'),
+      (l10n.microchip, l10n.notChipped),
     if (profile.allergiesAnswered)
-      ('Allergies', profile.allergies.isEmpty ? 'None known' : profile.allergies.join('; ')),
+      (l10n.allergies, profile.allergies.isEmpty ? l10n.noneKnown : format.semicolons(profile.allergies)),
     if (profile.conditionsAnswered)
-      ('Conditions', profile.conditions.isEmpty ? 'None known' : profile.conditions.join('; ')),
+      (l10n.conditions, profile.conditions.isEmpty ? l10n.noneKnown : format.semicolons(profile.conditions)),
     if (summary.medications.isNotEmpty)
       (
-        'Active medicines',
-        summary.medications
-            .map((m) => m.instructionLine.isEmpty ? m.displayName : '${m.displayName}: ${m.instructionLine}')
-            .join('\n'),
+        l10n.activeMedicines,
+        [
+          for (final m in summary.medications)
+            format.instructions(m).isEmpty
+                ? format.typed(m.displayName)
+                : l10n.reportMedicineLine(m.displayName, format.instructions(m)),
+        ].join('\n'),
       ),
-    if (summary.regularVet != null) ('Regular vet', _vetLine(summary.regularVet!)),
-    if (summary.emergencyVet != null) ('Emergency vet', _vetLine(summary.emergencyVet!)),
-    if (contact.isNotEmpty) ('Emergency contact', contact),
-    if (profile.notes.trim().isNotEmpty) ('Notes', profile.notes.trim()),
+    if (summary.regularVet != null) (l10n.vetRoleRegular, _vetLine(format, summary.regularVet!)),
+    if (summary.emergencyVet != null) (l10n.reportEmergencyVet, _vetLine(format, summary.emergencyVet!)),
+    if (contact.isNotEmpty) (l10n.emergencyContact, contact),
+    if (profile.notes.trim().isNotEmpty) (l10n.notes, format.typed(profile.notes.trim())),
   ];
 
   final owner = summary.ownerName.trim();
   final one = single && records.length == 1 ? records.first : null;
   return HealthReport(
-    title: one == null ? '${pet.name}: health summary' : '${pet.name}: ${one.title}',
-    subtitle: [petLine(pet), if (weight != null) formatWeight(weight, grams: grams)].join(' · '),
-    prepared: owner.isEmpty
-        ? 'Prepared on ${formatDate(now)} with Pet Companion'
-        : 'Prepared on ${formatDate(now)} by $owner with Pet Companion',
+    title: one == null ? l10n.reportSummaryTitle(pet.name) : l10n.reportRecordTitle(pet.name, one.title),
+    subtitle: format.dots([format.petLine(pet, now: now), if (weight != null) format.weight(weight, grams: grams)]),
+    prepared: owner.isEmpty ? l10n.reportPrepared(format.date(now)) : l10n.reportPreparedBy(format.date(now), owner),
     fileName: one == null ? '${_slug(pet.name)}-health-summary.pdf' : '${_slug(pet.name)}-${_slug(one.title)}.pdf',
     facts: facts,
     recordsTitle: records.isEmpty
         ? ''
         : one != null
-        ? 'Record'
+        ? l10n.record
         : single
-        ? 'Records'
-        : 'Recent records',
-    records: [for (final record in records) reportRow(record)],
+        ? l10n.reportRecords
+        : l10n.reportRecentRecords,
+    records: [for (final record in records) reportRow(format, record)],
+    footer: l10n.reportFooter,
+    columns: [l10n.fieldDate, l10n.reportColumnKind, l10n.record, l10n.details],
+    rightToLeft: format.isRtl,
   );
 }

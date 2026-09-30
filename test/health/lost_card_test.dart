@@ -67,9 +67,10 @@ void main() {
       expect(find.text('This is what will be shared'), findsOneWidget);
 
       // Hebrew by default: the card is read by neighbours.
-      expect(onCard('מחפשים את Kelly'), findsOneWidget);
+      // The name sits in one piece between invisible direction marks.
+      expect(onCard('מחפשים את \u2068Kelly\u2069'), findsOneWidget);
       expect(onCard('הוכן באפליקציית Pet Companion'), findsOneWidget);
-      expect(Directionality.of(tester.element(onCard('מחפשים את Kelly'))), TextDirection.rtl);
+      expect(Directionality.of(tester.element(onCard('מחפשים את \u2068Kelly\u2069'))), TextDirection.rtl);
 
       // Nothing can be shared before a phone number is given and confirmed.
       expect(find.text('Add your phone number, then confirm it here.'), findsOneWidget);
@@ -83,7 +84,7 @@ void main() {
 
       expect(onCard('Light brown, medium, red collar. Shy.'), findsOneWidget);
       expect(onCard('Florentin, Tel Aviv'), findsOneWidget);
-      expect(onCard('10.06.25, בסביבות 17:40'), findsOneWidget);
+      expect(onCard('\u206810.06.25\u2069, בסביבות \u206817:40\u2069'), findsOneWidget);
       expect(find.text('Show this phone number on the card: $phone'), findsOneWidget);
       expect(onCard(phone), findsNothing);
       expect(enabled(tester, 'Share as image'), isFalse);
@@ -91,7 +92,7 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('lost-confirm-phone')));
       expect(confirmBox(tester), isTrue);
       expect(onCard(phone), findsOneWidget);
-      expect(onCard('ראיתם? התקשרו'), findsOneWidget);
+      expect(onCard('ראיתם את \u2068Kelly\u2069? התקשרו'), findsOneWidget);
       expect(enabled(tester, 'Share as image'), isTrue);
 
       // Another number needs another confirmation.
@@ -174,7 +175,7 @@ void main() {
     testWidgets('a pet without a chip or a photo gets a card without them', (tester) async {
       final h = await openLost(tester, soya);
 
-      expect(onCard('מחפשים את Soya'), findsOneWidget);
+      expect(onCard('מחפשים את \u2068Soya\u2069'), findsOneWidget);
       expect(onCard('יש שבב'), findsNothing);
       expect(find.text('No photo on the card'), findsOneWidget);
       expect(find.descendant(of: preview, matching: find.byType(Image)), findsNothing);
@@ -286,10 +287,14 @@ void main() {
         extra: '',
       );
       final he = card(LostCardLanguage.hebrew);
-      expect(he.heading, 'מחפשים את קלי');
-      expect(he.facts, [('אזור', 'פלורנטין, תל אביב'), ('מתי', '10.06.25, בסביבות 16:30'), ('שבב', 'יש שבב')]);
+      expect(he.heading, 'מחפשים את \u2068קלי\u2069');
+      expect(he.facts, [
+        ('אזור', 'פלורנטין, תל אביב'),
+        ('מתי', '\u206810.06.25\u2069, בסביבות \u206816:30\u2069'),
+        ('שבב', 'יש שבב'),
+      ]);
       expect(he.words.rightToLeft, isTrue);
-      expect(he.allText, containsAll(['ראיתם? התקשרו', phone]));
+      expect(he.allText, containsAll(['ראיתם את \u2068קלי\u2069? התקשרו', phone]));
 
       final en = card(LostCardLanguage.english);
       expect(en.heading, 'Looking for קלי');

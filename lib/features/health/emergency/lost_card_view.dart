@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../data/health_models.dart';
-import '../health_format.dart';
 
 /// The few fixed words of a lost card, in the card's own language. The
-/// card is read by neighbours, so it does not follow the app's language.
-/// Every entry is a whole sentence or label; nothing is glued from parts.
+/// card is read by neighbours, so it does not follow the app's language:
+/// its words are Health's strings (`lostCard...` in the strings files) of
+/// the language chosen for the card, whatever the app is showing.
 class LostCardWords {
   const LostCardWords._({
     required this.rightToLeft,
@@ -20,30 +21,20 @@ class LostCardWords {
     required this.around,
   });
 
-  factory LostCardWords.of(LostCardLanguage language) => switch (language) {
-    LostCardLanguage.hebrew => LostCardWords._(
-      rightToLeft: true,
-      heading: (name) => 'מחפשים את $name',
-      area: 'אזור',
-      when: 'מתי',
-      microchip: 'שבב',
-      microchipped: 'יש שבב',
-      call: (name) => 'ראיתם? התקשרו',
-      footer: 'הוכן באפליקציית Pet Companion',
-      around: (date, time) => '$date, בסביבות $time',
-    ),
-    LostCardLanguage.english => LostCardWords._(
-      rightToLeft: false,
-      heading: (name) => 'Looking for $name',
-      area: 'Area',
-      when: 'When',
-      microchip: 'Microchip',
-      microchipped: 'Microchipped',
-      call: (name) => 'Seen $name? Please call',
-      footer: 'Made with Pet Companion',
-      around: (date, time) => '$date, around $time',
-    ),
-  };
+  factory LostCardWords.of(LostCardLanguage language) {
+    final l10n = lookupHealthL10n(lostCardLocale(language));
+    return LostCardWords._(
+      rightToLeft: language == LostCardLanguage.hebrew,
+      heading: l10n.lostCardHeading,
+      area: l10n.lostCardArea,
+      when: l10n.lostCardWhen,
+      microchip: l10n.lostCardMicrochip,
+      microchipped: l10n.lostCardMicrochipped,
+      call: l10n.lostCardCall,
+      footer: l10n.lostCardFooter,
+      around: l10n.lostCardAround,
+    );
+  }
 
   final bool rightToLeft;
   final String Function(String name) heading;
@@ -55,6 +46,13 @@ class LostCardWords {
   final String footer;
   final String Function(String date, String time) around;
 }
+
+/// The locale of the card's own language.
+Locale lostCardLocale(LostCardLanguage language) => Locale(language.code);
+
+/// What the language switch of the lost-pet page calls [language]: its name
+/// in its own letters (עברית, English), on every screen.
+String lostCardLanguageName(LostCardLanguage language) => nativeLanguageName(lostCardLocale(language));
 
 /// Everything that is on one lost card. Plain text, so it can be checked
 /// without drawing anything.
@@ -92,7 +90,8 @@ class LostCardContent {
   /// "10.06.25, around 16:30", or `null` when no time was given.
   String? get whenText {
     final at = lastSeenAt;
-    return at == null ? null : words.around(formatDate(at), formatTime(at));
+    final format = AppFormat.forLocale(lostCardLocale(language));
+    return at == null ? null : words.around(format.date(at), format.time(at));
   }
 
   /// Label and value rows under the description.
@@ -137,11 +136,14 @@ class LostCardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final words = content.words;
     final picture = photo;
+    final cardDirection = words.rightToLeft ? TextDirection.rtl : TextDirection.ltr;
+    // What the owner typed keeps its own direction on the card.
+    TextDirection typed(String text) => directionOfText(text, fallback: cardDirection);
     const body = TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink, height: 1.4);
     const small = TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brown);
 
     return Directionality(
-      textDirection: words.rightToLeft ? TextDirection.rtl : TextDirection.ltr,
+      textDirection: cardDirection,
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.white,
@@ -177,31 +179,34 @@ class LostCardView extends StatelessWidget {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+              padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  if (content.description.trim().isNotEmpty) Text(content.description.trim(), style: body),
+                  if (content.description.trim().isNotEmpty)
+                    Text(content.description.trim(), style: body, textDirection: typed(content.description.trim())),
                   if (content.extra.trim().isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(content.extra.trim(), style: body),
+                      padding: const EdgeInsetsDirectional.only(top: 4),
+                      child: Text(content.extra.trim(), style: body, textDirection: typed(content.extra.trim())),
                     ),
                   for (final (label, value) in content.facts)
                     Padding(
-                      padding: const EdgeInsets.only(top: 8),
+                      padding: const EdgeInsetsDirectional.only(top: 8),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ConstrainedBox(
                             constraints: const BoxConstraints(minWidth: 52),
                             child: Padding(
-                              padding: const EdgeInsets.only(top: 2),
+                              padding: const EdgeInsetsDirectional.only(top: 2),
                               child: Text(label, style: small),
                             ),
                           ),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(value, style: body.copyWith(fontSize: 14))),
+                          Expanded(
+                            child: Text(value, style: body.copyWith(fontSize: 14), textDirection: typed(value)),
+                          ),
                         ],
                       ),
                     ),
@@ -210,11 +215,11 @@ class LostCardView extends StatelessWidget {
             ),
             if (content.phone.trim().isNotEmpty)
               Padding(
-                padding: const EdgeInsets.fromLTRB(18, 14, 18, 0),
+                padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 0),
                 child: DecoratedBox(
                   decoration: BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.circular(18)),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsetsDirectional.all(12),
                     child: Column(
                       children: [
                         Text(
@@ -237,7 +242,7 @@ class LostCardView extends StatelessWidget {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 10, 18, 14),
+              padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 14),
               child: Text(words.footer, textAlign: TextAlign.center, style: small.copyWith(fontSize: 11)),
             ),
           ],
