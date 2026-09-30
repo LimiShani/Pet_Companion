@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -7,6 +8,7 @@ import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../insights/quick_log_sheet.dart';
 import '../state/health_providers.dart';
 import '../state/schedule_logic.dart';
@@ -46,13 +48,14 @@ class _InsightsSectionState extends State<InsightsSection> {
     final pet = widget.pet;
     final data = widget.data;
     final settings = SpeciesSettings.of(pet.species);
+    final l10n = context.healthL10n;
 
     if (data.observations.isEmpty) {
       return EmptyState(
         icon: Icons.insights_rounded,
-        title: 'Nothing logged yet',
-        message: 'Weight, appetite, energy and anything else you notice about ${pet.name} will build a picture here.',
-        actionLabel: 'Open the Quick log',
+        title: l10n.insightsEmpty,
+        message: l10n.insightsEmptyNote(pet.name),
+        actionLabel: l10n.openQuickLog,
         onAction: () => showQuickLog(context, pet),
       );
     }
@@ -88,14 +91,14 @@ class _InsightsSectionState extends State<InsightsSection> {
           grams: settings.weightInGrams,
         ),
         const SizedBox(height: 16),
-        HealthSectionTitle('Observations', count: journal.length),
+        HealthSectionTitle(l10n.observations, count: journal.length),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: [
               _CategoryChip(
                 chipKey: const Key('journal-all'),
-                label: 'All',
+                label: l10n.filterAll,
                 selected: selected == null && !behaviourOnly,
                 onSelected: () => setState(() {
                   _category = null;
@@ -106,7 +109,7 @@ class _InsightsSectionState extends State<InsightsSection> {
               if (hasBehaviour)
                 _CategoryChip(
                   chipKey: const Key('journal-behaviour-group'),
-                  label: QuickLogGroup.behaviour.label,
+                  label: l10n.quickLogGroup(QuickLogGroup.behaviour),
                   selected: behaviourOnly,
                   onSelected: () => setState(() {
                     _category = null;
@@ -116,7 +119,7 @@ class _InsightsSectionState extends State<InsightsSection> {
               for (final c in categories)
                 _CategoryChip(
                   chipKey: ValueKey('journal-${c.key}'),
-                  label: c.label,
+                  label: l10n.quickLogCategory(c),
                   selected: selected == c.key,
                   onSelected: () => setState(() {
                     _category = c.key;
@@ -137,7 +140,7 @@ class _InsightsSectionState extends State<InsightsSection> {
           const SizedBox(height: 8),
         ],
         const SizedBox(height: 4),
-        const FinePrint('What you noticed, in your own words. The app does not interpret it.'),
+        FinePrint(l10n.insightsFinePrint),
       ],
     );
   }
@@ -180,11 +183,13 @@ class _WeightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final header = Row(
       children: [
-        const Expanded(child: Text('Weight', style: AppText.cardTitle)),
+        Expanded(child: Text(l10n.weight, style: AppText.cardTitle)),
         HealthLink(
-          'Log weight',
+          l10n.logWeight,
           key: const Key('log-weight'),
           icon: Icons.add_rounded,
           onPressed: () => showQuickLog(context, pet, category: Observation.weightCategory),
@@ -201,7 +206,7 @@ class _WeightCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             header,
-            Text('No weight logged yet.', style: AppText.secondary.copyWith(color: AppColors.brown)),
+            Text(l10n.noWeightYet, style: AppText.secondary.copyWith(color: AppColors.brown)),
           ],
         ),
       );
@@ -221,14 +226,12 @@ class _WeightCard extends StatelessWidget {
       for (final visit in visits)
         if (!visit.isBefore(first.observedAt) && !visit.isAfter(latest.observedAt)) visit,
     ];
-    final shown = formatWeight(latest.value!, grams: grams).split(' ');
-    String plain(double kg) => formatWeight(kg, grams: grams).split(' ').first;
-    final summary = [
-      if (previous != null)
-        '${formatWeightChange(previous.value!, latest.value!, grams: grams)} since ${formatDate(previous.observedAt)}',
-      if (weights.length > 1) 'highest ${plain(highest)}',
-      if (weights.length > 1) 'lowest ${plain(lowest)}',
-    ].join(' · ');
+    String plain(double kg) => format.weightNumber(kg, grams: grams);
+    final summary = format.dots([
+      if (previous != null) format.weightChangeSince(previous.value!, latest.value!, previous.observedAt, grams: grams),
+      if (weights.length > 1) l10n.weightHighest(plain(highest)),
+      if (weights.length > 1) l10n.weightLowest(plain(lowest)),
+    ]);
     final small = AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600);
 
     return HealthCard(
@@ -240,62 +243,94 @@ class _WeightCard extends StatelessWidget {
           header,
           Text.rich(
             TextSpan(
-              text: shown.first,
+              text: format.weightNumber(latest.value!, grams: grams),
               style: AppText.metric,
               children: [
                 TextSpan(
-                  text: ' ${shown.last}',
+                  text: ' ${format.weightUnit(grams: grams)}',
                   style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
           ),
           Text(
-            '${formatDate(latest.observedAt)} · ${weights.length == 1 ? '1 weigh-in' : '${weights.length} weigh-ins'}',
+            format.dots([format.date(latest.observedAt), l10n.weighIns(weights.length)]),
             style: AppText.secondary.copyWith(color: AppColors.brown),
           ),
           const SizedBox(height: 10),
           WeightTrendChart(
             points: [for (final w in weights) TrendPoint(w.observedAt, w.value!)],
             events: marked,
-            semanticsLabel:
-                'Weight trend from ${formatWeight(first.value!, grams: grams)} on ${formatDate(first.observedAt)} '
-                'to ${formatWeight(latest.value!, grams: grams)} on ${formatDate(latest.observedAt)}',
+            semanticsLabel: l10n.weightTrendSemantics(
+              format.weight(first.value!, grams: grams),
+              format.date(first.observedAt),
+              format.weight(latest.value!, grams: grams),
+              format.date(latest.observedAt),
+            ),
           ),
           const SizedBox(height: 4),
-          Row(
-            children: [
-              Expanded(child: Text(formatDate(first.observedAt), style: small)),
-              if (marked.isNotEmpty)
-                Flexible(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Drawn, not typed: the app font has no diamond glyph.
-                      Transform.rotate(
-                        angle: 0.7853981633974483,
-                        child: Container(width: 7, height: 7, color: small.color),
-                      ),
-                      const SizedBox(width: 6),
-                      Flexible(
-                        child: Text('vet visit', style: small, maxLines: 1, overflow: TextOverflow.ellipsis),
-                      ),
-                    ],
-                  ),
-                ),
-              Expanded(
-                child: Text(
-                  weights.length > 1 ? formatDate(latest.observedAt) : '',
-                  style: small,
-                  textAlign: TextAlign.end,
-                ),
-              ),
-            ],
+          // The dates under the chart: the first on the left and the latest
+          // on the right, as the line runs, in every language.
+          _ChartDates(
+            first: format.date(first.observedAt),
+            latest: weights.length > 1 ? format.date(latest.observedAt) : '',
+            legend: marked.isEmpty ? null : l10n.vetVisitMarker,
+            style: small,
           ),
           if (summary.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(summary, key: const Key('weight-summary'), style: AppText.secondary),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+/// The row under the weight chart: the first date, the legend of the vet
+/// visits, and the latest date. The dates sit under the ends of the line,
+/// which runs left to right in every language; the legend reads in the
+/// language of the screen.
+class _ChartDates extends StatelessWidget {
+  const _ChartDates({required this.first, required this.latest, required this.legend, required this.style});
+
+  final String first;
+  final String latest;
+  final String? legend;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    final screen = Directionality.of(context);
+    final text = legend;
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: Row(
+        children: [
+          Expanded(child: Text(first, style: style)),
+          if (text != null)
+            Flexible(
+              child: Directionality(
+                textDirection: screen,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Drawn, not typed: the app font has no diamond glyph.
+                    Transform.rotate(
+                      angle: 0.7853981633974483,
+                      child: Container(width: 7, height: 7, color: style.color),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(text, style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          Expanded(
+            child: Text(latest, style: style, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );
@@ -313,10 +348,15 @@ class _ObservationCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
     final value = observation.value;
+    final level = observation.level;
     final answer = observation.isWeight && value != null
-        ? formatWeight(value, grams: grams)
-        : observation.level?.label ?? 'Noted';
+        ? format.weight(value, grams: grams)
+        : level == null
+        ? l10n.noted
+        : l10n.level(level);
     return HealthCard(
       key: ValueKey('observation-${observation.id}'),
       onTap: onTap,
@@ -329,9 +369,9 @@ class _ObservationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${category.label} · $answer', style: AppText.cardTitle),
+                Text(format.dots([l10n.quickLogCategory(category), answer]), style: AppText.cardTitle),
                 Text(
-                  [formatDate(observation.observedAt), if (observation.note.isNotEmpty) observation.note].join(' · '),
+                  format.dots([format.date(observation.observedAt), observation.note]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],

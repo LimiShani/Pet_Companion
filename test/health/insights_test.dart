@@ -373,11 +373,18 @@ void main() {
       expect(spots[0].dy, lessThan(spots[1].dy));
     });
 
-    test('is mirrored in a right-to-left layout', () {
-      final ltr = WeightTrendPainter(points: points).layout(size);
-      final rtl = WeightTrendPainter(points: points, rtl: true).layout(size);
-      expect(rtl.first.dx, closeTo(size.width - ltr.first.dx, 1e-9));
-      expect(rtl.first.dx, greaterThan(rtl.last.dx));
+    testWidgets('runs left to right in a right-to-left layout too', (tester) async {
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.rtl,
+          child: Center(
+            child: SizedBox(width: 200, child: WeightTrendChart(points: points)),
+          ),
+        ),
+      );
+      final painter = tester.widget<CustomPaint>(find.byType(CustomPaint)).painter! as WeightTrendPainter;
+      final spots = painter.layout(size);
+      expect(spots.first.dx, lessThan(spots.last.dx));
     });
 
     test('one weigh-in is a single marker, a flat series a level line', () {

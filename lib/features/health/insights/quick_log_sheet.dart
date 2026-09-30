@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -10,6 +11,7 @@ import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../emergency/emergency_sheet.dart';
 import '../health_format.dart';
+import '../health_strings.dart';
 import '../state/health_providers.dart';
 import '../state/schedule_logic.dart';
 import '../widgets/health_widgets.dart';
@@ -40,7 +42,10 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
   ObservationLevel? _level;
   late DateTime _at;
   bool _busy = false;
-  String? _error;
+
+  /// What is wrong: a message of the sheet, or what saving threw (worded
+  /// when it is shown).
+  Object? _error;
 
   SpeciesSettings get _settings => SpeciesSettings.of(widget.pet.species);
   bool get _grams => _settings.weightInGrams;
@@ -92,10 +97,14 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
       firstDate: DateTime(now.year - 30),
       lastDate: now,
       currentDate: now,
-      helpText: 'When did you notice it?',
+      helpText: context.healthL10n.whenDidYouNotice,
     );
     if (day == null || !mounted) return;
-    final time = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_at), helpText: 'Time');
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_at),
+      helpText: context.healthL10n.fieldTime,
+    );
     if (!mounted) return;
     final picked = atTime(day, time ?? TimeOfDay.fromDateTime(_at));
     setState(() => _at = picked.isAfter(now) ? now : picked);
@@ -106,7 +115,7 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     if (category == null) return;
     final kilograms = _kilograms;
     if (_isWeight && (kilograms == null || kilograms > 500)) {
-      setState(() => _error = 'That weight does not look right. Please check the number.');
+      setState(() => _error = context.healthL10n.validWeight);
       return;
     }
     setState(() {
@@ -129,12 +138,12 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      showHealthSnack(context, _editing ? 'Entry updated.' : 'Saved to the journal.');
+      showHealthSnack(context, _editing ? context.healthL10n.entryUpdated : context.healthL10n.savedToJournal);
     } catch (error) {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -143,8 +152,8 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
   Future<void> _delete() async {
     final confirmed = await confirmDelete(
       context,
-      title: 'Delete this entry?',
-      message: 'It is removed from the journal. This cannot be undone.',
+      title: context.healthL10n.deleteEntryTitle,
+      message: context.healthL10n.deleteEntryMessage,
     );
     if (!confirmed || !mounted) return;
     setState(() => _busy = true);
@@ -155,7 +164,7 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
       if (mounted) {
         setState(() {
           _busy = false;
-          _error = healthErrorMessage(error);
+          _error = error;
         });
       }
     }
@@ -172,6 +181,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     final pet = widget.pet;
     final category = _category;
     final now = ref.watch(healthClockProvider)();
+    final l10n = context.healthL10n;
+    final format = HealthFormat.of(context);
+    final error = _error;
     Observation? lastWeight;
     if (_isWeight) {
       final weights = weightEntries(ref.watch(observationsProvider(_petId)).value ?? const []);
@@ -185,8 +197,8 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetTitle(
-          _editing ? 'Edit entry' : 'Quick log for ${pet.name}',
-          subtitle: _editing ? category?.label : 'What did you notice?',
+          _editing ? l10n.editEntry : l10n.quickLogFor(pet.name),
+          subtitle: _editing ? (category == null ? null : l10n.quickLogCategory(category)) : l10n.whatDidYouNotice,
         ),
         if (!_editing)
           // Two short groups. A species without behaviour categories keeps
@@ -196,7 +208,7 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
               if (_settings.quickLogIn(QuickLogGroup.behaviour).isEmpty)
                 const SizedBox(height: 12)
               else
-                FormLabel(group.label, key: ValueKey('quick-group-${group.name}')),
+                FormLabel(l10n.quickLogGroup(group), key: ValueKey('quick-group-${group.name}')),
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
@@ -204,8 +216,8 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
                   for (final c in _settings.quickLogIn(group))
                     ChoiceChip(
                       key: ValueKey('quick-${c.key}'),
-                      avatar: Icon(c.icon, size: 18, color: AppColors.ink),
-                      label: Text(c.label),
+                      avatar: HealthIcon(c.icon, size: 18, color: AppColors.ink),
+                      label: Text(l10n.quickLogCategory(c)),
                       selected: c.key == category?.key,
                       showCheckmark: false,
                       onSelected: (_) => setState(() {
@@ -225,21 +237,27 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
               controller: _weight,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
               inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
+              // A number: left to right on every screen, its unit beside it.
+              textDirection: TextDirection.ltr,
+              textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
               decoration: InputDecoration(
-                labelText: _grams ? 'Weight in grams' : 'Weight in kilograms',
-                suffixText: _grams ? 'g' : 'kg',
+                labelText: _grams ? l10n.weightInGrams : l10n.weightInKilograms,
+                suffixText: format.weightUnit(grams: _grams),
               ),
             ),
             if (lastWeight != null)
               Padding(
                 padding: const EdgeInsetsDirectional.only(top: 6, start: 2),
                 child: Text(
-                  'Last time: ${formatWeight(lastWeight.value!, grams: _grams)} on ${formatDate(lastWeight.observedAt)}',
+                  l10n.lastTimeWeight(
+                    format.weight(lastWeight.value!, grams: _grams),
+                    format.date(lastWeight.observedAt),
+                  ),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ),
           ] else ...[
-            FormLabel(category.label),
+            FormLabel(l10n.quickLogCategory(category)),
             Wrap(
               spacing: 8,
               runSpacing: 4,
@@ -247,7 +265,7 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
                 for (final level in category.levels)
                   ChoiceChip(
                     key: ValueKey('level-${level.dbValue}'),
-                    label: Text(level.label),
+                    label: Text(l10n.level(level)),
                     selected: level == _level,
                     onSelected: (_) => setState(() => _level = level),
                   ),
@@ -258,8 +276,8 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           PickerTile(
             key: const Key('quick-when'),
             icon: Icons.schedule_rounded,
-            label: 'When',
-            value: '${formatRelativeDay(_at, now)} · ${formatTime(_at)}',
+            label: l10n.fieldWhen,
+            value: format.relativeDayTime(_at, now),
             onTap: _pickWhen,
           ),
           const SizedBox(height: 10),
@@ -269,37 +287,35 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
             textCapitalization: TextCapitalization.sentences,
             minLines: 1,
             maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Notes (optional)'),
+            decoration: InputDecoration(labelText: l10n.notesOptional),
           ),
         ],
-        if (_error != null) ...[
+        if (error != null) ...[
           const SizedBox(height: 10),
-          Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+          Text(
+            error is String ? error : format.error(error),
+            style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+          ),
         ],
         const SizedBox(height: 16),
         PrimaryButton(
-          label: _editing ? 'Save changes' : 'Save to journal',
+          label: _editing ? l10n.saveChanges : l10n.saveToJournal,
           loading: _busy,
           onPressed: _ready ? _save : null,
         ),
         if (_editing)
           Center(
             child: HealthLink(
-              'Delete this entry',
+              l10n.deleteThisEntry,
               key: const Key('quick-delete'),
               icon: Icons.delete_outline_rounded,
               onPressed: _busy ? null : _delete,
             ),
           ),
         Center(
-          child: HealthLink(
-            'Looks urgent? Contact the vet',
-            key: const Key('quick-urgent'),
-            icon: emergencyIcon,
-            onPressed: _urgent,
-          ),
+          child: HealthLink(l10n.looksUrgent, key: const Key('quick-urgent'), icon: emergencyIcon, onPressed: _urgent),
         ),
-        const FinePrint('A record of what you noticed. The app does not interpret it.'),
+        FinePrint(l10n.quickLogFinePrint),
       ],
     );
   }
