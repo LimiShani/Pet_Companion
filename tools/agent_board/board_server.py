@@ -31,10 +31,13 @@ STATUS_DIR = STATE / "status"
 INBOX_DIR = STATE / "inbox"
 PROPOSALS_DIR = STATE / "proposals"
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8095
-GIT_TTL_SECONDS = 4
+GIT_TTL_SECONDS = 20
+STATE_TTL_SECONDS = 4
 MAX_NOTE_CHARS = 2000
 
 _lock = threading.Lock()
+_state_lock = threading.Lock()
+_state_cache: dict = {"time": 0.0, "value": None}
 _git_cache: dict[str, tuple[float, dict]] = {}
 _last_good_status: dict[str, dict] = {}
 
@@ -49,7 +52,7 @@ def _git(args: list[str], cwd: Path) -> str | None:
         flags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
         out = subprocess.run(
             ["git", *args], cwd=str(cwd), capture_output=True, text=True,
-            encoding="utf-8", errors="replace", timeout=15, creationflags=flags,
+            encoding="utf-8", errors="replace", timeout=30, creationflags=flags,
         )
         return out.stdout if out.returncode == 0 else None
     except (OSError, subprocess.SubprocessError):
@@ -119,8 +122,13 @@ def _git_facts(branch: str, worktree: str, main: str) -> dict:
         facts.update({"filesChanged": files, "insertions": ins, "deletions": dels})
     if facts["worktreeExists"]:
         dirty = _git(["status", "--porcelain"], Path(worktree))
-        facts["dirty"] = len([l for l in (dirty or "").splitlines() if l.strip()])
+        if dirty is not None:
+            facts["dirty"] = len([l for l in dirty.splitlines() if l.strip()])
 
+    # A git command that timed out on a busy machine must not make a branch
+    # look as if it vanished: keep the last good answer in that case.
+    if not facts["branchExists"] and cached and cached[1].get("branchExists"):
+        facts = cached[1]
     _git_cache[key] = (time.time(), facts)
     return facts
 
@@ -138,6 +146,30 @@ def _proposal_info(agent_id: str) -> dict:
 
 def _known_agent(agent_id: str) -> bool:
     return agent_id in {a["id"] for a in _roster().get("agents", [])}
+
+
+def cached_state() -> dict:
+    """The board state, computed by at most one request at a time.
+
+    The page polls every few seconds and each computation runs a dozen git
+    commands. On a busy machine those can take longer than the polling
+    interval, so without this the requests pile up and never finish.
+    """
+    now = time.time()
+    value = _state_cache["value"]
+    if value is not None and now - _state_cache["time"] < STATE_TTL_SECONDS:
+        return value
+    if not _state_lock.acquire(blocking=value is None):
+        return value  # someone else is refreshing: serve the last state
+    try:
+        value = _state_cache["value"]
+        if value is None or time.time() - _state_cache["time"] >= STATE_TTL_SECONDS:
+            value = build_state()
+            _state_cache["value"] = value
+            _state_cache["time"] = time.time()
+        return value
+    finally:
+        _state_lock.release()
 
 
 def build_state() -> dict:
@@ -226,7 +258,7 @@ class Handler(BaseHTTPRequestHandler):
             except OSError:
                 self._send(500, b"index.html is missing", "text/plain; charset=utf-8")
         elif path == "/api/state":
-            self._json(200, build_state())
+            self._json(200, cached_state())
         elif path.startswith("/api/proposal/"):
             agent_id = path.rsplit("/", 1)[-1]
             if not _known_agent(agent_id):
