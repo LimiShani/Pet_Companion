@@ -1,18 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/auth_controller.dart';
+import '../../../config/app_config.dart';
 import '../data/deal.dart';
 import '../data/deal_filters.dart';
 import '../data/fake_store_repository.dart';
 import '../data/store_repository.dart';
+import '../data/supabase_store_repository.dart';
 
 /// "Now" for everything time-related in the Store (expiry, "3 hours ago").
 /// Tests override it with a fixed instant.
 final storeClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 
-/// The deals backend: the in-memory catalogue.
+/// The deals backend: Supabase when the app is built with its
+/// configuration, otherwise the in-memory sample catalogue.
 final storeRepositoryProvider = Provider<StoreRepository>(
-  (ref) => FakeStoreRepository(now: ref.watch(storeClockProvider)),
+  (ref) => AppConfig.hasSupabase
+      ? SupabaseStoreRepository(sb.Supabase.instance.client)
+      : FakeStoreRepository(now: ref.watch(storeClockProvider)),
 );
 
 /// User-facing text for a Store failure.
