@@ -1,10 +1,13 @@
+import 'dart:async';
+
 import 'app_user.dart';
 import 'auth_repository.dart';
 
 /// In-memory accounts for development. Nothing persists across restarts.
 ///
-/// A demo account is seeded so the app can be signed into right away:
-/// see [demoEmail] and [demoPassword].
+/// Used automatically when the app is built without Supabase configuration
+/// (see README). A demo account is seeded so the app can be signed into
+/// right away: see [demoEmail] and [demoPassword].
 class FakeAuthRepository implements AuthRepository {
   FakeAuthRepository({this.latency = const Duration(milliseconds: 400)}) {
     _accounts[demoEmail] = _Account(
@@ -20,11 +23,20 @@ class FakeAuthRepository implements AuthRepository {
   final Duration latency;
 
   final _accounts = <String, _Account>{};
+  final _changes = StreamController<AppUser?>.broadcast();
   AppUser? _current;
 
   static String _key(String email) => email.trim().toLowerCase();
 
   Future<void> _wait() => Future<void>.delayed(latency);
+
+  void _set(AppUser? user) {
+    _current = user;
+    _changes.add(user);
+  }
+
+  @override
+  Stream<AppUser?> get userChanges => _changes.stream;
 
   @override
   Future<AppUser?> restoreSession() async {
@@ -38,7 +50,8 @@ class FakeAuthRepository implements AuthRepository {
     final account = _accounts[_key(email)];
     if (account == null) throw const AuthException('No account uses that email address.');
     if (account.password != password) throw const AuthException('Incorrect password. Please try again.');
-    return _current = account.user;
+    _set(account.user);
+    return account.user;
   }
 
   @override
@@ -48,13 +61,14 @@ class FakeAuthRepository implements AuthRepository {
     if (_accounts.containsKey(key)) throw const AuthException('An account with that email already exists.');
     final user = AppUser(id: 'u${_accounts.length + 1}', email: key, displayName: displayName.trim());
     _accounts[key] = _Account(user: user, password: password);
-    return _current = user;
+    _set(user);
+    return user;
   }
 
   @override
   Future<void> signOut() async {
     await _wait();
-    _current = null;
+    _set(null);
   }
 
   @override

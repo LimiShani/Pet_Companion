@@ -4,14 +4,22 @@ import 'app_user.dart';
 import 'auth_repository.dart';
 import 'fake_auth_repository.dart';
 
-/// Swap this override to point the app at a real backend.
+/// The auth backend. `main.dart` overrides this with Supabase when the app
+/// is built with Supabase configuration; otherwise the in-memory fake runs.
 final authRepositoryProvider = Provider<AuthRepository>((ref) => FakeAuthRepository());
 
 /// The signed-in user (`null` when signed out). Loading while a session is
 /// being restored or an auth action is in flight; error after a failed one.
 class AuthController extends AsyncNotifier<AppUser?> {
   @override
-  Future<AppUser?> build() => ref.watch(authRepositoryProvider).restoreSession();
+  Future<AppUser?> build() {
+    final repo = ref.watch(authRepositoryProvider);
+    // Keep in step with the backend: token refreshes, sign-outs from other
+    // tabs, links opened from emails.
+    final sub = repo.userChanges.listen((user) => state = AsyncData(user));
+    ref.onDispose(sub.cancel);
+    return repo.restoreSession();
+  }
 
   Future<bool> signIn({required String email, required String password}) =>
       _run(() => ref.read(authRepositoryProvider).signIn(email: email, password: password));

@@ -14,6 +14,10 @@ class AuthException implements Exception {
 /// in-memory implementation can be swapped for Supabase (or Firebase)
 /// without touching the screens.
 abstract class AuthRepository {
+  /// Emits the current user whenever it changes (sign in, sign out, token
+  /// refresh, a link opened from an email). `null` means signed out.
+  Stream<AppUser?> get userChanges;
+
   /// The user from a previous session, or `null`.
   Future<AppUser?> restoreSession();
 
