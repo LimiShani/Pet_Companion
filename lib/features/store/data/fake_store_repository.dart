@@ -38,7 +38,10 @@ class FakeStoreRepository implements StoreRepository {
           for (final dealId in entry.value) (entry.key, dealId),
       ];
 
-  Future<void> _wait() => Future<void>.delayed(latency);
+  // No timer at all at zero latency, so widget tests leave none pending.
+  Future<void> _wait() async {
+    if (latency > Duration.zero) await Future<void>.delayed(latency);
+  }
 
   void _checkWrite() {
     if (failWrites) throw const StoreException('Cannot reach the server. Check your connection and try again.');
