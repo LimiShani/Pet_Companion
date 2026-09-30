@@ -17,7 +17,10 @@ void main() {
   testWidgets('home shows Kelly with her dashboard', (tester) async {
     await pumpHome(tester);
 
-    expect(find.text('Pet Companion'), findsOneWidget);
+    // The title is announced by name; how much of it is drawn depends on
+    // the room the Emergency pill leaves (see test/home/).
+    expect(find.bySemanticsLabel('Pet Companion'), findsOneWidget);
+    expect(find.text('2 pets'), findsOneWidget);
     expect(find.text('Kelly'), findsNWidgets(2)); // selector pill + hero name
     expect(find.text('Mix'), findsOneWidget);
     expect(find.text('23 kg'), findsOneWidget);
