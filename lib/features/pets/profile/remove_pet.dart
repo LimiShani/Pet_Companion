@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
@@ -62,6 +63,7 @@ class _RemoveDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final name = pet.name;
+    final l10n = context.petsL10n;
     return Dialog(
       insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
       child: SingleChildScrollView(
@@ -70,18 +72,17 @@ class _RemoveDialog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           mainAxisSize: MainAxisSize.min,
           children: [
-            PetsHeading('Remove $name?'),
+            PetsHeading(l10n.removePetTitle(name)),
             const SizedBox(height: 12),
             _Choice(
               icon: Icons.archive_outlined,
-              title: 'Archive',
+              title: l10n.archive,
               suggested: canArchive,
               message: canArchive
-                  ? '$name is hidden from the app. Everything is kept, and you can bring $name back from My pets.'
-                  : '$name is your only pet, so there is nothing to show in its place. '
-                        'Add another pet first, or delete $name.',
+                  ? l10n.archiveNote(name)
+                  : l10n.archiveOnlyPetNote(name),
               button: PillButton(
-                'Archive $name',
+                l10n.archivePet(name),
                 key: const Key('remove-archive'),
                 onPressed: canArchive ? () => Navigator.of(context).pop(RemoveChoice.archive) : null,
               ),
@@ -90,19 +91,17 @@ class _RemoveDialog extends StatelessWidget {
             _Choice(
               icon: Icons.delete_outline_rounded,
               discColor: AppColors.cream,
-              title: 'Delete for good',
-              message:
-                  "Erases $name's profile, picture, health records, reminders and documents. "
-                  'This cannot be undone.',
+              title: l10n.deleteForGood,
+              message: l10n.deleteNote(name),
               button: PillButton(
-                'Delete $name',
+                l10n.deletePet(name),
                 key: const Key('remove-delete'),
                 outlined: true,
                 onPressed: () => Navigator.of(context).pop(RemoveChoice.delete),
               ),
             ),
             const SizedBox(height: 4),
-            PetsTextButton('Cancel', onPressed: () => Navigator.of(context).pop()),
+            PetsTextButton(context.l10n.commonCancel, onPressed: () => Navigator.of(context).pop()),
           ],
         ),
       ),
@@ -142,7 +141,7 @@ class _Choice extends StatelessWidget {
               Expanded(child: Text(title, style: AppText.cardTitle)),
               if (suggested) ...[
                 const SizedBox(width: 8),
-                const Flexible(child: PetsTag('Suggested', tone: TagTone.green)),
+                Flexible(child: PetsTag(context.petsL10n.suggested, tone: TagTone.green)),
               ],
             ],
           ),

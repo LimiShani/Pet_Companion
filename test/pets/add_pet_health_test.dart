@@ -324,9 +324,10 @@ void main() {
         PetInfoItem.weight,
       ]);
       expect([for (final item in PetInfoItem.values) if (item.isEssential) item], PetInfoItem.essentials);
-      expect(PetInfoItem.vetPhone.label, "A vet's phone number");
-      expect(PetInfoItem.vetPhone.actionFor('Soya'), "Add the vet's phone");
-      expect(PetInfoItem.weight.actionFor('Soya'), "Add Soya's weight");
+      expect(PetInfoItem.vetPhone.labelIn(en), "A vet's phone number");
+      expect(PetInfoItem.vetPhone.actionIn(en, 'Soya'), "Add the vet's phone");
+      expect(PetInfoItem.weight.actionIn(en, 'Soya'), "Add Soya's weight");
+      expect(PetInfoItem.allergies.hintIn(en), PetInfoItem.conditions.hintIn(en));
       expect(PetInfoItem.microchip.isEssential, isFalse);
     });
   });

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../health/emergency/emergency.dart';
@@ -11,41 +12,64 @@ import '../data/pets_repository_provider.dart';
 /// a poison line asks in the first minute. Only they produce a reminder. The
 /// rest is "good to have": it shows in the checklist and nowhere else.
 enum PetInfoItem {
-  vetPhone("A vet's phone number", 'So Emergency can call'),
-  allergies('Allergies', 'A list, or "None known"'),
-  conditions('Medical conditions', 'A list, or "None known"'),
-  age('Age', 'A birthday, or "about 3 years"'),
-  weight('Weight', 'A rough number is fine'),
-  photo('A real photo', 'Helps most if your pet is lost'),
-  breed('Breed', '"Mixed or not sure" is an answer'),
-  sexAndNeutering('Sex and neutering', 'Asked on vet forms'),
-  microchip('Microchip', 'Finds a lost pet'),
-  emergencyVet('Emergency vet (24 h)', 'A night-time fallback');
-
-  const PetInfoItem(this.label, this.hint);
-
-  final String label;
-
-  /// Why it matters or what counts as an answer, for an open checklist row.
-  final String hint;
+  vetPhone,
+  allergies,
+  conditions,
+  age,
+  weight,
+  photo,
+  breed,
+  sexAndNeutering,
+  microchip,
+  emergencyVet;
 
   bool get isEssential => index <= weight.index;
 
   /// The five essentials, in the order the reminder asks for them.
   static const essentials = [vetPhone, allergies, conditions, age, weight];
 
+  // The words are in the strings files; give these the strings of the
+  // screen's language (`context.petsL10n`).
+
+  /// "A vet's phone number", "Allergies", "Age"...
+  String labelIn(PetsL10n l10n) => switch (this) {
+        vetPhone => l10n.itemVetPhone,
+        allergies => l10n.itemAllergies,
+        conditions => l10n.itemConditions,
+        age => l10n.itemAge,
+        weight => l10n.itemWeight,
+        photo => l10n.itemPhoto,
+        breed => l10n.itemBreed,
+        sexAndNeutering => l10n.itemSexAndNeutering,
+        microchip => l10n.itemMicrochip,
+        emergencyVet => l10n.emergencyVet,
+      };
+
+  /// Why it matters or what counts as an answer, for an open checklist row.
+  String hintIn(PetsL10n l10n) => switch (this) {
+        vetPhone => l10n.hintVetPhone,
+        allergies || conditions => l10n.hintListOrNone,
+        age => l10n.hintAge,
+        weight => l10n.hintWeight,
+        photo => l10n.hintPhoto,
+        breed => l10n.hintBreed,
+        sexAndNeutering => l10n.hintSexAndNeutering,
+        microchip => l10n.hintMicrochip,
+        emergencyVet => l10n.hintEmergencyVet,
+      };
+
   /// The button that opens this item, e.g. "Add the vet's phone".
-  String actionFor(String petName) => switch (this) {
-        vetPhone => "Add the vet's phone",
-        allergies => 'Answer about allergies',
-        conditions => 'Answer about conditions',
-        age => "Add $petName's age",
-        weight => "Add $petName's weight",
-        photo => 'Add a photo of $petName',
-        breed => "Add $petName's breed",
-        sexAndNeutering => 'Add sex and neutering',
-        microchip => 'Add the microchip number',
-        emergencyVet => 'Add an emergency vet',
+  String actionIn(PetsL10n l10n, String petName) => switch (this) {
+        vetPhone => l10n.actionVetPhone,
+        allergies => l10n.actionAllergies,
+        conditions => l10n.actionConditions,
+        age => l10n.actionAge(petName),
+        weight => l10n.actionWeight(petName),
+        photo => l10n.actionPhoto(petName),
+        breed => l10n.actionBreed(petName),
+        sexAndNeutering => l10n.actionSexAndNeutering,
+        microchip => l10n.actionMicrochip,
+        emergencyVet => l10n.actionEmergencyVet,
       };
 
   static PetInfoItem ofHealth(HealthCriticalItem item) => switch (item) {

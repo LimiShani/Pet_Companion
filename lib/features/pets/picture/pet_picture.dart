@@ -3,11 +3,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
-import '../data/pets_repository_provider.dart';
 import '../data/photo_services.dart';
 import '../icons/pet_icon_bank.dart';
+import '../pet_words.dart';
 import '../widgets/pets_widgets.dart';
 import 'icon_bank_screen.dart';
 
@@ -80,7 +81,7 @@ Future<PetPicture?> choosePetPicture(
           if (!outcome.another || !context.mounted) return null;
         }
       } catch (e) {
-        if (context.mounted) showPetsSnack(context, petsErrorMessage(e));
+        if (context.mounted) showPetsSnack(context, petsErrorOf(context, e));
         return null;
       }
   }
@@ -118,33 +119,34 @@ class _PictureSheet extends StatelessWidget {
     void choose(_PictureAction action) => Navigator.of(context).pop(action);
     final name = petName.trim();
     const chevron = Icon(Icons.chevron_right_rounded);
+    final l10n = context.petsL10n;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        PetsHeading(name.isEmpty ? "Your pet's picture" : "$name's picture"),
+        PetsHeading(name.isEmpty ? l10n.yourPetsPicture : l10n.petPictureTitle(name)),
         const SizedBox(height: 14),
         PetsRow(
           leading: const PetsDisc(Icons.photo_camera_rounded),
-          title: 'Take a photo',
-          subtitle: 'Opens the camera',
+          title: l10n.takeAPhoto,
+          subtitle: l10n.takeAPhotoNote,
           trailing: chevron,
           onTap: () => choose(_PictureAction.camera),
         ),
         const SizedBox(height: 8),
         PetsRow(
           leading: const PetsDisc(Icons.image_rounded),
-          title: 'Choose from your photos',
-          subtitle: 'Then fit it into the circle',
+          title: l10n.chooseFromPhotos,
+          subtitle: l10n.chooseFromPhotosNote,
           trailing: chevron,
           onTap: () => choose(_PictureAction.gallery),
         ),
         const SizedBox(height: 8),
         PetsRow(
           leading: const PetsDisc(Icons.emoji_emotions_rounded),
-          title: 'Pick an icon',
-          subtitle: '${PetIcon.values.length} animals in the app\'s colours',
+          title: l10n.pickAnIcon,
+          subtitle: l10n.pickAnIconNote(PetIcon.values.length),
           trailing: chevron,
           onTap: () => choose(_PictureAction.icon),
         ),
@@ -152,8 +154,15 @@ class _PictureSheet extends StatelessWidget {
           const SizedBox(height: 8),
           PetsRow(
             leading: const PetsDisc(Icons.delete_outline_rounded),
-            title: 'Remove picture',
-            subtitle: 'Back to the default ${species == PetSpecies.other ? '' : '${species.label.toLowerCase()} '}icon',
+            title: l10n.removePicture,
+            subtitle: switch (species) {
+              PetSpecies.dog => l10n.removePictureNoteDog,
+              PetSpecies.cat => l10n.removePictureNoteCat,
+              PetSpecies.bird => l10n.removePictureNoteBird,
+              PetSpecies.rabbit => l10n.removePictureNoteRabbit,
+              PetSpecies.reptile => l10n.removePictureNoteReptile,
+              PetSpecies.other => l10n.removePictureNoteOther,
+            },
             onTap: () => choose(_PictureAction.remove),
           ),
         ],

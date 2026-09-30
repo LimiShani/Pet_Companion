@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../health/emergency/emergency.dart';
 import '../checklist_sheet.dart';
 import '../data/pets_repository_provider.dart';
 import '../pet_actions.dart';
+import '../pet_words.dart';
 import '../state/pet_completeness.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_basics_fields.dart';
@@ -108,12 +110,12 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       basics.markSaved();
       _shown = stored;
       setState(() => _saving = false);
-      showPetsSnack(context, 'Changes saved');
+      showPetsSnack(context, context.petsL10n.changesSaved);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _saving = false;
-        _error = petsErrorMessage(e);
+        _error = petsErrorOf(context, e);
       });
     }
   }
@@ -127,6 +129,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     if (choice == null || !mounted) return;
 
     final messenger = ScaffoldMessenger.maybeOf(context);
+    // The words are taken now: this page may be gone when they are needed.
+    final done = choice == RemoveChoice.archive
+        ? context.petsL10n.petArchived(pet.name)
+        : context.petsL10n.petDeleted(pet.name);
     final navigator = Navigator.of(context);
     final hasRouter = GoRouter.maybeOf(context) != null;
     setState(() {
@@ -143,7 +149,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       if (!mounted) return;
       setState(() {
         _removing = false;
-        _error = petsErrorMessage(e);
+        _error = petsErrorOf(context, e);
       });
       return;
     }
@@ -151,13 +157,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     if (navigator.mounted && (others > 0 || !hasRouter)) navigator.pop();
     messenger
       ?..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(
-        content: Text(
-          choice == RemoveChoice.archive
-              ? '${pet.name} is archived. You can bring ${pet.name} back from My pets.'
-              : '${pet.name} was deleted',
-        ),
-      ));
+      ..showSnackBar(SnackBar(content: Text(done)));
   }
 
   void _openMyPets() {
@@ -177,7 +177,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final basics = _basics;
     if (pet == null || basics == null) {
       // Deleted (or never there): nothing to edit.
-      return const PetsPage(title: 'Pet profile', child: PetsNote('This pet is no longer here.'));
+      return PetsPage(title: context.petsL10n.petProfile, child: PetsNote(context.petsL10n.petNoLongerHere));
     }
     final now = ref.watch(petsClockProvider)();
 
@@ -188,7 +188,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   Widget _page(Pet pet, PetBasicsController basics, DateTime now) {
     return PetsPage(
       title: pet.name,
-      actions: [HeaderTextAction('My pets', onPressed: _openMyPets)],
+      actions: [HeaderTextAction(context.petsL10n.myPetsTitle, onPressed: _openMyPets)],
       child: Form(
         key: _form,
         child: Column(
@@ -218,7 +218,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       PetsHeading(pet.name),
-                      PetsNote(petSummaryLine(pet, now: now)),
+                      PetsNote(petSummaryLine(context.petsL10n, pet, now: now)),
                       TextButton(
                         onPressed: () => changePetPicture(context, pet.id),
                         style: TextButton.styleFrom(
@@ -226,7 +226,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                           minimumSize: const Size(kPetsTapTarget, 40),
                           alignment: AlignmentDirectional.centerStart,
                         ),
-                        child: const Text('Change picture'),
+                        child: Text(context.petsL10n.changePicture),
                       ),
                     ],
                   ),
@@ -234,16 +234,16 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               ],
             ),
             _EssentialsCard(pet: pet),
-            const PetsLabel('Basics'),
+            PetsLabel(context.petsL10n.basics),
             TextFormField(
               key: const Key('pet-name'),
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: const InputDecoration(labelText: 'Name', errorMaxLines: 3),
+              decoration: InputDecoration(labelText: context.petsL10n.fieldName, errorMaxLines: 3),
               validator: (text) {
                 final value = text?.trim() ?? '';
-                if (value.isEmpty) return 'A pet needs a name.';
-                if (value.length > 60) return 'Keep the name under 60 characters.';
+                if (value.isEmpty) return context.petsL10n.nameMissing;
+                if (value.length > 60) return context.petsL10n.nameTooLong(60);
                 return null;
               },
             ),
@@ -252,11 +252,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               key: const Key('pet-kind'),
               initialValue: _species,
               isExpanded: true,
-              decoration: const InputDecoration(labelText: 'Kind'),
+              decoration: InputDecoration(labelText: context.petsL10n.kind),
               borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
               items: [
                 for (final species in PetSpecies.values)
-                  DropdownMenuItem(value: species, child: Text(species.label)),
+                  DropdownMenuItem(value: species, child: Text(petSpeciesText(context.petsL10n, species))),
               ],
               onChanged: (species) {
                 if (species == null) return;
@@ -265,11 +265,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               },
             ),
             PetBasicsFields(controller: basics, now: now),
-            const PetsLabel('Vet'),
+            PetsLabel(context.petsL10n.vet),
             PetVetTile(petId: pet.id),
             const SizedBox(height: 8),
             PetVetTile(petId: pet.id, role: VetRole.emergency),
-            const PetsLabel('Health basics'),
+            PetsLabel(context.petsL10n.healthBasics),
             _HealthBasicsCard(pet: pet),
             if (_error != null)
               Padding(
@@ -277,15 +277,15 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
                 child: Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
               ),
             const SizedBox(height: 20),
-            PrimaryButton(label: 'Save changes', loading: _saving, onPressed: _save),
+            PrimaryButton(label: context.petsL10n.saveChanges, loading: _saving, onPressed: _save),
             const Padding(padding: EdgeInsets.only(top: 24, bottom: 16), child: Divider()),
             PetsOutlineButton(
-              'Archive ${pet.name}',
+              context.petsL10n.archivePet(pet.name),
               icon: Icons.archive_outlined,
               onPressed: _removing ? null : _remove,
             ),
             const SizedBox(height: 4),
-            PetsTextButton('Delete ${pet.name}', onPressed: _removing ? null : _remove),
+            PetsTextButton(context.petsL10n.deletePet(pet.name), onPressed: _removing ? null : _remove),
           ],
         ),
       ),
@@ -339,16 +339,16 @@ class _EssentialsCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(essentialsStillToAdd(info), style: AppText.cardTitle),
+                  Text(essentialsStillToAdd(context.petsL10n, info), style: AppText.cardTitle),
                   Text(
-                    [for (final item in info.missing) item.label].join(' · '),
+                    [for (final item in info.missing) item.labelIn(context.petsL10n)].join(' · '),
                     style: AppText.secondary.copyWith(color: AppColors.brown),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            PillButton('Add', key: const Key('profile-essentials-add'), onPressed: open),
+            PillButton(context.l10n.commonAdd, key: const Key('profile-essentials-add'), onPressed: open),
           ],
         ),
       ),
@@ -375,8 +375,11 @@ class _HealthBasicsCard extends ConsumerWidget {
       );
     }
     void open() => openHealthProfile(context, pet.id);
-    String list(List<String> entries, bool noneKnown) =>
-        entries.isNotEmpty ? entries.join(', ') : (noneKnown ? 'None known' : 'Not answered yet');
+    final l10n = context.petsL10n;
+    final app = context.l10n;
+    String list(List<String> entries, bool noneKnown) => entries.isNotEmpty
+        ? [for (final entry in entries) typedInLine(l10n, entry)].join(', ')
+        : (noneKnown ? l10n.noneKnown : l10n.notAnsweredYet);
 
     Widget row(String label, String text, String action, {required String keyName}) => Row(
           children: [
@@ -404,18 +407,23 @@ class _HealthBasicsCard extends ConsumerWidget {
       child: Column(
         children: [
           row(
-            'Allergies',
+            l10n.itemAllergies,
             list(value.allergies, value.allergiesNoneKnown),
-            value.allergiesAnswered ? 'Edit' : 'Answer',
+            value.allergiesAnswered ? app.commonEdit : l10n.answer,
             keyName: 'allergies',
           ),
           row(
-            'Medical conditions',
+            l10n.itemConditions,
             list(value.conditions, value.conditionsNoneKnown),
-            value.conditionsAnswered ? 'Edit' : 'Answer',
+            value.conditionsAnswered ? app.commonEdit : l10n.answer,
             keyName: 'conditions',
           ),
-          row('Microchip', chip.isEmpty ? 'Not added' : chip, chip.isEmpty ? 'Add' : 'Edit', keyName: 'microchip'),
+          row(
+            l10n.itemMicrochip,
+            chip.isEmpty ? l10n.notAdded : phoneInLine(l10n, chip),
+            chip.isEmpty ? app.commonAdd : app.commonEdit,
+            keyName: 'microchip',
+          ),
         ],
       ),
     );

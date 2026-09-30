@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../checklist_sheet.dart';
-import '../data/pets_repository_provider.dart';
 import '../pet_actions.dart';
+import '../pet_words.dart';
 import '../state/pet_completeness.dart';
 import 'pet_essentials_keeper.dart';
 import 'pets_widgets.dart';
@@ -20,8 +21,8 @@ Pet? _find(List<Pet> pets, String id) {
 }
 
 /// "2 of 5 essentials still to add".
-String essentialsStillToAdd(PetCompleteness info) =>
-    '${info.missing.length} of ${info.total} essentials still to add';
+String essentialsStillToAdd(PetsL10n l10n, PetCompleteness info) =>
+    l10n.essentialsStillToAdd(info.missing.length, info.total);
 
 /// Says "Soya's essentials are complete" once, when the last missing
 /// essential of the pet with [petId] is answered. Call it from the `build`
@@ -31,7 +32,7 @@ void announcePetCompletion(WidgetRef ref, BuildContext context, String petId) {
     if (previous == null || !previous.needsAttention || !next.isComplete) return;
     if (!ref.read(petCompletionAnnouncerProvider).claim(petId, DateTime.now())) return;
     final pet = ref.read(petsStoreProvider).byId(petId);
-    if (pet != null && context.mounted) showPetsSnack(context, "${pet.name}'s essentials are complete");
+    if (pet != null && context.mounted) showPetsSnack(context, context.petsL10n.essentialsComplete(pet.name));
   });
 }
 
@@ -41,6 +42,9 @@ void announcePetCompletion(WidgetRef ref, BuildContext context, String petId) {
 Future<void> postponePetReminder(BuildContext context, String petId) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final messenger = ScaffoldMessenger.maybeOf(context);
+  // The words are taken now, in the language of the screen that asked.
+  final l10n = context.petsL10n;
+  final app = context.l10n;
   void say(String message) {
     if (messenger == null || !messenger.mounted) return;
     messenger
@@ -50,9 +54,9 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 
   try {
     await snoozePetReminder(container, petId);
-    say("We'll remind you again in a week");
+    say(l10n.remindAgainInAWeek);
   } catch (e) {
-    say(petsErrorMessage(e));
+    say(petsErrorText(l10n, app, e));
   }
 }
 
@@ -87,9 +91,10 @@ class PetReminderCard extends ConsumerWidget {
 
     void openNext() => openPetInfoItem(context, petId: petId, item: next);
     void notNow() => postponePetReminder(context, petId);
-    final count = essentialsStillToAdd(info);
-    final label = "$name's profile: $count";
-    final action = next.actionFor(name);
+    final l10n = context.petsL10n;
+    final count = essentialsStillToAdd(l10n, info);
+    final label = l10n.reminderSemantics(name, info.missing.length, info.total);
+    final action = next.actionIn(l10n, name);
 
     return PetEssentialsKeeper(
       petId: petId,
@@ -99,7 +104,7 @@ class PetReminderCard extends ConsumerWidget {
             ? _Line(label: label, action: action, count: count, onOpen: openNext, onNotNow: notNow)
             : _Card(
                 label: label,
-                title: "Finish $name's profile",
+                title: l10n.finishProfile(name),
                 action: action,
                 count: count,
                 info: info,
@@ -126,7 +131,7 @@ class _NotNow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         textStyle: AppText.button(13),
       ),
-      child: const Text('Not now'),
+      child: Text(context.petsL10n.notNow),
     );
   }
 }
@@ -296,7 +301,7 @@ class PetAttentionDot extends ConsumerWidget {
       child: !needed
           ? const SizedBox.shrink()
           : Semantics(
-              label: 'Essentials missing',
+              label: context.petsL10n.essentialsMissing,
               child: Container(
                 width: size,
                 height: size,

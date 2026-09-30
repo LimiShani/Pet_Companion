@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
@@ -11,6 +12,7 @@ import '../../../widgets/primary_button.dart';
 import '../../health/emergency/emergency.dart';
 import '../data/pets_repository_provider.dart';
 import '../icons/pet_icon_bank.dart';
+import '../pet_words.dart';
 import '../pets_routes.dart';
 import '../picture/pet_picture.dart';
 import '../widgets/pet_avatar.dart';
@@ -189,13 +191,13 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       _basics ??= PetBasicsController(pet: pet, now: _now);
       _goTo(2);
       if (pictureFailed) {
-        showPetsSnack(context, "The picture could not be saved. You can add it later from ${pet.name}'s profile.");
+        showPetsSnack(context, context.petsL10n.pictureNotSaved(pet.name));
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = petsErrorMessage(e);
+        _error = petsErrorOf(context, e);
       });
     }
   }
@@ -218,7 +220,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = petsErrorMessage(e);
+        _error = petsErrorOf(context, e);
       });
     }
   }
@@ -230,12 +232,12 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
     final Widget page;
     if (_step == 1 || pet == null) {
-      page = _page(title: 'Add a pet', step: 1, finishLater: false, child: _nameAndKind(pet));
+      page = _page(title: context.petsL10n.addPetTitle, step: 1, finishLater: false, child: _nameAndKind(pet));
     } else {
       page = switch (_step) {
-        2 => _page(title: 'About ${pet.name}', step: 2, child: _about(pet)),
-        3 => _page(title: "${pet.name}'s vet", step: 3, child: _vet(pet)),
-        4 => _page(title: 'Health basics', step: 4, child: _healthBasics(pet)),
+        2 => _page(title: context.petsL10n.aboutPetTitle(pet.name), step: 2, child: _about(pet)),
+        3 => _page(title: context.petsL10n.petVetTitle(pet.name), step: 3, child: _vet(pet)),
+        4 => _page(title: context.petsL10n.healthBasics, step: 4, child: _healthBasics(pet)),
         _ => AllSetView(
             pet: pet,
             onDashboard: () => _close(toDashboard: true),
@@ -259,7 +261,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       key: ValueKey('add-pet-step-$step-$_id'),
       title: title,
       onBack: _back,
-      actions: [if (finishLater) HeaderTextAction('Finish later', onPressed: _busy ? null : _close)],
+      actions: [if (finishLater) HeaderTextAction(context.petsL10n.finishLater, onPressed: _busy ? null : _close)],
       headerBottom: StepProgress(step: step, total: _steps),
       child: child,
     );
@@ -291,14 +293,14 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const PetsHeading('Who is joining the family?'),
+          PetsHeading(context.petsL10n.whoIsJoining),
           const SizedBox(height: 4),
-          const PetsNote('A name and a kind are enough to start. Everything else can wait.'),
+          PetsNote(context.petsL10n.whoIsJoiningNote),
           const SizedBox(height: 18),
           Center(
             child: Semantics(
               button: true,
-              label: 'Add a photo or pick an icon',
+              label: context.petsL10n.addPhotoOrIcon,
               child: InkWell(
                 key: const Key('pet-picture'),
                 onTap: _busy ? null : _choosePicture,
@@ -314,7 +316,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
           ),
           const SizedBox(height: 4),
           ExcludeSemantics(
-            child: PetsTextButton('Add a photo or pick an icon', onPressed: _busy ? null : _choosePicture),
+            child: PetsTextButton(context.petsL10n.addPhotoOrIcon, onPressed: _busy ? null : _choosePicture),
           ),
           const SizedBox(height: 4),
           TextFormField(
@@ -322,26 +324,26 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             controller: _name,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(labelText: 'Name', errorMaxLines: 3),
+            decoration: InputDecoration(labelText: context.petsL10n.fieldName, errorMaxLines: 3),
             onChanged: (_) => setState(() {}),
             validator: (text) {
               final value = text?.trim() ?? '';
-              if (value.isEmpty) return 'What is your pet called?';
-              if (value.length > 60) return 'Keep the name under 60 characters.';
+              if (value.isEmpty) return context.petsL10n.nameMissingNew;
+              if (value.length > 60) return context.petsL10n.nameTooLong(60);
               return null;
             },
           ),
-          const PetsLabel('Kind of animal'),
+          PetsLabel(context.petsL10n.kindOfAnimal),
           _KindPicker(
             selected: _species,
             onSelected: _busy ? null : (species) => setState(() => _species = species),
           ),
           if (_error != null) _errorText(),
           const SizedBox(height: 20),
-          PrimaryButton(label: 'Continue', loading: _busy, onPressed: _saveNameAndKind),
+          PrimaryButton(label: context.l10n.commonContinue, loading: _busy, onPressed: _saveNameAndKind),
           const SizedBox(height: 12),
           PetsFinePrint(
-            '${name.isEmpty ? 'Your pet' : name} is saved when you continue. You can change anything later.',
+            name.isEmpty ? context.petsL10n.savedOnContinueNoName : context.petsL10n.savedOnContinue(name),
             center: true,
           ),
         ],
@@ -365,9 +367,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${pet.name} is saved', style: AppText.cardTitle),
+                    Text(context.petsL10n.petIsSaved(pet.name), style: AppText.cardTitle),
                     Text(
-                      "Add what you know; skip what you don't.",
+                      context.petsL10n.aboutNote,
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                     ),
                   ],
@@ -378,9 +380,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
           PetBasicsFields(controller: _basics!, now: _now),
           if (_error != null) _errorText(),
           const SizedBox(height: 20),
-          PrimaryButton(label: 'Continue', loading: _busy, onPressed: _saveAbout),
+          PrimaryButton(label: context.l10n.commonContinue, loading: _busy, onPressed: _saveAbout),
           const SizedBox(height: 6),
-          PetsTextButton('Skip for now', onPressed: _busy ? null : () => _goTo(3)),
+          PetsTextButton(context.petsL10n.skipForNow, onPressed: _busy ? null : () => _goTo(3)),
         ],
       ),
     );
@@ -394,19 +396,19 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PetsHeading('Who looks after ${pet.name}?'),
+        PetsHeading(context.petsL10n.whoLooksAfter(pet.name)),
         const SizedBox(height: 4),
-        const PetsNote("With the vet's phone saved, a call or a message is two taps away in an emergency."),
-        const PetsLabel('Regular vet', level: FieldLevel.essential),
+        PetsNote(context.petsL10n.vetStepNote),
+        PetsLabel(context.petsL10n.regularVet, level: FieldLevel.essential),
         PetVetTile(petId: pet.id),
-        const PetsLabel('Emergency vet (24 h)', level: FieldLevel.optional),
+        PetsLabel(context.petsL10n.emergencyVet, level: FieldLevel.optional),
         PetVetTile(petId: pet.id, role: VetRole.emergency),
         const SizedBox(height: 20),
-        PrimaryButton(label: 'Continue', onPressed: () => _goTo(4)),
+        PrimaryButton(label: context.l10n.commonContinue, onPressed: () => _goTo(4)),
         const SizedBox(height: 6),
-        PetsTextButton("I don't have a vet yet", onPressed: () => _goTo(4)),
+        PetsTextButton(context.petsL10n.noVetYet, onPressed: () => _goTo(4)),
         PetsFinePrint(
-          "No vet yet? Carry on: ${pet.name}'s dashboard will keep a small reminder.",
+          context.petsL10n.noVetYetNote(pet.name),
           center: true,
         ),
       ],
@@ -421,18 +423,18 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const PetsHeading('What a vet asks first'),
+        PetsHeading(context.petsL10n.whatAVetAsksFirst),
         const SizedBox(height: 4),
-        const PetsNote('If there is nothing to list, tick "None known". That is a real answer.'),
+        PetsNote(context.petsL10n.healthStepNote),
         const SizedBox(height: 6),
         HealthBasicsSection(
           key: ValueKey('health-basics-${pet.id}'),
           petId: pet.id,
-          saveLabel: 'Finish',
+          saveLabel: context.petsL10n.finish,
           onSaved: (_) => _goTo(_allSet),
         ),
         const SizedBox(height: 6),
-        PetsTextButton('Skip for now', onPressed: () => _goTo(_allSet)),
+        PetsTextButton(context.petsL10n.skipForNow, onPressed: () => _goTo(_allSet)),
       ],
     );
   }
@@ -496,7 +498,7 @@ class _KindPicker extends StatelessWidget {
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                species.label,
+                                petSpeciesText(context.petsL10n, species),
                                 style: AppText.secondary.copyWith(
                                   fontWeight: species == selected ? FontWeight.w800 : FontWeight.w700,
                                 ),

@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../data/pets_repository.dart';
 import '../data/pets_repository_provider.dart';
@@ -54,7 +55,7 @@ class PetAvatar extends ConsumerWidget {
     final photo = path == null ? null : ref.watch(petPhotoProvider(path)).value;
     final fallback = PetIconChoice.parse(pet.iconKey, species: pet.species);
 
-    final label = pet.name.trim().isEmpty ? 'Pet picture' : "${pet.name}'s picture";
+    final label = pet.name.trim().isEmpty ? context.petsL10n.petPicture : context.petsL10n.petPictureTitle(pet.name);
     Widget circle = PetPictureCircle(
       size: size,
       icon: fallback,

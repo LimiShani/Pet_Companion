@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
+import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
@@ -45,11 +45,12 @@ class PetChecklist extends ConsumerWidget {
     if (pet == null) return const SizedBox.shrink();
     final info = ref.watch(petCompletenessProvider(petId));
 
+    final l10n = context.petsL10n;
     final summary = !info.isKnown
-        ? 'Checking what is answered…'
+        ? l10n.checklistChecking
         : info.isComplete
-            ? 'All ${info.total} answered. Thank you!'
-            : '${info.answered} of ${info.total} answered. "None known" counts.';
+            ? l10n.checklistAllAnswered(info.total)
+            : l10n.checklistSomeAnswered(info.answered, info.total);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -62,14 +63,14 @@ class PetChecklist extends ConsumerWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [PetsHeading("${pet.name}'s essentials"), PetsNote(summary)],
+                children: [PetsHeading(l10n.checklistTitle(pet.name)), PetsNote(summary)],
               ),
             ),
           ],
         ),
         const SizedBox(height: 14),
         EssentialsList(pet: pet),
-        const PetsLabel('Good to have', topGap: 10),
+        PetsLabel(l10n.goodToHave, topGap: 10),
         Wrap(
           spacing: 8,
           runSpacing: 4,
@@ -87,7 +88,7 @@ class PetChecklist extends ConsumerWidget {
         const SizedBox(height: 12),
         if (info.shouldRemind)
           PetsTextButton(
-            'Remind me in a week',
+            l10n.remindInAWeek,
             // Close first, then save: a pop after the save could remove
             // whatever page is on top by then.
             onPressed: () {
@@ -99,8 +100,7 @@ class PetChecklist extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: PetsFinePrint(
-              'The reminder is hidden until ${DateFormat('dd.MM.yy').format(info.snoozedUntil!)}. '
-              "The dot on ${pet.name}'s name stays.",
+              l10n.reminderHiddenUntil(AppFormat.of(context).date(info.snoozedUntil!), pet.name),
               center: true,
             ),
           ),
@@ -118,13 +118,15 @@ class _GoodToHaveChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.petsL10n;
+    final label = item.labelIn(l10n);
     return ActionChip(
       key: Key('good-${item.name}'),
       avatar: Icon(answered ? Icons.check_rounded : Icons.add_rounded, size: 16, color: AppColors.ink),
-      label: Text(item.label),
+      label: Text(label),
       backgroundColor: answered ? AppColors.yellow : AppColors.white,
       side: BorderSide(color: answered ? AppColors.yellow : kPetsLine),
-      tooltip: answered ? '${item.label}: answered' : '${item.label}: not added yet',
+      tooltip: answered ? l10n.chipAnswered(label) : l10n.chipNotAdded(label),
       onPressed: onPressed,
     );
   }

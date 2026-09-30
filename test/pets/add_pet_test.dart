@@ -443,10 +443,10 @@ void main() {
       controller.weight.text = '4,25';
       controller.touch(BasicsSection.weight);
       expect(controller.applyTo(pet, now: petsNow).weightKg, 4.25);
-      expect(controller.validateWeight('4,25'), isNull);
-      expect(controller.validateWeight('0'), isNotNull);
-      expect(controller.validateWeight('5000'), isNotNull);
-      expect(controller.validateAgeAmount('400'), isNotNull);
+      expect(controller.validateWeight(en, '4,25'), isNull);
+      expect(controller.validateWeight(en, '0'), 'Enter a number, for example 18.');
+      expect(controller.validateWeight(en, '5000'), 'That looks too heavy. Please check the number.');
+      expect(controller.validateAgeAmount(en, '400'), 'Please check the number.');
     });
 
     test('changing the kind converts the typed weight to the new unit, to the gram', () {
@@ -509,13 +509,16 @@ void main() {
     });
 
     test('weights and the summary line are written the way people say them', () {
-      expect(formatPetWeight(18, PetSpecies.dog), '18 kg');
-      expect(formatPetWeight(4.25, PetSpecies.cat), '4.25 kg');
-      expect(formatPetWeight(100, PetSpecies.other), '100 kg');
-      expect(formatPetWeight(0.035, PetSpecies.bird), '35 g');
-      expect(formatPetWeight(0.035, PetSpecies.other), '0.035 kg'); // a hamster: never "0 kg"
-      expect(petSummaryLine(const Pet(id: 'soya', name: 'Soya')), 'Dog');
-      expect(petSummaryLine(const Pet(id: 'kelly', name: 'Kelly', breed: 'Mix', ageYears: 13.6)), 'Dog · Mix · 13.6 years');
+      expect(petWeightText(en, 18, PetSpecies.dog), '18 kg');
+      expect(petWeightText(en, 4.25, PetSpecies.cat), '4.25 kg');
+      expect(petWeightText(en, 100, PetSpecies.other), '100 kg');
+      expect(petWeightText(en, 0.035, PetSpecies.bird), '35 g');
+      expect(petWeightText(en, 0.035, PetSpecies.other), '0.035 kg'); // a hamster: never "0 kg"
+      expect(petSummaryLine(en, const Pet(id: 'soya', name: 'Soya')), 'Dog');
+      expect(
+        petSummaryLine(en, const Pet(id: 'kelly', name: 'Kelly', breed: 'Mix', ageYears: 13.6)),
+        'Dog · Mix · 13.6 years',
+      );
     });
   });
 

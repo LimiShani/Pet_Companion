@@ -235,8 +235,8 @@ void main() {
     });
 
     test('failures are reported in plain words, never as raw errors', () {
-      String message(Object error, {String doing = 'save your pet'}) =>
-          petsExceptionFor(error, doing: doing).message;
+      String message(Object error, {PetsFailure doing = PetsFailure.save}) =>
+          petsExceptionFor(error, during: doing).message;
 
       expect(
         message(const sb.PostgrestException(message: 'new row violates row-level security policy', code: '42501')),
@@ -256,7 +256,7 @@ void main() {
       );
       expect(message(const sb.PostgrestException(message: 'JWT expired', code: 'PGRST301')), 'Please sign in again.');
       expect(
-        message(const sb.PostgrestException(message: 'boom', code: 'XX000'), doing: 'load your pets'),
+        message(const sb.PostgrestException(message: 'boom', code: 'XX000'), doing: PetsFailure.load),
         'Could not load your pets. Please try again.',
       );
       expect(
@@ -269,7 +269,7 @@ void main() {
       );
       expect(message(const sb.StorageException('Object not found')), 'That photo is no longer available.');
       expect(
-        message(const sb.StorageException('nope', statusCode: '500'), doing: 'save the photo'),
+        message(const sb.StorageException('nope', statusCode: '500'), doing: PetsFailure.photoSave),
         'Could not save the photo. Please try again.',
       );
       expect(message(const sb.AuthException('session missing')), 'Please sign in again.');

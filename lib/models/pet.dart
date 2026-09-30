@@ -92,34 +92,51 @@ class Pet {
     return days <= 0 ? 0 : days / 365.25;
   }
 
-  /// The age in words: "3 years", "4 months", "About 3 years"; `null` when
+  /// The age at [now] as a number and a unit, the way people say it: weeks
+  /// for the very young, months up to two years, then years. `null` when
   /// the age is not known.
-  String? get ageLabel => ageLabelAt(DateTime.now());
-
-  String? ageLabelAt(DateTime now) {
+  ///
+  /// The model holds no words. A screen turns this into "3 years" or
+  /// "בערך 3 שנים" with `petAgeText` (see `features/pets/pet_words.dart`).
+  PetAge? ageAt(DateTime now) {
     final explicit = _ageYears;
-    if (explicit != null) return _count(_trim(explicit), explicit == 1, 'year');
+    if (explicit != null) {
+      final whole = explicit == explicit.roundToDouble();
+      return PetAge(PetAgeUnit.years, whole ? explicit.toInt() : null, exactYears: explicit);
+    }
     final born = birthDate;
     if (born == null) return null;
     var months = (now.year - born.year) * 12 + now.month - born.month;
     if (now.day < born.day) months--;
     if (months < 0) months = 0;
-    final String text;
     if (months < 1) {
       final weeks = now.difference(born).inDays ~/ 7;
-      text = weeks < 1 ? 'under a week' : _count('$weeks', weeks == 1, 'week');
-    } else if (months < 24) {
-      text = _count('$months', months == 1, 'month');
-    } else {
-      final years = months ~/ 12;
-      text = _count('$years', years == 1, 'year');
+      return PetAge(PetAgeUnit.weeks, weeks < 1 ? 0 : weeks, approx: birthDateApprox);
     }
-    if (birthDateApprox) return 'About $text';
-    return '${text[0].toUpperCase()}${text.substring(1)}';
+    if (months < 24) return PetAge(PetAgeUnit.months, months, approx: birthDateApprox);
+    return PetAge(PetAgeUnit.years, months ~/ 12, approx: birthDateApprox);
   }
 
-  static String _trim(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
-  static String _count(String count, bool one, String unit) => '$count $unit${one ? '' : 's'}';
+  /// The age in English words: "3 years", "4 months", "About 3 years";
+  /// `null` when the age is not known. For logs and tests: on screen use
+  /// `petAgeText`, which speaks the app's language.
+  String? get ageLabel => ageLabelAt(DateTime.now());
+
+  String? ageLabelAt(DateTime now) {
+    final age = ageAt(now);
+    if (age == null) return null;
+    final count = age.count;
+    final String text;
+    if (count == null) {
+      text = '${age.exactYears!.toStringAsFixed(1)} years';
+    } else if (age.isUnderAWeek) {
+      text = 'under a week';
+    } else {
+      text = '$count ${age.unit.name.substring(0, age.unit.name.length - 1)}${count == 1 ? '' : 's'}';
+    }
+    if (age.approx) return 'About $text';
+    return '${text[0].toUpperCase()}${text.substring(1)}';
+  }
 
   /// A copy with the given fields replaced; `null` keeps the current value.
   /// To clear a field use [withBasics] or [withPicture].
@@ -245,6 +262,30 @@ class Pet {
   }
 }
 
+/// The unit a pet's age is said in.
+enum PetAgeUnit { weeks, months, years }
+
+/// A pet's age as people say it: a number and a unit, without any words.
+/// See [Pet.ageAt].
+class PetAge {
+  const PetAge(this.unit, this.count, {this.exactYears, this.approx = false});
+
+  final PetAgeUnit unit;
+
+  /// How many weeks, months or years; 0 weeks means "under a week". `null`
+  /// only for an age given directly with a fraction (see [exactYears]).
+  final int? count;
+
+  /// An age that was given as a number of years rather than worked out
+  /// from a birthday (the sample pets), e.g. 13.6.
+  final double? exactYears;
+
+  /// Worked out from "about 3 years" rather than from a known birthday.
+  final bool approx;
+
+  bool get isUnderAWeek => unit == PetAgeUnit.weeks && count == 0;
+}
+
 /// Stored in `pets.sex` by [name]. [unknown] is the honest answer "Not sure".
 enum PetSex {
   male('Male'),
@@ -253,6 +294,8 @@ enum PetSex {
 
   const PetSex(this.label);
 
+  /// The English name. On screen use `petSexText`, which speaks the app's
+  /// language (`features/pets/pet_words.dart`).
   final String label;
 
   static PetSex? fromName(String? name) {
@@ -271,6 +314,7 @@ enum Neutered {
 
   const Neutered(this.label);
 
+  /// The English name. On screen use `petNeuteredText`.
   final String label;
 
   static Neutered? fromName(String? name) {
@@ -293,7 +337,8 @@ enum PetSpecies {
 
   const PetSpecies(this.label);
 
-  /// Display name, e.g. on the pet's profile line.
+  /// The English name. On screen use `petSpeciesText`, which speaks the
+  /// app's language (`features/pets/pet_words.dart`).
   final String label;
 
   static PetSpecies fromName(String? name) =>
