@@ -28,7 +28,12 @@ class FeedingCard extends StatelessWidget {
               Text('${status.caloriesToday}', style: AppText.metric),
               const SizedBox(width: 6),
               const Flexible(
-                child: Text('cal today', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700), maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text(
+                  'cal today',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),

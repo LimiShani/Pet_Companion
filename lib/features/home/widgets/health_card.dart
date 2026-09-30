@@ -52,7 +52,9 @@ class _EventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: Text(event.title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Expanded(
+          child: Text(event.title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
         const SizedBox(width: 8),
         const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
         const SizedBox(width: 5),

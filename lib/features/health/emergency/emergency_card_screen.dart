@@ -1,3 +1,4 @@
+import '../../pets/pets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -139,9 +140,7 @@ class _Card extends StatelessWidget {
                       border: Border.all(color: AppColors.coral, width: 3),
                     ),
                     clipBehavior: Clip.antiAlias,
-                    child: pet.photoAsset != null
-                        ? Image.asset(pet.photoAsset!, fit: BoxFit.cover, excludeFromSemantics: true)
-                        : const Icon(Icons.pets_rounded, color: AppColors.brown),
+                    child: ExcludeSemantics(child: PetAvatar(pet: pet, size: 50)),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

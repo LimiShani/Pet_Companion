@@ -28,10 +28,14 @@ class ActivityCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: _Metric(value: steps, label: 'Steps')),
+              Expanded(
+                child: _Metric(value: steps, label: 'Steps'),
+              ),
               Container(width: 2, height: 40, color: AppColors.white.withValues(alpha: 0.7)),
               const SizedBox(width: 12),
-              Expanded(child: _Metric(value: time, label: 'Activity time')),
+              Expanded(
+                child: _Metric(value: time, label: 'Activity time'),
+              ),
             ],
           ),
           const SizedBox(height: 6),

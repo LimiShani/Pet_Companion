@@ -7,6 +7,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_selector.dart';
+import '../pets/pets.dart';
 import 'data/health_models.dart';
 import 'emergency/emergency_button.dart';
 import 'insights/quick_log_sheet.dart';
@@ -23,11 +24,13 @@ import 'state/health_keeper.dart';
 import 'state/health_providers.dart';
 import 'widgets/health_widgets.dart';
 
-/// SLOT FOR THE LEAD (integration): the Pets feature's full-size reminder
-/// card, shown on the Overview right under the pet summary. Return
-/// `PetReminderCard(petId: pet.id)` here once the Pets branch is merged.
-/// Health itself imports nothing from the Pets folder.
-Widget? petReminderSlot(Pet pet) => null;
+/// The Pets feature's full-size reminder card, shown on the Overview right
+/// under the pet summary while an essential is missing. It draws nothing,
+/// and takes no space, for a pet whose essentials are all answered.
+Widget? petReminderSlot(Pet pet) => PetReminderCard(
+  petId: pet.id,
+  margin: const EdgeInsets.only(top: AppSpacing.cardGap),
+);
 
 /// The Health tab: a personal health organiser for the selected pet, in
 /// four sections (Overview, Schedule, History, Insights). The Emergency

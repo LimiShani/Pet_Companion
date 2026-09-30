@@ -11,21 +11,22 @@ import 'pets_test_helpers.dart';
 /// The reminder card of [petId] (and the dot), the way another tab would
 /// place them.
 Widget reminder(String petId, {bool compact = false}) => Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          PetReminderCard(petId: petId, compact: compact, margin: const EdgeInsets.only(bottom: 12)),
-          Align(alignment: Alignment.centerLeft, child: PetAttentionDot(petId: petId)),
-          Builder(
-            builder: (context) => TextButton(
-              onPressed: () => showPetChecklist(context, petId),
-              child: const Text('Open checklist'),
-            ),
-          ),
-        ],
+  padding: const EdgeInsets.all(20),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      PetReminderCard(petId: petId, compact: compact, margin: const EdgeInsets.only(bottom: 12)),
+      Align(
+        alignment: Alignment.centerLeft,
+        child: PetAttentionDot(petId: petId),
       ),
-    );
+      Builder(
+        builder: (context) =>
+            TextButton(onPressed: () => showPetChecklist(context, petId), child: const Text('Open checklist')),
+      ),
+    ],
+  ),
+);
 
 final dot = find.bySemanticsLabel('Essentials missing');
 
@@ -141,7 +142,12 @@ void main() {
       final harness = await kellyWithoutWeight();
       await pumpPetsHost(
         tester,
-        Column(children: [reminder(kelly), PetReminderCard(petId: kelly, compact: true)]),
+        Column(
+          children: [
+            reminder(kelly),
+            PetReminderCard(petId: kelly, compact: true),
+          ],
+        ),
         harness: harness,
       );
       expect(find.text('1 of 5 essentials still to add'), findsNWidgets(2));
@@ -173,7 +179,8 @@ void main() {
       final soyaPill = tester.getRect(find.text('Soya'));
       final dotRect = tester.getRect(dot);
       expect(dotRect.left, greaterThan(soyaPill.left));
-      expect(find.byType(PetAvatar), findsNWidgets(2));
+      // One picture in each pill, and the selected pet's in the hero.
+      expect(find.byType(PetAvatar), findsNWidgets(3));
       // The dashboard still names each pet once in the pills.
       expect(find.text('Kelly'), findsNWidgets(2));
     });
@@ -323,10 +330,7 @@ void main() {
       await tester.tap(find.text('Open checklist'));
       await tester.pumpAndSettle();
       expect(find.text('Remind me in a week'), findsNothing);
-      expect(
-        find.text("The reminder is hidden until 17.06.25. The dot on Soya's name stays."),
-        findsOneWidget,
-      );
+      expect(find.text("The reminder is hidden until 17.06.25. The dot on Soya's name stays."), findsOneWidget);
     });
   });
 }

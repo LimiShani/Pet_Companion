@@ -91,11 +91,12 @@ class NextEventLine extends StatelessWidget {
       children: [
         const Icon(Icons.schedule_rounded, size: 15, color: AppColors.ink),
         const SizedBox(width: 6),
-        Flexible(child: Text('$label · $text', style: AppText.body, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        Flexible(
+          child: Text('$label · $text', style: AppText.body, maxLines: 1, overflow: TextOverflow.ellipsis),
+        ),
       ],
     );
   }
 }
 
-String formatTimeOfDay(TimeOfDay t) =>
-    '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
+String formatTimeOfDay(TimeOfDay t) => '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';

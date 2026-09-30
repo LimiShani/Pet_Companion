@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/health/health_screen.dart';
 import 'package:pet_companion/features/health/sections/overview_section.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
@@ -169,9 +170,9 @@ void main() {
   });
 
   testWidgets('the Overview keeps a slot for the Pets reminder under the pet summary', (tester) async {
-    // At integration the lead returns the Pets reminder card from
-    // petReminderSlot in health_screen.dart; until then the slot is empty.
-    expect(petReminderSlot(const Pet(id: 'kelly', name: 'Kelly')), isNull);
+    // The slot holds the Pets feature's reminder card, which draws nothing
+    // for a pet whose essentials are all answered.
+    expect(petReminderSlot(const Pet(id: 'kelly', name: 'Kelly')), isA<PetReminderCard>());
 
     await pumpHealthHost(
       tester,

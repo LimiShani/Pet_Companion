@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../pets/pets.dart';
 
 /// Large circular photo with the pet's name and Breed / Age / Weight pills.
 ///
@@ -43,7 +44,7 @@ class PetHero extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _Photo(asset: pet.photoAsset, name: pet.name),
+              _Photo(pet: pet),
               const SizedBox(width: 16),
               Expanded(
                 child: Padding(
@@ -61,7 +62,10 @@ class PetHero extends StatelessWidget {
                       const SizedBox(height: 6),
                       _InfoPill(label: 'Age', value: pet.ageYears == null ? '—' : _formatNumber(pet.ageYears!)),
                       const SizedBox(height: 6),
-                      _InfoPill(label: 'Weight', value: pet.weightKg == null ? '—' : '${_formatNumber(pet.weightKg!)} kg'),
+                      _InfoPill(
+                        label: 'Weight',
+                        value: pet.weightKg == null ? '—' : '${_formatNumber(pet.weightKg!)} kg',
+                      ),
                     ],
                   ),
                 ),
@@ -76,11 +80,12 @@ class PetHero extends StatelessWidget {
   static String _formatNumber(double v) => v == v.roundToDouble() ? v.toInt().toString() : v.toStringAsFixed(1);
 }
 
+/// The pet's picture (its photo or its icon) in the white and coral ring.
+/// A tap opens the pet's profile.
 class _Photo extends StatelessWidget {
-  const _Photo({required this.asset, required this.name});
+  const _Photo({required this.pet});
 
-  final String? asset;
-  final String name;
+  final Pet pet;
 
   @override
   Widget build(BuildContext context) {
@@ -94,14 +99,8 @@ class _Photo extends StatelessWidget {
         border: Border.all(color: AppColors.coral, width: 4),
         boxShadow: const [BoxShadow(color: Color(0x2E75562E), blurRadius: 18, offset: Offset(0, 6))],
       ),
-      child: ClipOval(
-        child: asset != null
-            ? Image.asset(asset!, fit: BoxFit.cover, semanticLabel: name)
-            : const ColoredBox(
-                color: AppColors.yellow,
-                child: Icon(Icons.pets_rounded, size: 56, color: AppColors.brown),
-              ),
-      ),
+      // The ring takes 9 px on each side (4 border + 5 white).
+      child: PetAvatar(pet: pet, size: PetHero.photoSize - 18, onTap: () => openPetProfile(context, pet.id)),
     );
   }
 }
@@ -121,8 +120,13 @@ class _InfoPill extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
         children: [
-          SizedBox(width: 56, child: Text(label, style: AppText.label.copyWith(color: AppColors.brown))),
-          Expanded(child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis)),
+          SizedBox(
+            width: 56,
+            child: Text(label, style: AppText.label.copyWith(color: AppColors.brown)),
+          ),
+          Expanded(
+            child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );

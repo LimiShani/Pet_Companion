@@ -5,6 +5,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../health/emergency/emergency.dart' show removeHealthFilesForPetProvider;
 import '../data/pets_repository_provider.dart';
 import '../widgets/pets_widgets.dart';
 
@@ -12,19 +13,12 @@ import '../widgets/pets_widgets.dart';
 /// document files), before the pet itself is deleted. The database rows of
 /// Health go with the pet on their own; files do not.
 ///
-/// ---------------------------------------------------------------------
-/// HEALTH CLEANUP CALL SITE. Health has been asked for
-/// `removeHealthFilesForPet(petId)`; it does not exist yet, so this does
-/// nothing for now. When it exists, make this provider call it:
-///
-///     final petHealthCleanupProvider = Provider<Future<void> Function(String)>(
-///       (ref) => (petId) => removeHealthFilesForPet(ref, petId),
-///     );
-///
 /// It is awaited in [deletePet] below, before the pet's row is deleted. If
 /// it throws, the pet is not deleted and the owner sees the message.
-/// ---------------------------------------------------------------------
-final petHealthCleanupProvider = Provider<Future<void> Function(String petId)>((ref) => (petId) async {});
+final petHealthCleanupProvider = Provider<Future<void> Function(String petId)>(
+  (ref) =>
+      (petId) => ref.read(removeHealthFilesForPetProvider)(petId),
+);
 
 /// What the owner chose in the "Remove Soya?" dialog.
 enum RemoveChoice { archive, delete }
@@ -85,7 +79,7 @@ class _RemoveDialog extends StatelessWidget {
               message: canArchive
                   ? '$name is hidden from the app. Everything is kept, and you can bring $name back from My pets.'
                   : '$name is your only pet, so there is nothing to show in its place. '
-                      'Add another pet first, or delete $name.',
+                        'Add another pet first, or delete $name.',
               button: PillButton(
                 'Archive $name',
                 key: const Key('remove-archive'),
@@ -97,7 +91,8 @@ class _RemoveDialog extends StatelessWidget {
               icon: Icons.delete_outline_rounded,
               discColor: AppColors.cream,
               title: 'Delete for good',
-              message: "Erases $name's profile, picture, health records, reminders and documents. "
+              message:
+                  "Erases $name's profile, picture, health records, reminders and documents. "
                   'This cannot be undone.',
               button: PillButton(
                 'Delete $name',

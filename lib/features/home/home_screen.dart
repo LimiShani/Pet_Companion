@@ -8,6 +8,7 @@ import 'widgets/feeding_card.dart';
 import 'widgets/health_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/pet_hero.dart';
+import '../pets/pets.dart';
 
 /// The dashboard: a pinned top bar with the Emergency pill, then the pet
 /// selector, the profile hero and the feeding / activity / health cards,
@@ -66,6 +67,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      // Shown only while an essential is missing for this pet.
+                      PetReminderCard(
+                        petId: pet.id,
+                        compact: true,
+                        margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
+                      ),
                       FeedingCard(status: pet.feeding),
                       const SizedBox(height: AppSpacing.cardGap),
                       ActivityCard(status: pet.activity),

@@ -10,6 +10,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/pet_selector.dart';
 import '../../auth/widgets/account_sheet.dart';
 import '../../health/emergency/emergency.dart';
+import '../../pets/pets.dart';
 
 /// The pinned top bar of the dashboard: menu, branding, the Emergency pill
 /// for the selected pet and the account avatar.
@@ -85,7 +86,10 @@ class HomeTopBar extends ConsumerWidget {
                           const SizedBox(width: _gapBeforePill),
                           ConstrainedBox(
                             constraints: BoxConstraints(maxWidth: pillRoom),
-                            child: FittedBox(fit: BoxFit.scaleDown, child: EmergencyButton(petId: petId)),
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: EmergencyButton(petId: petId),
+                            ),
                           ),
                         ],
                       );
@@ -203,12 +207,14 @@ class HomePetRow extends ConsumerWidget {
               padding: EdgeInsets.fromLTRB(AppSpacing.screen, topInset + 8, AppSpacing.screen, 10),
               child: Row(
                 children: [
-                  Expanded(child: PetSelector(onAdd: () {})),
+                  Expanded(child: PetSelector(onAdd: () => openAddPet(context))),
                   const SizedBox(width: 8),
                   Text(
                     '$count ${count == 1 ? 'pet' : 'pets'}',
-                    style: AppText.label
-                        .copyWith(color: AppColors.white.withValues(alpha: 0.9), fontWeight: FontWeight.w600),
+                    style: AppText.label.copyWith(
+                      color: AppColors.white.withValues(alpha: 0.9),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
@@ -241,7 +247,10 @@ class _AccountAvatar extends StatelessWidget {
             width: HomeTopBar._avatarSize,
             height: HomeTopBar._avatarSize,
             child: Center(
-              child: Text(initial, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink)),
+              child: Text(
+                initial,
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
+              ),
             ),
           ),
         ),

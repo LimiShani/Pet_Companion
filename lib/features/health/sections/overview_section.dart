@@ -1,3 +1,4 @@
+import '../../pets/pets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -105,7 +106,8 @@ class OverviewSection extends ConsumerWidget {
               ? null
               : 'Last record ${formatDate(lastRecord)}',
         ),
-        if (reminder != null) ...[const SizedBox(height: AppSpacing.cardGap), reminder!],
+        // The reminder brings its own top gap, so it leaves none when hidden.
+        if (reminder != null) reminder!,
         if (!nothingDue) ...[
           const SizedBox(height: AppSpacing.cardGap),
           _ComingUp(
@@ -178,9 +180,7 @@ class _PetSummary extends StatelessWidget {
               border: Border.all(color: AppColors.coral, width: 3),
             ),
             clipBehavior: Clip.antiAlias,
-            child: pet.photoAsset != null
-                ? Image.asset(pet.photoAsset!, fit: BoxFit.cover, excludeFromSemantics: true)
-                : const Icon(Icons.pets_rounded, color: AppColors.brown),
+            child: ExcludeSemantics(child: PetAvatar(pet: pet, size: 50)),
           ),
           const SizedBox(width: 14),
           Expanded(
