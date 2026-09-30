@@ -38,11 +38,10 @@ bool isHebrew(Locale locale) => locale.languageCode == 'he' || locale.languageCo
 /// The key of the language choice in the [SettingsStore].
 const languageSettingKey = 'app_language';
 
-/// Until the whole app is translated, a phone set to Hebrew still starts
-/// in English and Hebrew is a choice in the switch. Switching this to
-/// `true` (the last step of the rollout) makes Hebrew the default on
-/// Hebrew phones. A provider so tests can exercise both.
-final hebrewFollowsDeviceProvider = Provider<bool>((ref) => false);
+/// Whether a phone set to Hebrew starts the app in Hebrew. On since every
+/// feature speaks Hebrew; while it was off, Hebrew was only a choice in
+/// the switch, tagged "Preview". A provider so tests can exercise both.
+final hebrewFollowsDeviceProvider = Provider<bool>((ref) => true);
 
 /// The language the app shows: the owner's [choice], or for
 /// [AppLanguage.system] Hebrew when the phone's first language is Hebrew

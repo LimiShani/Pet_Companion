@@ -94,8 +94,9 @@ void main() {
       await openSettingsFromAccountSheet(tester);
 
       expect(find.text('Settings'), findsOneWidget);
-      // No choice was made yet: the app is on English.
-      expect(isChosen(tester, _language(AppLanguage.english)), isTrue);
+      // No choice was made yet: the app follows the phone, English here.
+      expect(isChosen(tester, _language(AppLanguage.system)), isTrue);
+      expect(isChosen(tester, _language(AppLanguage.english)), isFalse);
       expect(isChosen(tester, _language(AppLanguage.hebrew)), isFalse);
 
       await tapOnSettings(tester, find.byKey(_language(AppLanguage.hebrew)));
@@ -125,14 +126,12 @@ void main() {
       expect(store.values, {languageSettingKey: 'en'});
     });
 
-    testWidgets('until the translation is complete, Hebrew is tagged and "Follow the phone" is not offered', (
-      tester,
-    ) async {
+    testWidgets('"Follow the phone" is offered and Hebrew is no longer tagged as a preview', (tester) async {
       await pumpHome(tester);
       await openSettingsFromMenu(tester, _en);
 
-      expect(find.byKey(_language(AppLanguage.system)), findsNothing);
-      expect(find.text('Preview'), findsOneWidget);
+      expect(find.byKey(_language(AppLanguage.system)), findsOneWidget);
+      expect(find.text('Preview'), findsNothing);
     });
 
     testWidgets('once Hebrew follows the phone, a Hebrew phone starts in Hebrew and may choose otherwise', (

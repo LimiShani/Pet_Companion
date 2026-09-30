@@ -34,10 +34,9 @@ void main() {
       expect(resolveAppLocale(AppLanguage.system, const [], hebrewFollowsDevice: true), englishLocale);
     });
 
-    test('until the translation is complete a Hebrew phone still starts in English', () {
+    test('with the switch off a Hebrew phone starts in English; today the switch is on', () {
       expect(resolveAppLocale(AppLanguage.system, hebrewPhone, hebrewFollowsDevice: false), englishLocale);
-      // That is today's setting.
-      expect(_container(MemorySettingsStore()).read(hebrewFollowsDeviceProvider), isFalse);
+      expect(_container(MemorySettingsStore()).read(hebrewFollowsDeviceProvider), isTrue);
     });
 
     test('each language is named in its own letters', () {

@@ -354,11 +354,12 @@ void main() {
       expect(find.text('limor@example.com'), findsOneWidget);
     });
 
-    testWidgets('today a Hebrew phone that made no choice still starts in English', (tester) async {
+    testWidgets('a Hebrew phone that made no choice starts in Hebrew', (tester) async {
       tester.platformDispatcher.localesTestValue = const [Locale('he', 'IL')];
       addTearDown(tester.platformDispatcher.clearLocalesTestValue);
       await pumpApp(tester);
-      expect(find.text('Welcome back'), findsOneWidget);
+      expect(find.text(lookupAppL10n(hebrewLocale).authWelcomeBack), findsOneWidget);
+      expect(find.text('Welcome back'), findsNothing);
     });
   });
 

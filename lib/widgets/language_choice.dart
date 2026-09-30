@@ -10,10 +10,10 @@ import 'choice_row.dart';
 /// marked. A tap switches the app at once and the choice is remembered on
 /// the phone.
 ///
-/// The choices are Hebrew and English, each named in its own letters, plus
-/// "Follow the phone" once Hebrew follows the phone's language (see
-/// [hebrewFollowsDeviceProvider]). Until then a phone that made no choice
-/// is simply on English, and Hebrew carries a "Preview" tag.
+/// The choices are "Follow the phone", Hebrew and English, each language
+/// named in its own letters. With [hebrewFollowsDeviceProvider] off (a
+/// state kept for tests) there is no "Follow the phone": a phone that made
+/// no choice is on English, and Hebrew carries a "Preview" tag.
 class LanguageChoice extends ConsumerWidget {
   const LanguageChoice({super.key});
 
