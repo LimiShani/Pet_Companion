@@ -8,9 +8,11 @@ import '../health/emergency/emergency.dart';
 import 'add_pet/add_pet_screen.dart';
 import 'data/pets_repository_provider.dart';
 import 'icons/pet_icon_bank.dart';
+import 'my_pets_screen.dart';
 import 'pets_routes.dart';
 import 'picture/pet_picture.dart';
 import 'profile/basics_sheet.dart';
+import 'profile/pet_profile_screen.dart';
 import 'state/pet_completeness.dart';
 import 'widgets/pet_basics_fields.dart';
 import 'widgets/pets_widgets.dart';
@@ -23,6 +25,29 @@ Future<Pet?> openAddPet(BuildContext context) {
   if (router != null) return router.push<Pet>(PetsRoutes.addPet);
   // A page shown on its own, outside the app's router.
   return pushPetsPage<Pet>(context, const AddPetScreen());
+}
+
+/// Opens the profile of the pet with [petId]: the edit page, with archive
+/// and delete at the end. Nothing opens for an unknown id.
+Future<void> openPetProfile(BuildContext context, String petId, {bool fromMyPets = false}) async {
+  if (_petOf(context, petId, 'openPetProfile') == null) return;
+  final router = GoRouter.maybeOf(context);
+  if (router != null) {
+    await router.push<void>(PetsRoutes.profile(petId), extra: fromMyPets ? PetsRoutes.fromMyPets : null);
+  } else {
+    await pushPetsPage<void>(context, PetProfileScreen(petId: petId, fromMyPets: fromMyPets));
+  }
+}
+
+/// Opens "My pets": all the owner's pets, the archived ones and "Add a
+/// pet".
+Future<void> openMyPets(BuildContext context) async {
+  final router = GoRouter.maybeOf(context);
+  if (router != null) {
+    await router.push<void>(PetsRoutes.myPets);
+  } else {
+    await pushPetsPage<void>(context, const MyPetsScreen());
+  }
 }
 
 /// The owner's pet with [petId], archived or not; `null` (and an assert in

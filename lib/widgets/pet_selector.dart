@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/pets/widgets/pet_avatar.dart';
+import '../features/pets/pets.dart';
 import '../models/pet.dart';
 import '../state/pets_provider.dart';
 import '../theme/app_colors.dart';
@@ -12,6 +12,9 @@ import '../theme/app_theme.dart';
 /// Designed to sit on a coral background (the home header, a [CoralHeader]'s
 /// `bottom`). Reads and writes [selectedPetIdProvider], so every screen that
 /// shows it stays on the same pet.
+///
+/// Each pill shows the pet's picture and, while an essential is missing, a
+/// small dot. A long press on a pill opens that pet's profile.
 class PetSelector extends ConsumerWidget {
   const PetSelector({super.key, this.onAdd});
 
@@ -30,10 +33,24 @@ class PetSelector extends ConsumerWidget {
       child: Row(
         children: [
           for (final pet in pets) ...[
-            _PetPill(
-              pet: pet,
-              selected: pet.id == selectedId,
-              onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
+            Stack(
+              children: [
+                _PetPill(
+                  pet: pet,
+                  selected: pet.id == selectedId,
+                  onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
+                  // A long press opens the pet's profile, where a missing
+                  // essential (the dot) is answered.
+                  onLongPress: () => openPetProfile(context, pet.id),
+                ),
+                // Essentials still missing for this pet. Takes no space and
+                // no taps; shows nothing for a complete pet.
+                PositionedDirectional(
+                  top: 0,
+                  end: 0,
+                  child: IgnorePointer(child: PetAttentionDot(petId: pet.id)),
+                ),
+              ],
             ),
             const SizedBox(width: 8),
           ],
@@ -45,11 +62,12 @@ class PetSelector extends ConsumerWidget {
 }
 
 class _PetPill extends StatelessWidget {
-  const _PetPill({required this.pet, required this.selected, required this.onTap});
+  const _PetPill({required this.pet, required this.selected, required this.onTap, required this.onLongPress});
 
   final Pet pet;
   final bool selected;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +83,7 @@ class _PetPill extends StatelessWidget {
         child: InkWell(
           customBorder: const StadiumBorder(),
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(8, 8, 16, 8),
             child: Row(

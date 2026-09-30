@@ -365,7 +365,8 @@ class PetsCard extends StatelessWidget {
           )
         : card;
     if (semanticLabel == null) return decorated;
-    return Semantics(container: true, button: onTap != null, label: semanticLabel, child: decorated);
+    // Its own node, read before what is inside the card.
+    return Semantics(container: true, explicitChildNodes: true, label: semanticLabel, child: decorated);
   }
 }
 

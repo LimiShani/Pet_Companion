@@ -254,18 +254,12 @@ void main() {
   group('what is missing for a pet', () {
     testWidgets('Kelly is complete and Soya has nothing answered', (tester) async {
       await pumpPetsApp(tester);
-      final kellyInfo = completenessOf(tester, kelly);
-      final soyaInfo = completenessOf(tester, soya);
-      await tester.pumpAndSettle();
+      final kellyInfo = await settledCompleteness(tester, kelly);
+      expect(kellyInfo.isComplete, isTrue);
+      expect(kellyInfo.shouldRemind, isFalse);
+      expect(kellyInfo.missing, isEmpty);
 
-      expect(completenessOf(tester, kelly).isComplete, isTrue);
-      expect(completenessOf(tester, kelly).shouldRemind, isFalse);
-      expect(completenessOf(tester, kelly).missing, isEmpty);
-      // Before Health answered, its items were unknown, not missing.
-      expect(kellyInfo.isKnown, isFalse);
-      expect(soyaInfo.missing, [PetInfoItem.age, PetInfoItem.weight]);
-
-      final info = completenessOf(tester, soya);
+      final info = await settledCompleteness(tester, soya);
       expect(info.isKnown, isTrue);
       expect(info.missing, PetInfoItem.essentials);
       expect(info.next, PetInfoItem.vetPhone);
@@ -279,6 +273,26 @@ void main() {
         PetInfoItem.microchip,
         PetInfoItem.emergencyVet,
       ]);
+    });
+
+    testWidgets('until Health has answered its items are unknown, never missing', (tester) async {
+      final harness = PetsHarness(
+        health: FakeHealthRepository(latency: const Duration(seconds: 5), now: () => petsNow),
+      );
+      await pumpPetsApp(tester, harness: harness);
+
+      final early = completenessOf(tester, soya);
+      expect(early.isKnown, isFalse);
+      expect(early.missing, [PetInfoItem.age, PetInfoItem.weight]);
+      expect(early.shouldRemind, isFalse);
+      expect(completenessOf(tester, kelly).isComplete, isFalse);
+
+      for (var i = 0; i < 4; i++) {
+        await tester.pump(const Duration(seconds: 5));
+      }
+      await tester.pumpAndSettle();
+      expect(completenessOf(tester, soya).missing, PetInfoItem.essentials);
+      expect(completenessOf(tester, kelly).isComplete, isTrue);
     });
 
     testWidgets("while Health cannot be read its items are unknown, never missing", (tester) async {
