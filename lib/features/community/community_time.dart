@@ -15,6 +15,9 @@ String relativeTime(DateTime when, DateTime now) {
   return _date.format(when);
 }
 
+/// A date as the app writes it everywhere, e.g. "30.09.26".
+String shortDate(DateTime when) => _date.format(when);
+
 /// Clock time of a chat message, e.g. "09:41".
 String clockTime(DateTime when) => _time.format(when);
 

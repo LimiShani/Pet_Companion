@@ -1,20 +1,37 @@
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/features/community/community_time.dart';
+import 'package:pet_companion/features/community/data/audience.dart';
+import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
+import 'package:pet_companion/features/community/data/guides/guide_catalog.dart';
+import 'package:pet_companion/features/community/data/guides/guides_en.dart';
+import 'package:pet_companion/features/community/data/guides/guides_he.dart';
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/supabase_community_support.dart';
+import 'package:pet_companion/models/pet.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
+
+import 'guide_fixtures.dart';
 
 const alex = AppUser(id: 'demo', email: 'demo@petcompanion.app', displayName: 'Alex');
 const dana = AppUser(id: 'u-dana', email: 'dana@example.com', displayName: 'Dana');
 
 final fixedNow = DateTime(2026, 5, 14, 9, 41);
 DateTime clock() => fixedNow;
+
+/// Every word of a guide's text, for checks on the wording.
+String wordsOf(GuideText text) => [
+      text.title,
+      text.summary,
+      text.intro,
+      for (final s in text.sections) ...[s.heading, ...s.paragraphs, ...s.bullets, ...s.after],
+    ].join(' ');
 
 void main() {
   group('FakeFeedRepository', () {
@@ -120,7 +137,17 @@ void main() {
 
     test('lists the default channels', () async {
       final channels = await repo.fetchChannels();
-      expect(channels.map((c) => c.name), ['General', 'Puppies', 'Training tips', 'Senior dogs', 'Health questions']);
+      expect(channels.map((c) => c.name), [
+        'General',
+        'Puppies',
+        'Training tips',
+        'Senior dogs',
+        'Kittens',
+        'Litter and cleaning',
+        'Cat behaviour and play',
+        'Senior cats',
+        'Health questions',
+      ]);
     });
 
     test('the stream emits the history, then every new message', () async {
@@ -154,16 +181,75 @@ void main() {
     });
   });
 
+  group('FakeChatRepository rooms by animal', () {
+    test('dog rooms, cat rooms and shared rooms', () async {
+      final channels = await FakeChatRepository(latency: Duration.zero).fetchChannels();
+      List<String> idsFor(CommunityScope scope) => [
+            for (final c in channels)
+              if (scope.shows(c.audience)) c.id,
+          ];
+
+      expect(idsFor(CommunityScope.dogs), ['general', 'puppies', 'training', 'seniors', 'health']);
+      expect(idsFor(CommunityScope.cats), ['general', 'kittens', 'cat-litter', 'cat-behaviour', 'senior-cats', 'health']);
+      expect(idsFor(CommunityScope.everything), hasLength(9));
+    });
+  });
+
+  group('audience and scope', () {
+    test('a stored audience reads back, unknown kinds only show under Everything', () {
+      expect(Audience.fromKey(null), Audience.everyone);
+      expect(Audience.fromKey('all'), Audience.everyone);
+      expect(Audience.fromKey('dog'), Audience.dogs);
+      expect(Audience.fromKey('cat'), Audience.cats);
+      expect(Audience.fromKey('rabbit'), Audience.other);
+
+      expect(CommunityScope.dogs.shows(Audience.other), isFalse);
+      expect(CommunityScope.cats.shows(Audience.other), isFalse);
+      expect(CommunityScope.everything.shows(Audience.other), isTrue);
+      expect(CommunityScope.cats.shows(Audience.everyone), isTrue);
+      expect(CommunityScope.cats.shows(Audience.dogs), isFalse);
+    });
+
+    test('the starting view follows the kind of pet', () {
+      expect(CommunityScope.forSpecies(PetSpecies.dog), CommunityScope.dogs);
+      expect(CommunityScope.forSpecies(PetSpecies.cat), CommunityScope.cats);
+      for (final other in [PetSpecies.bird, PetSpecies.rabbit, PetSpecies.reptile, PetSpecies.other]) {
+        expect(CommunityScope.forSpecies(other), CommunityScope.everything, reason: other.name);
+      }
+    });
+  });
+
+  group('content language', () {
+    test('a locale code maps to a content language, English by default', () {
+      expect(ContentLanguage.fromCode('he'), ContentLanguage.he);
+      expect(ContentLanguage.fromCode('iw'), ContentLanguage.he);
+      expect(ContentLanguage.fromCode('en'), ContentLanguage.en);
+      expect(ContentLanguage.fromCode('fr'), ContentLanguage.en);
+      expect(ContentLanguage.fromCode(null), ContentLanguage.en);
+      expect(ContentLanguage.he.direction, TextDirection.rtl);
+      expect(ContentLanguage.en.direction, TextDirection.ltr);
+    });
+  });
+
   group('BundledGuidesRepository', () {
     const repo = BundledGuidesRepository();
 
-    test('has nine guides across five categories, each well formed', () async {
+    test('has nine dog and nine cat guides across six categories, each well formed', () async {
       final categories = await repo.fetchCategories();
-      final guides = await repo.fetchGuides();
+      final guides = await repo.fetchGuides(ContentLanguage.en);
 
-      expect(categories, hasLength(5));
-      expect(guides, hasLength(9));
-      expect(guides.map((g) => g.id).toSet(), hasLength(9));
+      expect(categories.map((c) => c.name), [
+        'Getting started',
+        'Home and cleaning',
+        'Training and behaviour',
+        'Nutrition',
+        'Health and grooming',
+        'Senior care',
+      ]);
+      expect(guides, hasLength(18));
+      expect(guides.map((g) => g.id).toSet(), hasLength(18));
+      expect(guides.where((g) => g.audience == Audience.dogs), hasLength(9));
+      expect(guides.where((g) => g.audience == Audience.cats), hasLength(9));
       for (final category in categories) {
         expect(guides.where((g) => g.categoryId == category.id), isNotEmpty, reason: category.name);
       }
@@ -171,17 +257,149 @@ void main() {
         expect(categories.any((c) => c.id == guide.categoryId), isTrue, reason: guide.id);
         expect(guide.sections.length, greaterThanOrEqualTo(3), reason: guide.id);
         expect(guide.readingMinutes, inInclusiveRange(1, 5), reason: guide.id);
+        expect(guide.language, ContentLanguage.en, reason: guide.id);
+        expect(guide.translated, isTrue, reason: guide.id);
       }
     });
 
+    test('the cat guides are the approved nine', () async {
+      final guides = await repo.fetchGuides(ContentLanguage.en);
+      expect([for (final g in guides) if (g.audience == Audience.cats) g.title], [
+        "Your cat's first week at home",
+        'Bringing home a second cat',
+        'Setting up the litter box',
+        'How many litter boxes do you need?',
+        'Keeping litter smell and mess under control',
+        'Play and enrichment for indoor cats',
+        'When your cat keeps you up at night',
+        'Scratching and play biting',
+        'Knowing when to call the vet about your cat',
+      ]);
+    });
+
     test('search matches every word, anywhere in the guide', () async {
-      final guides = await repo.fetchGuides();
+      final guides = await repo.fetchGuides(ContentLanguage.en);
       List<String> search(String q) => [for (final g in guides) if (g.matches(q)) g.id];
 
-      expect(search(''), hasLength(9));
+      expect(search(''), hasLength(18));
       expect(search('LEAD harness'), contains('loose-lead'));
       expect(search('xylitol chocolate'), ['unsafe-foods']);
+      expect(search('litter boxes plus one'), contains('litter-count'));
       expect(search('zzzz'), isEmpty);
+    });
+
+    test('every catalog entry has English text, and no text is left without an entry', () {
+      final ids = {for (final record in guideRecords) record.id};
+      expect(ids, hasLength(guideRecords.length));
+      expect(guidesEn.keys.toSet(), ids);
+      expect(ids.containsAll(guidesHe.keys), isTrue);
+    });
+
+    test('a Hebrew text has the same shape as its English one', () {
+      // Holds for every Hebrew guide added later.
+      for (final MapEntry(key: id, value: hebrew) in guidesHe.entries) {
+        final english = guidesEn[id]!;
+        expect(hebrew.sections.length, english.sections.length, reason: id);
+        for (var i = 0; i < english.sections.length; i++) {
+          expect(hebrew.sections[i].bullets.length, english.sections[i].bullets.length, reason: '$id section $i');
+        }
+      }
+    });
+
+    test('a guide is shown in the asked language, or in English when it has no such text', () async {
+      const bilingual = BundledGuidesRepository(
+        texts: {
+          ContentLanguage.en: guidesEn,
+          ContentLanguage.he: {'litter-count': hebrewFixture},
+        },
+      );
+
+      final hebrew = await bilingual.fetchGuides(ContentLanguage.he);
+      expect(hebrew, hasLength(18));
+      final translated = hebrew.firstWhere((g) => g.id == 'litter-count');
+      expect(translated.title, hebrewFixture.title);
+      expect(translated.language, ContentLanguage.he);
+      expect(translated.translated, isTrue);
+      final fallback = hebrew.firstWhere((g) => g.id == 'litter-setup');
+      expect(fallback.title, 'Setting up the litter box');
+      expect(fallback.language, ContentLanguage.en);
+      expect(fallback.translated, isFalse);
+
+      final english = await bilingual.fetchGuides(ContentLanguage.en);
+      expect(english.every((g) => g.translated && g.language == ContentLanguage.en), isTrue);
+    });
+  });
+
+  group('guide attribution', () {
+    final allTexts = {
+      for (final MapEntry(:key, :value) in guidesEn.entries) 'en/$key': value,
+      for (final MapEntry(:key, :value) in guidesHe.entries) 'he/$key': value,
+    };
+
+    test('every guide says who wrote it, in what capacity, and when it last changed', () {
+      for (final MapEntry(key: id, value: text) in allTexts.entries) {
+        expect(text.author.name.trim(), isNotEmpty, reason: id);
+        expect(text.author.role.trim(), isNotEmpty, reason: id);
+        expect(text.updatedAt.toDateTime().isBefore(DateTime(2026, 9, 30)), isFalse, reason: id);
+      }
+    });
+
+    test('the English guides are credited to the team, with the AI assistant and the limits stated', () {
+      for (final MapEntry(key: id, value: text) in guidesEn.entries) {
+        expect(text.author.name, 'Pet Companion team', reason: id);
+        expect(
+          text.author.role,
+          'App content team, writing with an AI assistant. Not veterinarians or trainers.',
+          reason: id,
+        );
+      }
+    });
+
+    test('no bundled guide claims a reviewer or a source today', () {
+      // Nobody has reviewed these guides and they cite nothing. If that
+      // changes, it changes here on purpose, with a real name and date.
+      for (final MapEntry(key: id, value: text) in allTexts.entries) {
+        expect(text.review, isNull, reason: id);
+        expect(text.currentReview, isNull, reason: id);
+        expect(text.sources, isEmpty, reason: id);
+      }
+    });
+
+    test('changing the text of a guide after its review date removes the review', () {
+      const review = GuideReview(
+        reviewerName: 'Test Reviewer (fixture)',
+        reviewerRole: 'Veterinarian',
+        reviewedAt: GuideDate(2026, 10, 5),
+      );
+      GuideText updated(GuideDate on) => GuideText(
+            author: const GuideAuthor(name: 'Fixture', role: 'Fixture'),
+            updatedAt: on,
+            review: review,
+            title: 'Fixture',
+            summary: '',
+            intro: '',
+            sections: const [],
+          );
+
+      expect(updated(const GuideDate(2026, 10, 1)).currentReview, same(review)); // reviewed after the last change
+      expect(updated(const GuideDate(2026, 10, 5)).currentReview, same(review)); // same day
+      expect(updated(const GuideDate(2026, 10, 6)).currentReview, isNull); // changed since: the review lapses
+      expect(updated(const GuideDate(2027, 1, 1)).currentReview, isNull);
+
+      // No bundled guide may ship with a review older than its text.
+      for (final MapEntry(key: id, value: text) in allTexts.entries) {
+        expect(text.currentReview, same(text.review), reason: id);
+      }
+    });
+
+    test('the guides give no doses and claim no diagnosis', () {
+      final dose = RegExp(r'\d+\s?(mg|ml|mcg|milligram|millilitre)', caseSensitive: false);
+      for (final MapEntry(key: id, value: text) in guidesEn.entries) {
+        expect(wordsOf(text), isNot(contains(dose)), reason: id);
+      }
+      final vet = wordsOf(guidesEn['cat-call-vet']!);
+      expect(vet, contains('only a vet who examines them can'));
+      expect(vet, contains('When in doubt, phone your vet practice'));
     });
   });
 

@@ -267,9 +267,11 @@ void main() {
       final h = await pumpCommunity(tester);
       await openSection(tester, 'Chat');
 
-      for (final channel in FakeChatRepository.defaultChannels) {
-        expect(find.text(channel.name), findsOneWidget);
+      // Kelly, the selected pet, is a dog: the dog rooms and the shared ones.
+      for (final name in ['General', 'Puppies', 'Training tips', 'Senior dogs', 'Health questions']) {
+        expect(find.text(name), findsOneWidget);
       }
+      expect(find.text('Kittens'), findsNothing);
       expect(find.text('First weeks, teething and sleep'), findsOneWidget);
 
       await tester.tap(find.text('Puppies'));
@@ -337,7 +339,8 @@ void main() {
 
       expect(find.text("Your puppy's first week at home"), findsOneWidget);
       expect(find.text('A calm start: sleep, routine and first introductions.'), findsOneWidget);
-      expect(find.textContaining('min read · Puppy basics'), findsWidgets);
+      expect(find.textContaining('min read · Getting started'), findsWidgets);
+      expect(find.text("Your cat's first week at home"), findsNothing); // Kelly is a dog
 
       // Category filter.
       await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Senior care'));
@@ -361,8 +364,8 @@ void main() {
 
       expect(headerTitle('Guide'), findsOneWidget);
       expect(find.text('Walking nicely on a loose lead'), findsOneWidget);
-      expect(find.text('Training'), findsOneWidget);
-      expect(find.textContaining('min read'), findsOneWidget);
+      expect(find.text('Training and behaviour'), findsOneWidget);
+      expect(find.textContaining('min read · For dogs'), findsOneWidget);
       expect(find.text('Before you start'), findsOneWidget);
       await tester.scrollUntilVisible(find.text(guideDisclaimer), 300);
       expect(find.text('Be realistic'), findsOneWidget);

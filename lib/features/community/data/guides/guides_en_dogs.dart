@@ -1,26 +1,21 @@
-import 'package:flutter/material.dart';
+import '../guides_repository.dart';
+import 'guide_credits.dart';
 
-import 'guides_repository.dart';
+// The English text of the dog guides. Written for Pet Companion: original
+// text, mainstream advice, plain and warm. The reader adds the closing note
+// (`guideDisclaimer`) at the end of every guide.
+//
+// When you change a guide's text, set its `updatedAt` to that day. A review
+// (if a guide ever has one) covers the text as it was read, so it stops
+// showing once `updatedAt` is later than the review date.
 
-// The guides that ship with the app. Written for Pet Companion: original
-// text, mainstream advice for dog owners, plain and warm. The reader adds
-// [guideDisclaimer] at the end of every guide.
-
-const bundledGuideCategories = <GuideCategory>[
-  GuideCategory(id: 'puppy', name: 'Puppy basics', icon: Icons.pets_rounded),
-  GuideCategory(id: 'training', name: 'Training', icon: Icons.school_rounded),
-  GuideCategory(id: 'nutrition', name: 'Nutrition', icon: Icons.restaurant_rounded),
-  GuideCategory(id: 'health', name: 'Health and grooming', icon: Icons.medical_services_rounded),
-  GuideCategory(id: 'senior', name: 'Senior care', icon: Icons.favorite_rounded),
-];
-
-const bundledGuides = <Guide>[
+const dogGuidesEn = <String, GuideText>{
   // -------------------------------------------------------------------
-  // Puppy basics
+  // Getting started
   // -------------------------------------------------------------------
-  Guide(
-    id: 'first-week',
-    categoryId: 'puppy',
+  'first-week': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: "Your puppy's first week at home",
     summary: 'A calm start: sleep, routine and first introductions.',
     intro: 'The first days in a new home are a lot for a young puppy: new smells, new people and no '
@@ -67,9 +62,9 @@ const bundledGuides = <Guide>[
       ),
     ],
   ),
-  Guide(
-    id: 'house-training',
-    categoryId: 'puppy',
+  'house-training': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'House training without the stress',
     summary: 'A simple schedule and what to do about accidents.',
     intro: 'House training is mostly about timing. Take your puppy to the right place often enough and '
@@ -115,11 +110,11 @@ const bundledGuides = <Guide>[
   ),
 
   // -------------------------------------------------------------------
-  // Training
+  // Training and behaviour
   // -------------------------------------------------------------------
-  Guide(
-    id: 'sit-stay-come',
-    categoryId: 'training',
+  'sit-stay-come': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'Sit, stay and come: the three basics',
     summary: 'Short, cheerful sessions that build on each other.',
     intro: 'These three cues make daily life easier and safer. Teach them with rewards: food, praise or a '
@@ -169,9 +164,9 @@ const bundledGuides = <Guide>[
       ),
     ],
   ),
-  Guide(
-    id: 'loose-lead',
-    categoryId: 'training',
+  'loose-lead': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'Walking nicely on a loose lead',
     summary: 'Teach your dog that a slack lead is what moves you forward.',
     intro: 'Dogs pull because it works: pulling gets them to the next smell faster. The fix is to make a '
@@ -218,9 +213,9 @@ const bundledGuides = <Guide>[
   // -------------------------------------------------------------------
   // Nutrition
   // -------------------------------------------------------------------
-  Guide(
-    id: 'feeding',
-    categoryId: 'nutrition',
+  'feeding': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'How much and how often to feed',
     summary: 'Portions, meal times and keeping a healthy weight.',
     intro: 'There is no single right amount of food for every dog. Age, size, activity and the food itself '
@@ -268,9 +263,9 @@ const bundledGuides = <Guide>[
       ),
     ],
   ),
-  Guide(
-    id: 'unsafe-foods',
-    categoryId: 'nutrition',
+  'unsafe-foods': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'Foods your dog should never eat',
     summary: 'Common kitchen foods that are dangerous for dogs.',
     intro: 'Some everyday human foods are harmful to dogs, even in small amounts. It helps to know the '
@@ -319,9 +314,9 @@ const bundledGuides = <Guide>[
   // -------------------------------------------------------------------
   // Health and grooming
   // -------------------------------------------------------------------
-  Guide(
-    id: 'grooming',
-    categoryId: 'health',
+  'grooming': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'A simple grooming routine',
     summary: 'Coat, teeth, nails and ears in a few minutes a week.',
     intro: 'Regular grooming keeps your dog comfortable and lets you spot small problems early. Keep it '
@@ -372,9 +367,9 @@ const bundledGuides = <Guide>[
       ),
     ],
   ),
-  Guide(
-    id: 'call-the-vet',
-    categoryId: 'health',
+  'call-the-vet': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'Knowing when to call the vet',
     summary: 'Signs that need urgent help, and signs to book a visit for.',
     intro: 'You know your dog\'s normal better than anyone. When something changes, it can be hard to tell '
@@ -418,9 +413,9 @@ const bundledGuides = <Guide>[
   // -------------------------------------------------------------------
   // Senior care
   // -------------------------------------------------------------------
-  Guide(
-    id: 'senior-comfort',
-    categoryId: 'senior',
+  'senior-comfort': GuideText(
+    author: petCompanionTeam,
+    updatedAt: firstWritten,
     title: 'Keeping an older dog comfortable',
     summary: 'Small changes that make the senior years easier.',
     intro: 'Dogs are generally thought of as senior from around seven or eight years old, earlier for '
@@ -469,4 +464,4 @@ const bundledGuides = <Guide>[
       ),
     ],
   ),
-];
+};
