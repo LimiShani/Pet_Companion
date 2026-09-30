@@ -19,9 +19,11 @@ void main() {
 
   /// A coral strip with the button, as a header would place it.
   Widget onCoral(String petId, {bool compact = false}) => ColoredBox(
-        color: const Color(0xFFEC6A48),
-        child: Row(children: [EmergencyButton(petId: petId, compact: compact)]),
-      );
+    color: const Color(0xFFEC6A48),
+    child: Row(
+      children: [EmergencyButton(petId: petId, compact: compact)],
+    ),
+  );
 
   Future<HealthHarness> openSheet(WidgetTester tester, String petId, {HealthHarness? harness}) async {
     final h = await pumpHealthHost(tester, onCoral(petId), harness: harness);
@@ -134,10 +136,7 @@ void main() {
       expect(find.text('Kelly: dog, Mix, 13.6 years, 23 kg'), findsOneWidget);
       expect(find.text('Allergies: Chicken (skin reaction)'), findsOneWidget);
       expect(find.text('Conditions: Arthritis in the hips'), findsOneWidget);
-      expect(
-        find.text('Medicines: Joint tablets 50 mg, 1 tablet by mouth, twice a day with food'),
-        findsOneWidget,
-      );
+      expect(find.text('Medicines: Joint tablets 50 mg, 1 tablet by mouth, twice a day with food'), findsOneWidget);
       expect(find.text('Microchip: 985 112 004 567 321'), findsOneWidget);
       expect(find.textContaining('Nothing is sent until you press send'), findsOneWidget);
 

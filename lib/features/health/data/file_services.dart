@@ -29,8 +29,12 @@ class DeviceAttachmentPicker implements AttachmentPicker {
 
   Future<PickedFile?> _photo(ImageSource source) async {
     try {
-      final file = await ImagePicker()
-          .pickImage(source: source, maxWidth: _maxSide, maxHeight: _maxSide, imageQuality: _quality);
+      final file = await ImagePicker().pickImage(
+        source: source,
+        maxWidth: _maxSide,
+        maxHeight: _maxSide,
+        imageQuality: _quality,
+      );
       if (file == null) return null;
       final name = file.name.isEmpty ? 'photo.jpg' : file.name;
       return PickedFile(
@@ -54,7 +58,11 @@ class DeviceAttachmentPicker implements AttachmentPicker {
   @override
   Future<PickedFile?> pickPdf() async {
     try {
-      final result = await FilePicker.pickFiles(type: FileType.custom, allowedExtensions: const ['pdf'], withData: true);
+      final result = await FilePicker.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: const ['pdf'],
+        withData: true,
+      );
       final file = result == null || result.files.isEmpty ? null : result.files.first;
       if (file == null) return null;
       final bytes = file.bytes;
@@ -100,11 +108,13 @@ class DeviceFileSharer implements FileSharer {
   @override
   Future<bool> share(SharedFile file) async {
     try {
-      final result = await SharePlus.instance.share(ShareParams(
-        files: [XFile.fromData(file.bytes, name: file.name, mimeType: file.mimeType)],
-        fileNameOverrides: [file.name],
-        subject: file.subject.isEmpty ? null : file.subject,
-      ));
+      final result = await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile.fromData(file.bytes, name: file.name, mimeType: file.mimeType)],
+          fileNameOverrides: [file.name],
+          subject: file.subject.isEmpty ? null : file.subject,
+        ),
+      );
       return result.status != ShareResultStatus.unavailable;
     } catch (_) {
       return false;

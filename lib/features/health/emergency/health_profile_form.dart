@@ -78,9 +78,9 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   }
 
   static List<String> _lines(String text) => [
-        for (final line in text.split('\n'))
-          if (line.trim().isNotEmpty) line.trim(),
-      ];
+    for (final line in text.split('\n'))
+      if (line.trim().isNotEmpty) line.trim(),
+  ];
 
   Future<void> _save(HealthProfile current) async {
     if (!_form.currentState!.validate()) return;
@@ -91,17 +91,21 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
     try {
       final allergies = _noAllergies ? const <String>[] : _lines(_allergies.text);
       final conditions = _noConditions ? const <String>[] : _lines(_conditions.text);
-      final saved = await ref.read(healthProfileProvider(widget.petId).notifier).save(current.copyWith(
-            microchip: _notChipped ? '' : _microchip.text.trim(),
-            notChipped: _notChipped,
-            allergies: allergies,
-            allergiesNoneKnown: _noAllergies,
-            conditions: conditions,
-            conditionsNoneKnown: _noConditions,
-            contactName: widget.withContactAndNotes ? _contactName.text.trim() : null,
-            contactPhone: widget.withContactAndNotes ? _contactPhone.text.trim() : null,
-            notes: widget.withContactAndNotes ? _notes.text.trim() : null,
-          ));
+      final saved = await ref
+          .read(healthProfileProvider(widget.petId).notifier)
+          .save(
+            current.copyWith(
+              microchip: _notChipped ? '' : _microchip.text.trim(),
+              notChipped: _notChipped,
+              allergies: allergies,
+              allergiesNoneKnown: _noAllergies,
+              conditions: conditions,
+              conditionsNoneKnown: _noConditions,
+              contactName: widget.withContactAndNotes ? _contactName.text.trim() : null,
+              contactPhone: widget.withContactAndNotes ? _contactPhone.text.trim() : null,
+              notes: widget.withContactAndNotes ? _notes.text.trim() : null,
+            ),
+          );
       if (!mounted) return;
       setState(() => _saving = false);
       widget.onSaved?.call(saved);

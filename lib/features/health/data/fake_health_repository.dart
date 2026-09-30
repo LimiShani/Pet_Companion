@@ -15,11 +15,8 @@ import 'health_repository.dart';
 /// 19:30, walk at 18:30); `soya` is left empty so the getting-started and
 /// no-vet states show.
 class FakeHealthRepository implements HealthRepository {
-  FakeHealthRepository({
-    this.latency = const Duration(milliseconds: 300),
-    DateTime Function()? now,
-    bool seeded = true,
-  }) : _now = now ?? DateTime.now {
+  FakeHealthRepository({this.latency = const Duration(milliseconds: 300), DateTime Function()? now, bool seeded = true})
+    : _now = now ?? DateTime.now {
     if (seeded) _seed();
   }
 
@@ -99,7 +96,11 @@ class FakeHealthRepository implements HealthRepository {
   }
 
   @override
-  Future<HealthDocument> addDocument({required String petId, required String recordId, required PickedFile file}) async {
+  Future<HealthDocument> addDocument({
+    required String petId,
+    required String recordId,
+    required PickedFile file,
+  }) async {
     await _wait();
     final problem = file.problem;
     if (problem != null) throw HealthException(problem);
@@ -367,19 +368,18 @@ class FakeHealthRepository implements HealthRepository {
       String clinic = '',
       String product = '',
       DateTime? nextDue,
-    }) =>
-        HealthRecord(
-          id: id,
-          petId: pet,
-          kind: kind,
-          title: title,
-          notes: notes,
-          scheduledAt: when,
-          doneAt: when,
-          clinic: clinic,
-          productName: product,
-          nextDueOn: nextDue,
-        );
+    }) => HealthRecord(
+      id: id,
+      petId: pet,
+      kind: kind,
+      title: title,
+      notes: notes,
+      scheduledAt: when,
+      doneAt: when,
+      clinic: clinic,
+      productName: product,
+      nextDueOn: nextDue,
+    );
 
     _records.addAll([
       // Planned: these two are the home dashboard's "Upcoming".
@@ -411,38 +411,66 @@ class FakeHealthRepository implements HealthRepository {
         followUpOf: 'r-rabies',
       ),
       // History.
-      done('r-flea', RecordKind.preventive, 'Flea and tick tablet', DateTime(2025, 5, 27, 19, 30),
-          nextDue: DateTime(2025, 7, 27)),
-      done('r-limp', RecordKind.checkup, 'Limping after a long walk', DateTime(2025, 5, 2, 8, 15),
-          clinic: clinic, notes: 'Arthritis in the hips. Started joint tablets.'),
+      done(
+        'r-flea',
+        RecordKind.preventive,
+        'Flea and tick tablet',
+        DateTime(2025, 5, 27, 19, 30),
+        nextDue: DateTime(2025, 7, 27),
+      ),
+      done(
+        'r-limp',
+        RecordKind.checkup,
+        'Limping after a long walk',
+        DateTime(2025, 5, 2, 8, 15),
+        clinic: clinic,
+        notes: 'Arthritis in the hips. Started joint tablets.',
+      ),
       done('r-worm', RecordKind.preventive, 'Worming tablet', DateTime(2025, 4, 10, 9)),
-      done('r-rabies', RecordKind.vaccination, 'Rabies booster', DateTime(2025, 3, 14, 10),
-          clinic: 'Dr. Levi, $clinic',
-          product: 'Rabies vaccine, 1 year, batch A1234',
-          nextDue: DateTime(2026, 3, 14),
-          notes: 'A little sleepy that evening, fine the next morning.'),
-      done('r-food', RecordKind.other, 'Started senior food', DateTime(2025, 2, 1, 8),
-          notes: 'Switched over one week. No tummy trouble.'),
+      done(
+        'r-rabies',
+        RecordKind.vaccination,
+        'Rabies booster',
+        DateTime(2025, 3, 14, 10),
+        clinic: 'Dr. Levi, $clinic',
+        product: 'Rabies vaccine, 1 year, batch A1234',
+        nextDue: DateTime(2026, 3, 14),
+        notes: 'A little sleepy that evening, fine the next morning.',
+      ),
+      done(
+        'r-food',
+        RecordKind.other,
+        'Started senior food',
+        DateTime(2025, 2, 1, 8),
+        notes: 'Switched over one week. No tummy trouble.',
+      ),
       done('r-dental', RecordKind.procedure, 'Dental cleaning', DateTime(2025, 1, 20, 9), clinic: clinic),
       done('r-blood', RecordKind.document, 'Blood test results', DateTime(2025, 1, 20, 11)),
-      done('r-ear', RecordKind.checkup, 'Ear infection', DateTime(2024, 11, 3, 16, 30),
-          clinic: clinic, notes: 'Ear drops for ten days.'),
+      done(
+        'r-ear',
+        RecordKind.checkup,
+        'Ear infection',
+        DateTime(2024, 11, 3, 16, 30),
+        clinic: clinic,
+        notes: 'Ear drops for ten days.',
+      ),
       done('r-senior', RecordKind.checkup, 'Senior wellness check', DateTime(2024, 9, 18, 10), clinic: clinic),
-      done('r-dhpp', RecordKind.vaccination, 'DHPP booster', DateTime(2024, 9, 18, 10, 15),
-          clinic: clinic, product: 'DHPP vaccine'),
+      done(
+        'r-dhpp',
+        RecordKind.vaccination,
+        'DHPP booster',
+        DateTime(2024, 9, 18, 10, 15),
+        clinic: clinic,
+        product: 'DHPP vaccine',
+      ),
       done('r-cough', RecordKind.vaccination, 'Kennel cough vaccine', DateTime(2024, 9, 18, 10, 20), clinic: clinic),
       done('r-yearly', RecordKind.checkup, 'Yearly check', DateTime(2024, 6, 12, 18), clinic: clinic),
     ]);
 
     void attach(String id, String recordId, String name, String mime, Uint8List bytes) {
-      _documents.add(HealthDocument(
-        id: id,
-        petId: pet,
-        recordId: recordId,
-        fileName: name,
-        mimeType: mime,
-        sizeBytes: bytes.length,
-      ));
+      _documents.add(
+        HealthDocument(id: id, petId: pet, recordId: recordId, fileName: name, mimeType: mime, sizeBytes: bytes.length),
+      );
       _documentBytes[id] = bytes;
     }
 
@@ -453,17 +481,19 @@ class FakeHealthRepository implements HealthRepository {
 
     // One medicine with two daily reminders, and the daily routines.
     final started = DateTime(2025, 5, 2);
-    _medications.add(Medication(
-      id: 'm-joint',
-      petId: pet,
-      name: 'Joint tablets',
-      strength: '50 mg',
-      dose: '1 tablet',
-      route: 'By mouth',
-      frequency: 'Twice a day with food',
-      startsOn: started,
-      prescribedBy: 'Dr. Levi, $clinic',
-    ));
+    _medications.add(
+      Medication(
+        id: 'm-joint',
+        petId: pet,
+        name: 'Joint tablets',
+        strength: '50 mg',
+        dose: '1 tablet',
+        route: 'By mouth',
+        frequency: 'Twice a day with food',
+        startsOn: started,
+        prescribedBy: 'Dr. Levi, $clinic',
+      ),
+    );
     _planItems.addAll([
       CarePlanItem(
         id: 'p-joint-am',
@@ -520,19 +550,21 @@ class FakeHealthRepository implements HealthRepository {
     final today = dateOnly(now);
     void given(String itemId, DateTime day, TimeOfDay due, {String title = 'Joint tablets', String? med = 'm-joint'}) {
       final at = atTime(day, due).add(const Duration(minutes: 5));
-      _logs.add(CareLog(
-        id: _id('l'),
-        petId: pet,
-        planItemId: itemId,
-        medicationId: med,
-        title: title,
-        dueOn: day,
-        dueTime: due,
-        status: CareLogStatus.done,
-        doneAt: at,
-        loggedByName: 'Alex',
-        loggedAt: at,
-      ));
+      _logs.add(
+        CareLog(
+          id: _id('l'),
+          petId: pet,
+          planItemId: itemId,
+          medicationId: med,
+          title: title,
+          dueOn: day,
+          dueTime: due,
+          status: CareLogStatus.done,
+          doneAt: at,
+          loggedByName: 'Alex',
+          loggedAt: at,
+        ),
+      );
     }
 
     const am = TimeOfDay(hour: 8, minute: 0);
@@ -548,14 +580,8 @@ class FakeHealthRepository implements HealthRepository {
     }
     if (!now.isBefore(atTime(today, const TimeOfDay(hour: 8, minute: 5)))) given('p-joint-am', today, am);
 
-    Observation weight(String id, DateTime day, double kg, [String note = '']) => Observation(
-          id: id,
-          petId: pet,
-          category: Observation.weightCategory,
-          value: kg,
-          note: note,
-          observedAt: day,
-        );
+    Observation weight(String id, DateTime day, double kg, [String note = '']) =>
+        Observation(id: id, petId: pet, category: Observation.weightCategory, value: kg, note: note, observedAt: day);
     _observations.addAll([
       weight('o-w1', DateTime(2024, 9, 18, 10), 24.1, 'Weighed at the vet'),
       weight('o-w2', DateTime(2024, 12, 5, 9), 23.8),
@@ -595,17 +621,19 @@ class FakeHealthRepository implements HealthRepository {
   );
 
   /// A one-page PDF standing in for a lab report in the sample data.
-  static final Uint8List samplePdf = Uint8List.fromList(latin1.encode(
-    '%PDF-1.4\n'
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n'
-    '2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n'
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 200]/Contents 4 0 R'
-    '/Resources<</Font<</F1 5 0 R>>>>>>endobj\n'
-    '4 0 obj<</Length 58>>stream\n'
-    'BT /F1 16 Tf 30 120 Td (Blood test results: sample) Tj ET\n'
-    'endstream endobj\n'
-    '5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n'
-    'trailer<</Root 1 0 R/Size 6>>\n'
-    '%%EOF\n',
-  ));
+  static final Uint8List samplePdf = Uint8List.fromList(
+    latin1.encode(
+      '%PDF-1.4\n'
+      '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n'
+      '2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n'
+      '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 300 200]/Contents 4 0 R'
+      '/Resources<</Font<</F1 5 0 R>>>>>>endobj\n'
+      '4 0 obj<</Length 58>>stream\n'
+      'BT /F1 16 Tf 30 120 Td (Blood test results: sample) Tj ET\n'
+      'endstream endobj\n'
+      '5 0 obj<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>endobj\n'
+      'trailer<</Root 1 0 R/Size 6>>\n'
+      '%%EOF\n',
+    ),
+  );
 }

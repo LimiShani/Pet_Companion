@@ -48,7 +48,7 @@ void main() {
       expect(find.byType(WeightTrendChart), findsOneWidget);
       expect(find.bySemanticsLabel('3 Vaccinations'), findsOneWidget);
       expect(find.bySemanticsLabel('4 Vet visits'), findsOneWidget);
-      expect(find.bySemanticsLabel('4 Documents'), findsOneWidget);
+      expect(find.bySemanticsLabel('3 Documents'), findsOneWidget);
 
       // No score, no verdict.
       expect(find.textContaining('score'), findsNothing);

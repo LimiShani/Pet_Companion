@@ -15,13 +15,13 @@ class VetContact {
   });
 
   factory VetContact.of(Vet vet) => VetContact(
-        id: vet.id,
-        name: vet.name,
-        phone: vet.hasPhone ? vet.phone.trim() : null,
-        address: vet.hasAddress ? vet.address.trim() : null,
-        openingHours: vet.openingHours.trim().isEmpty ? null : vet.openingHours.trim(),
-        onWhatsApp: vet.onWhatsApp && vet.hasPhone,
-      );
+    id: vet.id,
+    name: vet.name,
+    phone: vet.hasPhone ? vet.phone.trim() : null,
+    address: vet.hasAddress ? vet.address.trim() : null,
+    openingHours: vet.openingHours.trim().isEmpty ? null : vet.openingHours.trim(),
+    onWhatsApp: vet.onWhatsApp && vet.hasPhone,
+  );
 
   final String id;
 
@@ -125,17 +125,19 @@ enum HealthCriticalItem {
 
   /// What to ask the owner for, e.g. "Add a phone number for Kelly's vet".
   String promptFor(String petName) => switch (this) {
-        HealthCriticalItem.vetPhone => "Add a phone number for $petName's vet",
-        HealthCriticalItem.allergies => 'Say whether $petName has any allergies',
-        HealthCriticalItem.conditions => 'Say whether $petName has any medical conditions',
-      };
+    HealthCriticalItem.vetPhone => "Add a phone number for $petName's vet",
+    HealthCriticalItem.allergies => 'Say whether $petName has any allergies',
+    HealthCriticalItem.conditions => 'Say whether $petName has any medical conditions',
+  };
 }
 
 /// The health-side critical items still missing for a pet; empty when
 /// nothing is missing. Refreshes by itself when a vet or the profile
 /// changes. A load error should be read as "unknown", not as "missing".
-final healthCriticalItemsProvider =
-    FutureProvider.autoDispose.family<List<HealthCriticalItem>, String>((ref, petId) async {
+final healthCriticalItemsProvider = FutureProvider.autoDispose.family<List<HealthCriticalItem>, String>((
+  ref,
+  petId,
+) async {
   final contactsFuture = ref.watch(emergencyContactsProvider(petId).future);
   final profileFuture = ref.watch(healthProfileProvider(petId).future);
   final contacts = await contactsFuture;

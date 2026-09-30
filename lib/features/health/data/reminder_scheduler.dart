@@ -4,12 +4,7 @@ import 'health_models.dart';
 
 /// Everything that should remind the owner about one pet.
 class ReminderPlan {
-  const ReminderPlan({
-    required this.petId,
-    required this.petName,
-    this.items = const [],
-    this.upcoming = const [],
-  });
+  const ReminderPlan({required this.petId, required this.petName, this.items = const [], this.upcoming = const []});
 
   final String petId;
   final String petName;

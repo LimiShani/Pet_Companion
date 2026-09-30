@@ -62,10 +62,10 @@ String formatWeightChange(double fromKg, double toKg, {bool grams = false}) {
 
 /// "Dog · Mix · 13.6 years": what is known about the pet, nothing invented.
 String petLine(Pet pet) => [
-      pet.species.label,
-      if ((pet.breed ?? '').trim().isNotEmpty) pet.breed!.trim(),
-      if (pet.ageYears != null) '${formatNumber(pet.ageYears!)} years',
-    ].join(' · ');
+  pet.species.label,
+  if ((pet.breed ?? '').trim().isNotEmpty) pet.breed!.trim(),
+  if (pet.ageYears != null) '${formatNumber(pet.ageYears!)} years',
+].join(' · ');
 
 const _dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -89,23 +89,23 @@ String formatFileSize(int bytes) {
 }
 
 IconData recordKindIcon(RecordKind kind) => switch (kind) {
-      RecordKind.checkup => Icons.medical_services_rounded,
-      RecordKind.vaccination => Icons.vaccines_rounded,
-      RecordKind.preventive => Icons.shield_rounded,
-      RecordKind.procedure => Icons.healing_rounded,
-      RecordKind.medicine => Icons.medication_rounded,
-      RecordKind.document => Icons.description_rounded,
-      RecordKind.other => Icons.sticky_note_2_rounded,
-    };
+  RecordKind.checkup => Icons.medical_services_rounded,
+  RecordKind.vaccination => Icons.vaccines_rounded,
+  RecordKind.preventive => Icons.shield_rounded,
+  RecordKind.procedure => Icons.healing_rounded,
+  RecordKind.medicine => Icons.medication_rounded,
+  RecordKind.document => Icons.description_rounded,
+  RecordKind.other => Icons.sticky_note_2_rounded,
+};
 
 IconData careKindIcon(CareKind kind) => switch (kind) {
-      CareKind.medication => Icons.medication_rounded,
-      CareKind.feeding => Icons.restaurant_rounded,
-      CareKind.walk => Icons.directions_walk_rounded,
-      CareKind.grooming => Icons.brush_rounded,
-      CareKind.cleaning => Icons.cleaning_services_rounded,
-      CareKind.other => Icons.check_circle_outline_rounded,
-    };
+  CareKind.medication => Icons.medication_rounded,
+  CareKind.feeding => Icons.restaurant_rounded,
+  CareKind.walk => Icons.directions_walk_rounded,
+  CareKind.grooming => Icons.brush_rounded,
+  CareKind.cleaning => Icons.cleaning_services_rounded,
+  CareKind.other => Icons.check_circle_outline_rounded,
+};
 
 /// The icon of every emergency entry point in the app. Deliberately not a
 /// plus in a circle, which reads as "add".

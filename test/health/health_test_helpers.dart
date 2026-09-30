@@ -13,10 +13,14 @@ import 'package:pet_companion/features/health/data/file_services.dart';
 import 'package:pet_companion/features/health/data/health_models.dart';
 import 'package:pet_companion/features/health/data/reminder_scheduler.dart';
 import 'package:pet_companion/features/health/emergency/contact_launcher.dart';
+import 'package:pet_companion/features/health/share/health_pdf.dart';
+import 'package:pet_companion/features/health/share/health_report.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
+import 'package:pet_companion/widgets/coral_segmented_control.dart';
+import 'package:pet_companion/widgets/pet_selector.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
@@ -85,6 +89,22 @@ class FakeFileSharer implements FileSharer {
   }
 }
 
+/// Remembers the reports the app asked to turn into a PDF, and hands back
+/// a small stand-in file.
+class RecordingPdfBuilder implements HealthPdfBuilder {
+  final reports = <HealthReport>[];
+  bool failing = false;
+
+  HealthReport get last => reports.last;
+
+  @override
+  Future<Uint8List> build(HealthReport report) async {
+    if (failing) throw const HealthException('Could not prepare the PDF. Please try again.');
+    reports.add(report);
+    return FakeHealthRepository.samplePdf;
+  }
+}
+
 PickedFile testPhoto([String name = 'booklet.png']) =>
     PickedFile(name: name, mimeType: 'image/png', bytes: FakeHealthRepository.samplePng);
 
@@ -98,17 +118,19 @@ PickedFile hugePdf() =>
 /// Everything a Health test can swap out.
 class HealthHarness {
   HealthHarness({FakeHealthRepository? repository, this.pets})
-      : repository = repository ?? fakeHealth(),
-        launcher = RecordingContactLauncher(),
-        scheduler = RecordingReminderScheduler(),
-        picker = FakeAttachmentPicker(),
-        sharer = FakeFileSharer();
+    : repository = repository ?? fakeHealth(),
+      launcher = RecordingContactLauncher(),
+      scheduler = RecordingReminderScheduler(),
+      picker = FakeAttachmentPicker(),
+      sharer = FakeFileSharer(),
+      pdf = RecordingPdfBuilder();
 
   final FakeHealthRepository repository;
   final RecordingContactLauncher launcher;
   final RecordingReminderScheduler scheduler;
   final FakeAttachmentPicker picker;
   final FakeFileSharer sharer;
+  final RecordingPdfBuilder pdf;
 
   /// Replaces the shared sample pets (to test other species).
   final List<Pet>? pets;
@@ -122,15 +144,16 @@ class HealthHarness {
   }
 
   List<Override> _overrides() => [
-        authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
-        healthClockProvider.overrideWithValue(() => now),
-        healthRepositoryProvider.overrideWithValue(repository),
-        contactLauncherProvider.overrideWithValue(launcher),
-        reminderSchedulerProvider.overrideWithValue(scheduler),
-        attachmentPickerProvider.overrideWithValue(picker),
-        fileSharerProvider.overrideWithValue(sharer),
-        if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
-      ];
+    authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
+    healthClockProvider.overrideWithValue(() => now),
+    healthRepositoryProvider.overrideWithValue(repository),
+    contactLauncherProvider.overrideWithValue(launcher),
+    reminderSchedulerProvider.overrideWithValue(scheduler),
+    attachmentPickerProvider.overrideWithValue(picker),
+    fileSharerProvider.overrideWithValue(sharer),
+    healthPdfBuilderProvider.overrideWithValue(pdf),
+    if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
+  ];
 }
 
 class _FixedPets extends PetsNotifier {
@@ -204,17 +227,22 @@ Future<HealthHarness> pumpHealthHost(
         theme: AppTheme.light(),
         builder: (context, app) => Directionality(textDirection: textDirection, child: app!),
         // [page]: the child is a whole screen and brings its own Scaffold.
-        home: page ? child : Scaffold(body: SafeArea(child: SingleChildScrollView(child: child))),
+        home: page
+            ? child
+            : Scaffold(
+                body: SafeArea(child: SingleChildScrollView(child: child)),
+              ),
       ),
     ),
   );
   await tester.pumpAndSettle();
   if (signedIn) {
     // Not awaited: the fake's delays only elapse while the tester pumps.
-    unawaited(hostContainer(tester).read(authControllerProvider.notifier).signIn(
-          email: FakeAuthRepository.demoEmail,
-          password: FakeAuthRepository.demoPassword,
-        ));
+    unawaited(
+      hostContainer(tester)
+          .read(authControllerProvider.notifier)
+          .signIn(email: FakeAuthRepository.demoEmail, password: FakeAuthRepository.demoPassword),
+    );
     await tester.pumpAndSettle();
   }
   return h;
@@ -238,4 +266,16 @@ Future<AsyncValue<T>> settled<T>(WidgetTester tester, ProviderListenable<AsyncVa
     await tester.pump(const Duration(milliseconds: 50));
   }
   return sub.read();
+}
+
+/// Opens one of the tab's four sections by its label in the switcher.
+Future<void> openSection(WidgetTester tester, String label) async {
+  await tester.tap(find.descendant(of: find.byType(CoralSegmentedControl), matching: find.text(label)));
+  await tester.pumpAndSettle();
+}
+
+/// Selects another pet in the tab's pet switcher.
+Future<void> selectPet(WidgetTester tester, String name) async {
+  await tester.tap(find.descendant(of: find.byType(PetSelector), matching: find.text(name)));
+  await tester.pumpAndSettle();
 }

@@ -135,33 +135,33 @@ class HealthRecord {
 
   /// The same record, done at [at] (or planned again when `null`).
   HealthRecord withDone(DateTime? at) => HealthRecord(
-        id: id,
-        petId: petId,
-        kind: kind,
-        title: title,
-        notes: notes,
-        scheduledAt: scheduledAt,
-        doneAt: at,
-        clinic: clinic,
-        productName: productName,
-        nextDueOn: nextDueOn,
-        followUpOf: followUpOf,
-      );
+    id: id,
+    petId: petId,
+    kind: kind,
+    title: title,
+    notes: notes,
+    scheduledAt: scheduledAt,
+    doneAt: at,
+    clinic: clinic,
+    productName: productName,
+    nextDueOn: nextDueOn,
+    followUpOf: followUpOf,
+  );
 
   /// The same record with another "next due" date (`null` clears it).
   HealthRecord withNextDue(DateTime? day) => HealthRecord(
-        id: id,
-        petId: petId,
-        kind: kind,
-        title: title,
-        notes: notes,
-        scheduledAt: scheduledAt,
-        doneAt: doneAt,
-        clinic: clinic,
-        productName: productName,
-        nextDueOn: day == null ? null : dateOnly(day),
-        followUpOf: followUpOf,
-      );
+    id: id,
+    petId: petId,
+    kind: kind,
+    title: title,
+    notes: notes,
+    scheduledAt: scheduledAt,
+    doneAt: doneAt,
+    clinic: clinic,
+    productName: productName,
+    nextDueOn: day == null ? null : dateOnly(day),
+    followUpOf: followUpOf,
+  );
 }
 
 /// A file attached to a health record: a photo or a PDF.
@@ -367,19 +367,19 @@ class HealthProfile {
 
   /// The same profile pointing at [vetId] for [role] (`null` clears it).
   HealthProfile withVet(VetRole role, String? vetId) => HealthProfile(
-        petId: petId,
-        microchip: microchip,
-        notChipped: notChipped,
-        allergies: allergies,
-        allergiesNoneKnown: allergiesNoneKnown,
-        conditions: conditions,
-        conditionsNoneKnown: conditionsNoneKnown,
-        contactName: contactName,
-        contactPhone: contactPhone,
-        notes: notes,
-        regularVetId: role == VetRole.regular ? vetId : regularVetId,
-        emergencyVetId: role == VetRole.emergency ? vetId : emergencyVetId,
-      );
+    petId: petId,
+    microchip: microchip,
+    notChipped: notChipped,
+    allergies: allergies,
+    allergiesNoneKnown: allergiesNoneKnown,
+    conditions: conditions,
+    conditionsNoneKnown: conditionsNoneKnown,
+    contactName: contactName,
+    contactPhone: contactPhone,
+    notes: notes,
+    regularVetId: role == VetRole.regular ? vetId : regularVetId,
+    emergencyVetId: role == VetRole.emergency ? vetId : emergencyVetId,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -448,18 +448,18 @@ class Medication {
   }
 
   Medication copyWith({String? id}) => Medication(
-        id: id ?? this.id,
-        petId: petId,
-        name: name,
-        strength: strength,
-        dose: dose,
-        route: route,
-        frequency: frequency,
-        startsOn: startsOn,
-        endsOn: endsOn,
-        prescribedBy: prescribedBy,
-        instructions: instructions,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    name: name,
+    strength: strength,
+    dose: dose,
+    route: route,
+    frequency: frequency,
+    startsOn: startsOn,
+    endsOn: endsOn,
+    prescribedBy: prescribedBy,
+    instructions: instructions,
+  );
 }
 
 /// What a recurring care item is. [dbValue] is `care_plan_items.kind`.
@@ -620,19 +620,19 @@ class CareLog {
   bool get isNew => id.isEmpty;
 
   CareLog copyWith({String? id}) => CareLog(
-        id: id ?? this.id,
-        petId: petId,
-        planItemId: planItemId,
-        medicationId: medicationId,
-        title: title,
-        dueOn: dueOn,
-        dueTime: dueTime,
-        status: status,
-        doneAt: doneAt,
-        note: note,
-        loggedByName: loggedByName,
-        loggedAt: loggedAt,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    planItemId: planItemId,
+    medicationId: medicationId,
+    title: title,
+    dueOn: dueOn,
+    dueTime: dueTime,
+    status: status,
+    doneAt: doneAt,
+    note: note,
+    loggedByName: loggedByName,
+    loggedAt: loggedAt,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -691,12 +691,12 @@ class Observation {
   bool get isWeight => category == weightCategory && value != null;
 
   Observation copyWith({String? id}) => Observation(
-        id: id ?? this.id,
-        petId: petId,
-        category: category,
-        level: level,
-        value: value,
-        note: note,
-        observedAt: observedAt,
-      );
+    id: id ?? this.id,
+    petId: petId,
+    category: category,
+    level: level,
+    value: value,
+    note: note,
+    observedAt: observedAt,
+  );
 }

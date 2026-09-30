@@ -81,10 +81,9 @@ class OverviewSection extends ConsumerWidget {
       }
     }
     nextEntry ??= open.isEmpty ? null : open.first;
-    final planned = plannedRecords(data.records);
-    final nextRecord = planned.isEmpty ? null : planned.first;
-    final review = entriesNeedingReview(data.plan, now).length +
-        planned.where((r) => r.scheduledAt.isBefore(dateOnly(now))).length;
+    final upcoming = upcomingRecords(data.records, now);
+    final nextRecord = upcoming.isEmpty ? null : upcoming.first;
+    final review = entriesNeedingReview(data.plan, now).length + recordsNeedingReview(data.records, now).length;
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
 
     final history = historyRecords(data.records);
@@ -103,8 +102,8 @@ class OverviewSection extends ConsumerWidget {
           status: nothingDue
               ? 'No scheduled care due'
               : lastRecord == null
-                  ? null
-                  : 'Last record ${formatDate(lastRecord)}',
+              ? null
+              : 'Last record ${formatDate(lastRecord)}',
         ),
         if (reminder != null) ...[const SizedBox(height: AppSpacing.cardGap), reminder!],
         if (!nothingDue) ...[
@@ -118,10 +117,7 @@ class OverviewSection extends ConsumerWidget {
             onSchedule: () => show(HealthSection.schedule),
           ),
         ],
-        if (data.isEmpty) ...[
-          const SizedBox(height: 8),
-          _GettingStarted(pet: pet, actions: actions),
-        ],
+        if (data.isEmpty) ...[const SizedBox(height: 8), _GettingStarted(pet: pet, actions: actions)],
         const SizedBox(height: AppSpacing.cardGap),
         _QuickActions(actions: actions),
         const SizedBox(height: AppSpacing.cardGap),
@@ -142,7 +138,8 @@ class OverviewSection extends ConsumerWidget {
           const SizedBox(height: AppSpacing.cardGap),
           _RecordsCard(
             history: history,
-            documents: data.documents.length,
+            // The same records the History's "Documents" filter shows.
+            documents: history.where((r) => r.kind == RecordKind.document || data.documentsOf(r.id).isNotEmpty).length,
             onKind: (kind) {
               ref.read(historyFilterProvider.notifier).showKind(kind);
               show(HealthSection.history);
@@ -301,10 +298,7 @@ class _ComingUp extends StatelessWidget {
               HealthLink('Schedule', onPressed: onSchedule, color: AppColors.ink),
             ],
           ),
-          for (var i = 0; i < rows.length; i++) ...[
-            if (i > 0) divider,
-            rows[i],
-          ],
+          for (var i = 0; i < rows.length; i++) ...[if (i > 0) divider, rows[i]],
         ],
       ),
     );
@@ -382,10 +376,7 @@ class _QuickActions extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
-          Expanded(child: buttons[i]),
-        ],
+        for (var i = 0; i < buttons.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: buttons[i])],
       ],
     );
   }
@@ -451,10 +442,7 @@ class _VetCard extends StatelessWidget {
         onTap: () => showVetPicker(context, petId: pet.id),
       );
     }
-    final detail = [
-      if (vet.hasAddress) vet.address,
-      if (vet.hasPhone) vet.phone,
-    ].join(' · ');
+    final detail = [if (vet.hasAddress) vet.address, if (vet.hasPhone) vet.phone].join(' · ');
     return HealthCard(
       key: const Key('overview-vet'),
       padding: const EdgeInsetsDirectional.only(start: 16, end: 12, top: 6, bottom: 14),
@@ -570,7 +558,7 @@ class _WeightCard extends StatelessWidget {
     final detail = previous == null
         ? formatDate(latest.observedAt)
         : '${formatDate(latest.observedAt)} · '
-            '${formatWeightChange(previous.value!, latest.value!, grams: grams)} since ${formatDate(previous.observedAt)}';
+              '${formatWeightChange(previous.value!, latest.value!, grams: grams)} since ${formatDate(previous.observedAt)}';
     final shown = formatWeight(latest.value!, grams: grams).split(' ');
 
     return HealthCard(
@@ -597,7 +585,10 @@ class _WeightCard extends StatelessWidget {
                         text: shown.first,
                         style: AppText.metric,
                         children: [
-                          TextSpan(text: ' ${shown.last}', style: AppText.body.copyWith(fontWeight: FontWeight.w700)),
+                          TextSpan(
+                            text: ' ${shown.last}',
+                            style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+                          ),
                         ],
                       ),
                     ),
@@ -660,7 +651,9 @@ class _RecordsCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Expanded(child: _CountTile(count: documents, label: 'Documents', onTap: onDocuments)),
+              Expanded(
+                child: _CountTile(count: documents, label: 'Documents', onTap: onDocuments),
+              ),
             ],
           ),
         ],
@@ -762,7 +755,13 @@ class _GettingStarted extends StatelessWidget {
 
 /// A white step card of the getting-started list.
 class HealthPromptStep extends StatelessWidget {
-  const HealthPromptStep({super.key, required this.icon, required this.title, required this.message, required this.onTap});
+  const HealthPromptStep({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.onTap,
+  });
 
   final IconData icon;
   final String title;

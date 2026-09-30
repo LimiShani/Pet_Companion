@@ -7,8 +7,13 @@ import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_selector.dart';
+import 'data/health_models.dart';
 import 'emergency/emergency_button.dart';
+import 'records/record_detail_screen.dart';
+import 'records/record_form_screen.dart';
+import 'sections/history_section.dart';
 import 'sections/overview_section.dart';
+import 'share/share_actions.dart';
 import 'state/health_keeper.dart';
 import 'state/health_providers.dart';
 import 'widgets/health_widgets.dart';
@@ -21,7 +26,7 @@ Widget? petReminderSlot(Pet pet) => null;
 
 /// The Health tab: a personal health organiser for the selected pet, in
 /// four sections (Overview, Schedule, History, Insights). The Emergency
-/// button and the pet switcher are on every one of them.
+/// button, the pet switcher and the Quick log are on every one of them.
 class HealthScreen extends ConsumerWidget {
   const HealthScreen({super.key});
 
@@ -66,7 +71,7 @@ class HealthScreen extends ConsumerWidget {
                           : const HealthLoading(),
                     )
                   : SingleChildScrollView(
-                      key: PageStorageKey('health-${section.name}'),
+                      key: PageStorageKey('health-${pet.id}-${section.name}'),
                       padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 24),
                       child: _section(context, ref, pet, section, value),
                     ),
@@ -79,8 +84,20 @@ class HealthScreen extends ConsumerWidget {
 
   Widget _section(BuildContext context, WidgetRef ref, Pet pet, HealthSection section, PetHealthData data) {
     return switch (section) {
-      HealthSection.overview => OverviewSection(pet: pet, data: data, reminder: petReminderSlot(pet)),
-      // The other three sections arrive with the next milestones.
+      HealthSection.overview => OverviewSection(
+        pet: pet,
+        data: data,
+        reminder: petReminderSlot(pet),
+        actions: OverviewActions(
+          onAddRecord: () => openRecordForm(context, pet),
+          onShare: () => shareHealthSummary(context, pet),
+          onAddDocument: () => openRecordForm(context, pet, kind: RecordKind.document),
+          onAddAppointment: () => openRecordForm(context, pet, kind: RecordKind.checkup, planned: true),
+          onOpenRecord: (record) => openRecordDetail(context, pet, record),
+        ),
+      ),
+      HealthSection.history => HistorySection(pet: pet, data: data),
+      // The other two sections arrive with the next milestones.
       _ => Padding(
         padding: const EdgeInsets.symmetric(vertical: 48),
         child: Text('${section.label} is on its way.', textAlign: TextAlign.center, style: AppText.body),

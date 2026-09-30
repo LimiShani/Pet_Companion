@@ -86,8 +86,8 @@ class WeightTrendPainter extends CustomPainter {
       final tx = points.length == 1
           ? 1.0
           : span <= 0
-              ? index / (points.length - 1)
-              : (p.at.millisecondsSinceEpoch - start) / span;
+          ? index / (points.length - 1)
+          : (p.at.millisecondsSinceEpoch - start) / span;
       // A flat series runs through the middle.
       final ty = max == min ? 0.5 : (max - p.value) / (max - min);
       final x = left + (right - left) * tx;

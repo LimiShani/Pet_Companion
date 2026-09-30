@@ -21,15 +21,15 @@ class CarePlan {
 
   /// Medicines being given on [day].
   List<Medication> activeMedications(DateTime day) => [
-        for (final m in medications)
-          if (m.isActiveOn(day)) m,
-      ];
+    for (final m in medications)
+      if (m.isActiveOn(day)) m,
+  ];
 
   /// Reminders of one medicine, earliest first.
   List<CarePlanItem> itemsOf(String medicationId) => [
-        for (final i in items)
-          if (i.medicationId == medicationId) i,
-      ]..sort((a, b) => minutesOf(a.time).compareTo(minutesOf(b.time)));
+    for (final i in items)
+      if (i.medicationId == medicationId) i,
+  ]..sort((a, b) => minutesOf(a.time).compareTo(minutesOf(b.time)));
 
   /// The most recent dose recorded as given for a medicine, or `null`.
   CareLog? lastDose(String medicationId) {
@@ -43,11 +43,8 @@ class CarePlan {
     return last;
   }
 
-  CarePlan copyWith({List<Medication>? medications, List<CarePlanItem>? items, List<CareLog>? logs}) => CarePlan(
-        medications: medications ?? this.medications,
-        items: items ?? this.items,
-        logs: logs ?? this.logs,
-      );
+  CarePlan copyWith({List<Medication>? medications, List<CarePlanItem>? items, List<CareLog>? logs}) =>
+      CarePlan(medications: medications ?? this.medications, items: items ?? this.items, logs: logs ?? this.logs);
 }
 
 /// One occurrence of a reminder on a given day, with the owner's answer
@@ -103,18 +100,39 @@ List<ScheduleEntry> entriesNeedingReview(CarePlan plan, DateTime now) {
 
 /// Planned records (appointments and due dates), soonest first.
 List<HealthRecord> plannedRecords(List<HealthRecord> records) => [
-      for (final r in records)
-        if (!r.isDone) r,
-    ]..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+  for (final r in records)
+    if (!r.isDone) r,
+]..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+
+/// Planned records from today on, soonest first: the Schedule's "Today"
+/// and "Upcoming".
+List<HealthRecord> upcomingRecords(List<HealthRecord> records, DateTime now) {
+  final today = dateOnly(now);
+  return [
+    for (final r in plannedRecords(records))
+      if (!r.scheduledAt.isBefore(today)) r,
+  ];
+}
+
+/// Planned records whose day has passed without an answer, newest first.
+/// Unlike a medicine reminder they never drop off the list by themselves:
+/// an appointment is either marked as done, moved or deleted by the owner.
+List<HealthRecord> recordsNeedingReview(List<HealthRecord> records, DateTime now) {
+  final today = dateOnly(now);
+  return [
+    for (final r in plannedRecords(records).reversed)
+      if (r.scheduledAt.isBefore(today)) r,
+  ];
+}
 
 /// Done records, newest first.
 List<HealthRecord> historyRecords(List<HealthRecord> records) => [
-      for (final r in records)
-        if (r.isDone) r,
-    ]..sort((a, b) => b.when.compareTo(a.when));
+  for (final r in records)
+    if (r.isDone) r,
+]..sort((a, b) => b.when.compareTo(a.when));
 
 /// Weight measurements, oldest first.
 List<Observation> weightEntries(List<Observation> observations) => [
-      for (final o in observations)
-        if (o.isWeight) o,
-    ]..sort((a, b) => a.observedAt.compareTo(b.observedAt));
+  for (final o in observations)
+    if (o.isWeight) o,
+]..sort((a, b) => a.observedAt.compareTo(b.observedAt));

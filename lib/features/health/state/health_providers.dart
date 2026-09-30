@@ -68,18 +68,20 @@ void _syncReminders(Ref ref, String petId, {CarePlan? plan, List<HealthRecord>? 
   records ??= ref.exists(healthRecordsProvider(petId)) ? ref.read(healthRecordsProvider(petId)).value : null;
   final now = ref.read(healthClockProvider)();
   final scheduler = ref.read(reminderSchedulerProvider);
-  scheduler.sync(ReminderPlan(
-    petId: petId,
-    petName: _pet(ref, petId)?.name ?? '',
-    items: [
-      for (final item in plan?.items ?? const <CarePlanItem>[])
-        if (item.active) item,
-    ],
-    upcoming: [
-      for (final record in records ?? const <HealthRecord>[])
-        if (!record.isDone && record.scheduledAt.isAfter(now)) record,
-    ],
-  ));
+  scheduler.sync(
+    ReminderPlan(
+      petId: petId,
+      petName: _pet(ref, petId)?.name ?? '',
+      items: [
+        for (final item in plan?.items ?? const <CarePlanItem>[])
+          if (item.active) item,
+      ],
+      upcoming: [
+        for (final record in records ?? const <HealthRecord>[])
+          if (!record.isDone && record.scheduledAt.isAfter(now)) record,
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -119,6 +121,23 @@ class HistoryFilter {
   final String query;
 
   bool get isEmpty => kind == null && !documentsOnly && query.trim().isEmpty;
+
+  /// Whether [record] passes the filter. [hasFiles]: a photo or a PDF is
+  /// attached to it. The search looks at everything the owner typed.
+  bool matches(HealthRecord record, {required bool hasFiles}) {
+    if (kind != null && record.kind != kind) return false;
+    if (documentsOnly && !hasFiles && record.kind != RecordKind.document) return false;
+    final words = query.trim().toLowerCase();
+    if (words.isEmpty) return true;
+    final text = [
+      record.title,
+      record.notes,
+      record.clinic,
+      record.productName,
+      record.kind.label,
+    ].join(' | ').toLowerCase();
+    return words.split(RegExp(r'\s+')).every(text.contains);
+  }
 }
 
 class HistoryFilterController extends Notifier<HistoryFilter> {
@@ -202,21 +221,27 @@ class RecordsController extends AsyncNotifier<List<HealthRecord>> {
       return;
     }
     if (planned == null) {
-      _put(await _repo.saveRecord(HealthRecord(
-        id: '',
-        petId: petId,
-        kind: saved.kind,
-        title: saved.title,
-        scheduledAt: DateTime(due.year, due.month, due.day, 9),
-        clinic: saved.clinic,
-        productName: saved.productName,
-        followUpOf: saved.id,
-      )));
+      _put(
+        await _repo.saveRecord(
+          HealthRecord(
+            id: '',
+            petId: petId,
+            kind: saved.kind,
+            title: saved.title,
+            scheduledAt: DateTime(due.year, due.month, due.day, 9),
+            clinic: saved.clinic,
+            productName: saved.productName,
+            followUpOf: saved.id,
+          ),
+        ),
+      );
     } else if (!isSameDay(planned.scheduledAt, due)) {
       final at = planned.scheduledAt;
-      _put(await _repo.saveRecord(
-        planned.copyWith(scheduledAt: DateTime(due.year, due.month, due.day, at.hour, at.minute)),
-      ));
+      _put(
+        await _repo.saveRecord(
+          planned.copyWith(scheduledAt: DateTime(due.year, due.month, due.day, at.hour, at.minute)),
+        ),
+      );
     }
   }
 
@@ -239,8 +264,10 @@ class RecordsController extends AsyncNotifier<List<HealthRecord>> {
   }
 }
 
-final healthRecordsProvider = AsyncNotifierProvider.autoDispose
-    .family<RecordsController, List<HealthRecord>, String>(RecordsController.new, retry: _noRetry);
+final healthRecordsProvider = AsyncNotifierProvider.autoDispose.family<RecordsController, List<HealthRecord>, String>(
+  RecordsController.new,
+  retry: _noRetry,
+);
 
 /// The files attached to a pet's records.
 class DocumentsController extends AsyncNotifier<List<HealthDocument>> {
@@ -334,8 +361,10 @@ class ProfileController extends AsyncNotifier<HealthProfile> {
   }
 }
 
-final healthProfileProvider = AsyncNotifierProvider.autoDispose
-    .family<ProfileController, HealthProfile, String>(ProfileController.new, retry: _noRetry);
+final healthProfileProvider = AsyncNotifierProvider.autoDispose.family<ProfileController, HealthProfile, String>(
+  ProfileController.new,
+  retry: _noRetry,
+);
 
 /// A pet's two vets, resolved from its profile and the owner's vets.
 class PetVets {
@@ -436,33 +465,39 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
       kept.add(same ? item : await _repo.savePlanItem(item.copyWith(title: saved.name, days: days)));
     }
     for (final time in wanted.values) {
-      kept.add(await _repo.savePlanItem(CarePlanItem(
-        id: '',
-        petId: petId,
-        kind: CareKind.medication,
-        title: saved.name,
-        time: time,
-        days: days,
-        medicationId: saved.id,
-        // Reminders count from the day they are set up, so an older start
-        // date of the medicine never creates reminders "needing review".
-        startsOn: today,
-      )));
+      kept.add(
+        await _repo.savePlanItem(
+          CarePlanItem(
+            id: '',
+            petId: petId,
+            kind: CareKind.medication,
+            title: saved.name,
+            time: time,
+            days: days,
+            medicationId: saved.id,
+            // Reminders count from the day they are set up, so an older start
+            // date of the medicine never creates reminders "needing review".
+            startsOn: today,
+          ),
+        ),
+      );
     }
 
     final plan = _plan;
-    _set(plan.copyWith(
-      medications: [
-        for (final m in plan.medications)
-          if (m.id != saved.id) m,
-        saved,
-      ],
-      items: [
-        for (final i in plan.items)
-          if (i.medicationId != saved.id) i,
-        ...kept,
-      ],
-    ));
+    _set(
+      plan.copyWith(
+        medications: [
+          for (final m in plan.medications)
+            if (m.id != saved.id) m,
+          saved,
+        ],
+        items: [
+          for (final i in plan.items)
+            if (i.medicationId != saved.id) i,
+          ...kept,
+        ],
+      ),
+    );
     return saved;
   }
 
@@ -470,20 +505,22 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
   Future<void> deleteMedication(String medicationId) async {
     await _repo.deleteMedication(medicationId);
     final plan = _plan;
-    _set(CarePlan(
-      medications: [
-        for (final m in plan.medications)
-          if (m.id != medicationId) m,
-      ],
-      items: [
-        for (final i in plan.items)
-          if (i.medicationId != medicationId) i,
-      ],
-      logs: [
-        for (final l in plan.logs)
-          if (l.medicationId != medicationId) l,
-      ],
-    ));
+    _set(
+      CarePlan(
+        medications: [
+          for (final m in plan.medications)
+            if (m.id != medicationId) m,
+        ],
+        items: [
+          for (final i in plan.items)
+            if (i.medicationId != medicationId) i,
+        ],
+        logs: [
+          for (final l in plan.logs)
+            if (l.medicationId != medicationId) l,
+        ],
+      ),
+    );
   }
 
   /// Creates or updates a routine (feeding, walk...).
@@ -491,21 +528,29 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
     final today = dateOnly(ref.read(healthClockProvider)());
     final saved = await _repo.savePlanItem(item.isNew ? item.copyWith(startsOn: today) : item);
     final plan = _plan;
-    _set(plan.copyWith(items: [
-      for (final i in plan.items)
-        if (i.id != saved.id) i,
-      saved,
-    ]));
+    _set(
+      plan.copyWith(
+        items: [
+          for (final i in plan.items)
+            if (i.id != saved.id) i,
+          saved,
+        ],
+      ),
+    );
     return saved;
   }
 
   Future<void> deleteRoutine(String itemId) async {
     await _repo.deletePlanItem(itemId);
     final plan = _plan;
-    _set(plan.copyWith(items: [
-      for (final i in plan.items)
-        if (i.id != itemId) i,
-    ]));
+    _set(
+      plan.copyWith(
+        items: [
+          for (final i in plan.items)
+            if (i.id != itemId) i,
+        ],
+      ),
+    );
   }
 
   /// Records the owner's answer for one occurrence of [item] due on
@@ -521,28 +566,34 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
   }) async {
     assert(item != null || medication != null, 'A log needs a plan item or a medicine.');
     final now = ref.read(healthClockProvider)();
-    final saved = await _repo.saveLog(CareLog(
-      id: '',
-      petId: petId,
-      planItemId: item?.id,
-      medicationId: item?.medicationId ?? medication?.id,
-      title: item?.title ?? medication?.name ?? '',
-      dueOn: dateOnly(dueOn),
-      dueTime: item?.time,
-      status: status,
-      doneAt: status == CareLogStatus.done ? (doneAt ?? now) : null,
-      note: note.trim(),
-      loggedByName: _userName(ref),
-      loggedAt: now,
-    ));
+    final saved = await _repo.saveLog(
+      CareLog(
+        id: '',
+        petId: petId,
+        planItemId: item?.id,
+        medicationId: item?.medicationId ?? medication?.id,
+        title: item?.title ?? medication?.name ?? '',
+        dueOn: dateOnly(dueOn),
+        dueTime: item?.time,
+        status: status,
+        doneAt: status == CareLogStatus.done ? (doneAt ?? now) : null,
+        note: note.trim(),
+        loggedByName: _userName(ref),
+        loggedAt: now,
+      ),
+    );
     final plan = _plan;
-    _set(plan.copyWith(logs: [
-      for (final l in plan.logs)
-        if (l.id != saved.id &&
-            !(saved.planItemId != null && l.planItemId == saved.planItemId && isSameDay(l.dueOn, saved.dueOn)))
-          l,
-      saved,
-    ]));
+    _set(
+      plan.copyWith(
+        logs: [
+          for (final l in plan.logs)
+            if (l.id != saved.id &&
+                !(saved.planItemId != null && l.planItemId == saved.planItemId && isSameDay(l.dueOn, saved.dueOn)))
+              l,
+          saved,
+        ],
+      ),
+    );
     return saved;
   }
 
@@ -550,15 +601,21 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
   Future<void> removeLog(CareLog log) async {
     await _repo.deleteLog(log.id);
     final plan = _plan;
-    _set(plan.copyWith(logs: [
-      for (final l in plan.logs)
-        if (l.id != log.id) l,
-    ]));
+    _set(
+      plan.copyWith(
+        logs: [
+          for (final l in plan.logs)
+            if (l.id != log.id) l,
+        ],
+      ),
+    );
   }
 }
 
-final carePlanProvider =
-    AsyncNotifierProvider.autoDispose.family<CarePlanController, CarePlan, String>(CarePlanController.new, retry: _noRetry);
+final carePlanProvider = AsyncNotifierProvider.autoDispose.family<CarePlanController, CarePlan, String>(
+  CarePlanController.new,
+  retry: _noRetry,
+);
 
 // ---------------------------------------------------------------------------
 // Observations (the Quick log journal, including weight)
@@ -642,12 +699,14 @@ class HealthSummary {
 }
 
 final healthSummaryProvider = FutureProvider.autoDispose.family<HealthSummary, String>((ref, petId) async {
-  final pet = ref.watch(petsProvider.select((pets) {
-    for (final p in pets) {
-      if (p.id == petId) return p;
-    }
-    return null;
-  }));
+  final pet = ref.watch(
+    petsProvider.select((pets) {
+      for (final p in pets) {
+        if (p.id == petId) return p;
+      }
+      return null;
+    }),
+  );
   if (pet == null) throw const HealthException('That pet is no longer in your list.');
   final owner = ref.watch(authControllerProvider.select((auth) => auth.value?.displayName ?? ''));
   final today = ref.watch(healthClockProvider)();
@@ -699,9 +758,9 @@ class PetHealthData {
 
   /// The documents attached to one record.
   List<HealthDocument> documentsOf(String recordId) => [
-        for (final d in documents)
-          if (d.recordId == recordId) d,
-      ];
+    for (final d in documents)
+      if (d.recordId == recordId) d,
+  ];
 }
 
 final petHealthDataProvider = FutureProvider.autoDispose.family<PetHealthData, String>((ref, petId) async {
