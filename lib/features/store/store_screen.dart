@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/pet.dart';
+import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
@@ -65,6 +66,11 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
     ref.listen(reportedDealIdsProvider, (_, _) {});
+    // Picking another pet, here or on any other tab, is a choice to shop
+    // for that pet: "All animals" gives way to it.
+    ref.listen(selectedPetProvider.select((pet) => pet.id), (previous, next) {
+      if (previous != next) ref.read(storeFilterProvider.notifier).setAllAnimals(false);
+    });
 
     final loading = deals.isLoading && !deals.hasValue;
     final failed = !loading && deals.hasError && !deals.hasValue;
