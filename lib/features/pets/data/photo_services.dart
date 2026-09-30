@@ -83,6 +83,10 @@ class ScreenPetPhotoCropper implements PetPhotoCropper {
 
   @override
   Future<CropOutcome> crop(BuildContext context, Uint8List photo) async {
+    // The crop screen could only wait forever on a file it cannot read.
+    if (!isReadablePhoto(photo)) {
+      throw const PetsException('That kind of picture is not supported. Please choose another one.');
+    }
     final outcome = await Navigator.of(context, rootNavigator: true).push<CropOutcome>(
       PageRouteBuilder(
         pageBuilder: (_, _, _) => CropPhotoScreen(photo: photo),
@@ -94,6 +98,16 @@ class ScreenPetPhotoCropper implements PetPhotoCropper {
 }
 
 final petPhotoCropperProvider = Provider<PetPhotoCropper>((ref) => const ScreenPetPhotoCropper());
+
+/// Whether [bytes] look like a picture the app can crop (JPEG, PNG, WebP,
+/// GIF, BMP…). Only the file's header is read.
+bool isReadablePhoto(Uint8List bytes) {
+  try {
+    return img.findDecoderForData(bytes) != null;
+  } catch (_) {
+    return false;
+  }
+}
 
 /// Side of the stored profile picture, in pixels.
 const kPetPhotoSide = 512;

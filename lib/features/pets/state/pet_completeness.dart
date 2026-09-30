@@ -99,8 +99,6 @@ class PetCompleteness {
 
   /// The reminder shows: something is missing and it was not postponed.
   bool get shouldRemind => needsAttention && !isSnoozed;
-
-  bool isMissing(PetInfoItem item) => item.isEssential ? missing.contains(item) : goodToHave.contains(item);
 }
 
 Pet? _find(List<Pet> pets, String id) {

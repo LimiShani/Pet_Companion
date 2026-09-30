@@ -7,6 +7,7 @@ import '../data/pets_repository_provider.dart';
 import '../pet_actions.dart';
 import '../state/pet_completeness.dart';
 import 'pet_basics_fields.dart';
+import 'pet_essentials_keeper.dart';
 import 'pets_widgets.dart';
 
 /// The answer to an essential in a few words ("About 3 years", "None
@@ -89,12 +90,15 @@ class EssentialsList extends ConsumerWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final item in PetInfoItem.essentials)
-          Padding(padding: const EdgeInsets.only(bottom: 8), child: row(item)),
-      ],
+    return PetEssentialsKeeper(
+      petId: pet.id,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          for (final item in PetInfoItem.essentials)
+            Padding(padding: const EdgeInsets.only(bottom: 8), child: row(item)),
+        ],
+      ),
     );
   }
 }

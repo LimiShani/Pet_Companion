@@ -10,6 +10,7 @@ import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/pets/data/fake_pets_repository.dart';
 import 'package:pet_companion/features/pets/data/pets_repository.dart';
 import 'package:pet_companion/features/pets/data/supabase_pets_repository.dart';
+import 'package:pet_companion/features/pets/widgets/pet_avatar.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
@@ -457,6 +458,47 @@ void main() {
       final stored = await harness.pets.fetchPets('demo');
       expect(stored.first.weightKg, 22.6);
       expect(stored.last.name, 'Milo');
+    });
+
+    test('an update that cannot be saved is taken back', () async {
+      final harness = PetsHarness();
+      final container = harness.container();
+      await _signInDemo(container);
+      final kellyPet = container.read(petsProvider).first;
+
+      harness.pets.failure = 'Cannot reach the server.';
+      container.read(petsProvider.notifier).update(kellyPet.copyWith(weightKg: 22.6));
+      expect(container.read(petsProvider).first.weightKg, 22.6);
+      container.read(petsProvider.notifier).add(const Pet(id: 'milo', name: 'Milo'));
+
+      await _settle();
+      // The app shows what the backend has.
+      expect(container.read(petsProvider).first.weightKg, 23);
+      expect([for (final p in container.read(petsProvider)) p.id], ['kelly', 'soya']);
+    });
+
+    test('a photo that failed to load is tried again; a loaded one is kept', () async {
+      final harness = PetsHarness();
+      final container = harness.container();
+      final path = await harness.pets.uploadPhoto('demo', 'kelly', testPhoto);
+
+      harness.pets.failure = 'Cannot reach the server.';
+      final failed = container.listen(petPhotoProvider(path), (_, _) {});
+      await _settle();
+      expect(failed.read().hasError, isTrue);
+      failed.close();
+      await _settle();
+
+      harness.pets.failure = null;
+      final loaded = container.listen(petPhotoProvider(path), (_, _) {});
+      await _settle();
+      expect(loaded.read().value!.bytes, testPhoto);
+      loaded.close();
+      await _settle();
+
+      // Kept for the session: no second trip to the backend.
+      harness.pets.failure = 'Cannot reach the server.';
+      expect(container.read(petPhotoProvider(path)).value!.bytes, testPhoto);
     });
 
     test('updating a pet the owner does not have stores nothing', () async {

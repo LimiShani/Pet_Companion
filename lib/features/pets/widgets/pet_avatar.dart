@@ -12,12 +12,14 @@ import '../icons/pet_icon_bank.dart';
 Duration? _noRetry(int retryCount, Object error) => null;
 
 /// What to show for the photo stored at a path of the `pet-photos` bucket.
-/// Kept for the session, so a photo is fetched once however many avatars
-/// show it; a new photo always gets a new path.
-final petPhotoProvider = FutureProvider.family<PetPhotoData, String>(
-  (ref, path) => ref.watch(petsRepositoryProvider).loadPhoto(path),
-  retry: _noRetry,
-);
+/// Once loaded it is kept for the session, so a photo is fetched once
+/// however many avatars show it; a new photo always gets a new path. A load
+/// that failed is not kept: the next avatar that shows the photo tries again.
+final petPhotoProvider = FutureProvider.autoDispose.family<PetPhotoData, String>((ref, path) async {
+  final photo = await ref.watch(petsRepositoryProvider).loadPhoto(path);
+  if (ref.mounted) ref.keepAlive();
+  return photo;
+}, retry: _noRetry);
 
 /// The pet's round picture: its photo, its icon from the bank, or the
 /// default icon of its kind. Handles loading and a failed photo itself (the

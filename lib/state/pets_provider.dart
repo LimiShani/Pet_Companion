@@ -125,14 +125,31 @@ class PetsStore extends Notifier<PetsState> {
   /// Shows [pet] at once and saves it in the background: what
   /// `petsProvider.notifier.add` and `.update` do. A pet the owner does not
   /// have is only added with [add].
+  ///
+  /// When the save fails the change is taken back, so the app never shows
+  /// something the backend does not have (the essentials reminder then asks
+  /// for it again, and that path reports the failure to the owner).
   void putAndSave(Pet pet, {bool add = false}) {
-    if (!add && state.byId(pet.id) == null) return;
+    final before = state.byId(pet.id);
+    if (!add && before == null) return;
     _put(pet);
     final ownerId = _ownerId;
     if (ownerId == null) return;
-    ref.read(petsRepositoryProvider).savePet(ownerId, pet).catchError((Object e) {
+    ref.read(petsRepositoryProvider).savePet(ownerId, pet).then((_) {}, onError: (Object e) {
       debugPrint('Pet Companion: could not save ${pet.name}: $e');
-      return pet;
+      // Only if nothing newer replaced it meanwhile.
+      if (!ref.mounted || ownerId != _ownerId || !identical(state.byId(pet.id), pet)) return;
+      if (before != null) {
+        _put(before);
+      } else {
+        state = PetsState(
+          status: state.status,
+          all: [
+            for (final p in state.all)
+              if (p.id != pet.id) p,
+          ],
+        );
+      }
     });
   }
 

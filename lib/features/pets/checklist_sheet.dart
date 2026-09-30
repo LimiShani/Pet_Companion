@@ -88,10 +88,11 @@ class PetChecklist extends ConsumerWidget {
         if (info.shouldRemind)
           PetsTextButton(
             'Remind me in a week',
-            onPressed: () async {
-              final navigator = Navigator.of(context);
-              await postponePetReminder(context, petId);
-              if (navigator.mounted) navigator.pop();
+            // Close first, then save: a pop after the save could remove
+            // whatever page is on top by then.
+            onPressed: () {
+              postponePetReminder(context, petId);
+              Navigator.of(context).pop();
             },
           )
         else if (info.needsAttention && info.snoozedUntil != null)

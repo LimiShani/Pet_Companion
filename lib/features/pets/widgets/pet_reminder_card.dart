@@ -9,6 +9,7 @@ import '../checklist_sheet.dart';
 import '../data/pets_repository_provider.dart';
 import '../pet_actions.dart';
 import '../state/pet_completeness.dart';
+import 'pet_essentials_keeper.dart';
 import 'pets_widgets.dart';
 
 Pet? _find(List<Pet> pets, String id) {
@@ -35,14 +36,23 @@ void announcePetCompletion(WidgetRef ref, BuildContext context, String petId) {
 }
 
 /// "Not now": postpones the reminder of the pet with [petId] for a week and
-/// says so.
+/// says so. [context] is only used before anything is awaited, so the
+/// caller may close its sheet or page straight away.
 Future<void> postponePetReminder(BuildContext context, String petId) async {
   final container = ProviderScope.containerOf(context, listen: false);
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  void say(String message) {
+    if (messenger == null || !messenger.mounted) return;
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   try {
     await snoozePetReminder(container, petId);
-    if (context.mounted) showPetsSnack(context, "We'll remind you again in a week");
+    say("We'll remind you again in a week");
   } catch (e) {
-    if (context.mounted) showPetsSnack(context, petsErrorMessage(e));
+    say(petsErrorMessage(e));
   }
 }
 
@@ -71,7 +81,9 @@ class PetReminderCard extends ConsumerWidget {
     final info = ref.watch(petCompletenessProvider(petId));
     final name = ref.watch(petsProvider.select((pets) => _find(pets, petId)?.name));
     final next = info.next;
-    if (!info.shouldRemind || name == null || next == null) return const SizedBox.shrink();
+    if (!info.shouldRemind || name == null || next == null) {
+      return PetEssentialsKeeper(petId: petId, child: const SizedBox.shrink());
+    }
 
     void openNext() => openPetInfoItem(context, petId: petId, item: next);
     void notNow() => postponePetReminder(context, petId);
@@ -79,20 +91,23 @@ class PetReminderCard extends ConsumerWidget {
     final label = "$name's profile: $count";
     final action = next.actionFor(name);
 
-    return Padding(
-      padding: margin,
-      child: compact
-          ? _Line(label: label, action: action, count: count, onOpen: openNext, onNotNow: notNow)
-          : _Card(
-              label: label,
-              title: "Finish $name's profile",
-              action: action,
-              count: count,
-              info: info,
-              onOpen: openNext,
-              onChecklist: () => showPetChecklist(context, petId),
-              onNotNow: notNow,
-            ),
+    return PetEssentialsKeeper(
+      petId: petId,
+      child: Padding(
+        padding: margin,
+        child: compact
+            ? _Line(label: label, action: action, count: count, onOpen: openNext, onNotNow: notNow)
+            : _Card(
+                label: label,
+                title: "Finish $name's profile",
+                action: action,
+                count: count,
+                info: info,
+                onOpen: openNext,
+                onChecklist: () => showPetChecklist(context, petId),
+                onNotNow: notNow,
+              ),
+      ),
     );
   }
 }
@@ -276,18 +291,22 @@ class PetAttentionDot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final needed = ref.watch(petCompletenessProvider(petId).select((info) => info.needsAttention));
-    if (!needed) return const SizedBox.shrink();
-    return Semantics(
-      label: 'Essentials missing',
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: AppColors.white,
-          shape: BoxShape.circle,
-          border: Border.all(color: AppColors.coralDark, width: 3),
-        ),
-      ),
+    return PetEssentialsKeeper(
+      petId: petId,
+      child: !needed
+          ? const SizedBox.shrink()
+          : Semantics(
+              label: 'Essentials missing',
+              child: Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.coralDark, width: 3),
+                ),
+              ),
+            ),
     );
   }
 }

@@ -14,6 +14,7 @@ import '../pet_actions.dart';
 import '../state/pet_completeness.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_basics_fields.dart';
+import '../widgets/pet_essentials_keeper.dart';
 import '../widgets/pet_reminder_card.dart';
 import '../widgets/pets_widgets.dart';
 import 'remove_pet.dart';
@@ -54,11 +55,33 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     if (pet != null) _fill(pet);
   }
 
+  /// The pet as the form last saw it.
+  Pet? _shown;
+
   void _fill(Pet pet) {
     _name.text = pet.name;
     _species = pet.species;
     _basics?.dispose();
     _basics = PetBasicsController(pet: pet, now: _now);
+    _shown = pet;
+  }
+
+  /// The pet changed somewhere else while this page is open (a weight added
+  /// from the checklist, a new picture): everything the owner has not
+  /// edited here follows it, so "Save changes" never writes an old value
+  /// back over a newer one.
+  void _follow(Pet pet) {
+    final shown = _shown;
+    if (shown == null || !mounted) return;
+    setState(() {
+      if (_name.text.trim() == shown.name && _name.text != pet.name) _name.text = pet.name;
+      if (_species == shown.species) _species = pet.species;
+      _basics
+        ?..refresh(pet, _now)
+        // The weight unit follows the kind chosen here, saved or not.
+        ..species = _species;
+      _shown = pet;
+    });
   }
 
   @override
@@ -77,10 +100,13 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       _error = null;
     });
     try {
-      await ref
+      final stored = await ref
           .read(petsStoreProvider.notifier)
           .save(basics.applyTo(pet, now: _now, name: _name.text.trim(), species: _species));
       if (!mounted) return;
+      // Saved: from here on the form follows the stored pet again.
+      basics.markSaved();
+      _shown = stored;
       setState(() => _saving = false);
       showPetsSnack(context, 'Changes saved');
     } catch (e) {
@@ -144,6 +170,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(petsStoreProvider.select((pets) => pets.byId(widget.petId)), (_, next) {
+      if (next != null) _follow(next);
+    });
     final pet = ref.watch(petsStoreProvider.select((pets) => pets.byId(widget.petId)));
     final basics = _basics;
     if (pet == null || basics == null) {
@@ -152,6 +181,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     }
     final now = ref.watch(petsClockProvider)();
 
+    // Stays up to date while Health's pages or a sheet cover this one.
+    return PetEssentialsKeeper(petId: pet.id, child: _page(pet, basics, now));
+  }
+
+  Widget _page(Pet pet, PetBasicsController basics, DateTime now) {
     return PetsPage(
       title: pet.name,
       actions: [HeaderTextAction('My pets', onPressed: _openMyPets)],

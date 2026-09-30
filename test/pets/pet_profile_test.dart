@@ -117,6 +117,29 @@ void main() {
       expect(pet.weightKg, closeTo(0.035, 1e-9));
     });
 
+    testWidgets('an answer given from the checklist is not lost when the profile is saved afterwards', (tester) async {
+      await pumpPetsApp(tester);
+      await openProfile(tester, 'Soya');
+
+      // The weight is added through the checklist while the profile, whose
+      // own weight field is still empty, stays open underneath.
+      await tapVisible(tester, find.byKey(const Key('profile-essentials-add')));
+      await tapVisible(tester, find.byKey(const Key('add-weight')));
+      await typeInto(tester, find.byKey(const Key('pet-weight')).last, '18');
+      await tapVisible(tester, find.text('Save'));
+      Navigator.of(tester.element(find.text("Soya's essentials"))).pop();
+      await tester.pumpAndSettle();
+
+      // The profile follows: its field now shows the weight.
+      final field = tester.widget<TextFormField>(find.byKey(const Key('pet-weight')));
+      expect(field.controller!.text, '18');
+
+      await typeInto(tester, find.byKey(const Key('pet-name')), 'Soya Bean');
+      await tapVisible(tester, find.text('Save changes'));
+      final pet = petNamed(tester, 'Soya Bean');
+      expect(pet.weightKg, 18);
+    });
+
     testWidgets('a pet cannot lose its name', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');

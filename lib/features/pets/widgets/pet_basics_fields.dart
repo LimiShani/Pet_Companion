@@ -16,9 +16,10 @@ String _trimmed(double value, int decimals) {
   return text.contains('.') ? text.replaceFirst(RegExp(r'\.?0+$'), '') : text;
 }
 
-/// "18 kg", "4.25 kg", or "35 g" for an animal weighed in grams.
+/// "18 kg", "4.25 kg", or "35 g" for an animal weighed in grams. To the
+/// gram either way, so that a small animal is never shown as 0 kg.
 String formatPetWeight(double kg, PetSpecies species) =>
-    petWeighsInGrams(species) ? '${_trimmed(kg * 1000, 0)} g' : '${_trimmed(kg, 2)} kg';
+    petWeighsInGrams(species) ? '${_trimmed(kg * 1000, 0)} g' : '${_trimmed(kg, 3)} kg';
 
 /// "Dog · Mixed · about 3 years": the kind, then what is known. The age is
 /// counted at [now] (today when not given).
@@ -50,38 +51,15 @@ enum BasicsSection { age, weight, sex, neutered, breed }
 /// Holds the answers of the "about the pet" form while it is on screen:
 /// birthday or approximate age, weight, sex, neutering and breed. Used by
 /// step 2 of the add-a-pet flow, the pet profile and the one-field sheets.
+///
+/// Only what the owner actually changed is written back ([applyTo]); the
+/// rest follows the stored pet ([refresh]). So an answer given elsewhere
+/// while the form is open (a weight added from the checklist, say) is never
+/// overwritten by a form that still shows the old value.
 class PetBasicsController extends ChangeNotifier {
   PetBasicsController({required Pet pet, required DateTime now}) : _species = pet.species {
-    final born = pet.birthDate;
-    if (born != null && !pet.birthDateApprox) {
-      _ageApprox = false;
-      _birthDate = born;
-    } else if (born != null) {
-      var months = (now.year - born.year) * 12 + now.month - born.month;
-      if (now.day < born.day) months--;
-      if (months < 0) months = 0;
-      if (months >= 24 || (months >= 12 && months % 12 == 0)) {
-        ageAmount.text = '${months ~/ 12}';
-      } else {
-        _ageUnit = AgeUnit.months;
-        ageAmount.text = '$months';
-      }
-    } else if (pet.ageYears != null) {
-      // An age given directly (the sample pets): shown, and kept as it is
-      // unless the owner changes it.
-      ageAmount.text = _trimmed(pet.ageYears!, 1);
-    }
-
-    final kg = pet.weightKg;
-    if (kg != null) weight.text = petWeighsInGrams(_species) ? _trimmed(kg * 1000, 0) : _trimmed(kg, 2);
-
-    _sex = pet.sex;
-    _neutered = pet.neutered;
-    final breedText = pet.breed?.trim() ?? '';
-    if (breedText.toLowerCase() == kMixedBreed.toLowerCase()) {
-      _mixedBreed = true;
-    } else {
-      breed.text = breedText;
+    for (final section in BasicsSection.values) {
+      _load(section, pet, now);
     }
   }
 
@@ -89,9 +67,11 @@ class PetBasicsController extends ChangeNotifier {
   final weight = TextEditingController();
   final breed = TextEditingController();
 
+  /// The parts the owner changed since they were loaded or saved.
+  final _touched = <BasicsSection>{};
+
   PetSpecies _species;
   bool _ageApprox = true;
-  bool _ageTouched = false;
   DateTime? _birthDate;
   AgeUnit _ageUnit = AgeUnit.years;
   PetSex? _sex;
@@ -106,6 +86,71 @@ class PetBasicsController extends ChangeNotifier {
   bool get mixedBreed => _mixedBreed;
   bool get weightInGrams => petWeighsInGrams(_species);
 
+  static String _weightText(double kg, PetSpecies species) =>
+      petWeighsInGrams(species) ? _trimmed(kg * 1000, 0) : _trimmed(kg, 3);
+
+  static void _show(TextEditingController field, String text) {
+    if (field.text != text) field.text = text;
+  }
+
+  /// Shows what [pet] has for [section].
+  void _load(BasicsSection section, Pet pet, DateTime now) {
+    switch (section) {
+      case BasicsSection.age:
+        _ageApprox = true;
+        _birthDate = null;
+        _ageUnit = AgeUnit.years;
+        var amount = '';
+        final born = pet.birthDate;
+        if (born != null && !pet.birthDateApprox) {
+          _ageApprox = false;
+          _birthDate = born;
+        } else if (born != null) {
+          var months = (now.year - born.year) * 12 + now.month - born.month;
+          if (now.day < born.day) months--;
+          if (months < 0) months = 0;
+          if (months >= 24 || (months >= 12 && months % 12 == 0)) {
+            amount = '${months ~/ 12}';
+          } else {
+            _ageUnit = AgeUnit.months;
+            amount = '$months';
+          }
+        } else if (pet.ageYears != null) {
+          // An age given directly (the sample pets): shown, and kept as it
+          // is unless the owner changes it.
+          amount = _trimmed(pet.ageYears!, 1);
+        }
+        _show(ageAmount, amount);
+      case BasicsSection.weight:
+        final kg = pet.weightKg;
+        _show(weight, kg == null ? '' : _weightText(kg, _species));
+      case BasicsSection.sex:
+        _sex = pet.sex;
+      case BasicsSection.neutered:
+        _neutered = pet.neutered;
+      case BasicsSection.breed:
+        final text = pet.breed?.trim() ?? '';
+        _mixedBreed = text.toLowerCase() == kMixedBreed.toLowerCase();
+        _show(breed, _mixedBreed ? '' : text);
+    }
+  }
+
+  /// Follows the stored [pet] for everything the owner has not changed
+  /// here: call it when the pet changes while the form is open.
+  void refresh(Pet pet, DateTime now) {
+    _species = pet.species;
+    for (final section in BasicsSection.values) {
+      if (!_touched.contains(section)) _load(section, pet, now);
+    }
+    notifyListeners();
+  }
+
+  /// The form was saved: from here on it follows the stored pet again.
+  void markSaved() => _touched.clear();
+
+  /// The owner typed in the field of [section].
+  void touch(BasicsSection section) => _touched.add(section);
+
   /// The kind decides the weight unit; a typed weight keeps its meaning
   /// when the unit changes.
   set species(PetSpecies value) {
@@ -113,9 +158,7 @@ class PetBasicsController extends ChangeNotifier {
     final before = petWeighsInGrams(_species);
     final kg = weightKg;
     _species = value;
-    if (before != petWeighsInGrams(value) && kg != null) {
-      weight.text = petWeighsInGrams(value) ? _trimmed(kg * 1000, 0) : _trimmed(kg, 2);
-    }
+    if (before != petWeighsInGrams(value) && kg != null) weight.text = _weightText(kg, value);
     notifyListeners();
   }
 
@@ -129,32 +172,33 @@ class PetBasicsController extends ChangeNotifier {
 
   set birthDate(DateTime? value) {
     _birthDate = value;
-    _ageTouched = true;
+    _touched.add(BasicsSection.age);
     notifyListeners();
   }
 
   set ageUnit(AgeUnit value) {
     if (value == _ageUnit) return;
     _ageUnit = value;
-    _ageTouched = true;
+    _touched.add(BasicsSection.age);
     notifyListeners();
   }
 
-  void ageAmountChanged() => _ageTouched = true;
-
   set sex(PetSex? value) {
     _sex = value;
+    _touched.add(BasicsSection.sex);
     notifyListeners();
   }
 
   set neutered(Neutered? value) {
     _neutered = value;
+    _touched.add(BasicsSection.neutered);
     notifyListeners();
   }
 
   set mixedBreed(bool value) {
     _mixedBreed = value;
     if (value) breed.clear();
+    _touched.add(BasicsSection.breed);
     notifyListeners();
   }
 
@@ -191,35 +235,43 @@ class PetBasicsController extends ChangeNotifier {
 
   /// The answer to the age question at [now]: a birthday, exact or worked
   /// out from "about 3 years"; `null` when it is not answered.
+  ///
+  /// The way of answering that is on screen wins. When it is empty, what
+  /// was entered the other way still counts: switching to "I know the date"
+  /// without picking one does not throw away a typed "about 3 years".
   ({DateTime date, bool approx})? ageAnswer(DateTime now) {
-    if (!_ageApprox) {
-      final date = _birthDate;
-      return date == null ? null : (date: date, approx: false);
-    }
+    final picked = _birthDate;
+    final exact = picked == null ? null : (date: picked, approx: false);
+
+    ({DateTime date, bool approx})? rough;
     final value = _number(ageAmount.text);
-    if (value == null || value <= 0) return null;
-    final months = (_ageUnit == AgeUnit.years ? value * 12 : value).round();
-    // Never past the 28th, so that the day exists in every month.
-    final day = now.day > 28 ? 28 : now.day;
-    return (date: DateTime(now.year, now.month - months, day), approx: true);
+    if (value != null && value > 0) {
+      final months = (_ageUnit == AgeUnit.years ? value * 12 : value).round();
+      // Never past the 28th, so that the day exists in every month.
+      final day = now.day > 28 ? 28 : now.day;
+      rough = (date: DateTime(now.year, now.month - months, day), approx: true);
+    }
+    return _ageApprox ? rough ?? exact : exact ?? rough;
   }
 
-  /// [pet] with the form's answers. Anything left empty is stored as "not
-  /// answered". An age the owner did not touch is kept exactly as it was.
+  /// [pet] with what the owner changed in the form; with [only], just those
+  /// parts. A changed field left empty is stored as "not answered". What
+  /// the owner did not touch stays exactly as [pet] has it.
   Pet applyTo(Pet pet, {required DateTime now, String? name, PetSpecies? species, Set<BasicsSection>? only}) {
-    bool has(BasicsSection section) => only == null || only.contains(section);
+    bool changed(BasicsSection section) =>
+        _touched.contains(section) && (only == null || only.contains(section));
     final age = ageAnswer(now);
     final breedText = _mixedBreed ? kMixedBreed : breed.text.trim();
     return pet.withBasics(
       name: name ?? pet.name,
       species: species ?? pet.species,
-      breed: has(BasicsSection.breed) ? (breedText.isEmpty ? null : breedText) : pet.breed,
-      weightKg: has(BasicsSection.weight) ? weightKg : pet.weightKg,
-      sex: has(BasicsSection.sex) ? _sex : pet.sex,
-      neutered: has(BasicsSection.neutered) ? _neutered : pet.neutered,
+      breed: changed(BasicsSection.breed) ? (breedText.isEmpty ? null : breedText) : pet.breed,
+      weightKg: changed(BasicsSection.weight) ? weightKg : pet.weightKg,
+      sex: changed(BasicsSection.sex) ? _sex : pet.sex,
+      neutered: changed(BasicsSection.neutered) ? _neutered : pet.neutered,
       birthDate: age?.date,
       birthDateApprox: age?.approx ?? false,
-      keepAge: !has(BasicsSection.age) || !_ageTouched,
+      keepAge: !changed(BasicsSection.age),
     );
   }
 
@@ -302,7 +354,7 @@ class PetBasicsFields extends StatelessWidget {
                         inputFormatters: [_numberInput],
                         decoration: const InputDecoration(labelText: 'About', errorMaxLines: 3),
                         validator: c.validateAgeAmount,
-                        onChanged: (_) => c.ageAmountChanged(),
+                        onChanged: (_) => c.touch(BasicsSection.age),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -342,6 +394,7 @@ class PetBasicsFields extends StatelessWidget {
                   errorMaxLines: 3,
                 ),
                 validator: c.validateWeight,
+                onChanged: (_) => c.touch(BasicsSection.weight),
               ),
             ],
             if (sections.contains(BasicsSection.sex)) ...[
@@ -375,6 +428,7 @@ class PetBasicsFields extends StatelessWidget {
                   errorMaxLines: 3,
                 ),
                 validator: (text) => (text?.trim().length ?? 0) > 60 ? 'Keep the breed under 60 characters.' : null,
+                onChanged: (_) => c.touch(BasicsSection.breed),
               ),
               const SizedBox(height: 8),
               Align(

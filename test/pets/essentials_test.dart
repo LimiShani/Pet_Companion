@@ -189,6 +189,31 @@ void main() {
       await tester.pumpAndSettle();
       expect(dot, findsOneWidget);
     });
+
+    testWidgets('stays up to date while the tabs are covered by another page', (tester) async {
+      // A vet is added on Kelly's profile, which covers the tabs. Nothing on
+      // that page is about Soya, yet Soya's dot depends on the owner's vets
+      // too: when the tabs come back, a moment later, they must simply be
+      // there (paused providers catching up mid-build used to fail here).
+      await pumpPetsApp(tester);
+      openPetProfile(tester.element(find.text('Feeding')), kelly);
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Dr. Levi, Park Vet Clinic'));
+      await tapVisible(tester, find.text('Add a new vet'));
+      await typeInto(tester, find.byKey(const Key('vet-name')), 'Dr. Noa');
+      await typeInto(tester, find.byKey(const Key('vet-phone')), '+972 3 555 0100');
+      await tapVisible(tester, find.text('Save vet'));
+      expect(find.text('Dr. Noa'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text('Feeding'), findsOneWidget);
+      expect(dot, findsOneWidget);
+    });
   });
 
   group('the checklist', () {

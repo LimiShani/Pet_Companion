@@ -271,6 +271,8 @@ Path parseSvgPath(String d) {
   while (i < tokens.length) {
     if (!isNumber(i)) {
       command = tokens[i++];
+    } else if (command.toUpperCase() == 'Z' || command.isEmpty) {
+      throw FormatException('A number where a command was expected in "$d"');
     } else if (command == 'M') {
       command = 'L'; // more coordinates after a move are lines
     } else if (command == 'm') {

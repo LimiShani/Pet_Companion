@@ -212,6 +212,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     });
     try {
       await ref.read(petsStoreProvider.notifier).save(basics.applyTo(pet, now: _now));
+      basics.markSaved();
       if (mounted) _goTo(3);
     } catch (e) {
       if (!mounted) return;
@@ -254,6 +255,8 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
   Widget _page({required String title, required int step, required Widget child, bool finishLater = true}) {
     return PetsPage(
+      // A new page per step, so each one starts scrolled to its top.
+      key: ValueKey('add-pet-step-$step-$_id'),
       title: title,
       onBack: _back,
       actions: [if (finishLater) HeaderTextAction('Finish later', onPressed: _busy ? null : _close)],

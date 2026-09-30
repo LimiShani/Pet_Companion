@@ -409,14 +409,39 @@ void main() {
       final pet = Pet(id: 'p', name: 'Pip', birthDate: DateTime(2022, 6, 10), birthDateApprox: true);
       final controller = controllerFor(pet);
       controller.ageAmount.clear();
-      controller.ageAmountChanged();
+      controller.touch(BasicsSection.age);
       expect(controller.applyTo(pet, now: petsNow).hasAge, isFalse);
+    });
+
+    test('an age typed one way is not thrown away by looking at the other way', () {
+      const pet = Pet(id: 'p', name: 'Pip');
+      final typed = controllerFor(pet);
+      typed.ageAmount.text = '3';
+      typed.touch(BasicsSection.age);
+      typed.ageApprox = false; // "I know the date", but no date is picked
+      final saved = typed.applyTo(pet, now: petsNow);
+      expect(saved.birthDate, DateTime(2022, 6, 10));
+      expect(saved.birthDateApprox, isTrue);
+
+      // The other way round: a picked date, then a look at "About…".
+      final picked = controllerFor(pet)
+        ..birthDate = DateTime(2021, 3, 4)
+        ..ageApprox = true;
+      expect(picked.applyTo(pet, now: petsNow).birthDate, DateTime(2021, 3, 4));
+      expect(picked.applyTo(pet, now: petsNow).birthDateApprox, isFalse);
+
+      // What is on screen wins when both ways hold an answer.
+      picked.ageAmount.text = '2';
+      expect(picked.applyTo(pet, now: petsNow).birthDate, DateTime(2023, 6, 10));
+      picked.ageApprox = false;
+      expect(picked.applyTo(pet, now: petsNow).birthDate, DateTime(2021, 3, 4));
     });
 
     test('a comma works as a decimal point', () {
       const pet = Pet(id: 'p', name: 'Pip');
       final controller = controllerFor(pet);
       controller.weight.text = '4,25';
+      controller.touch(BasicsSection.weight);
       expect(controller.applyTo(pet, now: petsNow).weightKg, 4.25);
       expect(controller.validateWeight('4,25'), isNull);
       expect(controller.validateWeight('0'), isNotNull);
@@ -424,12 +449,40 @@ void main() {
       expect(controller.validateAgeAmount('400'), isNotNull);
     });
 
-    test('changing the kind converts the typed weight to the new unit', () {
+    test('changing the kind converts the typed weight to the new unit, to the gram', () {
       const pet = Pet(id: 'p', name: 'Pip', weightKg: 0.035, species: PetSpecies.bird);
       final controller = controllerFor(pet);
       expect(controller.weight.text, '35');
       controller.species = PetSpecies.dog;
-      expect(controller.weight.text, '0.04');
+      expect(controller.weight.text, '0.035');
+      controller.species = PetSpecies.bird;
+      expect(controller.weight.text, '35');
+      // Nothing was typed, so nothing is written back.
+      expect(controller.applyTo(pet, now: petsNow).weightKg, 0.035);
+    });
+
+    test('only what was changed is written back; the rest follows the stored pet', () {
+      const pet = Pet(id: 'p', name: 'Pip', breed: 'Labrador');
+      final controller = controllerFor(pet);
+      controller.sex = PetSex.female;
+
+      // Meanwhile the weight is added somewhere else (the checklist).
+      const newer = Pet(id: 'p', name: 'Pip', breed: 'Labrador', weightKg: 18, neutered: Neutered.yes);
+      controller.refresh(newer, petsNow);
+      expect(controller.weight.text, '18');
+      expect(controller.neutered, Neutered.yes);
+      expect(controller.sex, PetSex.female, reason: 'what the owner chose here stays');
+
+      final saved = controller.applyTo(newer, now: petsNow);
+      expect(saved.weightKg, 18);
+      expect(saved.neutered, Neutered.yes);
+      expect(saved.sex, PetSex.female);
+      expect(saved.breed, 'Labrador');
+
+      // Even a form that was not refreshed does not write its old, empty
+      // weight over the newer one.
+      final stale = controllerFor(pet)..sex = PetSex.male;
+      expect(stale.applyTo(newer, now: petsNow).weightKg, 18);
     });
 
     test('"Mixed or not sure" is stored as a breed and read back as the tick', () {
@@ -445,7 +498,9 @@ void main() {
       const pet = Pet(id: 'p', name: 'Pip', breed: 'Labrador', sex: PetSex.male, ageYears: 2);
       final controller = controllerFor(pet);
       controller.weight.text = '30';
+      controller.touch(BasicsSection.weight);
       controller.breed.clear();
+      controller.touch(BasicsSection.breed);
       final saved = controller.applyTo(pet, now: petsNow, only: {BasicsSection.weight});
       expect(saved.weightKg, 30);
       expect(saved.breed, 'Labrador');
@@ -458,6 +513,7 @@ void main() {
       expect(formatPetWeight(4.25, PetSpecies.cat), '4.25 kg');
       expect(formatPetWeight(100, PetSpecies.other), '100 kg');
       expect(formatPetWeight(0.035, PetSpecies.bird), '35 g');
+      expect(formatPetWeight(0.035, PetSpecies.other), '0.035 kg'); // a hamster: never "0 kg"
       expect(petSummaryLine(const Pet(id: 'soya', name: 'Soya')), 'Dog');
       expect(petSummaryLine(const Pet(id: 'kelly', name: 'Kelly', breed: 'Mix', ageYears: 13.6)), 'Dog · Mix · 13.6 years');
     });
@@ -471,6 +527,38 @@ void main() {
       expect(decoded.width, 512);
       expect(decoded.height, 512);
       expect(jpeg.length, lessThan(100 * 1024));
+    });
+
+    testWidgets('a file the crop screen could not read is refused before it opens', (tester) async {
+      Object? error;
+      await pumpPetsHost(
+        tester,
+        Builder(
+          builder: (context) => TextButton(
+            onPressed: () async {
+              try {
+                await const ScreenPetPhotoCropper().crop(context, Uint8List.fromList([1, 2, 3, 4]));
+              } catch (e) {
+                error = e;
+              }
+            },
+            child: const Text('Crop'),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Crop'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CropPhotoScreen), findsNothing);
+      expect(
+        error,
+        isA<PetsException>().having(
+          (e) => e.message,
+          'message',
+          'That kind of picture is not supported. Please choose another one.',
+        ),
+      );
+      expect(isReadablePhoto(testPhoto), isTrue);
     });
 
     test('something that is not a picture is refused in words', () {
@@ -507,6 +595,52 @@ void main() {
       expect(outcome!.another, isTrue);
       expect(outcome!.jpeg, isNull);
     });
+
+    testWidgets('the real crop screen turns a photo into the square profile picture', (tester) async {
+      // A real landscape photo through the real cropper: the package parses
+      // and crops off the main thread, so real time has to pass.
+      Future<void> waitUntil(bool Function() done) async {
+        for (var i = 0; i < 200 && !done(); i++) {
+          await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        // Let the page transition finish.
+        await tester.pump(const Duration(milliseconds: 400));
+      }
+
+      final photo = img.encodeJpg(img.Image(width: 640, height: 360));
+      CropOutcome? outcome;
+      tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+      // A plain app: the app's theme would try to fetch its font once real
+      // time passes.
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async => outcome = await const ScreenPetPhotoCropper().crop(context, photo),
+              child: const Text('Crop'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Crop'));
+      await tester.pump();
+      final use = find.widgetWithText(FilledButton, 'Use photo');
+      await waitUntil(() => tester.any(use) && tester.widget<FilledButton>(use).onPressed != null);
+
+      expect(tester.widget<FilledButton>(use).onPressed, isNotNull, reason: 'the photo was parsed');
+      await tester.tap(use);
+      await tester.pump();
+      await waitUntil(() => outcome != null);
+
+      expect(find.byType(CropPhotoScreen), findsNothing);
+      final jpeg = outcome!.jpeg!;
+      final picture = img.decodeJpg(jpeg)!;
+      expect(picture.width, kPetPhotoSide);
+      expect(picture.height, kPetPhotoSide);
+    });
   });
 
   group('the icon bank', () {
@@ -540,6 +674,9 @@ void main() {
       expect(curve.right, closeTo(50, 0.01));
       expect(curve.top, closeTo(20, 0.01));
       expect(() => parseSvgPath('M0 0A5 5 0 0 1 10 10'), throwsFormatException);
+      // Malformed input is refused rather than looped over.
+      expect(() => parseSvgPath('M0 0h5z 3 4'), throwsFormatException);
+      expect(() => parseSvgPath('3 4 M0 0'), throwsFormatException);
     });
 
     testWidgets('every animal draws at every size used', (tester) async {

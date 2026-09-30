@@ -120,12 +120,21 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(
-                    'Drag to move · pinch to zoom',
-                    textAlign: TextAlign.center,
-                    style: AppText.secondary.copyWith(color: white),
+                  // The hint and a failure share this place, so the editor
+                  // above keeps its size (and the framing) when one appears.
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 36),
+                    child: Center(
+                      child: Text(
+                        _error ?? 'Drag to move · pinch to zoom',
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.secondary.copyWith(color: _error == null ? white : AppColors.yellow),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 8),
                   Wrap(
                     alignment: WrapAlignment.center,
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -143,14 +152,6 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                       ),
                     ],
                   ),
-                  if (_error != null) ...[
-                    const SizedBox(height: 12),
-                    Text(
-                      _error!,
-                      textAlign: TextAlign.center,
-                      style: AppText.body.copyWith(color: AppColors.yellow),
-                    ),
-                  ],
                   const SizedBox(height: 16),
                   Row(
                     children: [

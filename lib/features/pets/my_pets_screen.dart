@@ -12,6 +12,7 @@ import 'profile/remove_pet.dart';
 import 'state/pet_completeness.dart';
 import 'widgets/pet_avatar.dart';
 import 'widgets/pet_basics_fields.dart';
+import 'widgets/pet_essentials_keeper.dart';
 import 'widgets/pets_widgets.dart';
 
 /// All the owner's pets at a glance: who is complete, who has gaps, "Add a
@@ -66,35 +67,40 @@ class _PetRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final info = ref.watch(petCompletenessProvider(pet.id));
-    final missing = info.missing.length;
 
     return PetsCard(
       key: Key('my-pet-${pet.id}'),
       onTap: () => openPetProfile(context, pet.id, fromMyPets: true),
       padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 10, 10),
-      child: Row(
-        children: [
-          PetAvatar(pet: pet, size: 56),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(pet.name, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
-                Text(petSummaryLine(pet, now: now), style: AppText.secondary.copyWith(color: AppColors.brown)),
-                if (info.isKnown) ...[
-                  const SizedBox(height: 5),
-                  if (info.isComplete)
-                    const PetsTag('Complete', tone: TagTone.green, icon: Icons.check_rounded)
-                  else
-                    PetsTag(missing == 1 ? '1 essential to add' : '$missing essentials to add', tone: TagTone.yellow),
-                ],
+      // Stays up to date while a profile covers this page.
+      child: PetEssentialsKeeper(petId: pet.id, child: _content(info)),
+    );
+  }
+
+  Widget _content(PetCompleteness info) {
+    final missing = info.missing.length;
+    return Row(
+      children: [
+        PetAvatar(pet: pet, size: 56),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(pet.name, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
+              Text(petSummaryLine(pet, now: now), style: AppText.secondary.copyWith(color: AppColors.brown)),
+              if (info.isKnown) ...[
+                const SizedBox(height: 5),
+                if (info.isComplete)
+                  const PetsTag('Complete', tone: TagTone.green, icon: Icons.check_rounded)
+                else
+                  PetsTag(missing == 1 ? '1 essential to add' : '$missing essentials to add', tone: TagTone.yellow),
               ],
-            ),
+            ],
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
-        ],
-      ),
+        ),
+        const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+      ],
     );
   }
 }
