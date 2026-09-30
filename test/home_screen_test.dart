@@ -47,7 +47,7 @@ void main() {
 
     await tester.tap(find.text('Store'));
     await tester.pumpAndSettle();
-    expect(find.text('Store coming soon'), findsOneWidget);
+    expect(find.text('Search deals'), findsOneWidget); // the Store tab's search field
 
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();
