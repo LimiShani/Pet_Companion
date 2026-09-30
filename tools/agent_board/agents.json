@@ -24,7 +24,7 @@
       },
       {
         "id": "l5",
-        "title": "Owner applies migrations 0002-0004 in the Supabase SQL editor"
+        "title": "Owner applies the database migrations in the Supabase SQL editor"
       },
       {
         "id": "l6",
@@ -137,6 +137,18 @@
         {
           "id": "h8",
           "title": "Widget tests for every flow, right-to-left check, analyzer clean, final report"
+        },
+        {
+          "id": "h9",
+          "title": "Phase 1 design: cost on records, behaviour journal, cleaning routines, emergency preparedness, lost-pet card"
+        },
+        {
+          "id": "h10",
+          "title": "Phase 1 build"
+        },
+        {
+          "id": "h11",
+          "title": "Phase 1 tests, migration 0006, report"
         }
       ]
     },
@@ -178,6 +190,18 @@
         {
           "id": "c8",
           "title": "Widget tests, analyzer clean, final report"
+        },
+        {
+          "id": "c9",
+          "title": "Phase 1 design: cats in chat rooms and guides, honest attribution of guides, advice disclaimers"
+        },
+        {
+          "id": "c10",
+          "title": "Phase 1 build"
+        },
+        {
+          "id": "c11",
+          "title": "Phase 1 tests, migration 0007, report"
         }
       ]
     },
@@ -219,6 +243,47 @@
         {
           "id": "s8",
           "title": "Widget tests, analyzer clean, final report"
+        },
+        {
+          "id": "s9",
+          "title": "Phase 1 design: unit price, package size and delivery, filter by the pet's species, cat products"
+        },
+        {
+          "id": "s10",
+          "title": "Phase 1 build"
+        },
+        {
+          "id": "s11",
+          "title": "Phase 1 tests, migration 0008, report"
+        }
+      ]
+    },
+    {
+      "id": "l10n",
+      "name": "Localization agent",
+      "scope": "Hebrew and right-to-left: translation infrastructure, a Hebrew-capable font, a language switch, and the Hebrew wording of the whole app.",
+      "branch": "feature/l10n",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/l10n",
+      "milestones": [
+        {
+          "id": "t1",
+          "title": "Design proposal: approach, font, language switch, Hebrew glossary, right-to-left audit, Hebrew mockups"
+        },
+        {
+          "id": "t2",
+          "title": "Translation infrastructure, font and language switch"
+        },
+        {
+          "id": "t3",
+          "title": "Hebrew for the shared parts: sign-in, Home, navigation, shared widgets"
+        },
+        {
+          "id": "t4",
+          "title": "Hebrew for Health, Community, Store and Pets, with the feature agents"
+        },
+        {
+          "id": "t5",
+          "title": "Right-to-left tests across the app, analyzer clean, final report"
         }
       ]
     }
