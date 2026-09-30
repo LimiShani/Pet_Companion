@@ -148,8 +148,8 @@ Copy is warm and plain: sentence case, no jargon.
 - Work only in your own worktree and branch. Never switch branches, never
   touch `main`, never push, never merge, never rebase.
 - Commit early and often with clear messages in the imperative mood, one
-  logical step per commit. End every commit message with:
-  `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`
+  logical step per commit. End every commit message with the
+  `Co-Authored-By:` line given in your brief.
 - Never commit `env.json` or anything under `tools/agent_board/state/`.
 
 ## Reporting to the control board
