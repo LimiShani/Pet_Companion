@@ -259,7 +259,7 @@ class _DealBody extends ConsumerWidget {
                 label: const Text(StoreStrings.openOffer),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(52),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  textStyle: AppText.button(16),
                 ),
               ),
               if (host != null) ...[

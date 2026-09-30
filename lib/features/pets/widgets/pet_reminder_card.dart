@@ -124,7 +124,7 @@ class _NotNow extends StatelessWidget {
       style: TextButton.styleFrom(
         minimumSize: const Size(kPetsTapTarget, kPetsTapTarget),
         padding: const EdgeInsets.symmetric(horizontal: 10),
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+        textStyle: AppText.button(13),
       ),
       child: const Text('Not now'),
     );

@@ -308,7 +308,7 @@ class _MedicineRow extends StatelessWidget {
             style: FilledButton.styleFrom(
               minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+              textStyle: AppText.button(14),
             ),
             child: const Text('Record'),
           ),
@@ -463,13 +463,13 @@ class _PlannedRow extends StatelessWidget {
 ButtonStyle _smallFilled() => FilledButton.styleFrom(
   minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
   padding: const EdgeInsets.symmetric(horizontal: 16),
-  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+  textStyle: AppText.button(14),
 );
 
 ButtonStyle _smallOutlined() => OutlinedButton.styleFrom(
   minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
   padding: const EdgeInsets.symmetric(horizontal: 16),
-  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+  textStyle: AppText.button(14),
 );
 
 /// A medicine reminder of a past day that nobody answered.

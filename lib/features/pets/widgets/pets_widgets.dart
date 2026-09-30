@@ -495,7 +495,7 @@ class PillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const padding = EdgeInsets.symmetric(horizontal: 14, vertical: 8);
-    const text = TextStyle(fontSize: 13, fontWeight: FontWeight.w800);
+    final text = AppText.button(13);
     const size = Size(kPetsTapTarget, 40);
     final child = Row(
       mainAxisSize: MainAxisSize.min,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
 
 /// Full-width pill button. [loading] disables it and shows a spinner.
 class PrimaryButton extends StatelessWidget {
@@ -21,7 +22,7 @@ class PrimaryButton extends StatelessWidget {
         disabledForegroundColor: AppColors.white,
         minimumSize: const Size.fromHeight(52),
         shape: const StadiumBorder(),
-        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+        textStyle: AppText.button(16),
       ),
       child: loading
           ? const SizedBox(

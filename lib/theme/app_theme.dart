@@ -40,6 +40,16 @@ abstract final class AppText {
   static const secondary = TextStyle(fontSize: 13, fontWeight: FontWeight.w600);
   static const label = TextStyle(fontSize: 12, fontWeight: FontWeight.w700);
   static const navLabel = TextStyle(fontSize: 11, fontWeight: FontWeight.w700);
+
+  /// The label of a button. A button's `textStyle` replaces the inherited
+  /// style instead of merging with it, so unlike the styles above it must
+  /// name the app's fonts itself or the label falls back to the system font.
+  static TextStyle button([double size = 15]) => TextStyle(
+        fontFamily: AppFonts.latin,
+        fontFamilyFallback: const [AppFonts.hebrew],
+        fontSize: size,
+        fontWeight: FontWeight.w800,
+      );
 }
 
 abstract final class AppTheme {
@@ -77,7 +87,7 @@ abstract final class AppTheme {
       bodyColor: AppColors.ink,
       displayColor: AppColors.ink,
     );
-    const pillLabel = TextStyle(fontSize: 15, fontWeight: FontWeight.w800);
+    final pillLabel = AppText.button();
 
     OutlineInputBorder fieldBorder(Color color, [double width = 1]) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
@@ -122,14 +132,14 @@ abstract final class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.coralDark,
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+          textStyle: AppText.button(14),
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.coralDark,
         foregroundColor: AppColors.white,
         elevation: 2,
-        shape: StadiumBorder(),
+        shape: const StadiumBorder(),
         extendedTextStyle: pillLabel,
       ),
       inputDecorationTheme: InputDecorationTheme(

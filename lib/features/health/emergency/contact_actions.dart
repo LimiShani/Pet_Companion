@@ -86,12 +86,12 @@ class ContactActionButtons extends ConsumerWidget {
   static final _filled = FilledButton.styleFrom(
     minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
     padding: const EdgeInsets.symmetric(horizontal: 16),
-    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+    textStyle: AppText.button(14),
   );
   static final _outlined = OutlinedButton.styleFrom(
     minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
     padding: const EdgeInsets.symmetric(horizontal: 16),
-    textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+    textStyle: AppText.button(14),
   );
 
   @override

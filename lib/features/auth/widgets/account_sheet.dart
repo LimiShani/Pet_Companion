@@ -104,7 +104,7 @@ class AccountSheet extends ConsumerWidget {
                 side: const BorderSide(color: AppColors.coralDark, width: 2),
                 minimumSize: const Size.fromHeight(48),
                 shape: const StadiumBorder(),
-                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                textStyle: AppText.button(15),
               ),
             ),
           ],
