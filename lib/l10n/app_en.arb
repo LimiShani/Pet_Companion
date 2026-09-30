@@ -95,6 +95,26 @@
     "placeholders": {"language": {"type": "String"}}
   },
 
+  "menuMyPets": "My pets",
+  "settingsTitle": "Settings",
+  "settingsSummary": "Language, week",
+  "@settingsSummary": {"description": "Under 'Settings' in the side menu and the account sheet: what the page holds."},
+  "settingsWeek": "Week",
+  "settingsFirstDay": "First day of the week",
+  "settingsDaySaturday": "Saturday",
+  "settingsDaySunday": "Sunday",
+  "settingsDayMonday": "Monday",
+  "settingsWeekdays": "Weekdays",
+  "settingsWeekdaysSunThu": "Sunday to Thursday",
+  "settingsWeekdaysMonFri": "Monday to Friday",
+  "settingsWeekendIs": "The weekend: {days}",
+  "@settingsWeekendIs": {
+    "description": "Screen-reader text of the row of seven day letters; the days are short names, e.g. 'Fri, Sat'.",
+    "placeholders": {"days": {"type": "String"}}
+  },
+  "settingsWeekNote": "Sets the order of the day chips and what \"Weekdays\" and \"Weekends\" mean in the schedule. The dimmed days are the weekend.",
+  "settingsSavedNote": "These settings are saved on this phone.",
+
   "homeMenu": "Menu",
   "homeAccount": "Account",
   "homePetCount": "{count, plural, =1{1 pet} other{{count} pets}}",

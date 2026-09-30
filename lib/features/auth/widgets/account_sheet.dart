@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../auth/app_user.dart';
 import '../../../auth/auth_controller.dart';
@@ -7,14 +8,17 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/directional_icon.dart';
-import '../../../widgets/language_choice.dart';
+import '../../settings/settings_routes.dart';
+import '../../settings/widgets/menu_entry.dart';
 
-/// Bottom sheet opened from the account avatar: who is signed in, the
-/// language switch and a sign-out button.
+/// Bottom sheet opened from the account avatar: who is signed in, a row
+/// that leads to the Settings page (language, week) and a sign-out button.
 class AccountSheet extends ConsumerWidget {
   const AccountSheet({super.key, required this.user});
 
   final AppUser user;
+
+  static const settingsKey = Key('account-settings');
 
   static Future<void> show(BuildContext context, AppUser user) => showModalBottomSheet<void>(
         context: context,
@@ -77,17 +81,20 @@ class AccountSheet extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 18),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
-              child: Text(l10n.accountLanguage, style: AppText.label.copyWith(color: AppColors.brown)),
-            ),
-            const LanguageChoice(),
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, end: 6, top: 8),
-              child: Text(
-                l10n.languageNote,
-                style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
-              ),
+            MenuEntry(
+              key: settingsKey,
+              icon: Icons.settings_rounded,
+              title: l10n.settingsTitle,
+              subtitle: l10n.settingsSummary,
+              color: AppColors.white,
+              onTap: () {
+                // The sheet closes first; the page is then opened by what was
+                // taken from its context while it was still there.
+                final router = GoRouter.maybeOf(context);
+                final navigator = Navigator.of(context, rootNavigator: true);
+                Navigator.of(context).pop();
+                pushSettings(router: router, navigator: navigator);
+              },
             ),
             const SizedBox(height: 18),
             OutlinedButton.icon(

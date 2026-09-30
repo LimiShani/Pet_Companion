@@ -509,6 +509,90 @@ abstract class AppL10n {
   /// **'Change the language: {language}'**
   String languageSwitchTo(String language);
 
+  /// No description provided for @menuMyPets.
+  ///
+  /// In en, this message translates to:
+  /// **'My pets'**
+  String get menuMyPets;
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// Under 'Settings' in the side menu and the account sheet: what the page holds.
+  ///
+  /// In en, this message translates to:
+  /// **'Language, week'**
+  String get settingsSummary;
+
+  /// No description provided for @settingsWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get settingsWeek;
+
+  /// No description provided for @settingsFirstDay.
+  ///
+  /// In en, this message translates to:
+  /// **'First day of the week'**
+  String get settingsFirstDay;
+
+  /// No description provided for @settingsDaySaturday.
+  ///
+  /// In en, this message translates to:
+  /// **'Saturday'**
+  String get settingsDaySaturday;
+
+  /// No description provided for @settingsDaySunday.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday'**
+  String get settingsDaySunday;
+
+  /// No description provided for @settingsDayMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday'**
+  String get settingsDayMonday;
+
+  /// No description provided for @settingsWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekdays'**
+  String get settingsWeekdays;
+
+  /// No description provided for @settingsWeekdaysSunThu.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunday to Thursday'**
+  String get settingsWeekdaysSunThu;
+
+  /// No description provided for @settingsWeekdaysMonFri.
+  ///
+  /// In en, this message translates to:
+  /// **'Monday to Friday'**
+  String get settingsWeekdaysMonFri;
+
+  /// Screen-reader text of the row of seven day letters; the days are short names, e.g. 'Fri, Sat'.
+  ///
+  /// In en, this message translates to:
+  /// **'The weekend: {days}'**
+  String settingsWeekendIs(String days);
+
+  /// No description provided for @settingsWeekNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sets the order of the day chips and what \"Weekdays\" and \"Weekends\" mean in the schedule. The dimmed days are the weekend.'**
+  String get settingsWeekNote;
+
+  /// No description provided for @settingsSavedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'These settings are saved on this phone.'**
+  String get settingsSavedNote;
+
   /// No description provided for @homeMenu.
   ///
   /// In en, this message translates to:

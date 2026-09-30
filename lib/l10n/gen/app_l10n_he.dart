@@ -228,6 +228,50 @@ class AppL10nHe extends AppL10n {
   }
 
   @override
+  String get menuMyPets => 'החיות שלי';
+
+  @override
+  String get settingsTitle => 'הגדרות';
+
+  @override
+  String get settingsSummary => 'שפה, שבוע';
+
+  @override
+  String get settingsWeek => 'שבוע';
+
+  @override
+  String get settingsFirstDay => 'היום הראשון בשבוע';
+
+  @override
+  String get settingsDaySaturday => 'שבת';
+
+  @override
+  String get settingsDaySunday => 'ראשון';
+
+  @override
+  String get settingsDayMonday => 'שני';
+
+  @override
+  String get settingsWeekdays => 'ימי חול';
+
+  @override
+  String get settingsWeekdaysSunThu => 'ראשון עד חמישי';
+
+  @override
+  String get settingsWeekdaysMonFri => 'שני עד שישי';
+
+  @override
+  String settingsWeekendIs(String days) {
+    return 'סוף השבוע: \u2068$days\u2069';
+  }
+
+  @override
+  String get settingsWeekNote => 'קובע את סדר הימים ואת המשמעות של ״ימי חול״ ו״סוף שבוע״ בלוח הזמנים. הימים המעומעמים הם סוף השבוע.';
+
+  @override
+  String get settingsSavedNote => 'ההגדרות נשמרות בטלפון הזה.';
+
+  @override
   String get homeMenu => 'תפריט';
 
   @override

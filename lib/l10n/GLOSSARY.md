@@ -110,6 +110,10 @@ Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
 | Welcome back · New here? | טוב לראות אותך שוב · פעם ראשונה כאן? |
 | Sign in to see how your pets are doing today. | כניסה קצרה, ואפשר לראות מה שלום החיות שלך היום. |
 | Language · Follow the phone | שפה · לפי שפת המכשיר |
+| Menu · My pets · Settings | תפריט · החיות שלי · הגדרות |
+| Week · First day of the week | שבוע · היום הראשון בשבוע |
+| Saturday · Sunday · Monday (as a choice) | שבת · ראשון · שני |
+| Sunday to Thursday · Monday to Friday | ראשון עד חמישי · שני עד שישי |
 | Save · Cancel · Delete · Edit · Add | שמירה · ביטול · מחיקה · עריכה · הוספה |
 | Back · Close · Continue · Share · Try again | חזרה · סגירה · המשך · שיתוף · לנסות שוב |
 | No records yet · No deals yet · No messages yet | עדיין אין רשומות · עדיין אין מבצעים · עדיין אין הודעות |
