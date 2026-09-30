@@ -185,9 +185,9 @@ void main() {
       link: 'https://example.com/bowl',
     );
 
-    test('is seeded with about twenty believable deals in every category', () async {
+    test('is seeded with believable deals in every category, for dogs, cats and others', () async {
       final deals = await repo().fetchDeals();
-      expect(deals.length, inInclusiveRange(18, 24));
+      expect(deals.length, 36);
       expect({for (final d in deals) d.category}, DealCategory.values.toSet());
       expect({for (final d in deals) d.id}.length, deals.length);
       for (final d in deals) {

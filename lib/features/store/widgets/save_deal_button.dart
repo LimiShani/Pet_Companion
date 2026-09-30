@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/coral_header.dart';
 import '../state/store_providers.dart';
+import '../store_strings.dart';
 import 'store_messages.dart';
 
 /// The heart that saves a deal for the signed-in user, or unsaves it.
@@ -20,7 +21,7 @@ class SaveDealButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final saved = ref.watch(savedDealIdsProvider.select((ids) => ids.value?.contains(dealId) ?? false));
     final icon = saved ? Icons.favorite_rounded : Icons.favorite_border_rounded;
-    final tooltip = saved ? 'Remove from saved' : 'Save deal';
+    final tooltip = saved ? StoreStrings.removeFromSaved : StoreStrings.saveDeal;
 
     Future<void> toggle() async {
       final stored = await ref.read(savedDealIdsProvider.notifier).toggle(dealId);
@@ -28,10 +29,10 @@ class SaveDealButton extends ConsumerWidget {
       showStoreMessage(
         context,
         !stored
-            ? 'Could not update your saved deals. Please try again.'
+            ? StoreStrings.couldNotUpdateSaved
             : saved
-                ? 'Removed from saved deals'
-                : 'Saved',
+                ? StoreStrings.removedFromSaved
+                : StoreStrings.saved,
       );
     }
 

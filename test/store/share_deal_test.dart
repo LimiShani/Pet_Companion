@@ -66,7 +66,7 @@ void main() {
     expect(find.text('Who is selling it?'), findsOneWidget);
     expect(find.text('Paste the link to the offer.'), findsOneWidget);
     expect(find.byType(ShareDealScreen), findsOneWidget);
-    expect((await store.fetchDeals()).length, 21);
+    expect((await store.fetchDeals()).length, 36);
   });
 
   testWidgets('the price must be below the original, and the link must be https', (tester) async {
@@ -82,7 +82,7 @@ void main() {
     expect(find.text('The deal price must be below the original price.'), findsOneWidget);
     expect(find.text('Use a full link that starts with https://'), findsOneWidget);
     expect(find.byType(ShareDealScreen), findsOneWidget);
-    expect((await store.fetchDeals()).length, 21);
+    expect((await store.fetchDeals()).length, 36);
 
     // Problems clear as they are fixed.
     await fill(tester, 'price', '22');
@@ -120,7 +120,7 @@ void main() {
     // Back on the Store, with a thank you.
     expect(find.byType(ShareDealScreen), findsNothing);
     expect(find.text('Thanks! Your deal is live.'), findsOneWidget);
-    expect(find.text('22 deals'), findsOneWidget);
+    expect(find.text('24 deals for dogs'), findsOneWidget);
 
     final shared = (await store.fetchDeals()).firstWhere((d) => d.title == 'Chicken jerky strips, 300 g');
     expect(shared.sharedBy, demoUserId);
@@ -206,7 +206,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ShareDealScreen), findsNothing);
-    expect(find.text('21 deals'), findsOneWidget);
-    expect((await store.fetchDeals()).length, 21);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
+    expect((await store.fetchDeals()).length, 36);
   });
 }

@@ -7,9 +7,12 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
 import 'data/deal.dart';
 import 'state/store_providers.dart';
+import 'store_strings.dart';
 import 'widgets/deal_grid.dart';
 
-/// The deals the signed-in user saved with the heart.
+/// The deals the signed-in user saved with the heart. Never narrowed to
+/// one pet: what was saved for the cat stays in view while shopping for
+/// the dog.
 class SavedDealsScreen extends ConsumerWidget {
   const SavedDealsScreen({super.key});
 
@@ -28,9 +31,9 @@ class SavedDealsScreen extends ConsumerWidget {
     } else if (failed) {
       body = EmptyState(
         icon: Icons.cloud_off_rounded,
-        title: 'Could not load your saved deals',
+        title: StoreStrings.couldNotLoadSaved,
         message: storeErrorMessage((saved.error ?? savedIds.error)!),
-        actionLabel: 'Try again',
+        actionLabel: StoreStrings.tryAgain,
         onAction: () {
           ref.invalidate(savedDealIdsProvider);
           ref.read(dealsProvider.notifier).refresh();
@@ -39,9 +42,9 @@ class SavedDealsScreen extends ConsumerWidget {
     } else if (deals.isEmpty) {
       body = EmptyState(
         icon: Icons.favorite_border_rounded,
-        title: 'No saved deals yet',
-        message: 'Tap the heart on a deal to keep it here.',
-        actionLabel: 'Browse deals',
+        title: StoreStrings.noSavedDealsTitle,
+        message: StoreStrings.noSavedDealsMessage,
+        actionLabel: StoreStrings.browseDeals,
         onAction: () => Navigator.of(context).maybePop(),
       );
     } else {
@@ -49,14 +52,14 @@ class SavedDealsScreen extends ConsumerWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 12),
+              padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 12),
               child: Text(
-                deals.length == 1 ? '1 saved deal' : '${deals.length} saved deals',
+                StoreStrings.savedCount(deals.length),
                 style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
               ),
             ),
           ),
-          SliverDealGrid(deals: deals),
+          SliverDealGrid(deals: deals, showAnimals: true),
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       );
@@ -66,7 +69,7 @@ class SavedDealsScreen extends ConsumerWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const CoralHeader(title: 'Saved deals', showBack: true),
+          const CoralHeader(title: StoreStrings.savedDealsTitle, showBack: true),
           Expanded(child: body),
         ],
       ),

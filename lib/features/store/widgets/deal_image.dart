@@ -10,6 +10,7 @@ extension DealCategoryStyle on DealCategory {
   Color get tileColor => switch (this) {
         DealCategory.food => AppColors.sage,
         DealCategory.treats => const Color(0xFFF6CDB9),
+        DealCategory.litterAndCleaning => const Color(0xFFE4E7C3),
         DealCategory.toys => AppColors.yellow,
         DealCategory.health => const Color(0xFFE4E7C3),
         DealCategory.grooming => AppColors.sage,
@@ -20,6 +21,7 @@ extension DealCategoryStyle on DealCategory {
   IconData get icon => switch (this) {
         DealCategory.food => Icons.restaurant_rounded,
         DealCategory.treats => Icons.cookie_rounded,
+        DealCategory.litterAndCleaning => Icons.cleaning_services_rounded,
         DealCategory.toys => Icons.sports_baseball_rounded,
         DealCategory.health => Icons.medical_services_rounded,
         DealCategory.grooming => Icons.content_cut_rounded,

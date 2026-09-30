@@ -4,11 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
+import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/store/data/deal.dart';
 import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/data/link_opener.dart';
 import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
+import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/widgets/pet_selector.dart';
 
 import '../helpers.dart';
 
@@ -36,6 +39,10 @@ Deal testDeal(
   String? sharedByName,
   String description = '',
   String? link,
+  PackageSize? package,
+  double? delivery,
+  Duration? checked,
+  Set<PetSpecies> species = const {},
 }) {
   return Deal(
     id: id,
@@ -50,6 +57,10 @@ Deal testDeal(
     sharedByName: sharedByName,
     postedAt: fixedNow.subtract(posted),
     expiresAt: endsIn == null ? null : fixedNow.add(endsIn),
+    package: package,
+    deliveryCost: delivery,
+    priceCheckedAt: checked == null ? null : fixedNow.subtract(checked),
+    species: species,
   );
 }
 
@@ -70,23 +81,32 @@ class FakeLinkOpener implements LinkOpener {
 /// Pumps the whole app on fakes (at phone size unless [size] says
 /// otherwise), signs in as the demo user and opens the Store tab. Returns
 /// the catalogue the app runs on.
+///
+/// The demo user has two dogs, Kelly (selected) and Soya; [extraPets] are
+/// added after them, for tests that need a cat.
 Future<FakeStoreRepository> pumpStore(
   WidgetTester tester, {
   FakeStoreRepository? repository,
   FakeLinkOpener? opener,
   Size size = const Size(390, 844),
+  List<Pet> extraPets = const [],
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
   final store = repository ?? fakeStore();
+  final pets = FakePetsRepository(latency: Duration.zero);
+  for (final pet in extraPets) {
+    await pets.savePet(FakePetsRepository.demoOwner, pet);
+  }
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
         storeClockProvider.overrideWithValue(() => fixedNow),
         storeRepositoryProvider.overrideWithValue(store),
+        petsRepositoryProvider.overrideWithValue(pets),
         linkOpenerProvider.overrideWithValue(opener ?? FakeLinkOpener()),
       ],
       child: const PetCompanionApp(),
@@ -97,6 +117,17 @@ Future<FakeStoreRepository> pumpStore(
   await tester.tap(find.text('Store'));
   await tester.pumpAndSettle();
   return store;
+}
+
+/// Taps a pill of the pet row in the Store header ("Kelly", "All animals"),
+/// sliding the row to it first: in the wide test font the row is longer
+/// than the screen.
+Future<void> tapPetPill(WidgetTester tester, String label) async {
+  final pill = find.descendant(of: find.byType(PetSelector), matching: find.text(label));
+  await tester.ensureVisible(pill);
+  await tester.pumpAndSettle();
+  await tester.tap(pill);
+  await tester.pumpAndSettle();
 }
 
 /// The vertical scroll view of the page on top (the grid, or a deal page).
