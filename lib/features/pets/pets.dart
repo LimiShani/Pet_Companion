@@ -13,5 +13,6 @@ library;
 export 'data/fake_pets_repository.dart' show FakePetsRepository;
 export 'data/pets_repository.dart' show PetsException, PetsRepository;
 export 'data/pets_repository_provider.dart' show petsClockProvider, petsErrorMessage, petsRepositoryProvider;
-export 'pet_actions.dart';
+export 'pet_actions.dart' show changePetPicture, openAddPet, openPetInfoItem;
+export 'state/pet_completeness.dart' show PetCompleteness, PetInfoItem, petCompletenessProvider;
 export 'widgets/pet_avatar.dart' show PetAvatar;

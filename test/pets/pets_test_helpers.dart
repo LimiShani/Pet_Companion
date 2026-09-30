@@ -188,3 +188,17 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.tap(finder);
   await tester.pumpAndSettle();
 }
+
+/// Opens the flow from the first-pet welcome of a new account.
+Future<PetsHarness> openFlowFromWelcome(WidgetTester tester, {PetsHarness? harness}) async {
+  final h = await pumpPetsApp(tester, harness: harness, as: SignedIn.newAccount);
+  await tapVisible(tester, find.text('Add my first pet'));
+  return h;
+}
+
+/// Fills step 1 and continues.
+Future<void> createPet(WidgetTester tester, {String name = 'Milo', PetSpecies? kind}) async {
+  await typeInto(tester, find.byKey(const Key('pet-name')), name);
+  if (kind != null) await tapVisible(tester, find.byKey(Key('kind-${kind.name}')));
+  await tapVisible(tester, find.text('Continue'));
+}

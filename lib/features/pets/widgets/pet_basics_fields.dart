@@ -20,10 +20,11 @@ String _trimmed(double value, int decimals) {
 String formatPetWeight(double kg, PetSpecies species) =>
     petWeighsInGrams(species) ? '${_trimmed(kg * 1000, 0)} g' : '${_trimmed(kg, 2)} kg';
 
-/// "Dog · Mixed · about 3 years": the kind, then what is known.
-String petSummaryLine(Pet pet) {
+/// "Dog · Mixed · about 3 years": the kind, then what is known. The age is
+/// counted at [now] (today when not given).
+String petSummaryLine(Pet pet, {DateTime? now}) {
   final breed = pet.breed?.trim() ?? '';
-  final age = pet.ageLabel;
+  final age = pet.ageLabelAt(now ?? DateTime.now());
   return [
     pet.species.label,
     if (breed.isNotEmpty) breed,

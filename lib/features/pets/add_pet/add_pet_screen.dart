@@ -8,6 +8,7 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
+import '../../health/emergency/emergency.dart';
 import '../data/pets_repository_provider.dart';
 import '../icons/pet_icon_bank.dart';
 import '../pets_routes.dart';
@@ -15,6 +16,7 @@ import '../picture/pet_picture.dart';
 import '../widgets/pet_avatar.dart';
 import '../widgets/pet_basics_fields.dart';
 import '../widgets/pets_widgets.dart';
+import 'all_set_view.dart';
 
 /// The add-a-pet flow, full screen.
 ///
@@ -34,7 +36,10 @@ class AddPetScreen extends ConsumerStatefulWidget {
 
 class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   static const _uuid = Uuid();
-  static const _steps = 2;
+  static const _steps = 4;
+
+  /// The "All set" page after the last step.
+  static const _allSet = _steps + 1;
 
   final _nameForm = GlobalKey<FormState>();
   final _aboutForm = GlobalKey<FormState>();
@@ -42,7 +47,11 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
   /// The new pet's id, made on the phone so its photo has a folder before
   /// the pet is stored.
-  final String _id = _uuid.v4();
+  String _id = _uuid.v4();
+
+  /// The pet made before "Add another pet" was chosen: what the flow
+  /// returns when the owner then leaves before saving the next one.
+  String? _previousId;
   PetSpecies _species = PetSpecies.dog;
 
   /// The picture chosen on step 1, not stored yet.
@@ -64,7 +73,8 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
 
   /// Leaves the flow. The pet, once created, stays.
   void _close({bool toDashboard = false}) {
-    final pet = _pet;
+    final previous = _previousId;
+    final pet = _pet ?? (previous == null ? null : ref.read(petsStoreProvider).byId(previous));
     final router = GoRouter.maybeOf(context);
     final navigator = Navigator.of(context);
     if (navigator.canPop()) {
@@ -89,12 +99,24 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   }
 
   void _goTo(int step) {
-    if (step > _steps) {
-      _close(toDashboard: true);
-      return;
-    }
     setState(() {
       _step = step;
+      _busy = false;
+      _error = null;
+    });
+  }
+
+  /// "Add another pet" on the last page: the flow starts again, empty.
+  void _startAnother() {
+    setState(() {
+      _previousId = _id;
+      _id = _uuid.v4();
+      _name.clear();
+      _species = PetSpecies.dog;
+      _picture = null;
+      _basics?.dispose();
+      _basics = null;
+      _step = 1;
       _busy = false;
       _error = null;
     });
@@ -209,7 +231,16 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     if (_step == 1 || pet == null) {
       page = _page(title: 'Add a pet', step: 1, finishLater: false, child: _nameAndKind(pet));
     } else {
-      page = _page(title: 'About ${pet.name}', step: 2, child: _about(pet));
+      page = switch (_step) {
+        2 => _page(title: 'About ${pet.name}', step: 2, child: _about(pet)),
+        3 => _page(title: "${pet.name}'s vet", step: 3, child: _vet(pet)),
+        4 => _page(title: 'Health basics', step: 4, child: _healthBasics(pet)),
+        _ => AllSetView(
+            pet: pet,
+            onDashboard: () => _close(toDashboard: true),
+            onAddAnother: _startAnother,
+          ),
+      };
     }
 
     return PopScope(
@@ -349,6 +380,57 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
           PetsTextButton('Skip for now', onPressed: _busy ? null : () => _goTo(3)),
         ],
       ),
+    );
+  }
+
+  // ------------------------------------------------------------ step 3
+
+  /// The vet step: Health's own vet tiles, one per role. Nothing about vets
+  /// is stored or drawn here.
+  Widget _vet(Pet pet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PetsHeading('Who looks after ${pet.name}?'),
+        const SizedBox(height: 4),
+        const PetsNote("With the vet's phone saved, a call or a message is two taps away in an emergency."),
+        const PetsLabel('Regular vet', level: FieldLevel.essential),
+        PetVetTile(petId: pet.id),
+        const PetsLabel('Emergency vet (24 h)', level: FieldLevel.optional),
+        PetVetTile(petId: pet.id, role: VetRole.emergency),
+        const SizedBox(height: 20),
+        PrimaryButton(label: 'Continue', onPressed: () => _goTo(4)),
+        const SizedBox(height: 6),
+        PetsTextButton("I don't have a vet yet", onPressed: () => _goTo(4)),
+        PetsFinePrint(
+          "No vet yet? Carry on: ${pet.name}'s dashboard will keep a small reminder.",
+          center: true,
+        ),
+      ],
+    );
+  }
+
+  // ------------------------------------------------------------ step 4
+
+  /// The health basics step: Health's ready-made section, whose own button
+  /// is labelled "Finish".
+  Widget _healthBasics(Pet pet) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const PetsHeading('What a vet asks first'),
+        const SizedBox(height: 4),
+        const PetsNote('If there is nothing to list, tick "None known". That is a real answer.'),
+        const SizedBox(height: 6),
+        HealthBasicsSection(
+          key: ValueKey('health-basics-${pet.id}'),
+          petId: pet.id,
+          saveLabel: 'Finish',
+          onSaved: (_) => _goTo(_allSet),
+        ),
+        const SizedBox(height: 6),
+        PetsTextButton('Skip for now', onPressed: () => _goTo(_allSet)),
+      ],
     );
   }
 }
