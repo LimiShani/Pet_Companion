@@ -10,6 +10,7 @@ import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/data/link_opener.dart';
 import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/widgets/pet_selector.dart';
 
@@ -83,13 +84,15 @@ class FakeLinkOpener implements LinkOpener {
 /// the catalogue the app runs on.
 ///
 /// The demo user has two dogs, Kelly (selected) and Soya; [extraPets] are
-/// added after them, for tests that need a cat.
+/// added after them, for tests that need a cat. The app runs in English
+/// unless [language] says otherwise.
 Future<FakeStoreRepository> pumpStore(
   WidgetTester tester, {
   FakeStoreRepository? repository,
   FakeLinkOpener? opener,
   Size size = const Size(390, 844),
   List<Pet> extraPets = const [],
+  AppLanguage? language,
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -108,13 +111,16 @@ Future<FakeStoreRepository> pumpStore(
         storeRepositoryProvider.overrideWithValue(store),
         petsRepositoryProvider.overrideWithValue(pets),
         linkOpenerProvider.overrideWithValue(opener ?? FakeLinkOpener()),
+        settingsStoreProvider.overrideWithValue(MemorySettingsStore({languageSettingKey: ?language?.code})),
       ],
       child: const PetCompanionApp(),
     ),
   );
   await tester.pumpAndSettle();
   await signInAsDemo(tester);
-  await tester.tap(find.text('Store'));
+  // The Store tab, by its name in the app's language.
+  final locale = language == AppLanguage.hebrew ? hebrewLocale : englishLocale;
+  await tester.tap(find.text(lookupAppL10n(locale).navStore));
   await tester.pumpAndSettle();
   return store;
 }
@@ -142,9 +148,12 @@ Future<void> openDeal(WidgetTester tester, String dealId) async {
   await tester.pump();
   await tester.scrollUntilVisible(card, 200, scrollable: gridScrollable);
   await tester.pumpAndSettle();
-  // The picture's left half: clear of the badge, the heart and the
-  // floating button.
-  await tester.tapAt(tester.getTopLeft(card) + const Offset(30, 70));
+  // Up to the top of the grid, away from the floating button (which sits
+  // at the bottom right, or the bottom left on a right-to-left screen).
+  await Scrollable.ensureVisible(tester.element(card), alignment: 0.05);
+  await tester.pumpAndSettle();
+  // The middle of the picture, below the badge and the heart.
+  await tester.tapAt(Offset(tester.getCenter(card).dx, tester.getTopLeft(card).dy + 70));
   await tester.pumpAndSettle();
 }
 
