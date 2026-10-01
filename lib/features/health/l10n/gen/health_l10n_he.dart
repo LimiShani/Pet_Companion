@@ -1628,6 +1628,11 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
+  String savedButNextDueNotPlanned(String problem) {
+    return 'הרשומה נשמרה, אבל המועד הבא לא נוסף ללוח הזמנים. \u2068$problem\u2069 שמירה נוספת תנסה שוב.';
+  }
+
+  @override
   String get removeFileTitle => 'להסיר את הקובץ הזה?';
 
   @override

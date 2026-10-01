@@ -99,10 +99,11 @@ class SupabaseHealthRepository implements HealthRepository {
   @override
   Future<void> deleteRecord(String recordId) => _guard(() async {
     if (!isStored(recordId)) return;
-    // The rows of its documents go with the record; the files do not.
+    // The rows of its documents go with the record; the files do not. Row
+    // first: if that fails, the record keeps every file it had.
     final rows = await _client.from(_documents).select('storage_path').eq('record_id', recordId);
-    await _removeFiles([for (final row in rows) row['storage_path'] as String]);
     await _client.from(_records).delete().eq('id', recordId);
+    await _removeOrphanedFiles([for (final row in rows) row['storage_path'] as String]);
   });
 
   // ------------------------------------------------------------- documents
@@ -143,8 +144,8 @@ class SupabaseHealthRepository implements HealthRepository {
             .single();
         return documentFromRow(row);
       } catch (_) {
-        // Never leave a file nobody points to.
-        await _removeFiles([path]);
+        // Never leave a file nobody points to, and report why the row failed.
+        await _removeOrphanedFiles([path]);
         rethrow;
       }
     });
@@ -152,8 +153,8 @@ class SupabaseHealthRepository implements HealthRepository {
 
   @override
   Future<void> deleteDocument(HealthDocument document) => _guard(() async {
-    await _removeFiles([document.storagePath]);
     await _client.from(_documents).delete().eq('id', document.id);
+    await _removeOrphanedFiles([document.storagePath]);
   });
 
   @override
@@ -166,12 +167,31 @@ class SupabaseHealthRepository implements HealthRepository {
   });
 
   @override
-  Future<void> deleteFilesForPet(String petId) => _guard(() async {
-    if (!isStored(petId)) return;
+  Future<Future<void> Function()> prepareDeletingPet(String petId) => _guard(() async {
+    if (!isStored(petId)) return () async {};
     final rows = await _client.from(_documents).select('storage_path').eq('pet_id', petId);
-    await _removeFiles([for (final row in rows) row['storage_path'] as String]);
-    await _client.from(_documents).delete().eq('pet_id', petId);
+    final paths = [for (final row in rows) row['storage_path'] as String];
+    return () => _removeOrphanedFiles(paths);
   });
+
+  /// Files whose rows are gone but which could not be removed yet.
+  final _leftoverFiles = <String>{};
+
+  /// Removes files once the rows that pointed at them are gone, along with
+  /// any [_leftoverFiles] from before. Never throws: the delete the owner
+  /// asked for has happened, and a file that stays is only kept for the
+  /// next removal to try again (for as long as the app runs).
+  Future<void> _removeOrphanedFiles(List<String> paths) async {
+    _leftoverFiles.addAll(paths.where((path) => path.isNotEmpty));
+    if (_leftoverFiles.isEmpty) return;
+    final batch = [..._leftoverFiles];
+    try {
+      await _removeFiles(batch);
+      _leftoverFiles.removeAll(batch);
+    } catch (_) {
+      // Kept in _leftoverFiles. Removing one twice does no harm.
+    }
+  }
 
   Future<void> _removeFiles(List<String> paths) async {
     final stored = [

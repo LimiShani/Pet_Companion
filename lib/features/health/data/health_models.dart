@@ -58,6 +58,20 @@ class HealthException implements Exception {
   String toString() => message;
 }
 
+/// Thrown when a record was saved but keeping its planned follow-up (the
+/// "next due" date in the Schedule) in step failed. [saved] is the record
+/// as stored, so a second try updates it instead of adding another one;
+/// [cause] is why the follow-up failed.
+class FollowUpNotSaved implements Exception {
+  const FollowUpNotSaved(this.saved, this.cause);
+
+  final HealthRecord saved;
+  final Object cause;
+
+  @override
+  String toString() => 'Record ${saved.id} saved; its follow-up was not: $cause';
+}
+
 /// Midnight of [d]: the app treats "a day" as a local calendar date.
 DateTime dateOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 

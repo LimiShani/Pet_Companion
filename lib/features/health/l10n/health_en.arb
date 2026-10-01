@@ -602,6 +602,8 @@
   "saveRecord": "Save record",
   "savedButFileNotAttached": "The record is saved, but a file was not attached. {problem}",
   "@savedButFileNotAttached": {"description": "{problem} is a whole sentence: why the file was refused.", "placeholders": {"problem": {"type": "String"}}},
+  "savedButNextDueNotPlanned": "The record is saved, but its next due date was not added to the schedule. {problem} Saving again tries once more.",
+  "@savedButNextDueNotPlanned": {"description": "Shown when a record was saved but its planned follow-up was not. {problem} is a whole sentence: why.", "placeholders": {"problem": {"type": "String"}}},
   "removeFileTitle": "Remove this file?",
   "removeFileMessage": "\"{name}\" will be removed from the record.",
   "@removeFileMessage": {"placeholders": {"name": {"type": "String"}}},

@@ -342,13 +342,16 @@ void main() {
       expect(emergencyErrorMessage(state.error!), contains('Could not reach the server'));
     });
 
-    testWidgets("a pet's stored files can be removed before the pet is deleted", (tester) async {
+    testWidgets("a pet's stored files are noted before the pet is deleted and removed after", (tester) async {
       final h = await pumpHealthHost(tester, const SizedBox(height: 10));
       expect(await real(tester, () => h.repository.fetchDocuments(kelly)), hasLength(4));
 
-      unawaited(removeHealthFilesForPet(tester.element(find.byType(SizedBox).first), kelly));
-      await tester.pumpAndSettle();
+      final prepare = hostContainer(tester).read(prepareHealthFilesRemovalProvider);
+      final removeFiles = await real(tester, () => prepare(kelly));
+      // Getting ready removes nothing: the pet may still fail to delete.
+      expect(await real(tester, () => h.repository.fetchDocuments(kelly)), hasLength(4));
 
+      await real(tester, removeFiles);
       expect(await real(tester, () => h.repository.fetchDocuments(kelly)), isEmpty);
       // The records themselves are the database's business, not this call's.
       expect(await real(tester, () => h.repository.fetchRecords(kelly)), isNotEmpty);

@@ -2855,6 +2855,12 @@ abstract class HealthL10n {
   /// **'The record is saved, but a file was not attached. {problem}'**
   String savedButFileNotAttached(String problem);
 
+  /// Shown when a record was saved but its planned follow-up was not. {problem} is a whole sentence: why.
+  ///
+  /// In en, this message translates to:
+  /// **'The record is saved, but its next due date was not added to the schedule. {problem} Saving again tries once more.'**
+  String savedButNextDueNotPlanned(String problem);
+
   /// No description provided for @removeFileTitle.
   ///
   /// In en, this message translates to:

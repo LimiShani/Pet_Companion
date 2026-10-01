@@ -141,14 +141,17 @@ class FakeHealthRepository implements HealthRepository {
   }
 
   @override
-  Future<void> deleteFilesForPet(String petId) async {
+  Future<Future<void> Function()> prepareDeletingPet(String petId) async {
     await _wait();
     final gone = [
       for (final d in _documents)
         if (d.petId == petId) d.id,
     ];
-    _documents.removeWhere((d) => d.petId == petId);
-    gone.forEach(_documentBytes.remove);
+    return () async {
+      // Here the documents stand for both the rows and the files.
+      _documents.removeWhere((d) => gone.contains(d.id));
+      gone.forEach(_documentBytes.remove);
+    };
   }
 
   // ------------------------------------------------------ vets and profile

@@ -15,9 +15,6 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-import '../state/health_providers.dart';
 
 import 'emergency_contacts.dart';
 import 'health_profile_form.dart';
@@ -29,7 +26,13 @@ export '../health_strings.dart' show healthErrorOf, healthErrorText;
 // items are ready (`ready`) out of how many apply to the pet (`total`).
 export '../state/emergency_kit.dart' show EmergencyKit, KitEntry, emergencyKitProvider;
 export '../state/health_providers.dart'
-    show PetVets, healthErrorMessage, healthProfileProvider, petVetsProvider, removeHealthFilesForPetProvider;
+    show
+        PetVets,
+        PrepareHealthFilesRemoval,
+        healthErrorMessage,
+        healthProfileProvider,
+        petVetsProvider,
+        prepareHealthFilesRemovalProvider;
 export 'contact_launcher.dart';
 export 'emergency_button.dart';
 export 'emergency_card_screen.dart' show openEmergencyCard;
@@ -57,12 +60,6 @@ Future<void> openHealthCriticalItem(
       await openHealthProfile(context, petId);
   }
 }
-
-/// Removes every stored health file of [petId] (photos and PDFs attached to
-/// its records). Call it before deleting a pet. The same function is
-/// available without a context as `ref.read(removeHealthFilesForPetProvider)`.
-Future<void> removeHealthFilesForPet(BuildContext context, String petId) =>
-    ProviderScope.containerOf(context, listen: false).read(removeHealthFilesForPetProvider)(petId);
 
 /// Opens Health's profile page (allergies, conditions, microchip, emergency
 /// contact, notes) for [petId]. Nothing opens for an unknown pet id.

@@ -208,11 +208,18 @@ class RecordsController extends AsyncNotifier<List<HealthRecord>> {
   }
 
   /// Creates or updates a record, and keeps the planned follow-up of its
-  /// "next due" date in step. Throws a [HealthException] on failure.
+  /// "next due" date in step. Throws a [HealthException] when the record
+  /// is not saved, and a [FollowUpNotSaved] carrying the stored record when
+  /// only the follow-up failed: save that record again to try once more,
+  /// rather than the new one, which would be stored twice.
   Future<HealthRecord> save(HealthRecord record) async {
     final saved = await _repo.saveRecord(record);
     _put(saved);
-    await _syncFollowUp(saved);
+    try {
+      await _syncFollowUp(saved);
+    } catch (error) {
+      throw FollowUpNotSaved(saved, error);
+    }
     return saved;
   }
 
@@ -791,14 +798,26 @@ final petHealthDataProvider = FutureProvider.autoDispose.family<PetHealthData, S
   );
 }, retry: _noRetry);
 
-/// Removes every stored health file of a pet (photos and PDFs attached to
-/// its records). Call it before deleting a pet: the database removes the
-/// pet's rows by itself, but not its files. Throws a [HealthException] on
-/// failure.
-final removeHealthFilesForPetProvider = Provider<Future<void> Function(String petId)>((ref) {
+/// The type of [prepareHealthFilesRemovalProvider]'s function: given a pet,
+/// it returns what removes that pet's health files.
+typedef PrepareHealthFilesRemoval = Future<Future<void> Function()> Function(String petId);
+
+/// Gets the stored health files of a pet (photos and PDFs attached to its
+/// records) ready to go with the pet. Call it before deleting the pet; it
+/// throws a [HealthException] when it cannot, and then the pet must stay.
+/// Call the function it returns once the pet's row is gone (the database
+/// removes the pet's health rows with it, but not its files): that removes
+/// the files and never throws.
+///
+/// The files go last, so a delete that fails never leaves a pet whose
+/// documents are lost.
+final prepareHealthFilesRemovalProvider = Provider<PrepareHealthFilesRemoval>((ref) {
   return (petId) async {
-    await ref.read(healthRepositoryProvider).deleteFilesForPet(petId);
-    if (ref.exists(healthDocumentsProvider(petId))) ref.invalidate(healthDocumentsProvider(petId));
+    final removeFiles = await ref.read(healthRepositoryProvider).prepareDeletingPet(petId);
+    return () async {
+      await removeFiles();
+      if (ref.exists(healthDocumentsProvider(petId))) ref.invalidate(healthDocumentsProvider(petId));
+    };
   };
 });
 

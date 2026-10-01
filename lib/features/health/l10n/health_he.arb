@@ -480,6 +480,7 @@
   "addPhotoOrPdf": "הוספת תמונה או PDF",
   "saveRecord": "שמירת הרשומה",
   "savedButFileNotAttached": "הרשומה נשמרה, אבל קובץ לא צורף. \u2068{problem}\u2069",
+  "savedButNextDueNotPlanned": "הרשומה נשמרה, אבל המועד הבא לא נוסף ללוח הזמנים. \u2068{problem}\u2069 שמירה נוספת תנסה שוב.",
   "removeFileTitle": "להסיר את הקובץ הזה?",
   "removeFileMessage": "״\u2068{name}\u2069״ יוסר מהרשומה.",
   "recordGone": "הרשומה הזאת כבר לא קיימת",

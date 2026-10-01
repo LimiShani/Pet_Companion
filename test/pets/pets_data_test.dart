@@ -477,6 +477,34 @@ void main() {
       expect([for (final p in container.read(petsProvider)) p.id], ['kelly', 'soya']);
     });
 
+    test("a pet's saves reach the backend in the order they were made, even when the first is slow", () async {
+      final backend = _SlowFirstSave();
+      final container = PetsHarness(pets: backend).container();
+      await _signInDemo(container);
+      final kellyPet = container.read(petsProvider).first;
+
+      container.read(petsProvider.notifier).update(kellyPet.copyWith(weightKg: 22.6));
+      container.read(petsProvider.notifier).update(kellyPet.copyWith(weightKg: 22.9));
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+
+      expect(backend.sent, [22.6, 22.9]);
+      expect((await backend.fetchPets('demo')).first.weightKg, 22.9);
+      expect(container.read(petsProvider).first.weightKg, 22.9);
+    });
+
+    test('a save still on its way cannot bring back a pet deleted after it', () async {
+      final backend = _SlowFirstSave();
+      final container = PetsHarness(pets: backend).container();
+      await _signInDemo(container);
+      final soyaPet = container.read(petsProvider).last;
+
+      container.read(petsProvider.notifier).update(soyaPet.copyWith(weightKg: 9));
+      await container.read(petsStoreProvider.notifier).delete(soyaPet);
+      await Future<void>.delayed(const Duration(milliseconds: 80));
+
+      expect([for (final p in await backend.fetchPets('demo')) p.id], ['kelly']);
+    });
+
     test('a photo that failed to load is tried again; a loaded one is kept', () async {
       final harness = PetsHarness();
       final container = harness.container();
@@ -615,4 +643,22 @@ void main() {
       expect(find.text('Feeding'), findsOneWidget);
     });
   });
+}
+
+/// The sample pets, where the first save takes a while, as on a slow
+/// connection, and every later one answers at once.
+class _SlowFirstSave extends FakePetsRepository {
+  _SlowFirstSave() : super(latency: Duration.zero);
+
+  int _saves = 0;
+
+  /// The weights of the saves, in the order they reached the backend.
+  final sent = <double?>[];
+
+  @override
+  Future<Pet> savePet(String ownerId, Pet pet) async {
+    if (_saves++ == 0) await Future<void>.delayed(const Duration(milliseconds: 30));
+    sent.add(pet.weightKg);
+    return super.savePet(ownerId, pet);
+  }
 }

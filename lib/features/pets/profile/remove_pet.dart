@@ -6,19 +6,20 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../health/emergency/emergency.dart' show removeHealthFilesForPetProvider;
+import '../../health/emergency/emergency.dart' show PrepareHealthFilesRemoval, prepareHealthFilesRemovalProvider;
 import '../data/pets_repository_provider.dart';
 import '../widgets/pets_widgets.dart';
 
-/// Removes what the Health feature keeps in file storage for a pet (its
-/// document files), before the pet itself is deleted. The database rows of
-/// Health go with the pet on their own; files do not.
+/// What the Health feature keeps in file storage for a pet (its document
+/// files), which has to go with the pet. The database rows of Health go
+/// with the pet on their own; files do not.
 ///
-/// It is awaited in [deletePet] below, before the pet's row is deleted. If
-/// it throws, the pet is not deleted and the owner sees the message.
-final petHealthCleanupProvider = Provider<Future<void> Function(String petId)>(
-  (ref) =>
-      (petId) => ref.read(removeHealthFilesForPetProvider)(petId),
+/// [deletePet] below calls it before the pet's row is deleted: if it throws,
+/// the pet is not deleted and the owner sees the message. The function it
+/// returns removes the files, and is called only once the pet's row is
+/// gone, so a delete that fails never loses a pet's documents.
+final petHealthCleanupProvider = Provider<PrepareHealthFilesRemoval>(
+  (ref) => ref.read(prepareHealthFilesRemovalProvider),
 );
 
 /// What the owner chose in the "Remove Soya?" dialog.
@@ -46,12 +47,12 @@ Future<void> archivePet(ProviderContainer container, Pet pet) async {
 Future<void> restorePet(ProviderContainer container, Pet pet) =>
     container.read(petsStoreProvider.notifier).save(pet.withArchivedAt(null));
 
-/// Deletes [pet] for good: Health's files first (see
-/// [petHealthCleanupProvider]), then its picture and its row, with which
-/// its health rows go.
+/// Deletes [pet] for good: its row, with which its health rows go, then its
+/// picture and Health's files (see [petHealthCleanupProvider]).
 Future<void> deletePet(ProviderContainer container, Pet pet) async {
-  await container.read(petHealthCleanupProvider)(pet.id);
+  final removeHealthFiles = await container.read(petHealthCleanupProvider)(pet.id);
   await container.read(petsStoreProvider.notifier).delete(pet);
+  await removeHealthFiles();
 }
 
 class _RemoveDialog extends StatelessWidget {

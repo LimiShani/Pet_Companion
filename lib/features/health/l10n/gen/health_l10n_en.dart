@@ -1623,6 +1623,11 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
+  String savedButNextDueNotPlanned(String problem) {
+    return 'The record is saved, but its next due date was not added to the schedule. $problem Saving again tries once more.';
+  }
+
+  @override
   String get removeFileTitle => 'Remove this file?';
 
   @override

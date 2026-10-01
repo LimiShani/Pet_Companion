@@ -32,6 +32,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  # A fake network for the Supabase repositories' tests; Supabase brings it in already.
+  http: ^1.6.0
 
 flutter:
   uses-material-design: true

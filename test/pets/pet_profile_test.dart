@@ -344,7 +344,7 @@ void main() {
     testWidgets('deleting erases the pet, its picture and asks Health to clean up', (tester) async {
       final cleaned = <String>[];
       final harness = PetsHarness(
-        extra: [petHealthCleanupProvider.overrideWithValue((petId) async => cleaned.add(petId))],
+        extra: [petHealthCleanupProvider.overrideWithValue((petId) async => () async => cleaned.add(petId))],
       );
       await harness.pets.uploadPhoto('demo', soya, testPhoto);
       await pumpPetsApp(tester, harness: harness);
@@ -360,8 +360,18 @@ void main() {
       expect(appContainer(tester).read(archivedPetsProvider), isEmpty);
     });
 
-    testWidgets('a delete that fails keeps the pet and says why', (tester) async {
-      final h = await pumpPetsApp(tester);
+    testWidgets('a delete that fails keeps the pet, its Health files, and says why', (tester) async {
+      final prepared = <String>[];
+      final cleaned = <String>[];
+      final harness = PetsHarness(
+        extra: [
+          petHealthCleanupProvider.overrideWithValue((petId) async {
+            prepared.add(petId);
+            return () async => cleaned.add(petId);
+          }),
+        ],
+      );
+      final h = await pumpPetsApp(tester, harness: harness);
       await openProfile(tester, 'Soya');
       h.pets.failure = 'Cannot reach the server. Check your connection and try again.';
       await tapVisible(tester, find.text('Delete Soya'));
@@ -370,6 +380,9 @@ void main() {
       expect(find.text('Cannot reach the server. Check your connection and try again.'), findsOneWidget);
       expect(find.text('Archive Soya'), findsOneWidget);
       expect(currentPets(tester).length, 2);
+      // Health got ready, but its files stay: the pet is still there.
+      expect(prepared, [soya]);
+      expect(cleaned, isEmpty);
     });
 
     testWidgets('when Health cannot clean up, the pet is not deleted', (tester) async {

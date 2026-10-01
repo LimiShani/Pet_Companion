@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/health/data/health_models.dart';
 
 import 'health_test_helpers.dart';
@@ -212,6 +213,44 @@ void main() {
       expect(h.scheduler.last.upcoming.map((r) => r.id), contains(followUp.id));
     });
 
+    testWidgets('when only the next due date fails, saving again does not store the record twice', (tester) async {
+      final repository = _FollowUpFailsOnce();
+      final h = await openHistory(tester, harness: HealthHarness(repository: repository));
+      await tapVisible(tester, find.text('Add record'));
+      await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
+      await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
+      await tapVisible(tester, find.byKey(const Key('record-next-due')));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Save record'));
+      // The form stays open and says what happened and what saving again does.
+      expect(find.text('New record'), findsOneWidget);
+      expect(
+        find.text(
+          'The record is saved, but its next due date was not added to the schedule. '
+          'Could not reach the server. Check your connection and try again. Saving again tries once more.',
+        ),
+        findsOneWidget,
+      );
+
+      await tapVisible(tester, find.text('Save record'));
+      expect(find.text('New record'), findsNothing);
+
+      final records = await real(tester, () => h.repository.fetchRecords(kelly));
+      final saved = [
+        for (final r in records)
+          if (r.title == 'Leptospirosis vaccine' && r.isDone) r,
+      ];
+      expect(saved, hasLength(1));
+      final followUps = [
+        for (final r in records)
+          if (r.followUpOf == saved.single.id) r,
+      ];
+      expect(followUps, hasLength(1));
+      expect(followUps.single.scheduledAt, DateTime(2025, 6, 11, 9));
+    });
+
     testWidgets('files chosen in the form are stored with the new record', (tester) async {
       final h = HealthHarness();
       h.picker.pdf = testPdf('discharge-letter.pdf');
@@ -319,4 +358,22 @@ void main() {
       expect(find.text('Nail trim'), findsOneWidget);
     });
   });
+}
+
+/// The sample data, where storing the planned follow-up of a "next due"
+/// date fails the first time, as if the connection dropped right after the
+/// record itself was saved.
+class _FollowUpFailsOnce extends FakeHealthRepository {
+  _FollowUpFailsOnce() : super(latency: Duration.zero, now: () => fixedNow);
+
+  bool _failed = false;
+
+  @override
+  Future<HealthRecord> saveRecord(HealthRecord record) {
+    if (record.isNew && record.followUpOf != null && !_failed) {
+      _failed = true;
+      return Future.error(HealthException.of(HealthFailure.offline));
+    }
+    return super.saveRecord(record);
+  }
 }

@@ -56,6 +56,23 @@ class PetsStore extends Notifier<PetsState> {
   String? _ownerId;
   int _load = 0;
 
+  /// The last write sent for each pet, never failing (see [_inOrder]).
+  final _writes = <String, Future<void>>{};
+
+  /// Runs [write] once every earlier write of the pet with [petId] has
+  /// finished, so the backend gets a pet's changes in the order they were
+  /// made: a slow older save can never land after a newer one, and a save
+  /// still on its way cannot bring back a pet that was deleted after it.
+  Future<T> _inOrder<T>(String petId, Future<T> Function() write) {
+    final result = (_writes[petId] ?? Future<void>.value()).then((_) => write());
+    final done = result.then<void>((_) {}, onError: (Object _) {});
+    _writes[petId] = done;
+    done.then((_) {
+      if (identical(_writes[petId], done)) _writes.remove(petId);
+    });
+    return result;
+  }
+
   @override
   PetsState build() {
     final ownerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
@@ -90,7 +107,8 @@ class PetsStore extends Notifier<PetsState> {
   /// nothing changes then.
   Future<Pet> save(Pet pet) async {
     final ownerId = _ownerId;
-    final stored = ownerId == null ? pet : await ref.read(petsRepositoryProvider).savePet(ownerId, pet);
+    final repository = ref.read(petsRepositoryProvider);
+    final stored = ownerId == null ? pet : await _inOrder(pet.id, () => repository.savePet(ownerId, pet));
     if (ref.mounted && ownerId == _ownerId) _put(stored);
     return stored;
   }
@@ -99,7 +117,10 @@ class PetsStore extends Notifier<PetsState> {
   /// that fails; the pet stays then.
   Future<void> delete(Pet pet) async {
     final ownerId = _ownerId;
-    if (ownerId != null) await ref.read(petsRepositoryProvider).deletePet(ownerId, pet);
+    if (ownerId != null) {
+      final repository = ref.read(petsRepositoryProvider);
+      await _inOrder(pet.id, () => repository.deletePet(ownerId, pet));
+    }
     if (!ref.mounted || ownerId != _ownerId) return;
     state = PetsState(
       status: state.status,
@@ -139,7 +160,8 @@ class PetsStore extends Notifier<PetsState> {
     _put(pet);
     final ownerId = _ownerId;
     if (ownerId == null) return;
-    ref.read(petsRepositoryProvider).savePet(ownerId, pet).then((_) {}, onError: (Object e) {
+    final repository = ref.read(petsRepositoryProvider);
+    _inOrder(pet.id, () => repository.savePet(ownerId, pet)).then((_) {}, onError: (Object e) {
       debugPrint('Pet Companion: could not save ${pet.name}: $e');
       // Only if nothing newer replaced it meanwhile.
       if (!ref.mounted || ownerId != _ownerId || !identical(state.byId(pet.id), pet)) return;

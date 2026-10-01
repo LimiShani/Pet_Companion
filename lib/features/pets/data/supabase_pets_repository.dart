@@ -52,13 +52,17 @@ class SupabasePetsRepository implements PetsRepository {
 
   @override
   Future<void> deletePet(String ownerId, Pet pet) => _guard(PetsFailure.delete, () async {
-        // Files first: once the row is gone nothing points at them any more.
+        // The row first: if deleting it fails, the pet keeps its pictures.
         final folder = '$ownerId/${pet.id}';
         final files = await _client.storage.from(photoBucket).list(path: folder);
-        if (files.isNotEmpty) {
-          await _client.storage.from(photoBucket).remove([for (final file in files) '$folder/${file.name}']);
-        }
         await _client.from(_table).delete().eq('id', pet.id).eq('owner_id', ownerId);
+        if (files.isEmpty) return;
+        try {
+          await _client.storage.from(photoBucket).remove([for (final file in files) '$folder/${file.name}']);
+        } catch (_) {
+          // The pet is gone; a leftover picture in its own folder harms
+          // nothing, and the delete the owner asked for has happened.
+        }
       });
 
   @override

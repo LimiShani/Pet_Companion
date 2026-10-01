@@ -29,9 +29,16 @@ abstract class HealthRepository {
   /// backend has none (the sample data).
   Future<Uri?> documentLink(HealthDocument document);
 
-  /// Removes every stored file of a pet. Called before a pet is deleted:
-  /// deleting the pet removes its rows, but not its files.
-  Future<void> deleteFilesForPet(String petId);
+  /// Gets a pet's stored files ready to go with the pet. Call it before the
+  /// pet is deleted: it notes which files the pet has, and throws a
+  /// [HealthException] when it cannot (then do not delete the pet). Call
+  /// the function it returns once the pet's row is gone (its health rows
+  /// go with it): that removes the files, and never throws. A file it
+  /// cannot remove is tried again with a later removal; nothing points at
+  /// it any more, so nothing is lost.
+  ///
+  /// In this order a failed delete never leaves a pet whose files are gone.
+  Future<Future<void> Function()> prepareDeletingPet(String petId);
 
   // Vets belong to the owner, not to a pet.
   Future<List<Vet>> fetchVets();

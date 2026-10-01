@@ -65,6 +65,11 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   /// when it is shown).
   Object? _error;
 
+  /// The id of the record this form has stored: the edited record's, or a
+  /// new record's once it was saved and only its follow-up failed, so that
+  /// saving again updates it instead of storing it twice.
+  late String _storedId = widget.record?.id ?? '';
+
   bool get _editing => widget.record != null;
   String get _petId => widget.pet.id;
 
@@ -187,7 +192,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
           .read(healthRecordsProvider(_petId).notifier)
           .save(
             HealthRecord(
-              id: widget.record?.id ?? '',
+              id: _storedId,
               petId: _petId,
               kind: _kind,
               title: _title.text.trim(),
@@ -216,6 +221,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       }
       Navigator.of(context).pop(saved);
     } catch (error) {
+      if (error is FollowUpNotSaved) _storedId = error.saved.id;
       if (mounted) {
         setState(() {
           _saving = false;
