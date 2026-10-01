@@ -182,7 +182,7 @@ class StoreL10nHe extends StoreL10n {
   String get animalsBird => 'ציפורים';
 
   @override
-  String get animalsRabbit => 'ארנבונים';
+  String get animalsRabbit => 'ארנבים';
 
   @override
   String get animalsReptile => 'זוחלים';
@@ -200,7 +200,7 @@ class StoreL10nHe extends StoreL10n {
   String get animalsInSentenceBird => 'ציפורים';
 
   @override
-  String get animalsInSentenceRabbit => 'ארנבונים';
+  String get animalsInSentenceRabbit => 'ארנבים';
 
   @override
   String get animalsInSentenceReptile => 'זוחלים';

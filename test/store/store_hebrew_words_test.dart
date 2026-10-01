@@ -100,10 +100,10 @@ void main() {
       expect(_he.list(const []), '');
       expect(_he.list(const ['כלבים']), 'כלבים');
       expect(_plain(_he.list(const ['כלבים', 'חתולים'])), 'כלבים וחתולים');
-      expect(_plain(_he.list(const ['כלבים', 'חתולים', 'ארנבונים'])), 'כלבים, חתולים וארנבונים');
+      expect(_plain(_he.list(const ['כלבים', 'חתולים', 'ארנבים'])), 'כלבים, חתולים וארנבים');
       expect(
-        _plain(_he.list(const ['כלבים', 'חתולים', 'ציפורים', 'ארנבונים'])),
-        'כלבים, חתולים, ציפורים וארנבונים',
+        _plain(_he.list(const ['כלבים', 'חתולים', 'ציפורים', 'ארנבים'])),
+        'כלבים, חתולים, ציפורים וארנבים',
       );
     });
 
@@ -119,10 +119,10 @@ void main() {
       expect(_plain(_he.forWhom(const [PetSpecies.dog, PetSpecies.cat])), 'עבור כלבים וחתולים');
       expect(
         _plain(_he.forWhom(const [PetSpecies.dog, PetSpecies.cat, PetSpecies.rabbit])),
-        'עבור כלבים, חתולים וארנבונים',
+        'עבור כלבים, חתולים וארנבים',
       );
       expect(_he.animalsTag(const [PetSpecies.cat]), 'חתולים');
-      expect(_plain(_he.animalsTag(const [PetSpecies.rabbit, PetSpecies.other])), 'ארנבונים, חיות אחרות');
+      expect(_plain(_he.animalsTag(const [PetSpecies.rabbit, PetSpecies.other])), 'ארנבים, חיות אחרות');
       expect(_en.forWhom(const [PetSpecies.dog, PetSpecies.cat, PetSpecies.rabbit]), 'For dogs, cats and rabbits');
       expect(_en.animalsTag(const [PetSpecies.dog, PetSpecies.cat]), 'Dogs, cats');
     });
@@ -293,7 +293,7 @@ void main() {
     test('animals and units', () {
       expect(
         [for (final kind in PetSpecies.values) _he.animals(kind)],
-        ['כלבים', 'חתולים', 'ציפורים', 'ארנבונים', 'זוחלים', 'אחר'],
+        ['כלבים', 'חתולים', 'ציפורים', 'ארנבים', 'זוחלים', 'אחר'],
       );
       expect(_he.animalsInSentence(PetSpecies.other), 'חיות אחרות');
       expect([for (final u in PackageUnit.values) _he.unit(u)], ['ק״ג', 'גרם', 'ליטר', 'מ״ל', 'יחידות']);
