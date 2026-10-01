@@ -610,7 +610,7 @@ class FakeHealthRepository implements HealthRepository {
     const am = TimeOfDay(hour: 8, minute: 0);
     const pm = TimeOfDay(hour: 20, minute: 0);
     for (var back = 7; back >= 1; back--) {
-      final day = today.subtract(Duration(days: back));
+      final day = addDays(today, -back);
       given('p-joint-am', day, am);
       if (back != 1) given('p-joint-pm', day, pm);
     }

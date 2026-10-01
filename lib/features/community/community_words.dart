@@ -1,5 +1,7 @@
 import 'package:flutter/widgets.dart';
 
+import '../../utils/calendar.dart';
+
 import '../../l10n/l10n.dart';
 import 'data/audience.dart';
 import 'data/community_models.dart';
@@ -184,7 +186,7 @@ bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month
 /// the date.
 String dayLabel(AppL10n app, AppFormat format, DateTime when, DateTime now) {
   if (isSameDay(when, now)) return app.commonToday;
-  if (isSameDay(when, now.subtract(const Duration(days: 1)))) return app.commonYesterday;
+  if (daysBetween(when, now) == 1) return app.commonYesterday;
   return format.date(when);
 }
 

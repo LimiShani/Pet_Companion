@@ -1628,6 +1628,11 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
+  String savedButRemindersNotSet(String problem) {
+    return 'The medicine is saved, but not all of its reminders were set. $problem Saving again tries once more.';
+  }
+
+  @override
   String get removeFileTitle => 'Remove this file?';
 
   @override

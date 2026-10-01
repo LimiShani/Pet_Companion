@@ -2861,6 +2861,12 @@ abstract class HealthL10n {
   /// **'The record is saved, but its next due date was not added to the schedule. {problem} Saving again tries once more.'**
   String savedButNextDueNotPlanned(String problem);
 
+  /// Shown when a medicine was saved but some of its reminders were not. {problem} is a whole sentence: why.
+  ///
+  /// In en, this message translates to:
+  /// **'The medicine is saved, but not all of its reminders were set. {problem} Saving again tries once more.'**
+  String savedButRemindersNotSet(String problem);
+
   /// No description provided for @removeFileTitle.
   ///
   /// In en, this message translates to:

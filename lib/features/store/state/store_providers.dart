@@ -5,6 +5,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
+import '../../../state/ordered_writes.dart';
 import '../../../state/pets_provider.dart';
 import '../data/deal.dart';
 import '../data/deal_filters.dart';
@@ -87,25 +88,45 @@ class SavedDealsController extends AsyncNotifier<Set<String>> {
     return ref.watch(storeRepositoryProvider).fetchSavedDealIds(userId: userId);
   }
 
+  /// Quick taps on one heart reach the backend in the order they were made.
+  final _writes = OrderedWrites();
+
+  /// Per deal with a change on its way: whether the backend has it saved,
+  /// as far as the app knows.
+  final _stored = <String, bool>{};
+
+  /// The number of the newest tap per deal, so only its outcome counts.
+  final _latestTap = <String, int>{};
+
   /// Saves the deal, or unsaves it when it is already saved. The heart
-  /// changes straight away and flips back if the backend refuses. Returns
-  /// whether the change was stored.
+  /// changes straight away; if the backend refuses the newest tap, the
+  /// heart shows what the backend has. Returns whether the change was
+  /// stored; a tap that failed but was already overruled by a newer one
+  /// counts as stored, since only the newest tap's outcome is the owner's
+  /// concern.
   Future<bool> toggle(String dealId) async {
     final userId = ref.read(authControllerProvider).value?.id;
     if (userId == null) return false;
     final before = state.value ?? const <String>{};
     final saving = !before.contains(dealId);
+    if (!_writes.busy(dealId)) _stored[dealId] = before.contains(dealId);
+    final tap = (_latestTap[dealId] ?? 0) + 1;
+    _latestTap[dealId] = tap;
     state = AsyncData(saving ? {...before, dealId} : ({...before}..remove(dealId)));
+    final repository = ref.read(storeRepositoryProvider);
     try {
-      await ref.read(storeRepositoryProvider).setSaved(userId: userId, dealId: dealId, saved: saving);
+      await _writes.run(dealId, () => repository.setSaved(userId: userId, dealId: dealId, saved: saving));
+      _stored[dealId] = saving;
       return true;
     } catch (_) {
+      // An older tap that failed is overruled by the newer one behind it.
+      if (_latestTap[dealId] != tap) return true;
       if (ref.mounted) {
         final current = {...?state.value};
-        if (saving) {
-          current.remove(dealId);
-        } else {
+        if (_stored[dealId] ?? !saving) {
           current.add(dealId);
+        } else {
+          current.remove(dealId);
         }
         state = AsyncData(current);
       }

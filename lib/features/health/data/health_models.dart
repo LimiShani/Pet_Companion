@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_config.dart';
 
+export '../../../utils/calendar.dart' show addDays, daysBetween;
+
 /// Why something in Health failed. The repositories and services report
 /// the reason; the screen puts it into words in the app's language (see
 /// `healthErrorText` in `health_strings.dart`). [english] is the same in
@@ -70,6 +72,19 @@ class FollowUpNotSaved implements Exception {
 
   @override
   String toString() => 'Record ${saved.id} saved; its follow-up was not: $cause';
+}
+
+/// Thrown when a medicine was saved but setting up its reminders failed
+/// part of the way. [saved] is the medicine as stored, so a second try
+/// updates it instead of adding another one; [cause] is why it failed.
+class RemindersNotSaved implements Exception {
+  const RemindersNotSaved(this.saved, this.cause);
+
+  final Medication saved;
+  final Object cause;
+
+  @override
+  String toString() => 'Medicine ${saved.id} saved; its reminders were not: $cause';
 }
 
 /// Midnight of [d]: the app treats "a day" as a local calendar date.

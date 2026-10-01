@@ -53,6 +53,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   /// when it is shown).
   Object? _error;
 
+  /// The id of the medicine this form has stored: the edited medicine's,
+  /// or a new medicine's once it was saved and only its reminders failed,
+  /// so that saving again updates it instead of storing it twice.
+  late String _storedId = widget.medication?.id ?? '';
+
   bool get _editing => widget.medication != null;
   String get _petId => widget.pet.id;
   DateTime get _now => ref.read(healthClockProvider)();
@@ -150,7 +155,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           .read(carePlanProvider(_petId).notifier)
           .saveMedication(
             Medication(
-              id: existing?.id ?? '',
+              id: _storedId,
               petId: _petId,
               name: _name.text.trim(),
               strength: _strength.text.trim(),
@@ -167,6 +172,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           );
       if (mounted) Navigator.of(context).pop(saved);
     } catch (error) {
+      if (error is RemindersNotSaved) _storedId = error.saved.id;
       if (mounted) {
         setState(() {
           _saving = false;

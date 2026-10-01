@@ -101,7 +101,7 @@ class HealthFormat {
   String weekdayTime(DateTime d) => l10n.weekdayAndTime(app.weekdayShort(d.weekday), app.time(d));
 
   /// "Today", "Tomorrow", "Yesterday", or "Thu 12.06.25".
-  String relativeDay(DateTime day, DateTime now) => switch (dateOnly(day).difference(dateOnly(now)).inDays) {
+  String relativeDay(DateTime day, DateTime now) => switch (daysBetween(now, day)) {
     0 => common.commonToday,
     1 => common.commonTomorrow,
     -1 => common.commonYesterday,

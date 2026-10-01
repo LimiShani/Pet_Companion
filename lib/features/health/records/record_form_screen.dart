@@ -94,7 +94,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     } else {
       _kind = widget.kind ?? SpeciesSettings.of(widget.pet.species).recordKinds.first;
       if (widget.planned) {
-        _day = dateOnly(now).add(const Duration(days: 1));
+        _day = addDays(now, 1);
         _time = const TimeOfDay(hour: 9, minute: 0);
       } else {
         _day = dateOnly(now);
@@ -131,7 +131,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
 
   Future<void> _pickNextDue() async {
     final now = _now;
-    final first = _day.add(const Duration(days: 1));
+    final first = addDays(_day, 1);
     final current = _nextDue;
     final picked = await showDatePicker(
       context: context,

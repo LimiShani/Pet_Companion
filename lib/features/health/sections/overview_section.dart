@@ -549,7 +549,7 @@ class _MedicinesCard extends StatelessWidget {
     final at = plan.lastDose(m.id)?.doneAt;
     if (at == null) return l10n.noDoseYet;
     final time = format.time(at);
-    return switch (dateOnly(at).difference(dateOnly(now)).inDays) {
+    return switch (daysBetween(now, at)) {
       0 => l10n.lastDoseToday(time),
       -1 => l10n.lastDoseYesterday(time),
       _ => l10n.lastDoseOn(format.weekdayDate(at), time),

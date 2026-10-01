@@ -5,6 +5,7 @@ import '../auth/auth_controller.dart';
 import '../features/pets/data/pets_repository.dart';
 import '../features/pets/data/pets_repository_provider.dart';
 import '../models/pet.dart';
+import 'ordered_writes.dart';
 
 /// Where loading the owner's pets stands.
 enum PetsStatus { loading, ready, failed }
@@ -56,22 +57,12 @@ class PetsStore extends Notifier<PetsState> {
   String? _ownerId;
   int _load = 0;
 
-  /// The last write sent for each pet, never failing (see [_inOrder]).
-  final _writes = <String, Future<void>>{};
-
-  /// Runs [write] once every earlier write of the pet with [petId] has
-  /// finished, so the backend gets a pet's changes in the order they were
+  /// A pet's saves and its delete reach the backend in the order they were
   /// made: a slow older save can never land after a newer one, and a save
   /// still on its way cannot bring back a pet that was deleted after it.
-  Future<T> _inOrder<T>(String petId, Future<T> Function() write) {
-    final result = (_writes[petId] ?? Future<void>.value()).then((_) => write());
-    final done = result.then<void>((_) {}, onError: (Object _) {});
-    _writes[petId] = done;
-    done.then((_) {
-      if (identical(_writes[petId], done)) _writes.remove(petId);
-    });
-    return result;
-  }
+  final _writes = OrderedWrites();
+
+  Future<T> _inOrder<T>(String petId, Future<T> Function() write) => _writes.run(petId, write);
 
   @override
   PetsState build() {

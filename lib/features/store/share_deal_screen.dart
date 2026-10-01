@@ -7,6 +7,7 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../utils/calendar.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import 'data/deal.dart';
@@ -156,9 +157,9 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
-      initialDate: _endDate ?? today.add(const Duration(days: 7)),
+      initialDate: _endDate ?? addDays(today, 7),
       firstDate: today,
-      lastDate: today.add(const Duration(days: 365)),
+      lastDate: addDays(today, 365),
       currentDate: today,
       helpText: context.storeL10n.lastDayOfDeal,
     );

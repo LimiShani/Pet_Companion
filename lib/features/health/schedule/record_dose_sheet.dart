@@ -124,7 +124,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
       subtitle = l10n.doseGivenWhenNeeded(widget.pet.name);
     } else {
       final time = format.time(entry.due);
-      subtitle = switch (dateOnly(entry.due).difference(dateOnly(now)).inDays) {
+      subtitle = switch (daysBetween(now, entry.due)) {
         0 => l10n.reminderForToday(time),
         -1 => l10n.reminderForYesterday(time),
         _ => l10n.reminderForDay(format.weekdayDate(entry.due), time),

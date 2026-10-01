@@ -90,7 +90,7 @@ List<ScheduleEntry> entriesNeedingReview(CarePlan plan, DateTime now) {
   final today = dateOnly(now);
   final entries = <ScheduleEntry>[];
   for (var back = 1; back <= needsReviewDays; back++) {
-    final day = today.subtract(Duration(days: back));
+    final day = addDays(today, -back);
     final ofDay = entriesOn(plan, day).where((e) => e.item.isMedication && !e.isAnswered).toList()
       ..sort((a, b) => b.due.compareTo(a.due));
     entries.addAll(ofDay);

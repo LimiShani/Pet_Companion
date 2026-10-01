@@ -1633,6 +1633,11 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
+  String savedButRemindersNotSet(String problem) {
+    return 'התרופה נשמרה, אבל לא כל התזכורות שלה נקבעו. \u2068$problem\u2069 שמירה נוספת תנסה שוב.';
+  }
+
+  @override
   String get removeFileTitle => 'להסיר את הקובץ הזה?';
 
   @override

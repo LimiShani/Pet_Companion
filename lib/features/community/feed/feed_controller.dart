@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/app_user.dart';
 import '../../../auth/auth_controller.dart';
+import '../../../state/ordered_writes.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
 import '../data/feed_repository.dart';
@@ -39,6 +40,20 @@ class FeedController extends AsyncNotifier<List<Post>> {
     state = AsyncData(await _repo.fetchPosts(viewer: _viewer));
   }
 
+  /// Quick taps on one heart reach the backend in the order they were made.
+  final _likeWrites = OrderedWrites();
+
+  /// Per post with a like on its way: whether the backend has it liked,
+  /// and its like count then, as far as the app knows.
+  final _storedLike = <String, ({bool liked, int count})>{};
+
+  /// The number of the newest tap per post, so only its outcome counts.
+  final _latestTap = <String, int>{};
+
+  /// Likes or unlikes a post. The heart reacts at once; if the backend
+  /// refuses the newest tap, the heart and the count show what the backend
+  /// has and this throws. A failed tap already overruled by a newer one
+  /// changes nothing and does not throw.
   Future<void> setLiked(String postId, {required bool liked}) async {
     Post? before;
     for (final p in _posts) {
@@ -46,13 +61,29 @@ class FeedController extends AsyncNotifier<List<Post>> {
     }
     if (before == null || before.likedByMe == liked) return;
     final original = before;
+    if (!_likeWrites.busy(postId)) _storedLike[postId] = (liked: original.likedByMe, count: original.likeCount);
+    final tap = (_latestTap[postId] ?? 0) + 1;
+    _latestTap[postId] = tap;
+    final viewer = _viewer;
 
-    // Optimistic: the heart reacts at once and is put back if saving fails.
+    // Optimistic: the heart reacts at once.
     _replace(original.copyWith(likedByMe: liked, likeCount: original.likeCount + (liked ? 1 : -1)));
     try {
-      await _repo.setLiked(viewer: _viewer, postId: postId, liked: liked);
+      await _likeWrites.run(postId, () => _repo.setLiked(viewer: viewer, postId: postId, liked: liked));
+      final stored = _storedLike[postId];
+      if (stored != null && stored.liked != liked) {
+        _storedLike[postId] = (liked: liked, count: stored.count + (liked ? 1 : -1));
+      }
     } catch (_) {
-      _replace(original);
+      if (_latestTap[postId] != tap) return;
+      final stored = _storedLike[postId];
+      Post? current;
+      for (final p in _posts) {
+        if (p.id == postId) current = p;
+      }
+      if (stored != null && current != null && ref.mounted) {
+        _replace(current.copyWith(likedByMe: stored.liked, likeCount: stored.count));
+      }
       rethrow;
     }
   }

@@ -196,6 +196,9 @@ String healthErrorText(HealthL10n l10n, AppL10n app, Object? error) {
   if (error is FollowUpNotSaved) {
     return l10n.savedButNextDueNotPlanned(healthErrorText(l10n, app, error.cause));
   }
+  if (error is RemindersNotSaved) {
+    return l10n.savedButRemindersNotSet(healthErrorText(l10n, app, error.cause));
+  }
   if (error is! HealthException) return app.errorGeneric;
   if (error.failure != HealthFailure.unknown) return l10n.failure(error.failure, app);
   // Words from elsewhere (another feature, a test) are in English: shown as

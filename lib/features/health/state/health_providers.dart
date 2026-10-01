@@ -444,7 +444,7 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
     final results = await Future.wait<Object>([
       repo.fetchMedications(petId),
       repo.fetchPlanItems(petId),
-      repo.fetchLogs(petId, from: today.subtract(const Duration(days: _logWindowDays))),
+      repo.fetchLogs(petId, from: addDays(today, -_logWindowDays)),
     ]);
     return CarePlan(
       medications: results[0] as List<Medication>,
@@ -461,29 +461,50 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
 
   /// Creates or updates a medicine and makes its reminders match [times]
   /// on [days]. An empty [times] is a medicine given only when needed.
+  ///
+  /// Throws a [HealthException] when the medicine is not saved, and a
+  /// [RemindersNotSaved] carrying the stored medicine when only some of its
+  /// reminders failed: save that medicine again to try once more, rather
+  /// than the new one, which would be stored twice. Every step that worked
+  /// is in the plan already, so trying again finishes the rest.
   Future<Medication> saveMedication(
     Medication medication, {
     required List<TimeOfDay> times,
     Set<int> days = CarePlanItem.everyDay,
   }) async {
     final saved = await _repo.saveMedication(medication);
-    final today = dateOnly(ref.read(healthClockProvider)());
-    final existing = _plan.itemsOf(saved.id);
-    final wanted = {for (final t in times) minutesOf(t): t};
-    final kept = <CarePlanItem>[];
+    _putMedication(saved);
+    try {
+      await _matchReminders(saved, times: times, days: days);
+    } catch (error) {
+      throw RemindersNotSaved(saved, error);
+    }
+    return saved;
+  }
 
-    for (final item in existing) {
+  Future<void> _matchReminders(Medication saved, {required List<TimeOfDay> times, required Set<int> days}) async {
+    final today = dateOnly(ref.read(healthClockProvider)());
+    final wanted = {for (final t in times) minutesOf(t): t};
+
+    for (final item in [..._plan.itemsOf(saved.id)]) {
       final minutes = minutesOf(item.time);
       if (!wanted.containsKey(minutes)) {
         await _repo.deletePlanItem(item.id);
+        _dropItem(item.id);
         continue;
       }
       wanted.remove(minutes);
-      final same = item.title == saved.name && item.days.length == days.length && item.days.containsAll(days);
-      kept.add(same ? item : await _repo.savePlanItem(item.copyWith(title: saved.name, days: days)));
+      final sameDays = item.days.length == days.length && item.days.containsAll(days);
+      if (item.title == saved.name && sameDays) continue;
+      // A weekday added now was never due before today, so the reminder
+      // counts from today: last week's new days never "need review".
+      final addsDays = !item.days.containsAll(days);
+      _putItem(
+        await _repo.savePlanItem(item.copyWith(title: saved.name, days: days, startsOn: addsDays ? today : null)),
+      );
     }
     for (final time in wanted.values) {
-      kept.add(
+      _putItem(
         await _repo.savePlanItem(
           CarePlanItem(
             id: '',
@@ -500,23 +521,44 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
         ),
       );
     }
+  }
 
+  void _putMedication(Medication medication) {
     final plan = _plan;
     _set(
       plan.copyWith(
         medications: [
           for (final m in plan.medications)
-            if (m.id != saved.id) m,
-          saved,
-        ],
-        items: [
-          for (final i in plan.items)
-            if (i.medicationId != saved.id) i,
-          ...kept,
+            if (m.id != medication.id) m,
+          medication,
         ],
       ),
     );
-    return saved;
+  }
+
+  void _putItem(CarePlanItem item) {
+    final plan = _plan;
+    _set(
+      plan.copyWith(
+        items: [
+          for (final i in plan.items)
+            if (i.id != item.id) i,
+          item,
+        ],
+      ),
+    );
+  }
+
+  void _dropItem(String itemId) {
+    final plan = _plan;
+    _set(
+      plan.copyWith(
+        items: [
+          for (final i in plan.items)
+            if (i.id != itemId) i,
+        ],
+      ),
+    );
   }
 
   /// Deletes a medicine with its reminders and its dose log.
