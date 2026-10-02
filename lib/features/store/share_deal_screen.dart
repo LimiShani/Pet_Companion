@@ -8,6 +8,7 @@ import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../utils/calendar.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import 'data/deal.dart';
@@ -277,7 +278,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           isExpanded: true,
                           validator: valid.category,
                           onChanged: (value) => setState(() => _category = value),
-                          icon: const Icon(Icons.expand_more_rounded, color: AppColors.brown),
+                          icon: const AppIcon(Icons.expand_more_rounded, color: AppColors.brown),
                           dropdownColor: AppColors.white,
                           borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
                           style: _fieldStyle,
@@ -366,7 +367,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 isExpanded: true,
                                 validator: (unit) => valid.packageUnit(unit, _packageAmount.text),
                                 onChanged: (value) => setState(() => _packageUnit = value),
-                                icon: const Icon(Icons.expand_more_rounded, color: AppColors.brown),
+                                icon: const AppIcon(Icons.expand_more_rounded, color: AppColors.brown),
                                 dropdownColor: AppColors.white,
                                 borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
                                 style: _fieldStyle,
@@ -677,13 +678,13 @@ class _EndDateField extends StatelessWidget {
                 if (picked == null)
                   const Padding(
                     padding: EdgeInsets.all(12),
-                    child: Icon(Icons.event_rounded, color: AppColors.brown),
+                    child: AppIcon(Icons.event_rounded, color: AppColors.brown),
                   )
                 else
                   IconButton(
                     tooltip: l10n.removeEndDate,
                     onPressed: onClear,
-                    icon: const Icon(Icons.close_rounded, color: AppColors.brown),
+                    icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
                   ),
               ],
             ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
 import '../data/audience.dart';
 
@@ -47,7 +48,7 @@ class SmallTag extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: AppColors.ink),
+            AppIcon(icon, size: 12, color: AppColors.ink),
             const SizedBox(width: 4),
           ],
           Flexible(

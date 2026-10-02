@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../../pets/pets.dart';
 import '../data/species_settings.dart';
@@ -229,7 +230,7 @@ class _EmergencyMessageSheetState extends ConsumerState<EmergencyMessageSheet> {
                       key: ValueKey('remove-line-${line.key}'),
                       onPressed: () => setState(() => _removed.add(line.key)),
                       tooltip: l10n.removeThisLine,
-                      icon: const Icon(Icons.close_rounded, size: 18),
+                      icon: const AppIcon(Icons.close_rounded, size: 18),
                       color: AppColors.brown,
                       constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: 40),
                     ),

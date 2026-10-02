@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
@@ -94,7 +95,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             hintText: l10n.searchRecords(pet.name),
-            prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
+            prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
             suffixIcon: filter.query.isEmpty
                 ? null
                 : IconButton(
@@ -103,7 +104,7 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
                       controller.search('');
                     },
                     tooltip: l10n.clearSearch,
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const AppIcon(Icons.close_rounded),
                     color: AppColors.brown,
                   ),
           ),

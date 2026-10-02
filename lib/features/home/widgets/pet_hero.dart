@@ -104,7 +104,7 @@ class _Photo extends StatelessWidget {
         color: AppColors.white,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.coral, width: 4),
-        boxShadow: const [BoxShadow(color: Color(0x2E75562E), blurRadius: 18, offset: Offset(0, 6))],
+        boxShadow: const [BoxShadow(color: Color(0x2E5B4636), blurRadius: 18, offset: Offset(0, 6))],
       ),
       // The ring takes 9 px on each side (4 border + 5 white).
       child: PetAvatar(pet: pet, size: PetHero.photoSize - 18, onTap: () => openPetProfile(context, pet.id)),

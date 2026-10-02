@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../state/pet_completeness.dart';
 import '../widgets/essentials_list.dart';
@@ -76,7 +77,7 @@ class AllSetView extends ConsumerWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.cream, width: 3),
                         ),
-                        child: const Icon(Icons.check_rounded, size: 22, color: AppColors.ink),
+                        child: const AppIcon(Icons.check_rounded, size: 22, color: AppColors.ink),
                       ),
                     ),
                   ],

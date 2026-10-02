@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../health_strings.dart';
@@ -121,7 +122,7 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
         FilledButton.icon(
           onPressed: _addNew,
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-          icon: const Icon(Icons.add_rounded),
+          icon: const AppIcon(Icons.add_rounded),
           label: Text(l10n.addNewVet),
         ),
         if (current != null) Center(child: HealthLink(l10n.removeVetFromPet(current.name), onPressed: _remove)),

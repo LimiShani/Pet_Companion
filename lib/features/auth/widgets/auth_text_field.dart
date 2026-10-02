@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 
 /// Labelled, rounded text field used by the auth forms.
 class AuthTextField extends StatefulWidget {
@@ -90,7 +91,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                 ? IconButton(
                     onPressed: () => setState(() => _hidden = !_hidden),
                     tooltip: _hidden ? l10n.authShowPassword : l10n.authHidePassword,
-                    icon: Icon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    icon: AppIcon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
                     color: AppColors.brown,
                   )
                 : null,

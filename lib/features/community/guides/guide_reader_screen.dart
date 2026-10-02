@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
 import '../data/guides_repository.dart';
@@ -84,7 +85,7 @@ class GuideReaderScreen extends ConsumerWidget {
                       const SizedBox(height: 6),
                       Row(
                         children: [
-                          const Icon(Icons.schedule_rounded, size: 16, color: AppColors.brown),
+                          const AppIcon(Icons.schedule_rounded, size: 16, color: AppColors.brown),
                           const SizedBox(width: 6),
                           Flexible(
                             child: Text(
@@ -126,7 +127,7 @@ class GuideReaderScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       OutlinedButton.icon(
                         onPressed: () => contactProfessional(context, ref),
-                        icon: const Icon(Icons.call_rounded, size: 20),
+                        icon: const AppIcon(Icons.call_rounded, size: 20),
                         label: Text(l10n.contactProfessional),
                       ),
                     ],
@@ -250,7 +251,7 @@ class _AboutRow extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Icon(icon, size: 20, color: highlighted ? AppColors.ink : AppColors.brown),
+          child: AppIcon(icon, size: 20, color: highlighted ? AppColors.ink : AppColors.brown),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -274,7 +275,7 @@ class _AboutRow extends StatelessWidget {
           ? Container(
               margin: const EdgeInsets.symmetric(vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-              decoration: BoxDecoration(color: const Color(0xFFEEF0D6), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(color: const Color(0xFFEDF1E6), borderRadius: BorderRadius.circular(14)),
               child: row,
             )
           : Padding(padding: const EdgeInsets.symmetric(vertical: 9), child: row),
@@ -317,7 +318,7 @@ class _SourceLine extends ConsumerWidget {
             Expanded(child: AutoDirectionText(text, style: style.copyWith(color: AppColors.coralDark))),
             const SizedBox(width: 8),
             // Mirrors itself in a right-to-left layout.
-            const Icon(Icons.open_in_new_rounded, size: 18, color: AppColors.coralDark),
+            const AppIcon(Icons.open_in_new_rounded, size: 18, color: AppColors.coralDark),
           ],
         ),
       ),

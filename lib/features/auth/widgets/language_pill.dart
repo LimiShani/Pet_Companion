@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_icon.dart';
 
 /// The language switch of the sign-in and sign-up screens: a small pill on
 /// the coral header showing the *other* language in its own letters
@@ -41,7 +42,7 @@ class LanguagePill extends ConsumerWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.language_rounded, size: 18, color: AppColors.white),
+                  const AppIcon(Icons.language_rounded, size: 18, color: AppColors.white),
                   const SizedBox(width: 6),
                   Text(
                     name,

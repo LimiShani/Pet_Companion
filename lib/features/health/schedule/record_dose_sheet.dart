@@ -6,6 +6,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../state/health_providers.dart';
@@ -159,7 +160,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           key: const Key('dose-given-now'),
           onPressed: _busy ? null : () => _record(CareLogStatus.done),
           style: wide,
-          icon: const Icon(Icons.check_rounded),
+          icon: const AppIcon(Icons.check_rounded),
           label: Text(l10n.givenNowAt(format.time(now))),
         ),
         const SizedBox(height: 8),
@@ -167,7 +168,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           key: const Key('dose-given-other'),
           onPressed: _busy ? null : _givenAtAnotherTime,
           style: wideOutlined,
-          icon: const Icon(Icons.schedule_rounded),
+          icon: const AppIcon(Icons.schedule_rounded),
           label: Text(l10n.givenAtAnotherTime),
         ),
         const SizedBox(height: 8),
@@ -175,7 +176,7 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           key: const Key('dose-not-given'),
           onPressed: _busy ? null : () => _record(CareLogStatus.skipped),
           style: wideOutlined,
-          icon: const Icon(Icons.close_rounded),
+          icon: const AppIcon(Icons.close_rounded),
           label: Text(l10n.notGiven),
         ),
         Center(

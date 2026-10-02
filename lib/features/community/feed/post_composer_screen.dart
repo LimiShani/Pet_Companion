@@ -6,6 +6,7 @@ import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
 import '../data/community_models.dart';
@@ -222,7 +223,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                               semanticLabel: l10n.composerPhotoPreview,
                               errorBuilder: (context, error, stack) => ColoredBox(
                                 color: Theme.of(context).colorScheme.surfaceContainer,
-                                child: const Center(child: Icon(Icons.image_rounded, size: 48, color: AppColors.brown)),
+                                child: const Center(child: AppIcon(Icons.image_rounded, size: 48, color: AppColors.brown)),
                               ),
                             ),
                           ),
@@ -237,7 +238,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                               backgroundColor: const Color(0x8C3C190A),
                               foregroundColor: AppColors.white,
                             ),
-                            icon: const Icon(Icons.close_rounded),
+                            icon: const AppIcon(Icons.close_rounded),
                           ),
                         ),
                       ],
@@ -305,7 +306,7 @@ class _SourceButton extends StatelessWidget {
     return OutlinedButton.icon(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12)),
-      icon: Icon(icon, size: 20),
+      icon: AppIcon(icon, size: 20),
       label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
     );
   }

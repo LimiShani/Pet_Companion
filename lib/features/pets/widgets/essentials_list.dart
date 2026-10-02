@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
+import '../../../widgets/app_icon.dart';
 import '../../health/emergency/emergency.dart';
 import '../data/pets_repository_provider.dart';
 import '../pet_actions.dart';
@@ -92,7 +93,7 @@ class EssentialsList extends ConsumerWidget {
         leading: const AnswerMark(answered: true),
         title: item.labelIn(l10n),
         subtitle: essentialAnswer(l10n, item, pet, now: now, profile: profile, vets: vets),
-        trailing: editable ? const Icon(Icons.chevron_right_rounded) : null,
+        trailing: editable ? const AppIcon(Icons.chevron_right_rounded) : null,
         onTap: editable ? () => open(item) : null,
       );
     }

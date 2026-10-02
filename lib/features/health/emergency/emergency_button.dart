@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_icon.dart';
 import '../health_format.dart';
 import '../state/health_keeper.dart';
 import '../widgets/health_widgets.dart';
@@ -93,7 +94,7 @@ class EmergencyButton extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(EmergencyButtonStyle.icon, size: compact ? 22 : 18, color: foreground),
+          AppIcon(EmergencyButtonStyle.icon, size: compact ? 22 : 18, color: foreground),
           if (!compact) ...[
             const SizedBox(width: 6),
             Text(l10n.emergencyButton, maxLines: 1, style: EmergencyButtonStyle.textStyle.copyWith(color: foreground)),

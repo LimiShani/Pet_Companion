@@ -6,6 +6,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../pets/pets.dart';
 import '../data/species_settings.dart';
@@ -205,7 +206,7 @@ class _Card extends StatelessWidget {
           key: const Key('share-summary'),
           onPressed: () => onShare(context, summary),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-          icon: const Icon(Icons.ios_share_rounded),
+          icon: const AppIcon(Icons.ios_share_rounded),
           label: Text(l10n.shareSummary),
         ),
         const SizedBox(height: 4),

@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../health_strings.dart';
@@ -115,7 +116,7 @@ class _VetBlock extends StatelessWidget {
                       key: ValueKey('edit-vet-$tag'),
                       onPressed: () => openVetForm(context, vet: current),
                       tooltip: l10n.editNamed(current.name),
-                      icon: const Icon(Icons.edit_rounded, size: 20),
+                      icon: const AppIcon(Icons.edit_rounded, size: 20),
                       color: AppColors.coralDark,
                       constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
                     ),

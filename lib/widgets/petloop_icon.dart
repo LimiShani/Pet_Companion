@@ -55,7 +55,10 @@ class PetLoopIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = IconTheme.of(context);
     final side = size ?? theme.size ?? 24;
-    final tint = color ?? theme.color ?? const Color(0xFF000000);
+    var tint = color ?? theme.color ?? const Color(0xFF000000);
+    // As an [Icon] does: a dimmed theme (a disabled button) dims the icon.
+    final opacity = theme.opacity ?? 1;
+    if (opacity != 1) tint = tint.withValues(alpha: tint.a * opacity);
 
     Widget drawn = SvgPicture.asset(
       glyph.asset,
@@ -70,7 +73,9 @@ class PetLoopIcon extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       excludeSemantics: true,
-      child: SizedBox.square(dimension: side, child: drawn),
+      // Centred at its own size when the parent forces a bigger box, as an
+      // [Icon] is.
+      child: SizedBox.square(dimension: side, child: Center(child: drawn)),
     );
   }
 }

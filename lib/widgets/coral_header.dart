@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'app_icon.dart';
 
 /// The coral page header every tab and sub-page uses, so screens built by
 /// different people look like one app.
@@ -89,7 +90,7 @@ class CoralHeaderAction extends StatelessWidget {
     return IconButton(
       onPressed: onPressed,
       tooltip: tooltip,
-      icon: Icon(icon, size: 24),
+      icon: AppIcon(icon, size: 24),
       color: AppColors.white,
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints.tightFor(width: 44, height: 44),

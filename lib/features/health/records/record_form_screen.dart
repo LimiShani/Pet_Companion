@@ -6,6 +6,7 @@ import '../../../config/app_config.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/health_models.dart';
@@ -423,7 +424,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               key: const Key('record-attach'),
               onPressed: _saving ? null : _attach,
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-              icon: const Icon(Icons.attach_file_rounded),
+              icon: const AppIcon(Icons.attach_file_rounded),
               label: Text(l10n.addPhotoOrPdf),
             ),
             if (error != null) ...[

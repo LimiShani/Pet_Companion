@@ -6,6 +6,7 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_icon.dart';
 import 'data/pets_repository_provider.dart';
 import 'pet_actions.dart';
 import 'pet_words.dart';
@@ -99,7 +100,7 @@ class _PetRow extends ConsumerWidget {
             ],
           ),
         ),
-        const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+        const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
       ],
     );
   }

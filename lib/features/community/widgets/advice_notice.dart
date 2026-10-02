@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../health/emergency/emergency.dart';
 
 /// Opens the selected pet's emergency and vet sheet (the Health tab's): the
@@ -41,7 +42,7 @@ class AdviceNotice extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.brown),
+                  const AppIcon(Icons.info_outline_rounded, size: 18, color: AppColors.brown),
                   const SizedBox(width: 8),
                   Expanded(
                     // Two whole messages side by side: the notice, then the

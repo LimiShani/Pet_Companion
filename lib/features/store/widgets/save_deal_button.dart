@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../state/store_providers.dart';
 import 'store_messages.dart';
@@ -42,7 +43,7 @@ class SaveDealButton extends ConsumerWidget {
     return IconButton(
       onPressed: toggle,
       tooltip: tooltip,
-      icon: Icon(icon, size: 22),
+      icon: AppIcon(icon, size: 22),
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints.tightFor(width: 44, height: 44),
       style: IconButton.styleFrom(

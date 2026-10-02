@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/directional_icon.dart';
 import '../data/deal.dart';
 import '../store_format.dart';
@@ -106,7 +107,7 @@ class DealCard extends StatelessWidget {
                   ],
                   const SizedBox(height: 6),
                   _SmallLine(
-                    icon: const Icon(Icons.storefront_rounded, size: 14, color: AppColors.brown),
+                    icon: const AppIcon(Icons.storefront_rounded, size: 14, color: AppColors.brown),
                     text: deal.sellerName,
                     isContent: true,
                   ),
@@ -131,7 +132,7 @@ class _UnitPricePill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(color: const Color(0xFFE4E7C3), borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(color: const Color(0xFFE0E6D3), borderRadius: BorderRadius.circular(999)),
       child: Text(
         text,
         style: AppText.label.copyWith(color: color, fontWeight: FontWeight.w800),

@@ -1,3 +1,4 @@
+import '../../../widgets/app_icon.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -118,7 +119,7 @@ class _PictureSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     void choose(_PictureAction action) => Navigator.of(context).pop(action);
     final name = petName.trim();
-    const chevron = Icon(Icons.chevron_right_rounded);
+    const chevron = AppIcon(Icons.chevron_right_rounded);
     final l10n = context.petsL10n;
 
     return Column(

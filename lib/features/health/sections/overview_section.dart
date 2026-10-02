@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../pets/pets.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
@@ -206,7 +207,7 @@ class _PetSummary extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );
@@ -273,7 +274,7 @@ class _ComingUp extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(child: Text(l10n.remindersNeedReview(reviewCount), style: AppText.secondary)),
-                const Icon(Icons.chevron_right_rounded, size: 20, color: AppColors.ink),
+                const AppIcon(Icons.chevron_right_rounded, size: 20, color: AppColors.ink),
               ],
             ),
           ),
@@ -408,7 +409,7 @@ class _QuickAction extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, color: fg, size: 24),
+                AppIcon(icon, color: fg, size: 24),
                 const SizedBox(height: 6),
                 Text(
                   label,
@@ -800,7 +801,7 @@ class HealthPromptStep extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );

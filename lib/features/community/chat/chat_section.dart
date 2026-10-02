@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
 import '../data/audience.dart';
@@ -125,7 +126,7 @@ class _ChannelCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               // Mirrors itself in a right-to-left layout.
-              const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+              const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
             ],
           ),
         ),

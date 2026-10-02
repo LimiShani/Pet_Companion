@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
 import '../data/community_models.dart';
 import 'feed_controller.dart';
@@ -117,7 +118,7 @@ class _ReportSheet extends StatelessWidget {
                         children: [
                           Expanded(child: Text(l10n.reportReason(reason), style: AppText.body.copyWith(fontSize: 15))),
                           // Mirrors itself in a right-to-left layout.
-                          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+                          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
                         ],
                       ),
                     ),

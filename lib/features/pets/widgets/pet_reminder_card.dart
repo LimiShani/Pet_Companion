@@ -6,6 +6,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../checklist_sheet.dart';
 import '../pet_actions.dart';
 import '../pet_words.dart';
@@ -232,7 +233,7 @@ class _Card extends StatelessWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+              const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
             ],
           ),
           const SizedBox(height: 12),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 
 /// Minimum size of anything tappable in the pets pages.
@@ -292,7 +293,7 @@ class PetsTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) ...[Icon(icon, size: 13, color: foreground), const SizedBox(width: 4)],
+          if (icon != null) ...[AppIcon(icon, size: 13, color: foreground), const SizedBox(width: 4)],
           Flexible(
             child: Text(
               text,
@@ -321,7 +322,7 @@ class PetsDisc extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      child: Icon(icon, size: size * 0.52, color: AppColors.ink),
+      child: AppIcon(icon, size: size * 0.52, color: AppColors.ink),
     );
   }
 }
@@ -360,7 +361,7 @@ class PetsCard extends StatelessWidget {
         ? DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: radius,
-              boxShadow: const [BoxShadow(color: Color(0x1A75562E), blurRadius: 14, offset: Offset(0, 4))],
+              boxShadow: const [BoxShadow(color: Color(0x1A5B4636), blurRadius: 14, offset: Offset(0, 4))],
             ),
             child: card,
           )
@@ -470,7 +471,7 @@ class AnswerMark extends StatelessWidget {
         width: 28,
         height: 28,
         decoration: const BoxDecoration(color: AppColors.sage, shape: BoxShape.circle),
-        child: const Icon(Icons.check_rounded, size: 18, color: AppColors.ink),
+        child: const AppIcon(Icons.check_rounded, size: 18, color: AppColors.ink),
       );
     }
     return Container(
@@ -501,7 +502,7 @@ class PillButton extends StatelessWidget {
     final child = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (icon != null) ...[Icon(icon, size: 16), const SizedBox(width: 6)],
+        if (icon != null) ...[AppIcon(icon, size: 16), const SizedBox(width: 6)],
         Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
       ],
     );
@@ -536,7 +537,7 @@ class PetsTextButton extends StatelessWidget {
           : TextButton.icon(
               onPressed: onPressed,
               style: style,
-              icon: Icon(icon, size: 18),
+              icon: AppIcon(icon, size: 18),
               label: Text(label, textAlign: TextAlign.center),
             ),
     );
@@ -557,7 +558,7 @@ class PetsOutlineButton extends StatelessWidget {
     final text = Text(label, textAlign: TextAlign.center);
     return icon == null
         ? OutlinedButton(onPressed: onPressed, style: style, child: text)
-        : OutlinedButton.icon(onPressed: onPressed, style: style, icon: Icon(icon, size: 18), label: text);
+        : OutlinedButton.icon(onPressed: onPressed, style: style, icon: AppIcon(icon, size: 18), label: text);
   }
 }
 

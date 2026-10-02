@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/community_models.dart';
 
 /// The picture of a post: rounded, 4:3, whatever its source.
@@ -31,7 +32,7 @@ class PostPhotoView extends StatelessWidget {
               ),
             PlaceholderPostPhoto(:final color, :final icon) => ColoredBox(
                 color: color,
-                child: Center(child: Icon(icon, size: 72, color: AppColors.ink.withValues(alpha: 0.55))),
+                child: Center(child: AppIcon(icon, size: 72, color: AppColors.ink.withValues(alpha: 0.55))),
               ),
             MemoryPostPhoto(:final bytes) => Image.memory(
                 bytes,
@@ -64,7 +65,7 @@ class _PhotoFallback extends StatelessWidget {
     return ColoredBox(
       color: Theme.of(context).colorScheme.surfaceContainer,
       child: Center(
-        child: Icon(
+        child: AppIcon(
           loading ? Icons.image_rounded : Icons.broken_image_rounded,
           size: 48,
           color: AppColors.brown.withValues(alpha: 0.5),

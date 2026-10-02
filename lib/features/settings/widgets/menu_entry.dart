@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 
 /// A row that leads somewhere: an icon disc, a title with a quieter line
 /// under it, and a chevron at the end. Used by the side menu and by the
@@ -69,7 +70,7 @@ class MenuEntry extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+                  const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
                 ],
               ),
             ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'app_icon.dart';
 
 /// Friendly "nothing here yet" block: icon disc, title, message and an
 /// optional call to action. Also fine for load errors (pass a retry action).
@@ -33,7 +34,7 @@ class EmptyState extends StatelessWidget {
               width: 88,
               height: 88,
               decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-              child: Icon(icon, size: 42, color: AppColors.coralDark),
+              child: AppIcon(icon, size: 42, color: AppColors.coralDark),
             ),
             const SizedBox(height: 18),
             Text(title, style: AppText.cardTitle.copyWith(fontSize: 18), textAlign: TextAlign.center),

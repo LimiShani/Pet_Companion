@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../auth/app_user.dart';
+import '../../../theme/app_colors.dart';
 import 'community_models.dart';
 import 'feed_repository.dart';
 
@@ -201,7 +202,7 @@ class FakeFeedRepository implements FeedRepository {
         ago: const Duration(hours: 5),
         text: 'Rainy day plan: a towel rolled up with treats inside. Luna spent twenty happy minutes '
             'working it out and then slept the whole afternoon.',
-        photo: const PlaceholderPostPhoto(Color(0xFFCDD29B), icon: Icons.umbrella_rounded),
+        photo: const PlaceholderPostPhoto(AppColors.sage, icon: Icons.umbrella_rounded),
         otherLikes: 9,
       ),
       post(
@@ -211,7 +212,7 @@ class FakeFeedRepository implements FeedRepository {
         ago: const Duration(hours: 9),
         text: 'Luli finally scratched the new post instead of the sofa. All it took was moving the post '
             'right next to the sofa.',
-        photo: const PlaceholderPostPhoto(Color(0xFFFFD98B), icon: Icons.pets_rounded),
+        photo: const PlaceholderPostPhoto(AppColors.yellow, icon: Icons.pets_rounded),
         otherLikes: 12,
         comments: [
           ('u-noa', 'Noa', Duration(hours: 8), 'Same trick worked on Shoko. Cats and their rules.'),
@@ -236,7 +237,7 @@ class FakeFeedRepository implements FeedRepository {
         petName: 'Pepper',
         ago: const Duration(days: 2, hours: 3),
         text: 'Pepper met the sea for the first time today. She barked at every single wave.',
-        photo: const PlaceholderPostPhoto(Color(0xFFE8AC73), icon: Icons.waves_rounded),
+        photo: const PlaceholderPostPhoto(AppColors.peach, icon: Icons.waves_rounded),
         otherLikes: 31,
       ),
       post(

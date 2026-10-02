@@ -27,7 +27,7 @@ class AppBottomNav extends StatelessWidget {
       decoration: const BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.shellRadius)),
-        boxShadow: [BoxShadow(color: Color(0x1F75562E), blurRadius: 20, offset: Offset(0, -6))],
+        boxShadow: [BoxShadow(color: Color(0x1F5B4636), blurRadius: 20, offset: Offset(0, -6))],
       ),
       child: SafeArea(
         top: false,

@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
@@ -380,7 +381,7 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
         children: [
           Row(
             children: [
-              const Icon(Icons.check_circle_rounded, color: AppColors.ink),
+              const AppIcon(Icons.check_circle_rounded, color: AppColors.ink),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -397,7 +398,7 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
                   ],
                 ),
               ),
-              Icon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.ink),
+              AppIcon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.ink),
             ],
           ),
           if (_open)
@@ -470,7 +471,7 @@ class _PlannedRow extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );
@@ -714,7 +715,7 @@ class _MedicineCard extends ConsumerWidget {
               child: Text(l10n.recordDose),
             )
           else
-            const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+            const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );
@@ -768,7 +769,7 @@ class _RoutineCard extends ConsumerWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );

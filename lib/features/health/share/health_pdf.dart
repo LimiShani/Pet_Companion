@@ -110,10 +110,10 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     return _bundled ??= HealthPdfFonts.load()..ignore();
   }
 
-  static const _ink = PdfColor.fromInt(0xFF3B2A1A);
-  static const _muted = PdfColor.fromInt(0xFF7A5B3A);
+  static const _ink = PdfColor.fromInt(0xFF4A3829);
+  static const _muted = PdfColor.fromInt(0xFF5B4636);
   static const _line = PdfColor.fromInt(0xFFE7D9B5);
-  static const _accent = PdfColor.fromInt(0xFFFFE9A8);
+  static const _accent = PdfColor.fromInt(0xFFFFE6B0);
 
   @override
   Future<Uint8List> build(HealthReport report) async {
@@ -281,8 +281,8 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
   /// Pixels per PDF point: sharp enough to read and to print.
   static const _scale = 2.0;
 
-  static const _inkColor = ui.Color(0xFF3B2A1A);
-  static const _mutedColor = ui.Color(0xFF7A5B3A);
+  static const _inkColor = ui.Color(0xFF4A3829);
+  static const _mutedColor = ui.Color(0xFF5B4636);
 
   static bool _startsRightToLeft(String text) {
     for (final rune in stripBidiMarks(text).runes) {

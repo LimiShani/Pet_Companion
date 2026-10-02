@@ -17,6 +17,7 @@ import 'package:pet_companion/features/community/widgets/message_bar.dart';
 import 'package:pet_companion/features/community/widgets/small_tag.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/widgets/app_icon.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 import 'package:pet_companion/widgets/directional_icon.dart';
 
@@ -687,8 +688,8 @@ void main() {
 
       final room = find.byKey(const ValueKey('room-general'));
       final name = tester.getCenter(find.descendant(of: room, matching: find.text(words.roomGeneral))).dx;
-      final icon = tester.getCenter(find.descendant(of: room, matching: find.byIcon(Icons.chat_bubble_rounded))).dx;
-      final chevron = find.descendant(of: room, matching: find.byIcon(Icons.chevron_right_rounded));
+      final icon = tester.getCenter(find.descendant(of: room, matching: find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.chat_bubble_rounded))).dx;
+      final chevron = find.descendant(of: room, matching: find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.chevron_right_rounded));
       expect(icon > name, rtl);
       expect(tester.getCenter(chevron).dx < name, rtl);
       // The chevron mirrors by itself; the speech bubble is mirrored here.

@@ -4,7 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/petloop_icon.dart';
+import '../../../widgets/app_icon.dart';
 import 'dashboard_card.dart';
 
 class HealthCard extends StatelessWidget {
@@ -20,7 +20,7 @@ class HealthCard extends StatelessWidget {
 
     return DashboardCard(
       color: AppColors.peach,
-      icon: PetLoopGlyph.health,
+      iconAsset: 'assets/images/icon_health.png',
       title: l10n.homeHealth,
       trailing: l10n.homeUpcoming,
       iconRing: true,
@@ -66,7 +66,7 @@ class _EventRow extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
+                  const AppIcon(Icons.calendar_today_rounded, size: 14, color: AppColors.ink),
                   const SizedBox(width: 5),
                   // "12.06.25 · 18:20": read from the right it is still date,
                   // then time.

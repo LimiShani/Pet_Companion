@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_icon.dart';
+
 // Flutter mirrors some icons by itself on a right-to-left screen (the back
 // arrow, the chevron, send) and leaves the others alone. For nearly every
 // icon that is right. These two widgets are for the exceptions.
@@ -19,7 +21,7 @@ class MirroredIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     // Drawn left-to-right first, so an icon Flutter would mirror by itself
     // is not mirrored twice.
-    final drawn = Icon(icon, size: size, color: color, semanticLabel: semanticLabel, textDirection: TextDirection.ltr);
+    final drawn = AppIcon(icon, size: size, color: color, semanticLabel: semanticLabel, textDirection: TextDirection.ltr);
     return Directionality.of(context) == TextDirection.rtl ? Transform.flip(flipX: true, child: drawn) : drawn;
   }
 }
@@ -37,5 +39,5 @@ class FixedIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Icon(icon, size: size, color: color, semanticLabel: semanticLabel, textDirection: TextDirection.ltr);
+      AppIcon(icon, size: size, color: color, semanticLabel: semanticLabel, textDirection: TextDirection.ltr);
 }

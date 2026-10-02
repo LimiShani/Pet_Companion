@@ -5,6 +5,7 @@ import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/l10n/l10n.dart';
+import 'package:pet_companion/widgets/app_icon.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 
 import 'community_helpers.dart';
@@ -297,18 +298,18 @@ void main() {
       await openSection(tester, 'Chat');
       final room = find.byKey(const ValueKey('room-general'));
       expect(
-        tester.getCenter(find.descendant(of: room, matching: find.byIcon(Icons.chat_bubble_rounded))).dx,
+        tester.getCenter(find.descendant(of: room, matching: find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.chat_bubble_rounded))).dx,
         greaterThan(tester.getCenter(find.descendant(of: room, matching: find.text('General'))).dx),
       );
       expect(
-        tester.getCenter(find.descendant(of: room, matching: find.byIcon(Icons.chevron_right_rounded))).dx,
+        tester.getCenter(find.descendant(of: room, matching: find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.chevron_right_rounded))).dx,
         lessThan(tester.getCenter(find.descendant(of: room, matching: find.text('General'))).dx),
       );
 
       await openSection(tester, 'Guides');
       final guide = find.byKey(const ValueKey('guide-first-week'));
       expect(
-        tester.getCenter(find.descendant(of: guide, matching: find.byIcon(Icons.pets_rounded))).dx,
+        tester.getCenter(find.descendant(of: guide, matching: find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.pets_rounded))).dx,
         greaterThan(tester.getCenter(find.descendant(of: guide, matching: find.textContaining('min read'))).dx),
       );
     });

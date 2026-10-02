@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
 
 /// A text field with a round send button, pinned under a list: the comment
@@ -77,7 +78,7 @@ class MessageBar extends StatelessWidget {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.white),
                   )
-                : const Icon(Icons.send_rounded, size: 22),
+                : const AppIcon(Icons.send_rounded, size: 22),
           ),
         ],
       ),

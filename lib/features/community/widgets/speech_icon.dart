@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/directional_icon.dart';
 
 /// The icons of the Community tab that point somewhere but which Flutter
@@ -26,6 +27,6 @@ class DirectionalCommunityIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return _pointing.contains(icon)
         ? MirroredIcon(icon, size: size, color: color)
-        : Icon(icon, size: size, color: color);
+        : AppIcon(icon, size: size, color: color);
   }
 }

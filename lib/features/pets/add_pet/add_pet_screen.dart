@@ -8,6 +8,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../../health/emergency/emergency.dart';
 import '../data/pets_repository_provider.dart';
@@ -453,7 +454,7 @@ class _CameraBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.cream, width: 3),
       ),
-      child: const Icon(Icons.photo_camera_rounded, size: 20, color: AppColors.white),
+      child: const AppIcon(Icons.photo_camera_rounded, size: 20, color: AppColors.white),
     );
   }
 }

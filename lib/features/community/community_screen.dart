@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import 'chat/chat_section.dart';
@@ -72,7 +73,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       floatingActionButton: _index == _feed && feedShowsPosts
           ? FloatingActionButton.extended(
               onPressed: () => openPostComposer(context),
-              icon: const Icon(Icons.edit_rounded),
+              icon: const AppIcon(Icons.edit_rounded),
               label: Text(l10n.newPost),
             )
           : null,

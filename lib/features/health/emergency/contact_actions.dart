@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../health_format.dart';
 import '../widgets/health_widgets.dart';
 import 'contact_launcher.dart';
@@ -119,7 +120,7 @@ class ContactActionButtons extends ConsumerWidget {
             key: ValueKey('call-$tag'),
             style: _filled,
             onPressed: () => callContact(context, ref, number),
-            icon: const Icon(Icons.call_rounded, size: 18),
+            icon: const AppIcon(Icons.call_rounded, size: 18),
             label: Text(l10n.actionCall),
           ),
           OutlinedButton.icon(
@@ -132,7 +133,7 @@ class ContactActionButtons extends ConsumerWidget {
               phone: number,
               onWhatsApp: onWhatsApp,
             ),
-            icon: const Icon(Icons.chat_bubble_outline_rounded, size: 18),
+            icon: const AppIcon(Icons.chat_bubble_outline_rounded, size: 18),
             label: Text(l10n.actionMessage),
           ),
         ] else if (onAddPhone != null)
@@ -140,7 +141,7 @@ class ContactActionButtons extends ConsumerWidget {
             key: ValueKey('add-phone-$tag'),
             style: _outlined,
             onPressed: onAddPhone,
-            icon: const Icon(Icons.add_call, size: 18),
+            icon: const AppIcon(Icons.add_call, size: 18),
             label: Text(l10n.addPhoneNumber),
           ),
         if (place != null)
@@ -148,7 +149,7 @@ class ContactActionButtons extends ConsumerWidget {
             key: ValueKey('map-$tag'),
             style: _outlined,
             onPressed: () => openContactMap(context, ref, place),
-            icon: const Icon(Icons.place_rounded, size: 18),
+            icon: const AppIcon(Icons.place_rounded, size: 18),
             label: Text(l10n.actionMap),
           ),
       ],

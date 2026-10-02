@@ -1,3 +1,4 @@
+import '../../../widgets/app_icon.dart';
 import 'dart:typed_data';
 
 import 'package:crop_your_image/crop_your_image.dart';
@@ -76,7 +77,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(const CropOutcome.cancelled()),
                     tooltip: context.l10n.commonBack,
-                    icon: const Icon(Icons.arrow_back_rounded),
+                    icon: const AppIcon(Icons.arrow_back_rounded),
                     color: AppColors.white,
                     constraints: const BoxConstraints.tightFor(width: 48, height: 48),
                   ),

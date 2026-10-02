@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/brand.dart';
 import 'language_pill.dart';
 
@@ -52,7 +53,7 @@ class AuthScaffold extends StatelessWidget {
                                 onPressed: () => Navigator.of(context).maybePop(),
                                 tooltip: l10n.commonBack,
                                 // Mirrors by itself on a right-to-left screen.
-                                icon: const Icon(Icons.arrow_back_rounded),
+                                icon: const AppIcon(Icons.arrow_back_rounded),
                                 color: AppColors.white,
                                 padding: EdgeInsets.zero,
                                 constraints: const BoxConstraints.tightFor(width: 44, height: 44),

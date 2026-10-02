@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
@@ -80,13 +81,13 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
             textDirection: contentDirection(context, _search.text),
             decoration: InputDecoration(
               hintText: l10n.searchGuides,
-              prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
+              prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
               suffixIcon: _search.text.isEmpty
                   ? null
                   : IconButton(
                       onPressed: _search.clear,
                       tooltip: l10n.clearSearch,
-                      icon: const Icon(Icons.close_rounded, color: AppColors.brown),
+                      icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
                     ),
             ),
           ),

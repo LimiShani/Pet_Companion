@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/deal.dart';
 
 /// The colour and icon that stand for a category: on a deal without a
@@ -10,9 +11,9 @@ extension DealCategoryStyle on DealCategory {
   Color get tileColor => switch (this) {
         DealCategory.food => AppColors.sage,
         DealCategory.treats => const Color(0xFFF6CDB9),
-        DealCategory.litterAndCleaning => const Color(0xFFE4E7C3),
+        DealCategory.litterAndCleaning => const Color(0xFFE0E6D3),
         DealCategory.toys => AppColors.yellow,
-        DealCategory.health => const Color(0xFFE4E7C3),
+        DealCategory.health => const Color(0xFFE0E6D3),
         DealCategory.grooming => AppColors.sage,
         DealCategory.accessories => const Color(0xFFFBE9BD),
         DealCategory.bedsAndCrates => AppColors.peach,
@@ -78,7 +79,7 @@ class _CategoryTile extends StatelessWidget {
             width: discSize,
             height: discSize,
             decoration: BoxDecoration(color: AppColors.white.withValues(alpha: 0.72), shape: BoxShape.circle),
-            child: Icon(category.icon, size: discSize / 2, color: AppColors.ink),
+            child: AppIcon(category.icon, size: discSize / 2, color: AppColors.ink),
           ),
         ),
       ),

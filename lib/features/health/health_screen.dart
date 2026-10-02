@@ -5,6 +5,7 @@ import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_selector.dart';
@@ -58,7 +59,7 @@ class HealthScreen extends ConsumerWidget {
                 key: const Key('quick-log-button'),
                 heroTag: null,
                 onPressed: () => showQuickLog(context, pet),
-                icon: const Icon(Icons.add_rounded),
+                icon: const AppIcon(Icons.add_rounded),
                 label: Text(l10n.quickLog),
               )
             : null,

@@ -6,6 +6,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/file_services.dart';
 import '../data/health_models.dart';
@@ -40,7 +41,7 @@ class LostPetButton extends StatelessWidget {
       key: const Key('open-lost-card'),
       onPressed: () => openLostPetCard(context, pet.id),
       style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-      icon: const Icon(Icons.travel_explore_rounded),
+      icon: const AppIcon(Icons.travel_explore_rounded),
       label: Text(context.healthL10n.petIsLost(pet.name)),
     );
   }
@@ -291,12 +292,12 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
                       height: 52,
                       color: AppColors.sage,
                       child: photo == null
-                          ? const Icon(Icons.pets_rounded, color: AppColors.ink)
+                          ? const AppIcon(Icons.pets_rounded, color: AppColors.ink)
                           : Image(
                               image: photo,
                               fit: BoxFit.cover,
                               excludeFromSemantics: true,
-                              errorBuilder: (_, _, _) => const Icon(Icons.pets_rounded, color: AppColors.ink),
+                              errorBuilder: (_, _, _) => const AppIcon(Icons.pets_rounded, color: AppColors.ink),
                             ),
                     ),
                   ),
@@ -440,7 +441,7 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
               key: const Key('lost-share-pdf'),
               onPressed: _confirmed && !_busy ? () => _share(asPdf: true) : null,
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-              icon: const Icon(Icons.print_rounded),
+              icon: const AppIcon(Icons.print_rounded),
               label: Text(l10n.shareAsPdf),
             ),
             if (active)

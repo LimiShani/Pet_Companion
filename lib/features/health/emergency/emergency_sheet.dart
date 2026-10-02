@@ -6,6 +6,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/health_models.dart';
 import '../health_strings.dart';
 import '../state/health_keeper.dart';
@@ -238,7 +239,7 @@ class NoVetPrompt extends ConsumerWidget {
             height: 72,
             margin: const EdgeInsetsDirectional.only(top: 4, bottom: 12),
             decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-            child: const Icon(Icons.add_call, size: 34, color: AppColors.coralDark),
+            child: const AppIcon(Icons.add_call, size: 34, color: AppColors.coralDark),
           ),
         ),
         Text(
@@ -268,7 +269,7 @@ class NoVetPrompt extends ConsumerWidget {
           key: const Key('add-new-vet'),
           onPressed: () => openVetForm(context, petId: pet.id, role: VetRole.regular),
           style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-          icon: const Icon(Icons.add_rounded),
+          icon: const AppIcon(Icons.add_rounded),
           label: Text(l10n.addNewVet),
         ),
       ],

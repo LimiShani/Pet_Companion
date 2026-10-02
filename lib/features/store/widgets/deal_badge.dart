@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/deal.dart';
 import '../store_format.dart';
 
@@ -50,7 +51,7 @@ class AnimalsTag extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.pets_rounded, size: large ? 13 : 11, color: AppColors.ink),
+          AppIcon(Icons.pets_rounded, size: large ? 13 : 11, color: AppColors.ink),
           const SizedBox(width: 4),
           Flexible(
             child: Text(

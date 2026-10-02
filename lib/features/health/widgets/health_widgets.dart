@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/directional_icon.dart';
 import '../../../widgets/empty_state.dart';
@@ -51,7 +52,7 @@ class HealthIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     if (iconPointsForward(icon)) return MirroredIcon(icon, size: size, color: color);
     if (icon == Icons.help_outline_rounded) return FixedIcon(icon, size: size, color: color);
-    return Icon(icon, size: size, color: color);
+    return AppIcon(icon, size: size, color: color);
   }
 }
 
@@ -206,7 +207,7 @@ class HealthPromptCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+              const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
             ],
           ),
         ),
@@ -235,7 +236,7 @@ class HealthLink extends StatelessWidget {
     final text = Text(label, maxLines: 1, overflow: TextOverflow.ellipsis);
     return icon == null
         ? TextButton(onPressed: onPressed, style: style, child: text)
-        : TextButton.icon(onPressed: onPressed, style: style, icon: Icon(icon, size: 18), label: text);
+        : TextButton.icon(onPressed: onPressed, style: style, icon: AppIcon(icon, size: 18), label: text);
   }
 }
 
@@ -286,7 +287,7 @@ class HealthTag extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 14, color: highlight ? AppColors.ink : AppColors.brown),
+            AppIcon(icon, size: 14, color: highlight ? AppColors.ink : AppColors.brown),
             const SizedBox(width: 4),
           ],
           Flexible(
@@ -362,7 +363,7 @@ class PickerTile extends StatelessWidget {
               padding: const EdgeInsetsDirectional.only(start: 14, end: 6, top: 8, bottom: 8),
               child: Row(
                 children: [
-                  Icon(icon, color: AppColors.brown, size: 22),
+                  AppIcon(icon, color: AppColors.brown, size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
@@ -391,7 +392,7 @@ class PickerTile extends StatelessWidget {
                     IconButton(
                       onPressed: onClear,
                       tooltip: l10n.clearField(label),
-                      icon: const Icon(Icons.close_rounded, size: 20),
+                      icon: const AppIcon(Icons.close_rounded, size: 20),
                       color: AppColors.brown,
                     )
                   else

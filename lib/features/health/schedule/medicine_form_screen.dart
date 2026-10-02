@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../data/health_models.dart';
@@ -325,7 +326,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                   ),
                 ActionChip(
                   key: const Key('medicine-add-time'),
-                  avatar: const Icon(Icons.add_rounded, size: 18),
+                  avatar: const AppIcon(Icons.add_rounded, size: 18),
                   label: Text(l10n.addATime),
                   onPressed: _addTime,
                 ),

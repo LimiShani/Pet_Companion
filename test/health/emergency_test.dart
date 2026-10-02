@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
+import 'package:pet_companion/widgets/app_icon.dart';
 
 import 'health_test_helpers.dart';
 
@@ -38,7 +39,7 @@ void main() {
 
       expect(find.text('Emergency'), findsOneWidget);
       expect(find.bySemanticsLabel('Emergency contacts for Kelly'), findsOneWidget);
-      expect(find.byIcon(Icons.emergency_rounded), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.emergency_rounded), findsOneWidget);
       // Kelly has a vet to call: no dot.
       expect(find.byKey(const Key('emergency-dot')), findsNothing);
       // A comfortable tap target.
@@ -62,8 +63,8 @@ void main() {
       await pumpHealthHost(tester, onCoral(kelly, compact: true));
 
       expect(find.text('Emergency'), findsNothing);
-      expect(find.byIcon(Icons.emergency_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.add_rounded), findsNothing);
+      expect(find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.emergency_rounded), findsOneWidget);
+      expect(find.byWidgetPredicate((w) => w is AppIcon && w.icon == Icons.add_rounded), findsNothing);
       expect(find.bySemanticsLabel('Emergency contacts for Kelly'), findsOneWidget);
     });
 

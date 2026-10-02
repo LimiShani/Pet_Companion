@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'app_icon.dart';
 
 /// Simple screen used for tabs that are not implemented yet.
 class PlaceholderScreen extends StatelessWidget {
@@ -26,7 +27,7 @@ class PlaceholderScreen extends StatelessWidget {
                 width: 96,
                 height: 96,
                 decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-                child: Icon(icon, size: 48, color: AppColors.coral),
+                child: AppIcon(icon, size: 48, color: AppColors.coral),
               ),
               const SizedBox(height: 20),
               Text(context.l10n.placeholderComingSoon(title), style: AppText.petName, textAlign: TextAlign.center),

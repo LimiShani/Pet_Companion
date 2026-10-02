@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/empty_state.dart';
 import '../data/health_models.dart';
@@ -177,7 +178,7 @@ class _Detail extends ConsumerWidget {
             key: const Key('record-mark-done'),
             onPressed: () => _markDone(context, ref),
             style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-            icon: const Icon(Icons.check_rounded),
+            icon: const AppIcon(Icons.check_rounded),
             label: Text(l10n.markAsDone),
           ),
         ],
@@ -197,7 +198,7 @@ class _Detail extends ConsumerWidget {
           key: const Key('detail-attach'),
           onPressed: () => _attach(context, ref),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-          icon: const Icon(Icons.attach_file_rounded),
+          icon: const AppIcon(Icons.attach_file_rounded),
           label: Text(l10n.addPhotoOrPdf),
         ),
         const SizedBox(height: 10),
@@ -205,7 +206,7 @@ class _Detail extends ConsumerWidget {
           key: const Key('record-share'),
           onPressed: () => shareRecord(context, pet, record),
           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
-          icon: const Icon(Icons.ios_share_rounded),
+          icon: const AppIcon(Icons.ios_share_rounded),
           label: Text(l10n.shareThisRecord),
         ),
         const SizedBox(height: 12),

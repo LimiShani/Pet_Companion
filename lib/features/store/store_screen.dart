@@ -8,6 +8,7 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pet_selector.dart';
@@ -83,7 +84,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       key: const Key('store-screen'),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _shareDeal,
-        icon: const Icon(Icons.add_rounded),
+        icon: const AppIcon(Icons.add_rounded),
         label: Text(l10n.shareADeal),
       ),
       body: Column(
@@ -254,7 +255,7 @@ class _AllAnimalsPill extends StatelessWidget {
                     shape: BoxShape.circle,
                     color: selected ? AppColors.coral : AppColors.white.withValues(alpha: 0.55),
                   ),
-                  child: Icon(
+                  child: AppIcon(
                     Icons.pets_rounded,
                     size: 13,
                     color: selected ? AppColors.white : AppColors.coralDark,
@@ -292,12 +293,12 @@ class _SearchField extends StatelessWidget {
         decoration: InputDecoration(
           hintText: context.storeL10n.searchHint,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          prefixIcon: const Icon(Icons.search_rounded, color: AppColors.brown),
+          prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
           suffixIcon: controller.text.isEmpty
               ? null
               : IconButton(
                   tooltip: context.storeL10n.clearSearch,
-                  icon: const Icon(Icons.close_rounded, color: AppColors.brown),
+                  icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
                   onPressed: () {
                     controller.clear();
                     onChanged('');
@@ -412,7 +413,7 @@ class _SortRow extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const Icon(Icons.expand_more_rounded, size: 20, color: AppColors.brown),
+                    const AppIcon(Icons.expand_more_rounded, size: 20, color: AppColors.brown),
                   ],
                 ),
               ),

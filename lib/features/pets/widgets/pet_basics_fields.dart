@@ -6,6 +6,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../pet_words.dart';
 import 'pets_widgets.dart';
 
@@ -435,7 +436,7 @@ class _DateField extends StatelessWidget {
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: context.petsL10n.birthday,
-            suffixIcon: const Icon(Icons.calendar_month_rounded, color: AppColors.brown),
+            suffixIcon: const AppIcon(Icons.calendar_month_rounded, color: AppColors.brown),
           ),
           child: Text(
             text ?? context.petsL10n.chooseTheDate,

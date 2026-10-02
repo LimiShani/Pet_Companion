@@ -6,6 +6,7 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../health_strings.dart';
@@ -59,7 +60,7 @@ class EmergencyKitRow extends ConsumerWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );

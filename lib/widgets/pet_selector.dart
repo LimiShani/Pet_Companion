@@ -7,6 +7,7 @@ import '../models/pet.dart';
 import '../state/pets_provider.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'app_icon.dart';
 
 /// Horizontal row of pet pills for switching the selected pet.
 ///
@@ -131,7 +132,7 @@ class _AddPetButton extends StatelessWidget {
           child: const SizedBox(
             width: 38,
             height: 38,
-            child: Icon(Icons.add_rounded, color: AppColors.white, size: 22),
+            child: AppIcon(Icons.add_rounded, color: AppColors.white, size: 22),
           ),
         ),
       ),

@@ -5,6 +5,7 @@ import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
 import 'data/deal.dart';
@@ -252,7 +253,7 @@ class _DealBody extends ConsumerWidget {
                         ? const _ReportedNote()
                         : TextButton.icon(
                             onPressed: busy ? null : () => _report(context, ref),
-                            icon: const Icon(Icons.flag_outlined, size: 18),
+                            icon: const AppIcon(Icons.flag_outlined, size: 18),
                             label: Text(l10n.reportExpired),
                             style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
                           ),
@@ -262,7 +263,7 @@ class _DealBody extends ConsumerWidget {
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: busy ? null : onDelete,
-                    icon: const Icon(Icons.delete_outline_rounded, size: 20),
+                    icon: const AppIcon(Icons.delete_outline_rounded, size: 20),
                     label: Text(l10n.deleteMyDeal),
                   ),
                 ],
@@ -277,7 +278,7 @@ class _DealBody extends ConsumerWidget {
             children: [
               FilledButton.icon(
                 onPressed: busy ? null : () => _open(context, ref),
-                icon: const Icon(Icons.open_in_new_rounded, size: 20),
+                icon: const AppIcon(Icons.open_in_new_rounded, size: 20),
                 iconAlignment: IconAlignment.end,
                 label: Text(l10n.openOffer),
                 style: FilledButton.styleFrom(
@@ -460,7 +461,7 @@ class _ReportedNote extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.brown),
+          const AppIcon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.brown),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
@@ -491,7 +492,7 @@ class _Notice extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.schedule_rounded, size: 20, color: AppColors.ink),
+          const AppIcon(Icons.schedule_rounded, size: 20, color: AppColors.ink),
           const SizedBox(width: 10),
           Expanded(child: Text(text, style: AppText.body.copyWith(fontWeight: FontWeight.w700))),
         ],
@@ -517,7 +518,7 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: AppColors.brown),
+          AppIcon(icon, size: 20, color: AppColors.brown),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

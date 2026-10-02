@@ -5,6 +5,7 @@ import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
+import '../../widgets/app_icon.dart';
 import 'pet_actions.dart';
 import 'state/pet_completeness.dart';
 import 'widgets/essentials_list.dart';
@@ -122,7 +123,7 @@ class _GoodToHaveChip extends StatelessWidget {
     final label = item.labelIn(l10n);
     return ActionChip(
       key: Key('good-${item.name}'),
-      avatar: Icon(answered ? Icons.check_rounded : Icons.add_rounded, size: 16, color: AppColors.ink),
+      avatar: AppIcon(answered ? Icons.check_rounded : Icons.add_rounded, size: 16, color: AppColors.ink),
       label: Text(label),
       backgroundColor: answered ? AppColors.yellow : AppColors.white,
       side: BorderSide(color: answered ? AppColors.yellow : kPetsLine),

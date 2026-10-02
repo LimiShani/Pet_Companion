@@ -1,3 +1,4 @@
+import '../../../widgets/app_icon.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -128,7 +129,7 @@ class AttachmentRow extends StatelessWidget {
               height: 52,
               color: AppColors.yellow,
               child: isPdf || source == null
-                  ? Icon(isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded, color: AppColors.ink)
+                  ? AppIcon(isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded, color: AppColors.ink)
                   : _Preview(bytes: source),
             ),
           ),
@@ -156,7 +157,7 @@ class AttachmentRow extends StatelessWidget {
             IconButton(
               onPressed: onRemove,
               tooltip: l10n.removeNamed(name),
-              icon: const Icon(Icons.close_rounded, size: 20),
+              icon: const AppIcon(Icons.close_rounded, size: 20),
               color: AppColors.brown,
               constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
             )
@@ -179,13 +180,13 @@ class _Preview extends StatelessWidget {
       future: bytes,
       builder: (context, snapshot) {
         final data = snapshot.data;
-        if (data == null) return const Icon(Icons.image_rounded, color: AppColors.ink);
+        if (data == null) return const AppIcon(Icons.image_rounded, color: AppColors.ink);
         return Image.memory(
           data,
           fit: BoxFit.cover,
           gaplessPlayback: true,
           excludeFromSemantics: true,
-          errorBuilder: (_, _, _) => const Icon(Icons.broken_image_rounded, color: AppColors.ink),
+          errorBuilder: (_, _, _) => const AppIcon(Icons.broken_image_rounded, color: AppColors.ink),
         );
       },
     );
@@ -337,7 +338,7 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
                           fit: BoxFit.contain,
                           semanticLabel: widget.document.fileName,
                           errorBuilder: (_, _, _) =>
-                              const Icon(Icons.broken_image_rounded, size: 64, color: AppColors.white),
+                              const AppIcon(Icons.broken_image_rounded, size: 64, color: AppColors.white),
                         ),
                       ),
                     ),

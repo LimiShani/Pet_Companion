@@ -5,6 +5,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
 import '../data/community_models.dart';
 import '../data/community_providers.dart';
@@ -80,7 +81,7 @@ class PostCard extends ConsumerWidget {
                   ),
                   PopupMenuButton<_PostAction>(
                     tooltip: l10n.postOptions,
-                    icon: const Icon(Icons.more_horiz_rounded, color: AppColors.brown),
+                    icon: const AppIcon(Icons.more_horiz_rounded, color: AppColors.brown),
                     color: AppColors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     onSelected: (action) => _onAction(context, ref, action),
@@ -159,7 +160,7 @@ class _MenuRow extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 20, color: AppColors.ink),
+        AppIcon(icon, size: 20, color: AppColors.ink),
         const SizedBox(width: 10),
         Text(label, style: AppText.body.copyWith(fontSize: 15)),
       ],
