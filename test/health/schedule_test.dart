@@ -73,7 +73,9 @@ void main() {
       expect(find.byKey(const ValueKey('today-p-walk')), findsNothing);
       expect(find.text('Done today · 3'), findsOneWidget);
 
-      var saved = (await logs(tester, h)).where((l) => l.planItemId == 'p-walk').single;
+      // Earlier days of the sample week have their own walks.
+      bool todaysWalk(CareLog l) => l.planItemId == 'p-walk' && l.dueOn == today;
+      var saved = (await logs(tester, h)).where(todaysWalk).single;
       expect(saved.status, CareLogStatus.done);
       expect(saved.dueOn, today);
       expect(saved.loggedByName, 'Alex');
@@ -82,7 +84,7 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('done-today')));
       await tapVisible(tester, find.byKey(const ValueKey('undo-p-walk')));
       expect(find.byKey(const ValueKey('today-p-walk')), findsOneWidget);
-      expect((await logs(tester, h)).where((l) => l.planItemId == 'p-walk'), isEmpty);
+      expect((await logs(tester, h)).where(todaysWalk), isEmpty);
     });
 
     testWidgets('an empty schedule offers to add something', (tester) async {

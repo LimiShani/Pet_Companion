@@ -24,6 +24,7 @@ lib/
   theme/                     LEAD   AppColors, AppText, AppSpacing, AppTheme
   widgets/                   LEAD   shared widgets (see below)
   features/home/, auth/      LEAD
+  features/care/             LEAD   Home's feeding / activity data, pages and sheets
   features/health/           HEALTH agent
   features/community/        COMMUNITY agent
   features/store/            STORE agent

@@ -183,7 +183,7 @@ void main() {
 
   group('Home in Hebrew', () {
     Future<void> pumpHome(WidgetTester tester, {Size size = const Size(390, 844), double textScale = 1}) async {
-      await pumpApp(tester, language: AppLanguage.hebrew);
+      await pumpApp(tester, language: AppLanguage.hebrew, now: DateTime(2025, 6, 10, 15));
       await signInAsDemo(tester);
       if (size != const Size(390, 844) || textScale != 1) {
         tester.view.physicalSize = size * 3;
@@ -214,23 +214,27 @@ void main() {
 
       // The cards.
       expect(find.text('האכלה'), findsOneWidget);
-      expect(find.text('יעד: 900 קלוריות ביום'), findsOneWidget);
-      expect(find.text('375'), findsOneWidget);
+      expect(find.text(_he.homeGoal('1,030')), findsOneWidget);
+      expect(stripBidiMarks(_he.homeGoal('1,030')), 'יעד: 1,030 קלוריות ביום');
+      expect(find.text('504'), findsOneWidget);
       expect(find.text('קלוריות היום'), findsOneWidget);
       expect(find.text(_he.homeNextFeeding('19:30')), findsOneWidget);
       expect(stripBidiMarks(_he.homeNextFeeding('19:30')), 'ההאכלה הבאה · 19:30');
       expect(find.text('פעילות'), findsOneWidget);
-      expect(find.text('2,569'), findsOneWidget);
-      expect(find.text('צעדים'), findsOneWidget);
-      expect(find.text('01:32'), findsOneWidget);
-      expect(find.text('זמן פעילות'), findsOneWidget);
+      expect(find.text(isolate('1/2')), findsOneWidget);
+      expect(find.text('טיולים היום'), findsOneWidget);
+      expect(find.text(isolate('25')), findsOneWidget);
+      expect(find.text('דקות פעילות'), findsOneWidget);
       expect(find.text(_he.homeNextWalk('18:30')), findsOneWidget);
+      expect(find.text('האכלתי'), findsOneWidget);
+      expect(find.text('טיול'), findsOneWidget);
       expect(find.text('בקרוב'), findsOneWidget);
-      expect(find.text('27.07.25 · 19:30'), findsOneWidget);
+      expect(find.text(lookupCareL10n(hebrewLocale).medicineItem('Joint tablets')), findsOneWidget);
+      expect(find.text('12.06.25 · 18:20'), findsOneWidget);
 
       // Nothing of the English dashboard is left. (The pets' names and what
       // their owner wrote stay as they were entered.)
-      for (final english in ['Home', 'Health', 'Community', 'Store', 'Feeding', 'Activity', 'Steps', 'Upcoming']) {
+      for (final english in ['Home', 'Health', 'Community', 'Store', 'Feeding', 'Activity', 'Fed', 'Walk', 'Upcoming']) {
         expect(find.text(english), findsNothing, reason: english);
       }
       expect(find.text('Kelly'), findsNWidgets(2));

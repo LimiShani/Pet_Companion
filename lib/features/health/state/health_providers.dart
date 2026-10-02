@@ -614,17 +614,27 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
   }
 
   /// Records the owner's answer for one occurrence of [item] due on
-  /// [dueOn], or a dose of an "as needed" [medication] (no [item]). The
-  /// signed-in user's name and the current time are stored with it.
+  /// [dueOn], a dose of an "as needed" [medication] (no [item]), or an
+  /// extra meal or walk that no reminder asked for ([kind] and [title], no
+  /// [item] or [medication]). The signed-in user's name and the current
+  /// time are stored with it.
+  ///
+  /// A meal can carry its [amountGrams] and [calories], a walk its
+  /// [minutes] (Home's feeding and activity cards add them up).
   Future<CareLog> record({
     CarePlanItem? item,
     Medication? medication,
+    CareKind? kind,
+    String? title,
     required DateTime dueOn,
     required CareLogStatus status,
     DateTime? doneAt,
     String note = '',
+    double? amountGrams,
+    int? calories,
+    int? minutes,
   }) async {
-    assert(item != null || medication != null, 'A log needs a plan item or a medicine.');
+    assert(item != null || medication != null || kind != null, 'A log needs a plan item, a medicine or a kind.');
     final now = ref.read(healthClockProvider)();
     final saved = await _repo.saveLog(
       CareLog(
@@ -632,7 +642,7 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
         petId: petId,
         planItemId: item?.id,
         medicationId: item?.medicationId ?? medication?.id,
-        title: item?.title ?? medication?.name ?? '',
+        title: title ?? item?.title ?? medication?.name ?? '',
         dueOn: dateOnly(dueOn),
         dueTime: item?.time,
         status: status,
@@ -640,6 +650,10 @@ class CarePlanController extends AsyncNotifier<CarePlan> {
         note: note.trim(),
         loggedByName: _userName(ref),
         loggedAt: now,
+        kind: item == null && medication == null ? kind : null,
+        amountGrams: status == CareLogStatus.done ? amountGrams : null,
+        calories: status == CareLogStatus.done ? calories : null,
+        minutes: status == CareLogStatus.done ? minutes : null,
       ),
     );
     final plan = _plan;

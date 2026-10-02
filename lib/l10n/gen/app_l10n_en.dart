@@ -309,7 +309,7 @@ class AppL10nEn extends AppL10n {
   String get homeNoGoal => 'No goal set';
 
   @override
-  String homeGoal(int goal) {
+  String homeGoal(String goal) {
     return 'Goal $goal cal/day';
   }
 

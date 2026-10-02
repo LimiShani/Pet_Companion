@@ -651,7 +651,7 @@ abstract class AppL10n {
   ///
   /// In en, this message translates to:
   /// **'Goal {goal} cal/day'**
-  String homeGoal(int goal);
+  String homeGoal(String goal);
 
   /// Follows the big number of calories eaten today: '375 cal today'.
   ///

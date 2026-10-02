@@ -309,8 +309,8 @@ class AppL10nHe extends AppL10n {
   String get homeNoGoal => 'עוד לא נקבע יעד';
 
   @override
-  String homeGoal(int goal) {
-    return 'יעד: $goal קלוריות ביום';
+  String homeGoal(String goal) {
+    return 'יעד: \u2068$goal\u2069 קלוריות ביום';
   }
 
   @override

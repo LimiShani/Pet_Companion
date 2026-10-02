@@ -13,6 +13,7 @@ const _modules = {
   'community': 'lib/features/community/l10n',
   'store': 'lib/features/store/l10n',
   'pets': 'lib/features/pets/l10n',
+  'care': 'lib/features/care/l10n',
 };
 
 const _firstStrongIsolate = '\u{2068}';

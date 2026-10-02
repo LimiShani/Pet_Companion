@@ -588,7 +588,15 @@ class FakeHealthRepository implements HealthRepository {
     // evening's reminder, which nobody answered ("Needs review").
     final now = _now();
     final today = dateOnly(now);
-    void given(String itemId, DateTime day, TimeOfDay due, {String title = 'Joint tablets', String? med = 'm-joint'}) {
+    void given(
+      String itemId,
+      DateTime day,
+      TimeOfDay due, {
+      String title = 'Joint tablets',
+      String? med = 'm-joint',
+      double? grams,
+      int? minutes,
+    }) {
       final at = atTime(day, due).add(const Duration(minutes: 5));
       _logs.add(
         CareLog(
@@ -603,21 +611,55 @@ class FakeHealthRepository implements HealthRepository {
           doneAt: at,
           loggedByName: 'Alex',
           loggedAt: at,
+          // Kelly's food has 360 cal per 100 g (Home's sample food).
+          amountGrams: grams,
+          calories: grams == null ? null : (grams * 3.6).round(),
+          minutes: minutes,
+        ),
+      );
+    }
+
+    // A morning walk nobody planned, logged from Home.
+    void morningWalk(DateTime day, int minutes) {
+      final at = atTime(day, const TimeOfDay(hour: 7, minute: 0));
+      _logs.add(
+        CareLog(
+          id: _id('l'),
+          petId: pet,
+          kind: CareKind.walk,
+          title: 'Morning walk',
+          dueOn: day,
+          status: CareLogStatus.done,
+          doneAt: at,
+          loggedByName: 'Alex',
+          loggedAt: at.add(Duration(minutes: minutes)),
+          minutes: minutes,
         ),
       );
     }
 
     const am = TimeOfDay(hour: 8, minute: 0);
     const pm = TimeOfDay(hour: 20, minute: 0);
+    const breakfast = TimeOfDay(hour: 7, minute: 30);
+    const walk = TimeOfDay(hour: 18, minute: 30);
+    const dinner = TimeOfDay(hour: 19, minute: 30);
+    const walkMinutes = [40, 35, 45, 30, 50, 40, 35];
+    const morningMinutes = [25, 30, 20, 25, 30, 25, 20];
     for (var back = 7; back >= 1; back--) {
       final day = addDays(today, -back);
       given('p-joint-am', day, am);
       if (back != 1) given('p-joint-pm', day, pm);
+      // A week of meals and walks for Home's feeding and activity pages.
+      given('p-breakfast', day, breakfast, title: 'Breakfast', med: null, grams: 140);
+      given('p-dinner', day, dinner, title: 'Dinner', med: null, grams: back % 3 == 0 ? 120 : 140);
+      given('p-walk', day, walk, title: 'Evening walk', med: null, minutes: walkMinutes[back - 1]);
+      morningWalk(day, morningMinutes[back - 1]);
     }
     // Today, only what is already behind "now".
     if (!now.isBefore(atTime(today, const TimeOfDay(hour: 7, minute: 35)))) {
-      given('p-breakfast', today, const TimeOfDay(hour: 7, minute: 30), title: 'Breakfast', med: null);
+      given('p-breakfast', today, breakfast, title: 'Breakfast', med: null, grams: 140);
     }
+    if (!now.isBefore(atTime(today, const TimeOfDay(hour: 7, minute: 30)))) morningWalk(today, 25);
     if (!now.isBefore(atTime(today, const TimeOfDay(hour: 8, minute: 5)))) given('p-joint-am', today, am);
 
     // Half of Kelly's emergency kit is ready.

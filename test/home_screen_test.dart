@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 
 import 'helpers.dart';
 
@@ -9,8 +10,12 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
+  // The sample day, in the afternoon: breakfast and a morning walk are
+  // logged, dinner and the evening walk are still to come.
+  final afternoon = DateTime(2025, 6, 10, 15);
+
   Future<void> pumpHome(WidgetTester tester) async {
-    await pumpApp(tester);
+    await pumpApp(tester, now: afternoon);
     await signInAsDemo(tester);
   }
 
@@ -24,13 +29,20 @@ void main() {
     expect(find.text('Kelly'), findsNWidgets(2)); // selector pill + hero name
     expect(find.text('Mix'), findsOneWidget);
     expect(find.text('23 kg'), findsOneWidget);
-    expect(find.text('375'), findsOneWidget);
-    expect(find.text('Goal 900 cal/day'), findsOneWidget);
+    // Breakfast: 140 g of a food with 360 cal per 100 g. The goal is the
+    // estimate for 23 kg at 13.6 years: 70 × 23^0.75 × 1.4, in tens.
+    expect(find.text('504'), findsOneWidget);
+    expect(find.text('Goal 1,030 cal/day'), findsOneWidget);
     expect(find.text('Next feeding · 19:30'), findsOneWidget);
-    expect(find.text('2,569'), findsOneWidget);
-    expect(find.text('01:32'), findsOneWidget);
-    expect(find.text('Medicine'), findsOneWidget);
-    expect(find.text('27.07.25 · 19:30'), findsOneWidget);
+    // The morning walk (25 min) is done; the evening walk is planned.
+    expect(find.text(isolate('1/2')), findsOneWidget);
+    expect(find.text(isolate('25')), findsOneWidget);
+    expect(find.text('Next walk · 18:30'), findsOneWidget);
+    // Tonight's joint tablet comes before the planned check-up.
+    expect(find.text('Medicine: Joint tablets'), findsOneWidget);
+    expect(find.text('Today · 20:00'), findsOneWidget);
+    expect(find.text('General check'), findsOneWidget);
+    expect(find.text('12.06.25 · 18:20'), findsOneWidget);
   });
 
   testWidgets('tapping Soya switches the dashboard', (tester) async {
@@ -41,7 +53,10 @@ void main() {
 
     expect(find.text('Soya'), findsNWidgets(2));
     expect(find.text('Mix'), findsNothing);
+    // Nothing set up yet: invitations rather than zeros.
     expect(find.text('No goal set'), findsOneWidget);
+    expect(find.text('Add the food to count calories'), findsOneWidget);
+    expect(find.text('Next feeding · not set'), findsOneWidget);
     expect(find.text('No health events yet'), findsOneWidget);
   });
 

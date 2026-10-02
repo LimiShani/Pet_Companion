@@ -8,6 +8,7 @@ import 'widgets/feeding_card.dart';
 import 'widgets/health_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/pet_hero.dart';
+import '../care/care.dart';
 import '../pets/pets.dart';
 
 /// The dashboard: a pinned top bar with the Emergency pill, then the pet
@@ -73,11 +74,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         compact: true,
                         margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
                       ),
-                      FeedingCard(status: pet.feeding),
-                      const SizedBox(height: AppSpacing.cardGap),
-                      ActivityCard(status: pet.activity),
-                      const SizedBox(height: AppSpacing.cardGap),
-                      HealthCard(events: pet.healthEvents),
+                      // The cards read the pet's care and health data,
+                      // kept loaded while Home is below another page.
+                      CareKeeper(
+                        petId: pet.id,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            FeedingCard(pet: pet),
+                            const SizedBox(height: AppSpacing.cardGap),
+                            ActivityCard(pet: pet),
+                            const SizedBox(height: AppSpacing.cardGap),
+                            HealthCard(pet: pet),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),

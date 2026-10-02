@@ -4,6 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
+import 'package:pet_companion/features/care/data/care_repository.dart';
+import 'package:pet_companion/features/care/state/care_providers.dart';
+import 'package:pet_companion/features/health/data/fake_health_repository.dart';
+import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/primary_button.dart';
 
@@ -15,12 +19,17 @@ import 'package:pet_companion/widgets/primary_button.dart';
 /// it a store of saved choices: giving the same [MemorySettingsStore] to
 /// two calls simulates closing the app and opening it again. [size] and
 /// [textScale] are for layout checks on a small phone or with large text.
+///
+/// [now] fixes the clock of the health and care data (the sample data
+/// lives around 10 June 2025) and makes their fake backends answer at
+/// once, for checks of what Home's cards count.
 Future<void> pumpApp(
   WidgetTester tester, {
   AppLanguage? language,
   SettingsStore? settings,
   Size size = const Size(390, 844),
   double textScale = 1,
+  DateTime? now,
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -37,6 +46,11 @@ Future<void> pumpApp(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
         settingsStoreProvider.overrideWithValue(store),
+        if (now != null) ...[
+          healthClockProvider.overrideWithValue(() => now),
+          healthRepositoryProvider.overrideWithValue(FakeHealthRepository(latency: Duration.zero, now: () => now)),
+          careRepositoryProvider.overrideWithValue(FakeCareRepository(latency: Duration.zero)),
+        ],
       ],
       child: const PetLoopApp(),
     ),

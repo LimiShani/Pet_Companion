@@ -215,6 +215,10 @@ CareLog logFromRow(Row row) => CareLog(
   note: _textOr(row['note']),
   loggedByName: _textOr(row['logged_by_name']),
   loggedAt: instantFromDb(row['logged_at']),
+  kind: row['kind'] == null ? null : CareKind.fromDb(_text(row['kind'])),
+  amountGrams: (row['amount_grams'] as num?)?.toDouble(),
+  calories: (row['calories'] as num?)?.toInt(),
+  minutes: (row['minutes'] as num?)?.toInt(),
 );
 
 Row logToRow(CareLog log) => {
@@ -229,6 +233,12 @@ Row logToRow(CareLog log) => {
   'note': log.note,
   'logged_by_name': log.loggedByName,
   'logged_at': instantToDb(log.loggedAt),
+  // The columns of 0009_daily_care.sql, sent only when used, so a project
+  // without that migration still stores every other answer.
+  if (log.kind != null) 'kind': log.kind!.dbValue,
+  if (log.amountGrams != null) 'amount_grams': log.amountGrams,
+  if (log.calories != null) 'calories': log.calories,
+  if (log.minutes != null) 'minutes': log.minutes,
 };
 
 // ------------------------------------------------------ health_observations

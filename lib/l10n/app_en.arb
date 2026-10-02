@@ -127,7 +127,7 @@
   "homeFeeding": "Feeding",
   "homeNoGoal": "No goal set",
   "homeGoal": "Goal {goal} cal/day",
-  "@homeGoal": {"placeholders": {"goal": {"type": "int"}}},
+  "@homeGoal": {"placeholders": {"goal": {"type": "String"}}},
   "homeCalToday": "cal today",
   "@homeCalToday": {"description": "Follows the big number of calories eaten today: '375 cal today'."},
   "homeCaloriesSemantics": "Calories toward daily goal",

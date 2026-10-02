@@ -702,12 +702,28 @@ class CareLog {
     this.doneAt,
     this.note = '',
     this.loggedByName = '',
+    this.kind,
+    this.amountGrams,
+    this.calories,
+    this.minutes,
   });
 
   final String id;
   final String petId;
   final String? planItemId;
   final String? medicationId;
+
+  /// What an entry without a reminder is: an extra meal
+  /// ([CareKind.feeding]) or an extra walk or play ([CareKind.walk]).
+  /// `null` for a reminder's answer and for a medicine dose.
+  final CareKind? kind;
+
+  /// How much a meal was, and its calories, when the owner said.
+  final double? amountGrams;
+  final int? calories;
+
+  /// How long a walk or a play session lasted, in minutes.
+  final int? minutes;
 
   /// The item's title when it was logged (kept if the item is deleted).
   final String title;
@@ -740,6 +756,10 @@ class CareLog {
     note: note,
     loggedByName: loggedByName,
     loggedAt: loggedAt,
+    kind: kind,
+    amountGrams: amountGrams,
+    calories: calories,
+    minutes: minutes,
   );
 }
 

@@ -17,19 +17,24 @@ import 'schedule_form_widgets.dart';
 
 /// Opens the add / edit routine page over the whole app. Returns the saved
 /// routine, or `null` when the owner went back or deleted it.
-Future<CarePlanItem?> openRoutineForm(BuildContext context, Pet pet, {CarePlanItem? item}) =>
-    pushHealthPage<CarePlanItem>(context, RoutineFormScreen(pet: pet, item: item));
+/// A new routine starts as [kind] when given (Home's feeding page adds a
+/// feeding time).
+Future<CarePlanItem?> openRoutineForm(BuildContext context, Pet pet, {CarePlanItem? item, CareKind? kind}) =>
+    pushHealthPage<CarePlanItem>(context, RoutineFormScreen(pet: pet, item: item, kind: kind));
 
 /// A daily routine (feeding, walk, grooming, cleaning...): a title, a time
 /// and the weekdays. It is ticked with one tap in the Schedule and never
 /// goes to "Needs review".
 class RoutineFormScreen extends ConsumerStatefulWidget {
-  const RoutineFormScreen({super.key, required this.pet, this.item});
+  const RoutineFormScreen({super.key, required this.pet, this.item, this.kind});
 
   final Pet pet;
 
   /// The routine being edited, or `null` to add one.
   final CarePlanItem? item;
+
+  /// The kind a new routine starts as; the species' first kind when `null`.
+  final CareKind? kind;
 
   @override
   ConsumerState<RoutineFormScreen> createState() => _RoutineFormScreenState();
@@ -67,7 +72,7 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
   void initState() {
     super.initState();
     final item = widget.item;
-    _kind = item?.kind ?? _settings.routineKinds.first;
+    _kind = item?.kind ?? widget.kind ?? _settings.routineKinds.first;
     final (time, days) = _usual(_kind);
     _time = item?.time ?? time;
     _days = item?.days ?? days;

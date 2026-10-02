@@ -102,7 +102,7 @@
   "homeWeightKg": "\u2068{value}\u2069 ק״ג",
   "homeFeeding": "האכלה",
   "homeNoGoal": "עוד לא נקבע יעד",
-  "homeGoal": "יעד: {goal} קלוריות ביום",
+  "homeGoal": "יעד: \u2068{goal}\u2069 קלוריות ביום",
   "homeCalToday": "קלוריות היום",
   "homeCaloriesSemantics": "קלוריות מתוך היעד היומי",
   "homeCaloriesOfGoal": "{eaten} מתוך {goal}",
