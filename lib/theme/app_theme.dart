@@ -26,6 +26,11 @@ abstract final class AppSpacing {
   /// Corner radius of the bottom navigation bar and the header's bottom edge.
   static const shellRadius = 28.0;
   static const headerRadius = 44.0;
+
+  /// Room at the end of a list under a floating action button (56 high,
+  /// 16 from the edge) plus some air, so the last row can scroll clear of
+  /// it. Add the bottom safe-area inset where the list draws under it.
+  static const fabClearance = 96.0;
 }
 
 /// Type scale from the redesign brief.

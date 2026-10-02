@@ -79,6 +79,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final failed = !loading && deals.hasError && !deals.hasValue;
     final shown = deals.value ?? const <Deal>[];
     final filters = ref.read(storeFilterProvider.notifier);
+    // Room for the floating button: below the last row of the grid, and
+    // under a message that fills the page, so neither sits beneath it.
+    final clearance = AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       key: const Key('store-screen'),
@@ -117,19 +120,25 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                 keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 slivers: [
                   if (loading)
-                    const SliverFillRemaining(
+                    SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: clearance),
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
                     )
                   else if (failed)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: EmptyState(
-                        icon: Icons.cloud_off_rounded,
-                        title: l10n.couldNotLoadDeals,
-                        message: storeErrorText(context, deals.error!),
-                        actionLabel: context.l10n.commonTryAgain,
-                        onAction: () => ref.read(dealsProvider.notifier).refresh(),
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: clearance),
+                        child: EmptyState(
+                          icon: Icons.cloud_off_rounded,
+                          title: l10n.couldNotLoadDeals,
+                          message: storeErrorText(context, deals.error!),
+                          actionLabel: context.l10n.commonTryAgain,
+                          onAction: () => ref.read(dealsProvider.notifier).refresh(),
+                        ),
                       ),
                     )
                   else ...[
@@ -148,17 +157,20 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                     if (shown.isEmpty)
                       SliverFillRemaining(
                         hasScrollBody: false,
-                        child: _NoDeals(
-                          filter: filter,
-                          species: species,
-                          onClear: _clearFilters,
-                          onShowAllAnimals: () => filters.setAllAnimals(true),
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: clearance),
+                          child: _NoDeals(
+                            filter: filter,
+                            species: species,
+                            onClear: _clearFilters,
+                            onShowAllAnimals: () => filters.setAllAnimals(true),
+                          ),
                         ),
                       )
-                    else
+                    else ...[
                       SliverDealGrid(deals: shown, showAnimals: filter.allAnimals),
-                    // Room for the floating button below the last row.
-                    const SliverToBoxAdapter(child: SizedBox(height: 96)),
+                      SliverToBoxAdapter(child: SizedBox(height: clearance)),
+                    ],
                   ],
                 ],
               ),

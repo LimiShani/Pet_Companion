@@ -55,7 +55,12 @@ class FeedSection extends ConsumerWidget {
       },
       child: ListView.separated(
         // Room at the bottom for the "New post" button.
-        padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 96),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          16,
+          AppSpacing.screen,
+          AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom,
+        ),
         itemCount: posts.length,
         separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.cardGap),
         itemBuilder: (context, index) {

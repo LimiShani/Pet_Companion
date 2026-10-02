@@ -107,7 +107,7 @@ class HealthScreen extends ConsumerWidget {
                         AppSpacing.screen,
                         16,
                         AppSpacing.screen,
-                        quickLogButton ? 96 : 24,
+                        quickLogButton ? AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom : 24,
                       ),
                       child: _section(context, pet, section, value),
                     ),
