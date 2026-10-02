@@ -85,6 +85,8 @@ void main() {
 
       await tester.enterText(find.byType(TextFormField).at(0), 'not-an-email');
       await tester.enterText(find.byType(TextFormField).at(1), 'short');
+      // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
 
@@ -98,6 +100,8 @@ void main() {
 
       await tester.enterText(find.byType(TextFormField).at(0), FakeAuthRepository.demoEmail);
       await tester.enterText(find.byType(TextFormField).at(1), 'definitely-wrong');
+      // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
 
@@ -151,6 +155,8 @@ void main() {
       await tester.tap(find.text('יצירת חשבון'));
       await tester.pumpAndSettle();
 
+      // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
       expect(find.text('צריך שם, כדי שנדע איך לקרוא לך.'), findsOneWidget);
@@ -160,11 +166,15 @@ void main() {
       await tester.enterText(find.byType(TextFormField).at(1), FakeAuthRepository.demoEmail);
       await tester.enterText(find.byType(TextFormField).at(2), 'walkies123');
       await tester.enterText(find.byType(TextFormField).at(3), 'walkies124');
+      // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
       expect(find.text('הסיסמאות לא זהות.'), findsOneWidget);
 
       await tester.enterText(find.byType(TextFormField).at(3), 'walkies123');
+      // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
       await tester.tap(find.byType(PrimaryButton));
       await tester.pumpAndSettle();
       expect(find.text('כבר יש חשבון עם כתובת האימייל הזאת.'), findsOneWidget);
@@ -375,7 +385,9 @@ void main() {
 
           // Every validation message at once: the tallest the form gets.
           await tester.ensureVisible(find.byType(PrimaryButton));
-          await tester.tap(find.byType(PrimaryButton));
+          // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
+      await tester.tap(find.byType(PrimaryButton));
           await tester.pumpAndSettle();
           expect(find.text(l10n.validEmailEmpty), findsOneWidget);
 
@@ -384,7 +396,9 @@ void main() {
           await tester.pumpAndSettle();
           expect(find.text(l10n.authCreateTitle), findsOneWidget);
           await tester.ensureVisible(find.byType(PrimaryButton));
-          await tester.tap(find.byType(PrimaryButton));
+          // Scrolled to first: below the banner the form can run past the screen.
+      await tester.ensureVisible(find.byType(PrimaryButton));
+      await tester.tap(find.byType(PrimaryButton));
           await tester.pumpAndSettle();
           expect(find.text(l10n.validNameEmpty), findsOneWidget);
 

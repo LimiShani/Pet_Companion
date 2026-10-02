@@ -69,6 +69,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'limor@example.com');
     await tester.enterText(find.byType(TextFormField).at(2), 'walkies123');
     await tester.enterText(find.byType(TextFormField).at(3), 'walkies123');
+    // The form runs past the banner and the screen: scrolled to, as by hand.
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Create account'));
     await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
     await tester.pumpAndSettle();
 
@@ -89,6 +91,8 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), FakeAuthRepository.demoEmail);
     await tester.enterText(find.byType(TextFormField).at(2), 'walkies123');
     await tester.enterText(find.byType(TextFormField).at(3), 'walkies123');
+    // The form runs past the banner and the screen: scrolled to, as by hand.
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Create account'));
     await tester.tap(find.widgetWithText(FilledButton, 'Create account'));
     await tester.pumpAndSettle();
 

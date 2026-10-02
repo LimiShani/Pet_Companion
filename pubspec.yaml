@@ -47,6 +47,8 @@ flutter:
     # The PetLoop brand pack: logo pieces and line icons.
     - assets/brand/
     - assets/icons/
+    # The illustrated banner of the sign-in screens.
+    - assets/banner/
     # The fonts' licence texts travel with the app.
     - assets/fonts/OFL-Nunito.txt
     - assets/fonts/OFL-Fredoka.txt
