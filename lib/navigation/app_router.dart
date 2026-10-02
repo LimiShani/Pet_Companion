@@ -104,7 +104,7 @@ class _RouterRefresh extends ChangeNotifier {
 /// comes in from the start side (the left in English, the right in Hebrew).
 /// Its button is on Home, and only there can it also be pulled in from the
 /// screen's edge.
-class _AppShell extends StatelessWidget {
+class _AppShell extends StatefulWidget {
   const _AppShell({required this.shell});
 
   final StatefulNavigationShell shell;
@@ -113,14 +113,69 @@ class _AppShell extends StatelessWidget {
   static const _homeTab = 0;
 
   @override
+  State<_AppShell> createState() => _AppShellState();
+}
+
+/// The phone's back button: a page open inside a tab closes first (its own
+/// navigator handles that); at the root of any other tab, back goes to
+/// Home; only on Home does it leave the app.
+///
+/// On Android 14+ (predictive back, the default from Android 16) the app
+/// gets the back press only if it told the system beforehand that it will
+/// handle it. Flutter says so from the navigators' [NavigationNotification]s,
+/// and the tabs' own navigators, which have nothing to close at their
+/// root, report "cannot pop": the system then closed the app from the root
+/// of every tab. Away from Home this shell turns their reports into "can
+/// pop", and says so itself whenever the tab changes.
+class _AppShellState extends State<_AppShell> {
+  bool get _onHome => widget.shell.currentIndex == _AppShell._homeTab;
+
+  @override
+  void initState() {
+    super.initState();
+    _report();
+  }
+
+  @override
+  void didUpdateWidget(_AppShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.shell.currentIndex != widget.shell.currentIndex) _report();
+  }
+
+  /// Tells the navigators above (and through them the system) whether back
+  /// is handled here, once this frame is built.
+  void _report() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) NavigationNotification(canHandlePop: !_onHome).dispatch(context);
+    });
+  }
+
+  bool _onChildNavigation(NavigationNotification notification) {
+    if (_onHome || notification.canHandlePop) return false;
+    const NavigationNotification(canHandlePop: true).dispatch(context);
+    return true;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: shell,
-      drawer: const AppSideMenu(),
-      drawerEnableOpenDragGesture: shell.currentIndex == _homeTab,
-      bottomNavigationBar: AppBottomNav(
-        currentIndex: shell.currentIndex,
-        onSelect: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+    final shell = widget.shell;
+    final onHome = _onHome;
+    return NotificationListener<NavigationNotification>(
+      onNotification: _onChildNavigation,
+      child: PopScope(
+        canPop: onHome,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) shell.goBranch(_AppShell._homeTab);
+        },
+        child: Scaffold(
+          body: shell,
+          drawer: const AppSideMenu(),
+          drawerEnableOpenDragGesture: onHome,
+          bottomNavigationBar: AppBottomNav(
+            currentIndex: shell.currentIndex,
+            onSelect: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+          ),
+        ),
       ),
     );
   }
