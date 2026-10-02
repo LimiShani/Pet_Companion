@@ -20,7 +20,7 @@ class HealthCard extends StatelessWidget {
 
     return DashboardCard(
       color: AppColors.peach,
-      iconAsset: 'assets/images/icon_health.png',
+      iconAsset: 'assets/images/icon_health.svg',
       title: l10n.homeHealth,
       trailing: l10n.homeUpcoming,
       iconRing: true,

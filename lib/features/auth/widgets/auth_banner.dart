@@ -7,14 +7,14 @@ import '../../../theme/app_colors.dart';
 import '../../../widgets/brand.dart';
 
 /// The illustrated top of the sign-in screens: a dog, a cat, a bird and
-/// leaves on coral around the PetLoop logo, from the banner pack in
+/// leaves on coral around the PetLoop logo, all vector drawings in
 /// assets/banner.
 ///
-/// Laid out on the pack's 840 x 672 canvas, scaled evenly to the width (up
-/// to 40% of the screen's height). The design is drawn for
-/// Hebrew, with the bird at the top right; on a left-to-right screen the
-/// picture is mirrored so the bird stays clear of the language pill, which
-/// sits at the end of the line. The logo itself is never mirrored.
+/// Drawn on the design's 840 x 672 canvas, scaled evenly to the width (up
+/// to 40% of the screen's height). The design is drawn for Hebrew, with
+/// the bird at the top right; on a left-to-right screen the picture is
+/// mirrored so the bird stays clear of the language pill, which sits at the
+/// end of the line. The logo itself is never mirrored.
 ///
 /// Decorative: the caller announces the app's name.
 class AuthBanner extends StatelessWidget {
@@ -33,15 +33,9 @@ class AuthBanner extends StatelessWidget {
   /// The rounding of the bottom corners, as background.svg draws them.
   static const _cornerRadius = 90.0;
 
-  /// Where each picture sits, in canvas units: its visible part placed
-  /// where the approved design (reference.png in the pack) draws it. The
-  /// pack's layout.json frames fit the pictures with their transparent
-  /// margins, which left the leaves small and the bird off its branch.
-  static const _foliageLeft = Rect.fromLTWH(-50, 157, 394, 361);
-  static const _foliageRight = Rect.fromLTWH(373, 48, 467, 347);
-  static const _bird = Rect.fromLTWH(655, 59, 157, 126);
-  static const _dog = Rect.fromLTWH(-11, 377, 362, 295);
-  static const _cat = Rect.fromLTWH(547, 442, 309, 247);
+  /// The layers of the picture, back to front: `assets/banner/<name>.svg`,
+  /// traced from the approved design (reference.png in the banner pack).
+  static const _layers = ['background', 'accents', 'foliage_left', 'foliage_right', 'bird', 'dog', 'cat'];
 
   /// Frames of the logo pieces, in canvas units, measured on the approved
   /// design (reference.png in the pack): the outlined mark, and the white
@@ -64,20 +58,10 @@ class AuthBanner extends StatelessWidget {
         // keeps that height and sits in the middle, on coral.
         final k = math.min(box.maxWidth / _canvasWidth, maxHeight / _canvasHeight);
 
-        Widget svg(String file) => Positioned.fill(
-          child: SvgPicture.asset('assets/banner/$file', fit: BoxFit.fill, excludeFromSemantics: true),
-        );
-        Widget picture(String file, Rect frame) => Positioned(
-          left: frame.left * k,
-          top: frame.top * k,
-          width: frame.width * k,
-          height: frame.height * k,
-          child: Image.asset(
-            'assets/banner/$file',
-            fit: BoxFit.fill,
-            excludeFromSemantics: true,
-            filterQuality: FilterQuality.medium,
-          ),
+        // Every layer is a vector drawing of the whole canvas, so they stack
+        // exactly; each can be moved on its own (an animation later).
+        Widget layer(String name) => Positioned.fill(
+          child: SvgPicture.asset('assets/banner/$name.svg', fit: BoxFit.fill, excludeFromSemantics: true),
         );
 
         // Mirrored with the picture, so the logo keeps its place in it.
@@ -86,20 +70,18 @@ class AuthBanner extends StatelessWidget {
         final art = Stack(
           clipBehavior: Clip.none,
           children: [
-            svg('background.svg'),
-            svg('accents.svg'),
-            picture('foliage_left.png', _foliageLeft),
-            picture('foliage_right.png', _foliageRight),
-            if (showBird) picture('bird.png', _bird),
-            picture('dog.png', _dog),
-            picture('cat.png', _cat),
+            for (final name in _layers)
+              if (showBird || name != 'bird') layer(name),
           ],
         );
 
         return ClipRRect(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(_cornerRadius * k)),
-          child: ColoredBox(
+          child: Container(
+            // Exactly the canvas's height, whatever room the parent offers.
+            height: _canvasHeight * k,
             color: AppColors.coral,
+            alignment: Alignment.center,
             child: Center(
               child: SizedBox(
                 width: _canvasWidth * k,

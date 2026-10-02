@@ -18,7 +18,7 @@ class FeedingCard extends StatelessWidget {
     final nextFeeding = status.nextFeeding;
     return DashboardCard(
       color: AppColors.sage,
-      iconAsset: 'assets/images/icon_feeding.png',
+      iconAsset: 'assets/images/icon_feeding.svg',
       title: l10n.homeFeeding,
       trailing: goal == null ? l10n.homeNoGoal : l10n.homeGoal(goal),
       child: Column(

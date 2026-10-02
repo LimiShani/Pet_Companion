@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 
 /// Shared shell of the feeding / activity / health cards: colored rounded
-/// box, illustrated icon disc at the start, content after it (mirrored by
-/// itself on a right-to-left screen).
+/// box, illustrated icon disc at the start (an SVG drawing), content after
+/// it (mirrored by itself on a right-to-left screen).
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
     super.key,
@@ -44,7 +45,7 @@ class DashboardCard extends StatelessWidget {
               shape: BoxShape.circle,
               border: iconRing ? Border.all(color: AppColors.white.withValues(alpha: 0.6), width: 3) : null,
             ),
-            child: ClipOval(child: Image.asset(iconAsset, fit: BoxFit.cover, excludeFromSemantics: true)),
+            child: ClipOval(child: SvgPicture.asset(iconAsset, fit: BoxFit.cover, excludeFromSemantics: true)),
           ),
           const SizedBox(width: 14),
           Expanded(

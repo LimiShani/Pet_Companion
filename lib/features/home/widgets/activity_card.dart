@@ -21,7 +21,7 @@ class ActivityCard extends StatelessWidget {
 
     return DashboardCard(
       color: AppColors.yellow,
-      iconAsset: 'assets/images/icon_activity.png',
+      iconAsset: 'assets/images/icon_activity.svg',
       title: l10n.homeActivity,
       iconRing: true,
       child: Column(
