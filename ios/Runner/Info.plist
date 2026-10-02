@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Pet Companion</string>
+	<string>PetLoop</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -18,7 +18,7 @@
 		<string>he</string>
 	</array>
 	<key>CFBundleName</key>
-	<string>pet_companion</string>
+	<string>PetLoop</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -51,8 +51,8 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Pet Companion uses your photo library so you can add pictures of your pets.</string>
+	<string>PetLoop uses your photo library so you can add pictures of your pets.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Pet Companion uses the camera so you can take pictures of your pets.</string>
+	<string>PetLoop uses the camera so you can take pictures of your pets.</string>
 </dict>
 </plist>

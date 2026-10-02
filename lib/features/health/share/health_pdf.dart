@@ -168,7 +168,7 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     final rtl = report.rightToLeft;
     final doc = pw.Document(
       title: stripBidiMarks(report.title),
-      creator: 'Pet Companion',
+      creator: 'PetLoop',
       compress: compress,
       theme: pw.ThemeData.withFont(
         base: pw.Font.ttf(rtl ? fonts.fredoka : fonts.nunito),
@@ -352,7 +352,7 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       y = top + painter.height;
     }
 
-    final doc = pw.Document(title: report.fileName, creator: 'Pet Companion', compress: compress);
+    final doc = pw.Document(title: report.fileName, creator: 'PetLoop', compress: compress);
     for (final page in pages) {
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder)..scale(_scale);

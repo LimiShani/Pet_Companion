@@ -365,7 +365,7 @@ class StoreL10nEn extends StoreL10n {
   }
 
   @override
-  String get pickOfTheApp => 'Pet Companion pick';
+  String get pickOfTheApp => 'PetLoop pick';
 
   @override
   String get sharedByYou => 'Shared by you';

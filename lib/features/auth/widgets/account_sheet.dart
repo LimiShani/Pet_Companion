@@ -7,7 +7,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/directional_icon.dart';
+import '../../../widgets/petloop_icon.dart';
 import '../../settings/settings_routes.dart';
 import '../../settings/widgets/menu_entry.dart';
 
@@ -83,7 +83,7 @@ class AccountSheet extends ConsumerWidget {
             const SizedBox(height: 18),
             MenuEntry(
               key: settingsKey,
-              icon: Icons.settings_rounded,
+              icon: const PetLoopIcon(PetLoopGlyph.settings),
               title: l10n.settingsTitle,
               subtitle: l10n.settingsSummary,
               color: AppColors.white,
@@ -104,7 +104,7 @@ class AccountSheet extends ConsumerWidget {
               },
               // The arrow leaves the door towards the end of the line, so it
               // is mirrored on a right-to-left screen.
-              icon: const MirroredIcon(Icons.logout_rounded),
+              icon: const PetLoopIcon(PetLoopGlyph.logout, mirrorInRtl: true),
               label: Text(l10n.accountSignOut),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.coralDark,

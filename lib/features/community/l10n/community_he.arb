@@ -166,6 +166,6 @@
   "errPhotoTooLarge": "התמונה גדולה מדי. אפשר לבחור תמונה קטנה יותר.",
   "errPhotoUnsupported": "צריך לבחור תמונה מסוג JPEG, PNG או WebP.",
   "errPhotoUpload": "לא הצלחנו להעלות את התמונה. אפשר לנסות שוב.",
-  "errCameraNotAllowed": "אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־Pet Companion הרשאה להשתמש בה.",
-  "errPhotosNotAllowed": "אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־Pet Companion הרשאה לראות אותן."
+  "errCameraNotAllowed": "אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.",
+  "errPhotosNotAllowed": "אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן."
 }

@@ -213,9 +213,8 @@ void main() {
       // their places.
       expectDrawnInOrder(words, ['Kelly', 'סיכום', 'בריאות']);
       expectDrawnInOrder(words, ['כלב', 'Mix', '13.6', 'שנים', '23', 'ק״ג']);
-      expectDrawnInOrder(words, ['הוכן', 'בתאריך', '10.06.25', 'Alex', 'באפליקציית', 'Companion']);
+      expectDrawnInOrder(words, ['הוכן', 'בתאריך', '10.06.25', 'Alex', 'באפליקציית', 'PetLoop']);
       // A name in Latin letters reads left to right inside the line.
-      expectDrawnInOrder(words, ['Pet', 'Companion'], rtl: false);
       expectDrawnInOrder(words, ['Park', 'Vet', 'Clinic'], rtl: false);
       // A phone number and a microchip number keep their groups in order.
       expectDrawnInOrder(words, ['+972', '50', '555', '0117'], rtl: false);
@@ -270,7 +269,7 @@ void main() {
     const report = HealthReport(
       title: 'Kelly: חיסון כלבת',
       subtitle: 'Dog',
-      prepared: 'Prepared on 10.06.25 with Pet Companion',
+      prepared: 'Prepared on 10.06.25 with PetLoop',
       fileName: 'kelly.pdf',
     );
     final fonts = await HealthPdfFonts.load(fromDisk);
@@ -299,7 +298,7 @@ void main() {
       expect(hebrew.heading('Kelly'), he.lostCardHeading('Kelly'));
       expect(stripBidiMarks(hebrew.heading('Kelly')), 'מחפשים את Kelly');
       expect(stripBidiMarks(hebrew.call('Kelly')), 'ראיתם את Kelly? התקשרו');
-      expect(hebrew.footer, 'הוכן באפליקציית Pet Companion');
+      expect(hebrew.footer, 'הוכן באפליקציית PetLoop');
       expect(english.rightToLeft, isFalse);
       expect(english.heading('Kelly'), 'Looking for Kelly');
       expect(english.call('Kelly'), 'Seen Kelly? Please call');
@@ -339,7 +338,7 @@ void main() {
           Finder onCard(String text) => find.descendant(of: card, matching: find.text(text));
           expect(onCard(he.lostCardHeading('Kelly')), findsOneWidget);
           expect(directionOf(tester, onCard(he.lostCardHeading('Kelly'))), TextDirection.rtl);
-          expect(onCard('הוכן באפליקציית Pet Companion'), findsOneWidget);
+          expect(onCard('הוכן באפליקציית PetLoop'), findsOneWidget);
 
           await tester.enterText(find.byKey(const Key('lost-area')), 'פארק הירקון');
           await tester.enterText(find.byKey(const Key('lost-phone')), '050 123 4567');

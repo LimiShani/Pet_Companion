@@ -1,4 +1,4 @@
-"""Pet Companion agent control board.
+"""PetLoop agent control board.
 
 A tiny local server (standard library only) that shows what each feature
 agent is doing. It combines two sources:

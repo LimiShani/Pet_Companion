@@ -1,4 +1,4 @@
--- Pet Companion: the Store tab (a deals marketplace).
+-- PetLoop: the Store tab (a deals marketplace).
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`. Needs 0001 (public.profiles).
 -- Safe to run more than once.

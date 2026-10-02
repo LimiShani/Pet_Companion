@@ -43,7 +43,7 @@ class HealthReport {
   /// "Dog · Mix · 13.6 years · 23 kg".
   final String subtitle;
 
-  /// "Prepared on 10.06.25 by Alex with Pet Companion".
+  /// "Prepared on 10.06.25 by Alex with PetLoop".
   final String prepared;
 
   /// "kelly-health-summary.pdf".

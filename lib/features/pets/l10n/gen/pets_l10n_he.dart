@@ -826,10 +826,10 @@ class PetsL10nHe extends PetsL10n {
   String get errOffline => 'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
 
   @override
-  String get errCameraNotAllowed => 'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־Pet Companion הרשאה להשתמש בה.';
+  String get errCameraNotAllowed => 'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.';
 
   @override
-  String get errPhotosNotAllowed => 'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־Pet Companion הרשאה לראות אותן.';
+  String get errPhotosNotAllowed => 'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.';
 
   @override
   String get errCamera => 'לא הצלחנו לפתוח את המצלמה.';

@@ -1,4 +1,4 @@
--- Pet Companion: the Health tab (records, documents, vets, the health profile,
+-- PetLoop: the Health tab (records, documents, vets, the health profile,
 -- medicines, the care plan, the dose log and the observation journal).
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`. Needs 0001 (public.pets,

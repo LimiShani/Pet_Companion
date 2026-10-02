@@ -318,8 +318,8 @@
   "errPhotoUnsupportedChooseAnother": "That kind of picture is not supported. Please choose another one.",
   "errPhotoGone": "That photo is no longer available.",
   "errOffline": "Cannot reach the server. Check your connection and try again.",
-  "errCameraNotAllowed": "Cannot open the camera. Check that Pet Companion is allowed to use it.",
-  "errPhotosNotAllowed": "Cannot open your photos. Check that Pet Companion is allowed to see them.",
+  "errCameraNotAllowed": "Cannot open the camera. Check that PetLoop is allowed to use it.",
+  "errPhotosNotAllowed": "Cannot open your photos. Check that PetLoop is allowed to see them.",
   "errCamera": "Could not open the camera.",
   "errPhotos": "Could not open your photos."
 }

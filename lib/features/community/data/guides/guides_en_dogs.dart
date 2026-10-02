@@ -1,7 +1,7 @@
 import '../guides_repository.dart';
 import 'guide_credits.dart';
 
-// The English text of the dog guides. Written for Pet Companion: original
+// The English text of the dog guides. Written for PetLoop: original
 // text, mainstream advice, plain and warm. The reader adds the closing note
 // (the `guideDisclaimer` string) at the end of every guide.
 //
@@ -14,7 +14,7 @@ const dogGuidesEn = <String, GuideText>{
   // Getting started
   // -------------------------------------------------------------------
   'first-week': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: "Your puppy's first week at home",
     summary: 'A calm start: sleep, routine and first introductions.',
@@ -63,7 +63,7 @@ const dogGuidesEn = <String, GuideText>{
     ],
   ),
   'house-training': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'House training without the stress',
     summary: 'A simple schedule and what to do about accidents.',
@@ -113,7 +113,7 @@ const dogGuidesEn = <String, GuideText>{
   // Training and behaviour
   // -------------------------------------------------------------------
   'sit-stay-come': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Sit, stay and come: the three basics',
     summary: 'Short, cheerful sessions that build on each other.',
@@ -165,7 +165,7 @@ const dogGuidesEn = <String, GuideText>{
     ],
   ),
   'loose-lead': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Walking nicely on a loose lead',
     summary: 'Teach your dog that a slack lead is what moves you forward.',
@@ -214,7 +214,7 @@ const dogGuidesEn = <String, GuideText>{
   // Nutrition
   // -------------------------------------------------------------------
   'feeding': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'How much and how often to feed',
     summary: 'Portions, meal times and keeping a healthy weight.',
@@ -264,7 +264,7 @@ const dogGuidesEn = <String, GuideText>{
     ],
   ),
   'unsafe-foods': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Foods your dog should never eat',
     summary: 'Common kitchen foods that are dangerous for dogs.',
@@ -315,7 +315,7 @@ const dogGuidesEn = <String, GuideText>{
   // Health and grooming
   // -------------------------------------------------------------------
   'grooming': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'A simple grooming routine',
     summary: 'Coat, teeth, nails and ears in a few minutes a week.',
@@ -368,7 +368,7 @@ const dogGuidesEn = <String, GuideText>{
     ],
   ),
   'call-the-vet': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Knowing when to call the vet',
     summary: 'Signs that need urgent help, and signs to book a visit for.',
@@ -414,7 +414,7 @@ const dogGuidesEn = <String, GuideText>{
   // Senior care
   // -------------------------------------------------------------------
   'senior-comfort': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Keeping an older dog comfortable',
     summary: 'Small changes that make the senior years easier.',

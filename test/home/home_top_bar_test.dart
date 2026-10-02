@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/home/widgets/home_header.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_colors.dart';
+import 'package:pet_companion/widgets/brand.dart';
 
 import 'home_test_helpers.dart';
 
@@ -12,9 +13,10 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  const title = 'Pet Companion';
-  final titleText = find.text(title);
-  final paw = find.descendant(of: topBar, matching: find.byIcon(Icons.pets_rounded));
+  const title = 'PetLoop';
+  // The logo's two pieces: the paw-and-loop mark and the lettering.
+  final titleText = find.byKey(HomeTopBar.brandWordmarkKey);
+  final paw = find.byKey(HomeTopBar.brandMarkKey);
   final menu = find.byTooltip('Menu');
   // Semantics finders need the test binding, so they are built on demand.
   Finder brandFinder() => find.bySemanticsLabel(title);
@@ -87,7 +89,7 @@ void main() {
           expect(within(drawn, room), isTrue, reason: 'title fits at $width px');
           // Never drawn smaller than it can be read: below that the title
           // gives way to the paw.
-          final scale = drawn.width / tester.getSize(titleText).width;
+          final scale = drawn.width / tester.widget<PetLoopWordmark>(titleText).width;
           expect(scale, greaterThanOrEqualTo(0.449), reason: 'title scale at $width px');
         }
         steps[width] = showsTitle ? (showsPaw ? 2 : 1) : 0;

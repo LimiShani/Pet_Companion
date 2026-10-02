@@ -93,7 +93,7 @@ class WidgetLostCardRenderer implements LostCardRenderer {
   @override
   Future<Uint8List> pdf(Uint8List png, {required String title}) async {
     try {
-      final doc = pw.Document(title: title, creator: 'Pet Companion');
+      final doc = pw.Document(title: title, creator: 'PetLoop');
       doc.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,

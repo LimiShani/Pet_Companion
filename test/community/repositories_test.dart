@@ -20,7 +20,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import 'guide_fixtures.dart';
 
-const alex = AppUser(id: 'demo', email: 'demo@petcompanion.app', displayName: 'Alex');
+const alex = AppUser(id: 'demo', email: 'demo@petloop.app', displayName: 'Alex');
 const dana = AppUser(id: 'u-dana', email: 'dana@example.com', displayName: 'Dana');
 
 final fixedNow = DateTime(2026, 5, 14, 9, 41);
@@ -347,7 +347,7 @@ void main() {
 
     test('the English guides are credited to the team, with the AI assistant and the limits stated', () {
       for (final MapEntry(key: id, value: text) in guidesEn.entries) {
-        expect(text.author.name, 'Pet Companion team', reason: id);
+        expect(text.author.name, 'PetLoop team', reason: id);
         expect(
           text.author.role,
           'App content team, writing with an AI assistant. Not veterinarians or trainers.',

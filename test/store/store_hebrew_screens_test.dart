@@ -294,7 +294,7 @@ void main() {
       expect(_on(page, find.text('מבצע')), findsOneWidget);
       expect(_on(page, find.text('חול וניקיון')), findsOneWidget);
       expect(_on(page, _reads('עבור חתולים')), findsOneWidget);
-      expect(_on(page, find.text('בחירת Pet Companion')), findsOneWidget);
+      expect(_on(page, find.text('בחירת PetLoop')), findsOneWidget);
 
       expect(_on(page, _reads('36.90 ₪')), findsOneWidget);
       expect(_on(page, _reads('59.90 ₪')), findsOneWidget);

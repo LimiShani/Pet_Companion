@@ -77,7 +77,7 @@ void main() {
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
     await openDeal(tester, 'd-rope-tug-toy');
-    expect(find.text('Pet Companion pick'), findsOneWidget);
+    expect(find.text('PetLoop pick'), findsOneWidget);
     expect(find.text('Delete my deal'), findsNothing);
   });
 

@@ -245,8 +245,8 @@
   "errPhotoUnsupportedChooseAnother": "סוג התמונה הזה לא נתמך. אפשר לבחור תמונה אחרת.",
   "errPhotoGone": "התמונה הזאת כבר לא זמינה.",
   "errOffline": "אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.",
-  "errCameraNotAllowed": "אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־Pet Companion הרשאה להשתמש בה.",
-  "errPhotosNotAllowed": "אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־Pet Companion הרשאה לראות אותן.",
+  "errCameraNotAllowed": "אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.",
+  "errPhotosNotAllowed": "אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.",
   "errCamera": "לא הצלחנו לפתוח את המצלמה.",
   "errPhotos": "לא הצלחנו לפתוח את התמונות שלך."
 }

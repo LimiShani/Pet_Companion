@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/petloop_icon.dart';
 
 /// Shared shell of the feeding / activity / health cards: colored rounded
-/// box, illustrated icon disc at the start, content after it (mirrored by
+/// box, a brand-pack icon on a yellow disc at the start, content after it (mirrored by
 /// itself on a right-to-left screen).
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
     super.key,
     required this.color,
-    required this.iconAsset,
+    required this.icon,
     required this.title,
     required this.child,
     this.trailing,
@@ -18,7 +19,7 @@ class DashboardCard extends StatelessWidget {
   });
 
   final Color color;
-  final String iconAsset;
+  final PetLoopGlyph icon;
   final String title;
 
   /// Small text at the top end of the card (goal, "Upcoming"...).
@@ -40,10 +41,11 @@ class DashboardCard extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
+              color: AppColors.yellow,
               shape: BoxShape.circle,
               border: iconRing ? Border.all(color: AppColors.white.withValues(alpha: 0.6), width: 3) : null,
             ),
-            child: ClipOval(child: Image.asset(iconAsset, fit: BoxFit.cover, excludeFromSemantics: true)),
+            child: Center(child: PetLoopIcon(icon, size: 32, color: AppColors.ink)),
           ),
           const SizedBox(width: 14),
           Expanded(

@@ -16,7 +16,7 @@ class FakeAuthRepository implements AuthRepository {
     );
   }
 
-  static const demoEmail = 'demo@petcompanion.app';
+  static const demoEmail = 'demo@petloop.app';
   static const demoPassword = 'kelly1234';
 
   /// Simulated network delay so loading states are visible.

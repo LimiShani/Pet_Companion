@@ -10,6 +10,7 @@ import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/pets/picture/crop_photo_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/widgets/brand.dart';
 
 import 'pets_test_helpers.dart';
 
@@ -64,7 +65,7 @@ void main() {
       expect(find.text('הוספת החיה הראשונה שלי'), findsOneWidget);
       expect(find.text(he.welcomeWhyVet), findsOneWidget);
       expect(find.text(appHe.accountSignOut), findsOneWidget);
-      expect(find.text('Pet Companion'), findsOneWidget); // the name stays in Latin letters
+      expect(find.byType(PetLoopWordmark), findsOneWidget); // the name stays in Latin letters
       expect(find.text('Add my first pet'), findsNothing);
       expect(directionOf(tester, find.text(he.welcomeAddFirst)), TextDirection.rtl);
 

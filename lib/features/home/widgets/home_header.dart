@@ -8,7 +8,9 @@ import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/brand.dart';
 import '../../../widgets/pet_selector.dart';
+import '../../../widgets/petloop_icon.dart';
 import '../../auth/widgets/account_sheet.dart';
 import '../../health/emergency/emergency.dart';
 import '../../pets/pets.dart';
@@ -44,6 +46,10 @@ class HomeTopBar extends ConsumerWidget {
   static const _gapBeforePill = 4.0;
   static const _gapAfterPill = 8.0;
 
+  /// The two pieces of the logo, for tests.
+  static const brandMarkKey = ValueKey('home-brand-mark');
+  static const brandWordmarkKey = ValueKey('home-brand-wordmark');
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authControllerProvider).value;
@@ -69,7 +75,7 @@ class HomeTopBar extends ConsumerWidget {
                 IconButton(
                   onPressed: () => AppSideMenu.open(context),
                   tooltip: context.l10n.homeMenu,
-                  icon: const Icon(Icons.menu_rounded, size: 26),
+                  icon: const PetLoopIcon(PetLoopGlyph.menu, size: 26),
                   color: AppColors.white,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints.tightFor(width: _menuSize, height: _menuSize),
@@ -112,26 +118,27 @@ class HomeTopBar extends ConsumerWidget {
   }
 }
 
-/// Paw and "Pet Companion", shrinking to the room the Emergency pill
-/// leaves: first the whole title scales down, then the paw is dropped so
-/// the words stay readable, and on the narrowest screens only the paw
-/// remains.
+/// The PetLoop logo, mark and lettering, shrinking to the room the
+/// Emergency pill leaves: first the whole logo scales down, then the mark
+/// is dropped so the lettering stays readable, and on the narrowest screens
+/// only the mark remains.
 class _Brand extends StatelessWidget {
   const _Brand();
 
   /// The app's name stays in Latin letters in every language.
-  static const _name = 'Pet Companion';
-  static const _iconSize = 22.0;
-  static const _gap = 8.0;
+  static const _name = 'PetLoop';
+  static const _markSize = 28.0;
+  static const _wordmarkHeight = 22.0;
+  static const _gap = 6.0;
 
-  /// How far the title may shrink with its paw, and on its own, before the
-  /// next step is taken.
-  static const _minScaleWithIcon = 0.6;
-  static const _minScaleTextOnly = 0.45;
+  /// How far the logo may shrink with its mark, and the lettering on its
+  /// own, before the next step is taken.
+  static const _minScaleWithMark = 0.6;
+  static const _minScaleWordmarkOnly = 0.45;
 
   @override
   Widget build(BuildContext context) {
-    final style = AppText.appTitle.copyWith(color: AppColors.white);
+    const wordmark = PetLoopWordmark(key: HomeTopBar.brandWordmarkKey, height: _wordmarkHeight, tone: BrandTone.white);
 
     return Semantics(
       header: true,
@@ -139,27 +146,19 @@ class _Brand extends StatelessWidget {
       child: ExcludeSemantics(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final painter = TextPainter(
-              text: TextSpan(text: _name, style: DefaultTextStyle.of(context).style.merge(style)),
-              textDirection: Directionality.of(context),
-              textScaler: MediaQuery.textScalerOf(context),
-              maxLines: 1,
-            )..layout();
-            final textWidth = painter.width;
-            painter.dispose();
-
             final room = constraints.maxWidth;
-            final showText = room >= textWidth * _minScaleTextOnly;
-            final showIcon = !showText || room >= (textWidth + _iconSize + _gap) * _minScaleWithIcon;
+            final showWordmark = room >= wordmark.width * _minScaleWordmarkOnly;
+            final showMark = !showWordmark || room >= (wordmark.width + _markSize + _gap) * _minScaleWithMark;
 
             return FittedBox(
               fit: BoxFit.scaleDown,
+              alignment: AlignmentDirectional.centerStart,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (showIcon) const Icon(Icons.pets_rounded, color: AppColors.white, size: _iconSize),
-                  if (showIcon && showText) const SizedBox(width: _gap),
-                  if (showText) Text(_name, style: style, maxLines: 1),
+                  if (showMark) const PetLoopMark(key: HomeTopBar.brandMarkKey, size: _markSize, tone: BrandTone.white),
+                  if (showMark && showWordmark) const SizedBox(width: _gap),
+                  if (showWordmark) wordmark,
                 ],
               ),
             );

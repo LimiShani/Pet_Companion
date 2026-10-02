@@ -11,7 +11,7 @@
   "loadFailedHealth": "Could not load {name}'s health",
   "@loadFailedHealth": {"placeholders": {"name": {"type": "String"}}},
 
-  "safetyLine": "Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.",
+  "safetyLine": "PetLoop never contacts anyone on its own, and it does not replace veterinary advice.",
   "@safetyLine": {"description": "The line shown wherever the app offers to call or message someone."},
   "clearField": "Clear {label}",
   "@clearField": {"description": "Tooltip of the small x on a field; {label} is the name of the field.", "placeholders": {"label": {"type": "String"}}},
@@ -186,7 +186,7 @@
   "petsVets": "{name}'s vets",
   "@petsVets": {"placeholders": {"name": {"type": "String"}}},
   "editHealthProfile": "Edit health profile",
-  "emergencyCardFinePrint": "You make the call or send the message yourself. Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.",
+  "emergencyCardFinePrint": "You make the call or send the message yourself. PetLoop never contacts anyone on its own, and it does not replace veterinary advice.",
 
   "emergencyKit": "Emergency kit",
   "petsEmergencyKit": "{name}'s emergency kit",
@@ -329,7 +329,7 @@
   "lostCardMicrochipped": "Microchipped",
   "lostCardCall": "Seen {name}? Please call",
   "@lostCardCall": {"description": "Above the phone number on the card; speaks to the neighbours who read it.", "placeholders": {"name": {"type": "String"}}},
-  "lostCardFooter": "Made with Pet Companion",
+  "lostCardFooter": "Made with PetLoop",
   "lostCardAround": "{date}, around {time}",
   "@lostCardAround": {"placeholders": {"date": {"type": "String"}, "time": {"type": "String"}}},
 
@@ -714,9 +714,9 @@
   "@reportSummaryTitle": {"placeholders": {"name": {"type": "String"}}},
   "reportRecordTitle": "{name}: {title}",
   "@reportRecordTitle": {"description": "Title of the PDF of one record: the pet, then the record.", "placeholders": {"name": {"type": "String"}, "title": {"type": "String"}}},
-  "reportPrepared": "Prepared on {date} with Pet Companion",
+  "reportPrepared": "Prepared on {date} with PetLoop",
   "@reportPrepared": {"placeholders": {"date": {"type": "String"}}},
-  "reportPreparedBy": "Prepared on {date} by {owner} with Pet Companion",
+  "reportPreparedBy": "Prepared on {date} by {owner} with PetLoop",
   "@reportPreparedBy": {"placeholders": {"date": {"type": "String"}, "owner": {"type": "String"}}},
   "reportEmergencyVet": "Emergency vet",
   "reportMedicineLine": "{name}: {instructions}",
@@ -726,5 +726,5 @@
   "reportPlanned": "Planned",
   "@reportPlanned": {"description": "In the details of a record that has not happened yet."},
   "reportColumnKind": "Kind",
-  "reportFooter": "Written by the owner in Pet Companion. It is a record of what was entered, not veterinary advice."
+  "reportFooter": "Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice."
 }

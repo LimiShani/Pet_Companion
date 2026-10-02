@@ -199,6 +199,6 @@
   "errPhotoTooLarge": "That photo is too large. Please choose a smaller one.",
   "errPhotoUnsupported": "Please choose a JPEG, PNG or WebP photo.",
   "errPhotoUpload": "The photo could not be uploaded. Please try again.",
-  "errCameraNotAllowed": "Cannot open the camera. Check that Pet Companion is allowed to use it.",
-  "errPhotosNotAllowed": "Cannot open your photos. Check that Pet Companion is allowed to see them."
+  "errCameraNotAllowed": "Cannot open the camera. Check that PetLoop is allowed to use it.",
+  "errPhotosNotAllowed": "Cannot open your photos. Check that PetLoop is allowed to see them."
 }

@@ -1,4 +1,4 @@
--- Pet Companion: community, phase 1 (cats as first-class).
+-- PetLoop: community, phase 1 (cats as first-class).
 -- Run AFTER 0003_community.sql, in the Supabase SQL editor (Dashboard >
 -- SQL Editor > New query > paste > Run) or with `supabase db push`.
 --

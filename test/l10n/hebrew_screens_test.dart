@@ -7,8 +7,9 @@ import 'package:pet_companion/features/health/emergency/emergency.dart';
 import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
-import 'package:pet_companion/widgets/directional_icon.dart';
+import 'package:pet_companion/widgets/brand.dart';
 import 'package:pet_companion/widgets/language_choice.dart';
+import 'package:pet_companion/widgets/petloop_icon.dart';
 import 'package:pet_companion/widgets/primary_button.dart';
 
 import '../helpers.dart';
@@ -55,8 +56,8 @@ void main() {
       expect(find.widgetWithText(PrimaryButton, 'כניסה'), findsOneWidget);
       expect(find.text('יצירת חשבון'), findsOneWidget);
       expect(find.text('Welcome back'), findsNothing);
-      // The name stays in Latin letters.
-      expect(find.text('Pet Companion'), findsOneWidget);
+      // The name stays in Latin letters: the PetLoop lettering of the logo.
+      expect(find.byType(PetLoopWordmark), findsOneWidget);
       expect(_directionOf(tester, find.text('טוב לראות אותך שוב')), TextDirection.rtl);
 
       // "Forgot password" sits at the end of the line: the left in Hebrew.
@@ -192,7 +193,7 @@ void main() {
       expect(find.text('חנות'), findsOneWidget);
 
       // The header and the hero.
-      expect(find.bySemanticsLabel('Pet Companion'), findsOneWidget);
+      expect(find.bySemanticsLabel('PetLoop'), findsOneWidget);
       expect(find.text('2 חיות'), findsOneWidget);
       expect(find.text('גזע'), findsOneWidget);
       expect(find.text('גיל'), findsOneWidget);
@@ -312,7 +313,7 @@ void main() {
       expect(find.byType(LanguageChoice), findsNothing);
 
       // The sign-out arrow is mirrored here, and only here.
-      final arrow = find.byType(MirroredIcon);
+      final arrow = find.byWidgetPredicate((w) => w is PetLoopIcon && w.glyph == PetLoopGlyph.logout);
       expect(arrow, findsOneWidget);
       expect(find.descendant(of: arrow, matching: find.byType(Transform)), findsOneWidget);
 

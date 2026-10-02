@@ -140,7 +140,7 @@ abstract class HealthL10n {
   /// The line shown wherever the app offers to call or message someone.
   ///
   /// In en, this message translates to:
-  /// **'Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.'**
+  /// **'PetLoop never contacts anyone on its own, and it does not replace veterinary advice.'**
   String get safetyLine;
 
   /// Tooltip of the small x on a field; {label} is the name of the field.
@@ -902,7 +902,7 @@ abstract class HealthL10n {
   /// No description provided for @emergencyCardFinePrint.
   ///
   /// In en, this message translates to:
-  /// **'You make the call or send the message yourself. Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.'**
+  /// **'You make the call or send the message yourself. PetLoop never contacts anyone on its own, and it does not replace veterinary advice.'**
   String get emergencyCardFinePrint;
 
   /// No description provided for @emergencyKit.
@@ -1574,7 +1574,7 @@ abstract class HealthL10n {
   /// No description provided for @lostCardFooter.
   ///
   /// In en, this message translates to:
-  /// **'Made with Pet Companion'**
+  /// **'Made with PetLoop'**
   String get lostCardFooter;
 
   /// No description provided for @lostCardAround.
@@ -3422,13 +3422,13 @@ abstract class HealthL10n {
   /// No description provided for @reportPrepared.
   ///
   /// In en, this message translates to:
-  /// **'Prepared on {date} with Pet Companion'**
+  /// **'Prepared on {date} with PetLoop'**
   String reportPrepared(String date);
 
   /// No description provided for @reportPreparedBy.
   ///
   /// In en, this message translates to:
-  /// **'Prepared on {date} by {owner} with Pet Companion'**
+  /// **'Prepared on {date} by {owner} with PetLoop'**
   String reportPreparedBy(String date, String owner);
 
   /// No description provided for @reportEmergencyVet.
@@ -3470,7 +3470,7 @@ abstract class HealthL10n {
   /// No description provided for @reportFooter.
   ///
   /// In en, this message translates to:
-  /// **'Written by the owner in Pet Companion. It is a record of what was entered, not veterinary advice.'**
+  /// **'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.'**
   String get reportFooter;
 }
 

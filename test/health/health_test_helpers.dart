@@ -254,7 +254,7 @@ Future<HealthHarness> pumpHealth(
   addTearDown(tester.view.reset);
 
   final h = harness ?? HealthHarness();
-  await tester.pumpWidget(ProviderScope(overrides: h._overrides(), child: const PetCompanionApp()));
+  await tester.pumpWidget(ProviderScope(overrides: h._overrides(), child: const PetLoopApp()));
   await tester.pumpAndSettle();
   await signInAsDemo(tester);
   tester.view.physicalSize = size * 3;

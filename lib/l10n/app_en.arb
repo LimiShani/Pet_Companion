@@ -1,7 +1,7 @@
 {
   "@@locale": "en",
 
-  "appName": "Pet Companion",
+  "appName": "PetLoop",
   "@appName": {"description": "The app's name. It stays in Latin letters in every language."},
 
   "navHome": "Home",

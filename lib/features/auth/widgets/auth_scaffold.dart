@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/brand.dart';
 import 'language_pill.dart';
 
-/// Shared frame of the auth screens: coral top with the paw mark and a
-/// title, then the form on the cream background. Scrolls when the
+/// Shared frame of the auth screens: coral top with the PetLoop logo, then the form on the cream background. Scrolls when the
 /// keyboard is open.
 ///
 /// The top row holds the back arrow (at the start, when [showBack]) and the
@@ -62,23 +62,28 @@ class AuthScaffold extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Center(
-                        child: Container(
-                          width: 84,
-                          height: 84,
-                          decoration: BoxDecoration(
-                            color: AppColors.yellow,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.white, width: 4),
-                          ),
-                          child: const Icon(Icons.pets_rounded, size: 40, color: AppColors.coralDark),
+                      // The full-colour mark on its cream tile, as on the
+                      // launcher icon, then the lettering in white.
+                      Semantics(
+                        label: l10n.appName,
+                        header: true,
+                        child: Column(
+                          children: [
+                            Container(
+                              width: 92,
+                              height: 92,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: AppColors.cream,
+                                borderRadius: BorderRadius.circular(26),
+                                border: Border.all(color: AppColors.white, width: 3),
+                              ),
+                              child: const PetLoopMark(size: 64),
+                            ),
+                            const SizedBox(height: 14),
+                            const PetLoopWordmark(height: 34, tone: BrandTone.white),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        l10n.appName,
-                        textAlign: TextAlign.center,
-                        style: AppText.appTitle.copyWith(color: AppColors.white, fontSize: 26),
                       ),
                     ],
                   ),

@@ -1,4 +1,4 @@
--- Pet Companion: Store phase 1 (prices you can compare, deals for your pet, cats).
+-- PetLoop: Store phase 1 (prices you can compare, deals for your pet, cats).
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`. Needs 0004 (public.store_deals).
 -- Safe to run more than once.

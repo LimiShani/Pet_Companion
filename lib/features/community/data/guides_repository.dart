@@ -38,7 +38,7 @@ class GuideDate {
 class GuideAuthor {
   const GuideAuthor({required this.name, required this.role});
 
-  /// e.g. "Pet Companion team".
+  /// e.g. "PetLoop team".
   final String name;
 
   /// What they are, and are not, e.g. "App content team, writing with an

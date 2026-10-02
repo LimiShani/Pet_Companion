@@ -14,7 +14,7 @@ const dogGuidesHe = <String, GuideText>{
   // Getting started
   // -------------------------------------------------------------------
   'first-week': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'השבוע הראשון של הגור בבית',
     summary: 'התחלה רגועה: שינה, שגרה והיכרויות ראשונות.',
@@ -63,7 +63,7 @@ const dogGuidesHe = <String, GuideText>{
     ],
   ),
   'house-training': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'חינוך לצרכים בלי לחץ',
     summary: 'לוח זמנים פשוט, ומה עושים כשיש פספוסים.',
@@ -114,7 +114,7 @@ const dogGuidesHe = <String, GuideText>{
   // Training and behaviour
   // -------------------------------------------------------------------
   'sit-stay-come': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'ישיבה, הישארות והגעה: שלושת היסודות',
     summary: 'אימונים קצרים ועליזים, שכל אחד מהם נבנה על הקודם.',
@@ -167,7 +167,7 @@ const dogGuidesHe = <String, GuideText>{
     ],
   ),
   'loose-lead': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'הליכה נעימה ברצועה רפויה',
     summary: 'הכלב לומד שרצועה רפויה היא מה שמקדם את הטיול.',
@@ -215,7 +215,7 @@ const dogGuidesHe = <String, GuideText>{
   // Nutrition
   // -------------------------------------------------------------------
   'feeding': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'כמה להאכיל ובאיזו תדירות',
     summary: 'מנות, שעות ארוחה ושמירה על משקל תקין.',
@@ -264,7 +264,7 @@ const dogGuidesHe = <String, GuideText>{
     ],
   ),
   'unsafe-foods': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'מאכלים שאסור לתת לכלב',
     summary: 'מאכלים נפוצים במטבח שמסוכנים לכלבים.',
@@ -314,7 +314,7 @@ const dogGuidesHe = <String, GuideText>{
   // Health and grooming
   // -------------------------------------------------------------------
   'grooming': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'שגרת טיפוח פשוטה',
     summary: 'פרווה, שיניים, ציפורניים ואוזניים בכמה דקות בשבוע.',
@@ -369,7 +369,7 @@ const dogGuidesHe = <String, GuideText>{
     ],
   ),
   'call-the-vet': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'מתי להתקשר לווטרינר',
     summary: 'סימנים שמצריכים עזרה דחופה, וסימנים שכדאי לקבוע בגללם ביקור.',
@@ -416,7 +416,7 @@ const dogGuidesHe = <String, GuideText>{
   // Senior care
   // -------------------------------------------------------------------
   'senior-comfort': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'נוחות לכלב מבוגר',
     summary: 'שינויים קטנים שמקלים על השנים המאוחרות.',

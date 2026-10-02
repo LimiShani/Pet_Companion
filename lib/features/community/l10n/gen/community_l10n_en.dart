@@ -542,8 +542,8 @@ class CommunityL10nEn extends CommunityL10n {
   String get errPhotoUpload => 'The photo could not be uploaded. Please try again.';
 
   @override
-  String get errCameraNotAllowed => 'Cannot open the camera. Check that Pet Companion is allowed to use it.';
+  String get errCameraNotAllowed => 'Cannot open the camera. Check that PetLoop is allowed to use it.';
 
   @override
-  String get errPhotosNotAllowed => 'Cannot open your photos. Check that Pet Companion is allowed to see them.';
+  String get errPhotosNotAllowed => 'Cannot open your photos. Check that PetLoop is allowed to see them.';
 }

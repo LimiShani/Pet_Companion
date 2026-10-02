@@ -187,10 +187,10 @@ void main() {
 
     testWidgets('a camera that cannot open says why', (tester) async {
       final h = await openFlowFromWelcome(tester);
-      h.picker.failure = 'Cannot open the camera. Check that Pet Companion is allowed to use it.';
+      h.picker.failure = 'Cannot open the camera. Check that PetLoop is allowed to use it.';
       await tapVisible(tester, find.byKey(const Key('pet-picture')));
       await tapVisible(tester, find.text('Take a photo'));
-      expect(find.text('Cannot open the camera. Check that Pet Companion is allowed to use it.'), findsOneWidget);
+      expect(find.text('Cannot open the camera. Check that PetLoop is allowed to use it.'), findsOneWidget);
       expect(find.text('Who is joining the family?'), findsOneWidget);
     });
 

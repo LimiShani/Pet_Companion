@@ -355,7 +355,7 @@ void main() {
         await scrollTo(tester, find.text('Setting up the litter box'));
         expect(screenDirection(tester, find.text('Setting up the litter box')), TextDirection.ltr);
         expect(tag('באנגלית בלבד'), findsWidgets);
-        expect(reads('מאת Pet Companion team · עודכן בתאריך 30.09.26'), findsWidgets);
+        expect(reads('מאת PetLoop team · עודכן בתאריך 30.09.26'), findsWidgets);
         expect(find.textContaining('min read'), findsNothing);
         expect(find.textContaining('Updated'), findsNothing);
         await scrollTo(tester, find.text(hebrewFixture.title));
@@ -438,7 +438,7 @@ void main() {
         await tapVisible(tester, find.text('Setting up the litter box'));
         expect(tag('באנגלית בלבד'), findsOneWidget);
         expect(inAbout('לא נבדק על ידי וטרינר'), findsOneWidget);
-        expect(tester.widget<Text>(inAbout('Pet Companion team')).textDirection, TextDirection.ltr);
+        expect(tester.widget<Text>(inAbout('PetLoop team')).textDirection, TextDirection.ltr);
         final intro = find.textContaining('Most cats take to a litter box');
         await tester.scrollUntilVisible(intro, 200);
         expect(screenDirection(tester, intro), TextDirection.ltr);

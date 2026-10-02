@@ -171,7 +171,7 @@ Future<CommunityHarness> pumpCommunity(
   await tester.pumpWidget(
     ProviderScope(
       overrides: h._overrides,
-      child: const PetCompanionApp(),
+      child: const PetLoopApp(),
     ),
   );
   await tester.pumpAndSettle();

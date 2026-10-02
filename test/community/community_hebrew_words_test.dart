@@ -58,7 +58,7 @@ void main() {
     });
 
     test('the only Latin words in Hebrew messages are names that stay as they are', () {
-      const kept = ['Pet Companion', 'JPEG', 'PNG', 'WebP'];
+      const kept = ['PetLoop', 'JPEG', 'PNG', 'WebP'];
       for (final MapEntry(:key, :value) in hebrew.entries) {
         var text = value.replaceAll(RegExp(r'\{[a-zA-Z]+(, plural,)?'), '').replaceAll(RegExp(r'other\{|=\d\{'), '');
         for (final name in kept) {
@@ -184,8 +184,8 @@ void main() {
       CommunityFailure.photoTooLarge: 'That photo is too large. Please choose a smaller one.',
       CommunityFailure.photoUnsupported: 'Please choose a JPEG, PNG or WebP photo.',
       CommunityFailure.photoUpload: 'The photo could not be uploaded. Please try again.',
-      CommunityFailure.cameraNotAllowed: 'Cannot open the camera. Check that Pet Companion is allowed to use it.',
-      CommunityFailure.photosNotAllowed: 'Cannot open your photos. Check that Pet Companion is allowed to see them.',
+      CommunityFailure.cameraNotAllowed: 'Cannot open the camera. Check that PetLoop is allowed to use it.',
+      CommunityFailure.photosNotAllowed: 'Cannot open your photos. Check that PetLoop is allowed to see them.',
       CommunityFailure.unknown: 'Something went wrong. Please try again.',
     };
     const hebrewWords = {
@@ -205,9 +205,9 @@ void main() {
       CommunityFailure.photoUnsupported: 'צריך לבחור תמונה מסוג JPEG, PNG או WebP.',
       CommunityFailure.photoUpload: 'לא הצלחנו להעלות את התמונה. אפשר לנסות שוב.',
       CommunityFailure.cameraNotAllowed:
-          'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־Pet Companion הרשאה להשתמש בה.',
+          'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.',
       CommunityFailure.photosNotAllowed:
-          'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־Pet Companion הרשאה לראות אותן.',
+          'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.',
       CommunityFailure.unknown: 'משהו השתבש. אפשר לנסות שוב.',
     };
 
@@ -315,7 +315,7 @@ void main() {
       // Nothing to reorder: digits follow the line they are in.
       expect(he.inLine('123'), '123');
       expect(plain(he.postWithPet(he.inLine('Biscuit'))), 'עם Biscuit');
-      expect(plain(he.guideBy('Pet Companion team')), 'מאת Pet Companion team');
+      expect(plain(he.guideBy('PetLoop team')), 'מאת PetLoop team');
       expect(plain(he.guideUpdated('30.09.26')), 'עודכן בתאריך 30.09.26');
       expect(plain(he.reviewedOn('05.10.26')), 'נבדק בתאריך 05.10.26');
       expect(dotted(['a', 'b']), 'a · b');

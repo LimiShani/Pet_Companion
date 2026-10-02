@@ -60,7 +60,7 @@ Future<RecordingContactLauncher> pumpHome(
         contactLauncherProvider.overrideWithValue(launcher),
         if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets)),
       ],
-      child: const PetCompanionApp(),
+      child: const PetLoopApp(),
     ),
   );
   await tester.pumpAndSettle();

@@ -1,4 +1,4 @@
-# Pet Companion
+# PetLoop
 
 A warm, friendly hub for pet owners: pet profiles, feeding and activity tracking,
 health log, reminders, community and a bargain store. Flutter, Android + iOS

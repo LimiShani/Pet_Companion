@@ -113,7 +113,7 @@ Future<FakeStoreRepository> pumpStore(
         linkOpenerProvider.overrideWithValue(opener ?? FakeLinkOpener()),
         settingsStoreProvider.overrideWithValue(MemorySettingsStore({languageSettingKey: ?language?.code})),
       ],
-      child: const PetCompanionApp(),
+      child: const PetLoopApp(),
     ),
   );
   await tester.pumpAndSettle();

@@ -12,8 +12,8 @@ import '../guides_repository.dart';
 // its credit says how it came to be.
 
 /// The author line of every English guide today.
-const petCompanionTeam = GuideAuthor(
-  name: 'Pet Companion team',
+const petLoopTeam = GuideAuthor(
+  name: 'PetLoop team',
   role: 'App content team, writing with an AI assistant. Not veterinarians or trainers.',
 );
 
@@ -21,8 +21,8 @@ const petCompanionTeam = GuideAuthor(
 /// limits, with the translation stated. ("The app's content team, writing
 /// and translating with the help of an AI assistant. Not veterinarians and
 /// not trainers.")
-const petCompanionTeamHe = GuideAuthor(
-  name: 'צוות Pet Companion',
+const petLoopTeamHe = GuideAuthor(
+  name: 'צוות PetLoop',
   role: 'צוות התוכן של האפליקציה, בכתיבה ובתרגום בעזרת עוזר בינה מלאכותית. לא וטרינרים ולא מאלפים.',
 );
 

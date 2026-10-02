@@ -15,7 +15,7 @@ import 'guides_he_dogs.dart';
 ///   statement, and every caution of the English guide kept with its
 ///   meaning (when to call the vet, what never to give);
 /// - its own author line, which says truthfully how this text came to be
-///   (`petCompanionTeamHe`), and its own `updatedAt`;
+///   (`petLoopTeamHe`), and its own `updatedAt`;
 /// - no review: a review is recorded per language, and a reviewer who read
 ///   the English text has not reviewed the Hebrew one.
 ///

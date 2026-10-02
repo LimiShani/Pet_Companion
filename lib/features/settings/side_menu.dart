@@ -7,7 +7,7 @@ import '../../l10n/l10n.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/directional_icon.dart';
+import '../../widgets/petloop_icon.dart';
 import '../pets/pets.dart';
 import 'settings_routes.dart';
 import 'widgets/menu_entry.dart';
@@ -60,7 +60,7 @@ class AppSideMenu extends ConsumerWidget {
               children: [
                 MenuEntry(
                   key: myPetsKey,
-                  icon: Icons.pets_rounded,
+                  icon: const PetLoopIcon(PetLoopGlyph.pet),
                   title: l10n.menuMyPets,
                   subtitle: l10n.homePetCount(petCount),
                   onTap: () {
@@ -71,7 +71,7 @@ class AppSideMenu extends ConsumerWidget {
                 const SizedBox(height: 4),
                 MenuEntry(
                   key: settingsKey,
-                  icon: Icons.settings_rounded,
+                  icon: const PetLoopIcon(PetLoopGlyph.settings),
                   title: l10n.settingsTitle,
                   subtitle: l10n.settingsSummary,
                   onTap: () {
@@ -94,7 +94,7 @@ class AppSideMenu extends ConsumerWidget {
                   ref.read(authControllerProvider.notifier).signOut();
                 },
                 // Mirrored on a right-to-left screen, as in the account sheet.
-                icon: const MirroredIcon(Icons.logout_rounded),
+                icon: const PetLoopIcon(PetLoopGlyph.logout, mirrorInRtl: true),
                 label: Text(l10n.accountSignOut),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.coralDark,

@@ -1,11 +1,11 @@
-# Working on Pet Companion
+# Working on PetLoop
 
 Read this before changing anything. It is the contract between the lead and
 the feature agents (Health, Community, Store), and it applies to humans too.
 
 ## The app in one paragraph
 
-Pet Companion is a Flutter app (Android + iOS; web only for previews) for
+PetLoop is a Flutter app (Android + iOS; web only for previews) for
 pet owners. A signed-in user has pets; the four bottom tabs are **Home**
 (dashboard, done), **Health**, **Community** and **Store**. Backend is
 Supabase on the **free plan** (auth is live; tables are added per feature).

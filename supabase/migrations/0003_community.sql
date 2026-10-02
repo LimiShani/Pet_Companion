@@ -1,4 +1,4 @@
--- Pet Companion: community (feed, topic chat).
+-- PetLoop: community (feed, topic chat).
 -- Run after 0001 in the Supabase SQL editor (Dashboard > SQL Editor > New
 -- query > paste > Run) or with the Supabase CLI: `supabase db push`.
 --

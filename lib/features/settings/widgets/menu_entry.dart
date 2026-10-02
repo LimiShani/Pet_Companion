@@ -17,7 +17,8 @@ class MenuEntry extends StatelessWidget {
     this.color = Colors.transparent,
   });
 
-  final IconData icon;
+  /// An [Icon] or a [PetLoopIcon]; drawn 22 px in ink on a yellow disc.
+  final Widget icon;
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
@@ -45,7 +46,10 @@ class MenuEntry extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-                    child: Icon(icon, size: 22, color: AppColors.ink),
+                    child: IconTheme.merge(
+                      data: const IconThemeData(size: 22, color: AppColors.ink),
+                      child: Center(child: icon),
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(

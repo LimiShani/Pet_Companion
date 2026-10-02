@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/petloop_icon.dart';
 import 'dashboard_card.dart';
 
 class FeedingCard extends StatelessWidget {
@@ -18,7 +19,7 @@ class FeedingCard extends StatelessWidget {
     final nextFeeding = status.nextFeeding;
     return DashboardCard(
       color: AppColors.sage,
-      iconAsset: 'assets/images/icon_feeding.png',
+      icon: PetLoopGlyph.food,
       title: l10n.homeFeeding,
       trailing: goal == null ? l10n.homeNoGoal : l10n.homeGoal(goal),
       child: Column(

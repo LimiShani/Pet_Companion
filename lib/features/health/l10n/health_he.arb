@@ -9,7 +9,7 @@
   "quickLog": "רישום מהיר",
   "loadFailedHealth": "לא הצלחנו לטעון את נתוני הבריאות של \u2068{name}\u2069",
 
-  "safetyLine": "Pet Companion אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.",
+  "safetyLine": "PetLoop אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.",
   "clearField": "ניקוי השדה ״\u2068{label}\u2069״",
   "labelWithValue": "\u2068{label}\u2069: \u2068{value}\u2069",
   "weekdayAndDate": "\u2068{weekday}\u2069 \u2068{date}\u2069",
@@ -143,7 +143,7 @@
   "nothingSavedTapProfile": "עדיין לא נשמר כלום. לחיצה כאן פותחת את פרופיל הבריאות למילוי.",
   "petsVets": "הווטרינרים של \u2068{name}\u2069",
   "editHealthProfile": "עריכת פרופיל הבריאות",
-  "emergencyCardFinePrint": "האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך. Pet Companion אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.",
+  "emergencyCardFinePrint": "האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך. PetLoop אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.",
 
   "emergencyKit": "ערכת חירום",
   "petsEmergencyKit": "ערכת החירום של \u2068{name}\u2069",
@@ -260,7 +260,7 @@
   "lostCardMicrochip": "שבב",
   "lostCardMicrochipped": "יש שבב",
   "lostCardCall": "ראיתם את \u2068{name}\u2069? התקשרו",
-  "lostCardFooter": "הוכן באפליקציית Pet Companion",
+  "lostCardFooter": "הוכן באפליקציית PetLoop",
   "lostCardAround": "\u2068{date}\u2069, בסביבות \u2068{time}\u2069",
 
   "overviewNoCareDue": "אין טיפול מתוכנן כרגע",
@@ -576,13 +576,13 @@
 
   "reportSummaryTitle": "\u2068{name}\u2069: סיכום בריאות",
   "reportRecordTitle": "\u2068{name}\u2069: \u2068{title}\u2069",
-  "reportPrepared": "הוכן בתאריך \u2068{date}\u2069 באפליקציית Pet Companion",
-  "reportPreparedBy": "הוכן בתאריך \u2068{date}\u2069 על ידי \u2068{owner}\u2069 באפליקציית Pet Companion",
+  "reportPrepared": "הוכן בתאריך \u2068{date}\u2069 באפליקציית PetLoop",
+  "reportPreparedBy": "הוכן בתאריך \u2068{date}\u2069 על ידי \u2068{owner}\u2069 באפליקציית PetLoop",
   "reportEmergencyVet": "וטרינר חירום",
   "reportMedicineLine": "\u2068{name}\u2069: \u2068{instructions}\u2069",
   "reportRecords": "רשומות",
   "reportRecentRecords": "רשומות אחרונות",
   "reportPlanned": "מתוכנן",
   "reportColumnKind": "סוג",
-  "reportFooter": "נכתב על ידי הבעלים באפליקציית Pet Companion. זהו תיעוד של מה שהוזן, ולא ייעוץ וטרינרי."
+  "reportFooter": "נכתב על ידי הבעלים באפליקציית PetLoop. זהו תיעוד של מה שהוזן, ולא ייעוץ וטרינרי."
 }

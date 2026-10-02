@@ -25,7 +25,7 @@ final adviceLine = find.byType(AdviceNotice);
 /// screen.
 Finder caption(String text) => find.descendant(of: find.byType(ScopeBar), matching: find.text(text)).hitTestable();
 
-const attribution = 'By Pet Companion team · Updated 30.09.26';
+const attribution = 'By PetLoop team · Updated 30.09.26';
 const authorRole = 'App content team, writing with an AI assistant. Not veterinarians or trainers.';
 
 void main() {
@@ -180,7 +180,7 @@ void main() {
       Finder inAbout(String text) => find.descendant(of: about, matching: find.text(text));
       expect(inAbout('About this guide'), findsOneWidget);
       expect(inAbout('Written by'), findsOneWidget);
-      expect(inAbout('Pet Companion team'), findsOneWidget);
+      expect(inAbout('PetLoop team'), findsOneWidget);
       expect(inAbout(authorRole), findsOneWidget);
       expect(inAbout('Professional review'), findsOneWidget);
       expect(inAbout('Not reviewed by a veterinarian'), findsOneWidget);

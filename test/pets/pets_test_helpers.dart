@@ -136,7 +136,7 @@ Future<PetsHarness> pumpPetsApp(
 }) async {
   _phone(tester, size);
   final h = harness ?? PetsHarness();
-  await tester.pumpWidget(ProviderScope(overrides: h.overrides(), child: const PetCompanionApp()));
+  await tester.pumpWidget(ProviderScope(overrides: h.overrides(), child: const PetLoopApp()));
   await tester.pumpAndSettle();
   await signIn(tester, as);
   return h;

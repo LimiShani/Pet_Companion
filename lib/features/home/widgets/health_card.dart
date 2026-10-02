@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/petloop_icon.dart';
 import 'dashboard_card.dart';
 
 class HealthCard extends StatelessWidget {
@@ -19,7 +20,7 @@ class HealthCard extends StatelessWidget {
 
     return DashboardCard(
       color: AppColors.peach,
-      iconAsset: 'assets/images/icon_health.png',
+      icon: PetLoopGlyph.health,
       title: l10n.homeHealth,
       trailing: l10n.homeUpcoming,
       iconRing: true,

@@ -151,7 +151,7 @@ void main() {
             settingsStoreProvider.overrideWithValue(store),
             hebrewFollowsDeviceProvider.overrideWithValue(true),
           ],
-          child: const PetCompanionApp(),
+          child: const PetLoopApp(),
         ),
       );
       await tester.pumpAndSettle();

@@ -1,0 +1,1 @@
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android"><background android:drawable="@color/petloop_background"/><foreground android:drawable="@drawable/petloop_foreground"/><monochrome android:drawable="@drawable/petloop_monochrome"/></adaptive-icon>

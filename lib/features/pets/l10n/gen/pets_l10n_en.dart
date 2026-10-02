@@ -822,10 +822,10 @@ class PetsL10nEn extends PetsL10n {
   String get errOffline => 'Cannot reach the server. Check your connection and try again.';
 
   @override
-  String get errCameraNotAllowed => 'Cannot open the camera. Check that Pet Companion is allowed to use it.';
+  String get errCameraNotAllowed => 'Cannot open the camera. Check that PetLoop is allowed to use it.';
 
   @override
-  String get errPhotosNotAllowed => 'Cannot open your photos. Check that Pet Companion is allowed to see them.';
+  String get errPhotosNotAllowed => 'Cannot open your photos. Check that PetLoop is allowed to see them.';
 
   @override
   String get errCamera => 'Could not open the camera.';

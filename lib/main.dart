@@ -18,7 +18,7 @@ Future<void> main() async {
     await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
     supabaseAuth = SupabaseAuthRepository(Supabase.instance.client);
   } else if (kDebugMode) {
-    debugPrint('Pet Companion: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
+    debugPrint('PetLoop: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
         'using the in-memory auth backend (see README).');
   }
 
@@ -33,7 +33,7 @@ Future<void> main() async {
         if (supabaseAuth != null) authRepositoryProvider.overrideWithValue(supabaseAuth),
         if (settings != null) settingsStoreProvider.overrideWithValue(settings),
       ],
-      child: const PetCompanionApp(),
+      child: const PetLoopApp(),
     ),
   );
 }

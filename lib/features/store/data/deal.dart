@@ -158,7 +158,7 @@ class Deal {
   /// The kinds of animal the deal is for. Empty means every pet.
   final Set<PetSpecies> species;
 
-  /// Curated by Pet Companion rather than shared by a member.
+  /// Curated by PetLoop rather than shared by a member.
   bool get isCurated => sharedBy == null;
 
   /// How much cheaper than [originalPrice], never negative.

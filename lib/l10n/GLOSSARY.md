@@ -48,7 +48,7 @@ any kind, "-40%": wrap with `ltr(...)`. Text somebody typed:
 6. Casual and warm, plain words; "חיה" and "וטרינר". No exclamation marks
    outside greetings.
 
-"Pet Companion" stays in Latin letters. A language is named in its own
+"PetLoop" stays in Latin letters. A language is named in its own
 letters (עברית, English) on every screen.
 
 Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
@@ -78,7 +78,7 @@ Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
 | Emergency contact | איש קשר לחירום |
 | Add Kelly's vet | הוספת וטרינר עבור קלי |
 | You make the call or send the message yourself. | האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך. |
-| Pet Companion never contacts anyone on its own, and it does not replace veterinary advice. | Pet Companion אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי. |
+| PetLoop never contacts anyone on its own, and it does not replace veterinary advice. | PetLoop אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי. |
 | This guide is general guidance and not a substitute for advice from your veterinarian. | המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר. |
 | Looks urgent? Contact the vet | נראה דחוף? כדאי לפנות לווטרינר |
 | Quick log | רישום מהיר |

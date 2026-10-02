@@ -1448,13 +1448,13 @@ abstract class PetsL10n {
   /// No description provided for @errCameraNotAllowed.
   ///
   /// In en, this message translates to:
-  /// **'Cannot open the camera. Check that Pet Companion is allowed to use it.'**
+  /// **'Cannot open the camera. Check that PetLoop is allowed to use it.'**
   String get errCameraNotAllowed;
 
   /// No description provided for @errPhotosNotAllowed.
   ///
   /// In en, this message translates to:
-  /// **'Cannot open your photos. Check that Pet Companion is allowed to see them.'**
+  /// **'Cannot open your photos. Check that PetLoop is allowed to see them.'**
   String get errPhotosNotAllowed;
 
   /// No description provided for @errCamera.

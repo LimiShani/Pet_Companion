@@ -25,7 +25,7 @@ void main() {
     expect(onPage('-40%'), findsOneWidget);
     expect(onPage('You save ₪120 (40%)'), findsOneWidget);
     expect(onPage('Food'), findsOneWidget);
-    expect(onPage('Pet Companion pick'), findsOneWidget);
+    expect(onPage('PetLoop pick'), findsOneWidget);
     expect(onPage('Happy Paws Market'), findsOneWidget);
     expect(onPage('3 hours ago'), findsOneWidget);
     expect(onPage('12.10.26 · 12 days left'), findsOneWidget);

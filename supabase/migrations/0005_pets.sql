@@ -1,4 +1,4 @@
--- Pet Companion: pets for the add-a-pet flow.
+-- PetLoop: pets for the add-a-pet flow.
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`. Needs 0001 (public.pets and the
 -- private `pet-photos` bucket). Safe to run more than once.

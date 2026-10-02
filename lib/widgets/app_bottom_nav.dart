@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
+import 'petloop_icon.dart';
 
 /// Bottom navigation: Home, Health, Community, Store. On a right-to-left
 /// screen the row mirrors by itself, so Home sits on the right.
@@ -12,12 +13,9 @@ class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onSelect;
 
-  static const _items = [
-    (icon: Icons.home_outlined, activeIcon: Icons.home_rounded),
-    (icon: Icons.monitor_heart_outlined, activeIcon: Icons.monitor_heart_rounded),
-    (icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded),
-    (icon: Icons.shopping_bag_outlined, activeIcon: Icons.shopping_bag_rounded),
-  ];
+  /// The brand pack's line icons; the selected tab is told apart by its
+  /// yellow pill and coral colour.
+  static const _items = [PetLoopGlyph.home, PetLoopGlyph.health, PetLoopGlyph.community, PetLoopGlyph.shop];
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +39,7 @@ class AppBottomNav extends StatelessWidget {
                 Expanded(
                   child: _NavItem(
                     label: labels[i],
-                    icon: i == currentIndex ? _items[i].activeIcon : _items[i].icon,
+                    icon: _items[i],
                     selected: i == currentIndex,
                     onTap: () => onSelect(i),
                   ),
@@ -58,7 +56,7 @@ class _NavItem extends StatelessWidget {
   const _NavItem({required this.label, required this.icon, required this.selected, required this.onTap});
 
   final String label;
-  final IconData icon;
+  final PetLoopGlyph icon;
   final bool selected;
   final VoidCallback onTap;
 
@@ -79,7 +77,7 @@ class _NavItem extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(icon, size: 22, color: selected ? AppColors.coral : AppColors.brown),
+                PetLoopIcon(icon, size: 22, color: selected ? AppColors.coral : AppColors.brown),
                 const SizedBox(height: 3),
                 Text(
                   label,

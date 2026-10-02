@@ -8,6 +8,7 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/brand.dart';
 import '../../widgets/primary_button.dart';
 import 'icons/pet_icon_bank.dart';
 import 'pet_words.dart';
@@ -88,13 +89,17 @@ class _Hello extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 18, AppSpacing.screen, _middle - _drop + 14),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.pets_rounded, color: AppColors.white, size: 22),
-                      const SizedBox(width: 8),
-                      Text(context.l10n.appName, style: AppText.appTitle.copyWith(color: AppColors.white)),
-                    ],
+                  // The logo, announced by its name.
+                  child: Semantics(
+                    label: context.l10n.appName,
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        PetLoopMark(size: 28, tone: BrandTone.white),
+                        SizedBox(width: 8),
+                        PetLoopWordmark(height: 24, tone: BrandTone.white),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -98,7 +98,7 @@ abstract class AppL10n {
   /// The app's name. It stays in Latin letters in every language.
   ///
   /// In en, this message translates to:
-  /// **'Pet Companion'**
+  /// **'PetLoop'**
   String get appName;
 
   /// No description provided for @navHome.

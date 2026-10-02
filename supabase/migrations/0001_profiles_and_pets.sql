@@ -1,4 +1,4 @@
--- Pet Companion: initial schema.
+-- PetLoop: initial schema.
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`.
 --

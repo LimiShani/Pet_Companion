@@ -205,16 +205,16 @@ void main() {
 
     test('the credit is truthful: the team, an AI assistant, a translation, and no vet', () {
       for (final MapEntry(key: id, value: text) in guidesHe.entries) {
-        expect(text.author, same(petCompanionTeamHe), reason: id);
+        expect(text.author, same(petLoopTeamHe), reason: id);
         // Nobody has reviewed the Hebrew text, and it cites nothing.
         expect(text.review, isNull, reason: id);
         expect(text.currentReview, isNull, reason: id);
         expect(text.sources, isEmpty, reason: id);
         expect(text.updatedAt.toDateTime(), DateTime(2026, 9, 30), reason: id);
       }
-      expect(petCompanionTeamHe.name, 'צוות Pet Companion');
+      expect(petLoopTeamHe.name, 'צוות PetLoop');
       expect(
-        petCompanionTeamHe.role,
+        petLoopTeamHe.role,
         'צוות התוכן של האפליקציה, בכתיבה ובתרגום בעזרת עוזר בינה מלאכותית. לא וטרינרים ולא מאלפים.',
       );
       // No guide says, in its own words, that a vet wrote, checked or
@@ -263,7 +263,7 @@ void main() {
 
         // All 18 cards, in the library's order: none is tagged as English
         // only, none as reviewed, and each says who wrote it.
-        final byline = reads('מאת צוות Pet Companion · עודכן בתאריך 30.09.26');
+        final byline = reads('מאת צוות PetLoop · עודכן בתאריך 30.09.26');
         for (final record in guideRecords) {
           final title = find.text(hebrewTitles[record.id]!);
           await scrollTo(tester, title);
@@ -272,7 +272,7 @@ void main() {
           expect(tag(he.tagReviewed), findsNothing, reason: record.id);
         }
         expect(byline, findsWidgets);
-        expect(find.textContaining('Pet Companion team'), findsNothing);
+        expect(find.textContaining('PetLoop team'), findsNothing);
         expect(tester.takeException(), isNull);
       });
 
@@ -296,8 +296,8 @@ void main() {
         Finder inAbout(String text) => find.descendant(of: about, matching: find.text(text));
         await readDownTo(tester, inAbout('מקורות'));
         expect(inAbout('נכתב על ידי'), findsOneWidget);
-        expect(inAbout('צוות Pet Companion'), findsOneWidget);
-        expect(inAbout(petCompanionTeamHe.role), findsOneWidget);
+        expect(inAbout('צוות PetLoop'), findsOneWidget);
+        expect(inAbout(petLoopTeamHe.role), findsOneWidget);
         expect(inAbout('בדיקה מקצועית'), findsOneWidget);
         expect(inAbout('לא נבדק על ידי וטרינר'), findsOneWidget);
         expect(inAbout('30.09.26'), findsOneWidget);
@@ -343,13 +343,13 @@ void main() {
       await scrollTo(tester, find.text('How many litter boxes do you need?'));
       await tester.tap(find.text('How many litter boxes do you need?'));
       await tester.pumpAndSettle();
-      expect(find.text('Pet Companion team'), findsOneWidget);
+      expect(find.text('PetLoop team'), findsOneWidget);
       expect(find.text('Not reviewed by a veterinarian'), findsOneWidget);
 
       await switchLanguage(tester, AppLanguage.hebrew);
       expect(find.text('כמה ארגזי חול צריך?'), findsOneWidget);
       expect(find.text('How many litter boxes do you need?'), findsNothing);
-      expect(find.text('צוות Pet Companion'), findsOneWidget);
+      expect(find.text('צוות PetLoop'), findsOneWidget);
       expect(find.text('לא נבדק על ידי וטרינר'), findsOneWidget);
       expect(tag(he.tagEnglishOnly), findsNothing);
       expect(
@@ -359,7 +359,7 @@ void main() {
 
       await switchLanguage(tester, AppLanguage.english);
       expect(find.text('How many litter boxes do you need?'), findsOneWidget);
-      expect(find.text('Pet Companion team'), findsOneWidget);
+      expect(find.text('PetLoop team'), findsOneWidget);
       expect(screenDirection(tester, find.textContaining('The usual guideline is simple')), TextDirection.ltr);
     });
   });

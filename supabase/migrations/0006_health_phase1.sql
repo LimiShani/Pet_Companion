@@ -1,4 +1,4 @@
--- Pet Companion: the Health tab, phase 1 extension (cost on a record,
+-- PetLoop: the Health tab, phase 1 extension (cost on a record,
 -- cleaning routines, the emergency kit, the "my pet is lost" card).
 -- Run in the Supabase SQL editor (Dashboard > SQL Editor > New query > paste > Run)
 -- or with the Supabase CLI: `supabase db push`. Needs 0001 and 0002

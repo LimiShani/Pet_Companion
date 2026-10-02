@@ -4,6 +4,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/petloop_icon.dart';
 import 'dashboard_card.dart';
 
 class ActivityCard extends StatelessWidget {
@@ -21,7 +22,7 @@ class ActivityCard extends StatelessWidget {
 
     return DashboardCard(
       color: AppColors.yellow,
-      iconAsset: 'assets/images/icon_activity.png',
+      icon: PetLoopGlyph.activity,
       title: l10n.homeActivity,
       iconRing: true,
       child: Column(

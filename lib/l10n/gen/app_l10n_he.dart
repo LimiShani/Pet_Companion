@@ -9,7 +9,7 @@ class AppL10nHe extends AppL10n {
   AppL10nHe([String locale = 'he']) : super(locale);
 
   @override
-  String get appName => 'Pet Companion';
+  String get appName => 'PetLoop';
 
   @override
   String get navHome => 'בית';

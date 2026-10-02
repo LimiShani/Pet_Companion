@@ -21,7 +21,7 @@ import 'store_test_helpers.dart';
 
 class _SignedIn extends AuthController {
   @override
-  Future<AppUser?> build() async => const AppUser(id: demoUserId, email: 'demo@petcompanion.app', displayName: 'Alex');
+  Future<AppUser?> build() async => const AppUser(id: demoUserId, email: 'demo@petloop.app', displayName: 'Alex');
 }
 
 /// The Store laid out right to left, as it will be in Hebrew: nothing

@@ -662,7 +662,7 @@ abstract class StoreL10n {
   /// A deal curated by the app rather than shared by a member.
   ///
   /// In en, this message translates to:
-  /// **'Pet Companion pick'**
+  /// **'PetLoop pick'**
   String get pickOfTheApp;
 
   /// No description provided for @sharedByYou.

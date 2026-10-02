@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// The warm pastel palette of Pet Companion.
+/// The warm pastel palette of PetLoop.
 ///
 /// Values come from the original dashboard screenshot; [coral] is a touch
 /// darker than the original header so white text on it passes contrast.

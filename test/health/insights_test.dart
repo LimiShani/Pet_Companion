@@ -232,7 +232,7 @@ void main() {
       final report = h.pdf.last;
       expect(report.title, 'Kelly: health summary');
       expect(report.subtitle, 'Dog · Mix · 13.6 years · 23 kg');
-      expect(report.prepared, 'Prepared on 10.06.25 by Alex with Pet Companion');
+      expect(report.prepared, 'Prepared on 10.06.25 by Alex with PetLoop');
       final facts = {for (final f in report.facts) f.$1: f.$2};
       expect(facts['Microchip'], '985 112 004 567 321');
       expect(facts['Allergies'], 'Chicken (skin reaction)');
@@ -301,7 +301,7 @@ void main() {
     const report = HealthReport(
       title: 'Kelly: health summary',
       subtitle: 'Dog · Mix · 13.6 years · 23 kg',
-      prepared: 'Prepared on 10.06.25 by Alex with Pet Companion',
+      prepared: 'Prepared on 10.06.25 by Alex with PetLoop',
       fileName: 'kelly-health-summary.pdf',
       facts: [('Allergies', 'Chicken (skin reaction)'), ('Regular vet', 'Dr. Levi · +972 3 555 0142')],
       recordsTitle: 'Recent records',
@@ -354,7 +354,7 @@ void main() {
       const hebrew = HealthReport(
         title: 'קלי: סיכום בריאות',
         subtitle: 'כלבה · מעורבת',
-        prepared: 'Prepared on 10.06.25 with Pet Companion',
+        prepared: 'Prepared on 10.06.25 with PetLoop',
         fileName: 'kelly-health-summary.pdf',
         facts: [('Regular vet', 'ד"ר לוי, מרפאת הפארק')],
         recordsTitle: 'Recent records',

@@ -69,7 +69,7 @@ void main() {
       // Hebrew by default: the card is read by neighbours.
       // The name sits in one piece between invisible direction marks.
       expect(onCard('מחפשים את \u2068Kelly\u2069'), findsOneWidget);
-      expect(onCard('הוכן באפליקציית Pet Companion'), findsOneWidget);
+      expect(onCard('הוכן באפליקציית PetLoop'), findsOneWidget);
       expect(Directionality.of(tester.element(onCard('מחפשים את \u2068Kelly\u2069'))), TextDirection.rtl);
 
       // Nothing can be shared before a phone number is given and confirmed.
@@ -135,7 +135,7 @@ void main() {
       expect(onCard('Looking for Kelly'), findsOneWidget);
       expect(onCard('Area'), findsOneWidget);
       expect(onCard('10.06.25, around 17:40'), findsOneWidget);
-      expect(onCard('Made with Pet Companion'), findsOneWidget);
+      expect(onCard('Made with PetLoop'), findsOneWidget);
       expect(Directionality.of(tester.element(onCard('Looking for Kelly'))), TextDirection.ltr);
 
       await tapVisible(tester, find.byKey(const Key('lost-confirm-phone')));
@@ -307,7 +307,7 @@ void main() {
     test('what was not given is left out', () {
       const card = LostCardContent(language: LostCardLanguage.english, petName: 'Soya');
       expect(card.facts, isEmpty);
-      expect(card.allText, ['Looking for Soya', 'Made with Pet Companion']);
+      expect(card.allText, ['Looking for Soya', 'Made with PetLoop']);
     });
 
     test('a house number reads as an exact address; file names stay plain', () {

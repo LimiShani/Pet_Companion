@@ -6,14 +6,14 @@ import 'navigation/app_router.dart';
 import 'theme/app_theme.dart';
 
 /// Root widget: wires the theme, the language and the router.
-class PetCompanionApp extends ConsumerWidget {
-  const PetCompanionApp({super.key});
+class PetLoopApp extends ConsumerWidget {
+  const PetLoopApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       // The app's name stays in Latin letters in every language.
-      title: 'Pet Companion',
+      title: 'PetLoop',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       // The owner's choice in the language switch, or the phone's language

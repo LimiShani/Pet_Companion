@@ -153,7 +153,7 @@ class PetsStore extends Notifier<PetsState> {
     if (ownerId == null) return;
     final repository = ref.read(petsRepositoryProvider);
     _inOrder(pet.id, () => repository.savePet(ownerId, pet)).then((_) {}, onError: (Object e) {
-      debugPrint('Pet Companion: could not save ${pet.name}: $e');
+      debugPrint('PetLoop: could not save ${pet.name}: $e');
       // Only if nothing newer replaced it meanwhile.
       if (!ref.mounted || ownerId != _ownerId || !identical(state.byId(pet.id), pet)) return;
       if (before != null) {

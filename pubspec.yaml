@@ -1,5 +1,5 @@
 name: pet_companion
-description: "Pet Companion: a warm, friendly hub for pet owners. Pet profiles, feeding, activity, health log, reminders, community and store."
+description: "PetLoop: a warm, friendly hub for pet owners. Pet profiles, feeding, activity, health log, reminders, community and store."
 publish_to: 'none'
 version: 0.1.0
 
@@ -15,6 +15,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.3.2
+  flutter_svg: ^2.3.0
   go_router: ^17.2.3
   google_fonts: ^8.1.0
   image: ^4.10.1
@@ -43,6 +44,9 @@ flutter:
   generate: true
   assets:
     - assets/images/
+    # The PetLoop brand pack: logo pieces and line icons.
+    - assets/brand/
+    - assets/icons/
     # The fonts' licence texts travel with the app.
     - assets/fonts/OFL-Nunito.txt
     - assets/fonts/OFL-Fredoka.txt

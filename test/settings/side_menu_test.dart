@@ -6,7 +6,7 @@ import 'package:pet_companion/features/pets/my_pets_screen.dart';
 import 'package:pet_companion/features/settings/side_menu.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
-import 'package:pet_companion/widgets/directional_icon.dart';
+import 'package:pet_companion/widgets/petloop_icon.dart';
 
 import '../helpers.dart';
 import 'settings_test_helpers.dart';
@@ -67,7 +67,7 @@ void main() {
     expect(signOut, greaterThan(phone.height - 120));
 
     // The sign-out arrow is mirrored in Hebrew only.
-    final arrow = inMenu(find.byType(MirroredIcon));
+    final arrow = inMenu(find.byWidgetPredicate((w) => w is PetLoopIcon && w.glyph == PetLoopGlyph.logout));
     expect(find.descendant(of: arrow, matching: find.byType(Transform)), hebrew ? findsOneWidget : findsNothing);
   });
 

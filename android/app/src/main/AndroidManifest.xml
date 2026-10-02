@@ -2,9 +2,10 @@
     <!-- Network access for Supabase and images (debug builds get this implicitly). -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="pet_companion"
+        android:label="PetLoop"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round">
         <activity
             android:name=".MainActivity"
             android:exported="true"

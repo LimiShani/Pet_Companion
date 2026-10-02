@@ -369,7 +369,7 @@ class StoreL10nHe extends StoreL10n {
   }
 
   @override
-  String get pickOfTheApp => 'בחירת Pet Companion';
+  String get pickOfTheApp => 'בחירת PetLoop';
 
   @override
   String get sharedByYou => 'מבצע ששיתפת';

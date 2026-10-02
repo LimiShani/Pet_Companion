@@ -1,7 +1,7 @@
 import '../guides_repository.dart';
 import 'guide_credits.dart';
 
-// The English text of the cat guides. Written for Pet Companion: original
+// The English text of the cat guides. Written for PetLoop: original
 // text, mainstream advice, plain and warm. The reader adds the closing note
 // (the `guideDisclaimer` string) at the end of every guide.
 //
@@ -14,7 +14,7 @@ const catGuidesEn = <String, GuideText>{
   // Getting started
   // -------------------------------------------------------------------
   'cat-first-week': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: "Your cat's first week at home",
     summary: 'A quiet room, a routine and slow introductions.',
@@ -68,7 +68,7 @@ const catGuidesEn = <String, GuideText>{
     ],
   ),
   'second-cat': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Bringing home a second cat',
     summary: 'Separate rooms first, then scent, then sight.',
@@ -129,7 +129,7 @@ const catGuidesEn = <String, GuideText>{
   // Home and cleaning
   // -------------------------------------------------------------------
   'litter-setup': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Setting up the litter box',
     summary: 'The right box, the right litter and the right spot.',
@@ -175,7 +175,7 @@ const catGuidesEn = <String, GuideText>{
     ],
   ),
   'litter-count': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'How many litter boxes do you need?',
     summary: 'One for each cat, plus one, and where to put them.',
@@ -218,7 +218,7 @@ const catGuidesEn = <String, GuideText>{
     ],
   ),
   'litter-smell': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Keeping litter smell and mess under control',
     summary: 'A daily routine that keeps the home fresh.',
@@ -269,7 +269,7 @@ const catGuidesEn = <String, GuideText>{
   // Training and behaviour
   // -------------------------------------------------------------------
   'indoor-play': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Play and enrichment for indoor cats',
     summary: 'Short daily play, places to climb and things to scratch.',
@@ -313,7 +313,7 @@ const catGuidesEn = <String, GuideText>{
     ],
   ),
   'cat-nights': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'When your cat keeps you up at night',
     summary: 'Why it happens and how to shift the routine.',
@@ -358,7 +358,7 @@ const catGuidesEn = <String, GuideText>{
     ],
   ),
   'scratch-bite': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Scratching and play biting',
     summary: 'Give the claws and teeth a better target.',
@@ -410,7 +410,7 @@ const catGuidesEn = <String, GuideText>{
   // Health and grooming
   // -------------------------------------------------------------------
   'cat-call-vet': GuideText(
-    author: petCompanionTeam,
+    author: petLoopTeam,
     updatedAt: firstWritten,
     title: 'Knowing when to call the vet about your cat',
     summary: 'Signs that need urgent help, and signs to book a visit for.',

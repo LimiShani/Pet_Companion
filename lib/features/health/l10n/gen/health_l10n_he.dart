@@ -32,7 +32,7 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get safetyLine => 'Pet Companion אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.';
+  String get safetyLine => 'PetLoop אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.';
 
   @override
   String clearField(String label) {
@@ -477,7 +477,7 @@ class HealthL10nHe extends HealthL10n {
   String get editHealthProfile => 'עריכת פרופיל הבריאות';
 
   @override
-  String get emergencyCardFinePrint => 'האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך. Pet Companion אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.';
+  String get emergencyCardFinePrint => 'האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך. PetLoop אף פעם לא יוצרת קשר עם אף אחד בעצמה, ואינה תחליף לייעוץ וטרינרי.';
 
   @override
   String get emergencyKit => 'ערכת חירום';
@@ -866,7 +866,7 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get lostCardFooter => 'הוכן באפליקציית Pet Companion';
+  String get lostCardFooter => 'הוכן באפליקציית PetLoop';
 
   @override
   String lostCardAround(String date, String time) {
@@ -1946,12 +1946,12 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String reportPrepared(String date) {
-    return 'הוכן בתאריך \u2068$date\u2069 באפליקציית Pet Companion';
+    return 'הוכן בתאריך \u2068$date\u2069 באפליקציית PetLoop';
   }
 
   @override
   String reportPreparedBy(String date, String owner) {
-    return 'הוכן בתאריך \u2068$date\u2069 על ידי \u2068$owner\u2069 באפליקציית Pet Companion';
+    return 'הוכן בתאריך \u2068$date\u2069 על ידי \u2068$owner\u2069 באפליקציית PetLoop';
   }
 
   @override
@@ -1975,5 +1975,5 @@ class HealthL10nHe extends HealthL10n {
   String get reportColumnKind => 'סוג';
 
   @override
-  String get reportFooter => 'נכתב על ידי הבעלים באפליקציית Pet Companion. זהו תיעוד של מה שהוזן, ולא ייעוץ וטרינרי.';
+  String get reportFooter => 'נכתב על ידי הבעלים באפליקציית PetLoop. זהו תיעוד של מה שהוזן, ולא ייעוץ וטרינרי.';
 }

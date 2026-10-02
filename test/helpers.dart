@@ -38,7 +38,7 @@ Future<void> pumpApp(
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(latency: Duration.zero)),
         settingsStoreProvider.overrideWithValue(store),
       ],
-      child: const PetCompanionApp(),
+      child: const PetLoopApp(),
     ),
   );
   await tester.pumpAndSettle();

@@ -32,7 +32,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get safetyLine => 'Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.';
+  String get safetyLine => 'PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
 
   @override
   String clearField(String label) {
@@ -477,7 +477,7 @@ class HealthL10nEn extends HealthL10n {
   String get editHealthProfile => 'Edit health profile';
 
   @override
-  String get emergencyCardFinePrint => 'You make the call or send the message yourself. Pet Companion never contacts anyone on its own, and it does not replace veterinary advice.';
+  String get emergencyCardFinePrint => 'You make the call or send the message yourself. PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
 
   @override
   String get emergencyKit => 'Emergency kit';
@@ -865,7 +865,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get lostCardFooter => 'Made with Pet Companion';
+  String get lostCardFooter => 'Made with PetLoop';
 
   @override
   String lostCardAround(String date, String time) {
@@ -1940,12 +1940,12 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String reportPrepared(String date) {
-    return 'Prepared on $date with Pet Companion';
+    return 'Prepared on $date with PetLoop';
   }
 
   @override
   String reportPreparedBy(String date, String owner) {
-    return 'Prepared on $date by $owner with Pet Companion';
+    return 'Prepared on $date by $owner with PetLoop';
   }
 
   @override
@@ -1969,5 +1969,5 @@ class HealthL10nEn extends HealthL10n {
   String get reportColumnKind => 'Kind';
 
   @override
-  String get reportFooter => 'Written by the owner in Pet Companion. It is a record of what was entered, not veterinary advice.';
+  String get reportFooter => 'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.';
 }

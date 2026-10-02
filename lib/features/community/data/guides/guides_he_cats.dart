@@ -14,7 +14,7 @@ const catGuidesHe = <String, GuideText>{
   // Getting started
   // -------------------------------------------------------------------
   'cat-first-week': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'השבוע הראשון של החתול בבית',
     summary: 'חדר שקט, שגרה והיכרויות בקצב איטי.',
@@ -67,7 +67,7 @@ const catGuidesHe = <String, GuideText>{
     ],
   ),
   'second-cat': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'מביאים הביתה חתול שני',
     summary: 'קודם חדרים נפרדים, אחר כך ריח, ורק אז מבט.',
@@ -127,7 +127,7 @@ const catGuidesHe = <String, GuideText>{
   // Home and cleaning
   // -------------------------------------------------------------------
   'litter-setup': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'מארגנים את ארגז החול',
     summary: 'הארגז הנכון, החול הנכון והמקום הנכון.',
@@ -174,7 +174,7 @@ const catGuidesHe = <String, GuideText>{
     ],
   ),
   'litter-count': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'כמה ארגזי חול צריך?',
     summary: 'ארגז לכל חתול ועוד אחד, ואיפה לשים אותם.',
@@ -216,7 +216,7 @@ const catGuidesHe = <String, GuideText>{
     ],
   ),
   'litter-smell': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'שומרים על הריח והלכלוך של החול בשליטה',
     summary: 'שגרה יומית ששומרת על בית רענן.',
@@ -267,7 +267,7 @@ const catGuidesHe = <String, GuideText>{
   // Training and behaviour
   // -------------------------------------------------------------------
   'indoor-play': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'משחק והעשרה לחתולי בית',
     summary: 'משחק יומי קצר, מקומות לטפס עליהם ודברים שאפשר לשרוט.',
@@ -310,7 +310,7 @@ const catGuidesHe = <String, GuideText>{
     ],
   ),
   'cat-nights': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'כשהחתול לא נותן לישון בלילה',
     summary: 'למה זה קורה ואיך מזיזים את השגרה.',
@@ -353,7 +353,7 @@ const catGuidesHe = <String, GuideText>{
     ],
   ),
   'scratch-bite': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'שריטות ונשיכות משחק',
     summary: 'נותנים לציפורניים ולשיניים מטרה טובה יותר.',
@@ -405,7 +405,7 @@ const catGuidesHe = <String, GuideText>{
   // Health and grooming
   // -------------------------------------------------------------------
   'cat-call-vet': GuideText(
-    author: petCompanionTeamHe,
+    author: petLoopTeamHe,
     updatedAt: hebrewWritten,
     title: 'מתי להתקשר לווטרינר בנוגע לחתול',
     summary: 'סימנים שמצריכים עזרה דחופה, וסימנים שכדאי לקבוע בגללם ביקור.',
