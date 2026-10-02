@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/file_services.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
@@ -84,6 +86,10 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
   bool _filling = false;
   bool _busy = false;
 
+  /// The card as the page opened (or as last kept), to tell whether
+  /// anything changed; `null` until the saved draft is in.
+  List<Object?>? _initial;
+
   /// What went wrong: a message of the page, or what was thrown (worded
   /// when it is shown).
   Object? _error;
@@ -122,7 +128,10 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
   void _fill(LostPetCard? saved) {
     if (_filled) return;
     _filled = true;
-    if (saved == null) return;
+    if (saved == null) {
+      _initial = _fields();
+      return;
+    }
     _filling = true;
     _description.text = saved.description;
     _phone.text = saved.phone;
@@ -133,6 +142,20 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       _lastSeen = saved.lastSeenAt ?? _lastSeen;
     }
     _filling = false;
+    _initial = _fields();
+  }
+
+  List<Object?> _fields() => [
+    for (final c in [_description, _area, _phone, _extra]) c.text,
+    _language,
+    _lastSeen,
+    _chosenPhoto,
+    _confirmedPhone,
+  ];
+
+  bool get _dirty {
+    final initial = _initial;
+    return !_busy && initial != null && !listEquals(_fields(), initial);
   }
 
   /// Whether [value] cannot be a phone number (an empty one is fine).
@@ -211,6 +234,7 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       // Kept, so nothing is retyped next time. Sharing does not wait on it.
       try {
         await ref.read(lostCardProvider(_pet.id).notifier).save(_draft());
+        _initial = _fields();
       } catch (_) {}
       final renderer = ref.read(lostCardRendererProvider);
       final png = await renderer.png(_cardKey);
@@ -460,6 +484,9 @@ class _LostPetCardScreenState extends ConsumerState<LostPetCardScreen> {
       );
     }
 
-    return HealthPage(petId: _pet.id, title: l10n.petIsLost(_pet.name), child: body);
+    return UnsavedChangesGuard(
+      dirty: _dirty,
+      child: HealthPage(petId: _pet.id, title: l10n.petIsLost(_pet.name), child: body),
+    );
   }
 }

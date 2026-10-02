@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +12,7 @@ import '../../utils/calendar.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 import 'data/deal.dart';
 import 'data/link_opener.dart';
 import 'state/store_providers.dart';
@@ -145,6 +147,26 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
     return pet.id.isEmpty ? {} : {pet.species};
   }
 
+  /// The form as it opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
+  List<Object?> _fields() => [
+    for (final c in [_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]) c.text,
+    _category,
+    _packageUnit,
+    _delivery,
+    _endDate,
+    ([for (final kind in _species) kind.name]..sort()).join(','),
+  ];
+
+  bool get _dirty => !_sending && !listEquals(_fields(), _initial);
+
+  @override
+  void initState() {
+    super.initState();
+    _initial = _fields();
+  }
+
   @override
   void dispose() {
     for (final c in [_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]) {
@@ -239,7 +261,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
     final today = ref.watch(storeClockProvider)();
     final error = _error;
 
-    return Scaffold(
+    final page = Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -517,6 +539,11 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
           ),
         ],
       ),
+    );
+    return ListenableBuilder(
+      listenable: Listenable.merge([_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: page,
     );
   }
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/health_models.dart';
 import '../health_strings.dart';
 import '../state/health_providers.dart';
@@ -26,6 +28,7 @@ class HealthBasicsSection extends ConsumerStatefulWidget {
     this.saveLabel,
     this.onSaved,
     this.withContactAndNotes = false,
+    this.guardChanges = false,
   });
 
   final String petId;
@@ -38,6 +41,10 @@ class HealthBasicsSection extends ConsumerStatefulWidget {
   /// Also shows the emergency contact person and free notes (Health's own
   /// profile page).
   final bool withContactAndNotes;
+
+  /// Asks before the page closes with changes that were not saved. Off
+  /// inside a flow that handles going back itself (add a pet).
+  final bool guardChanges;
 
   @override
   ConsumerState<HealthBasicsSection> createState() => _HealthBasicsSectionState();
@@ -56,6 +63,9 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   bool _noConditions = false;
   bool _filled = false;
   bool _saving = false;
+
+  /// The answers as the form opened, to tell whether anything changed.
+  List<Object?> _initial = const [];
 
   /// What went wrong when saving; worded when it is shown, so it follows
   /// the language of the screen.
@@ -81,7 +91,17 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
     _notChipped = profile.notChipped && profile.microchip.trim().isEmpty;
     _noAllergies = profile.allergiesNoneKnown && profile.allergies.isEmpty;
     _noConditions = profile.conditionsNoneKnown && profile.conditions.isEmpty;
+    _initial = _answers();
   }
+
+  List<Object?> _answers() => [
+    for (final c in [_microchip, _allergies, _conditions, _contactName, _contactPhone, _notes]) c.text,
+    _notChipped,
+    _noAllergies,
+    _noConditions,
+  ];
+
+  bool get _dirty => !_saving && !listEquals(_answers(), _initial);
 
   static List<String> _lines(String text) => [
     for (final line in text.split('\n'))
@@ -141,7 +161,7 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
     }
     _fill(current);
 
-    return Form(
+    final form = Form(
       key: _form,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -235,6 +255,12 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
         ],
       ),
     );
+    if (!widget.guardChanges) return form;
+    return ListenableBuilder(
+      listenable: Listenable.merge([_microchip, _allergies, _conditions, _contactName, _contactPhone, _notes]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: form,
+    );
   }
 }
 
@@ -321,6 +347,7 @@ class HealthProfileScreen extends StatelessWidget {
           HealthBasicsSection(
             petId: pet.id,
             withContactAndNotes: true,
+            guardChanges: true,
             saveLabel: context.healthL10n.saveProfile,
             onSaved: (_) => Navigator.of(context).pop(),
           ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,6 +8,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
@@ -53,6 +55,9 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
   late bool _daysChosen = widget.item != null;
   bool _saving = false;
 
+  /// The fields as the page opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
   /// What is wrong: a message of the form, or what saving threw (worded
   /// when it is shown).
   Object? _error;
@@ -76,7 +81,12 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
     final (time, days) = _usual(_kind);
     _time = item?.time ?? time;
     _days = item?.days ?? days;
+    _initial = _fields();
   }
+
+  List<Object?> _fields() => [_title.text, _kind, _time, ([..._days]..sort()).join(','), _active];
+
+  bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
   void _chooseKind(CareKind kind) {
     final l10n = context.healthL10n;
@@ -179,7 +189,7 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
     final format = HealthFormat.of(context);
     final error = _error;
 
-    return HealthPage(
+    final page = HealthPage(
       petId: _petId,
       title: _editing ? l10n.editRoutine : l10n.newRoutine,
       actions: [
@@ -264,6 +274,11 @@ class _RoutineFormScreenState extends ConsumerState<RoutineFormScreen> {
           ],
         ),
       ),
+    );
+    return ListenableBuilder(
+      listenable: _title,
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: page,
     );
   }
 }

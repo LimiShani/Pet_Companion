@@ -66,6 +66,18 @@ class AppL10nEn extends AppL10n {
   String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
+  String get discardChangesTitle => 'Discard changes?';
+
+  @override
+  String get discardChangesBody => 'Your changes will not be saved.';
+
+  @override
+  String get discardChangesKeepEditing => 'Keep editing';
+
+  @override
+  String get discardChangesDiscard => 'Discard';
+
+  @override
   String get petSelectorAdd => 'Add a pet';
 
   @override

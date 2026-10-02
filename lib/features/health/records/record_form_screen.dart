@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +10,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/health_models.dart';
 import '../data/species_settings.dart';
 import '../health_format.dart';
@@ -62,6 +64,9 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   final _previews = <PickedFile, Future<Uint8List>>{};
   bool _saving = false;
 
+  /// The fields as the page opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
   /// What is wrong: a message of the form, or what saving threw (worded
   /// when it is shown).
   Object? _error;
@@ -102,7 +107,19 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
         _time = TimeOfDay.fromDateTime(now);
       }
     }
+    _initial = _fields();
   }
+
+  List<Object?> _fields() => [
+    for (final c in [_title, _product, _clinic, _notes, _cost]) c.text,
+    _kind,
+    _day,
+    _time,
+    _nextDue,
+    _pending.length,
+  ];
+
+  bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
   @override
   void dispose() {
@@ -270,7 +287,7 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     final format = HealthFormat.of(context);
     final error = _error;
 
-    return HealthPage(
+    final page = HealthPage(
       petId: _petId,
       title: _editing
           ? l10n.editRecord
@@ -439,6 +456,11 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
           ],
         ),
       ),
+    );
+    return ListenableBuilder(
+      listenable: Listenable.merge([_title, _product, _clinic, _notes, _cost]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: page,
     );
   }
 }

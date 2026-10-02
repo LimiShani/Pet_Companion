@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +7,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../health_strings.dart';
@@ -42,10 +44,23 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
   late bool _whatsApp = widget.vet?.onWhatsApp ?? false;
   bool _saving = false;
 
+  /// The fields as the page opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
   /// What went wrong; worded when it is shown.
   Object? _error;
 
   bool get _editing => widget.vet != null;
+
+  List<Object?> _fields() => [for (final c in [_name, _phone, _address, _hours, _notes]) c.text, _whatsApp];
+
+  bool get _dirty => !_saving && !listEquals(_fields(), _initial);
+
+  @override
+  void initState() {
+    super.initState();
+    _initial = _fields();
+  }
 
   /// The example of a country code, left to right on every screen.
   static const _countryCode = '+972';
@@ -130,7 +145,7 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
     if (widget.petId != null) ref.watch(healthProfileProvider(widget.petId!));
     final l10n = context.healthL10n;
 
-    return HealthPage(
+    final page = HealthPage(
       title: _editing ? l10n.editVet : l10n.addVet,
       actions: [
         if (_editing)
@@ -221,6 +236,11 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
           ],
         ),
       ),
+    );
+    return ListenableBuilder(
+      listenable: Listenable.merge([_name, _phone, _address, _hours, _notes]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: page,
     );
   }
 }

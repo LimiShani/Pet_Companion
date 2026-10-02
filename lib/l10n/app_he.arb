@@ -23,6 +23,11 @@
   "commonYesterday": "אתמול",
   "errorGeneric": "משהו השתבש. אפשר לנסות שוב.",
 
+  "discardChangesTitle": "לוותר על השינויים?",
+  "discardChangesBody": "השינויים שעשית לא יישמרו.",
+  "discardChangesKeepEditing": "להמשיך לערוך",
+  "discardChangesDiscard": "לוותר",
+
   "petSelectorAdd": "הוספת חיה",
   "placeholderComingSoon": "\u2068{title}\u2069: בקרוב",
 

@@ -205,6 +205,10 @@ void main() {
         await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
         expect(find.byKey(const Key('record-next-due')), findsOneWidget);
         await back(tester);
+        // The kind was changed: leaving asks first, and the answer is
+        // "Discard".
+        await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.byType(FilledButton)));
+        await tester.pumpAndSettle();
         await back(tester);
         expect(tester.takeException(), isNull);
       });

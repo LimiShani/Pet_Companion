@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +10,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../../health/emergency/emergency.dart';
 import '../checklist_sheet.dart';
 import '../data/pets_repository_provider.dart';
@@ -61,12 +63,38 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   /// The pet as the form last saw it.
   Pet? _shown;
 
+  /// What the form shows when nothing was changed here: the answers as
+  /// they were loaded, saved, or followed from a change made elsewhere.
+  List<Object?> _unchanged = const [];
+
   void _fill(Pet pet) {
     _name.text = pet.name;
     _species = pet.species;
     _basics?.dispose();
     _basics = PetBasicsController(pet: pet, now: _now);
     _shown = pet;
+    _unchanged = _answers(_name.text, _species, _basics!);
+  }
+
+  /// The answers of the form. Switching between the two ways of giving the
+  /// age is not one: it changes nothing by itself.
+  static List<Object?> _answers(String name, PetSpecies species, PetBasicsController basics) => [
+    name,
+    species,
+    basics.ageAmount.text,
+    basics.weight.text,
+    basics.breed.text,
+    basics.birthDate,
+    basics.ageUnit,
+    basics.sex,
+    basics.neutered,
+    basics.mixedBreed,
+  ];
+
+  bool get _dirty {
+    final basics = _basics;
+    if (basics == null || _saving || _removing) return false;
+    return !listEquals(_answers(_name.text, _species, basics), _unchanged);
   }
 
   /// The pet changed somewhere else while this page is open (a weight added
@@ -84,6 +112,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
         // The weight unit follows the kind chosen here, saved or not.
         ..species = _species;
       _shown = pet;
+      // What a form freshly opened on [pet] would show.
+      final fresh = PetBasicsController(pet: pet, now: _now);
+      _unchanged = _answers(pet.name, pet.species, fresh);
+      fresh.dispose();
     });
   }
 
@@ -110,6 +142,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       // Saved: from here on the form follows the stored pet again.
       basics.markSaved();
       _shown = stored;
+      _unchanged = _answers(_name.text, _species, basics);
       setState(() => _saving = false);
       showPetsSnack(context, context.petsL10n.changesSaved);
     } catch (e) {
@@ -163,7 +196,8 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   void _openMyPets() {
     if (widget.fromMyPets) {
-      Navigator.of(context).pop();
+      // Like the back arrow: unsaved changes are asked about first.
+      Navigator.of(context).maybePop();
     } else {
       openMyPets(context);
     }
@@ -183,7 +217,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final now = ref.watch(petsClockProvider)();
 
     // Stays up to date while Health's pages or a sheet cover this one.
-    return PetEssentialsKeeper(petId: pet.id, child: _page(pet, basics, now));
+    return ListenableBuilder(
+      listenable: Listenable.merge([_name, basics, basics.ageAmount, basics.weight, basics.breed]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: PetEssentialsKeeper(petId: pet.id, child: _page(pet, basics, now)),
+    );
   }
 
   Widget _page(Pet pet, PetBasicsController basics, DateTime now) {

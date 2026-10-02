@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../../models/pet.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 import '../health/health_strings.dart';
 import '../health/state/health_providers.dart';
 import '../health/widgets/health_widgets.dart';
@@ -62,6 +64,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
   bool _saving = false;
   Object? _error;
 
+  /// The fields as the page opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
   static String _text(double? value) {
     if (value == null) return '';
     return value == value.roundToDouble() ? value.toInt().toString() : value.toString();
@@ -70,10 +75,15 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
   @override
   void initState() {
     super.initState();
+    _initial = _fields();
     for (final c in [_portion, _cup]) {
       c.addListener(() => setState(() {}));
     }
   }
+
+  List<Object?> _fields() => [for (final c in [_name, _kcal, _cup, _portion, _goal]) c.text, _ownGoal];
+
+  bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
   @override
   void dispose() {
@@ -149,7 +159,7 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
     final canEstimate = estimate is CalorieEstimate;
     final ownGoal = _ownGoal || !canEstimate;
 
-    return Form(
+    final form = Form(
       key: _form,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -259,6 +269,11 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
           PrimaryButton(key: saveKey, label: l10n.save, loading: _saving, onPressed: _save),
         ],
       ),
+    );
+    return ListenableBuilder(
+      listenable: Listenable.merge([_name, _kcal, _cup, _portion, _goal]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: form,
     );
   }
 }

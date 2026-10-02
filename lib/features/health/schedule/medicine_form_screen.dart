@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
+import '../../../widgets/unsaved_changes_guard.dart';
 import '../data/health_models.dart';
 import '../health_format.dart';
 import '../health_strings.dart';
@@ -50,6 +52,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   var _days = CarePlanItem.everyDay;
   bool _saving = false;
 
+  /// The fields as the page opened, to tell whether anything changed.
+  late final List<Object?> _initial;
+
   /// What is wrong: a message of the form, or what saving threw (worded
   /// when it is shown).
   Object? _error;
@@ -69,14 +74,26 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final medication = widget.medication;
     if (medication == null) {
       _start = dateOnly(_now);
-      return;
+    } else {
+      _start = medication.startsOn;
+      _end = medication.endsOn;
+      final items = ref.read(carePlanProvider(_petId)).value?.itemsOf(medication.id) ?? const <CarePlanItem>[];
+      _times = [for (final item in items) item.time];
+      if (items.isNotEmpty) _days = items.first.days;
     }
-    _start = medication.startsOn;
-    _end = medication.endsOn;
-    final items = ref.read(carePlanProvider(_petId)).value?.itemsOf(medication.id) ?? const <CarePlanItem>[];
-    _times = [for (final item in items) item.time];
-    if (items.isNotEmpty) _days = items.first.days;
+    _initial = _fields();
   }
+
+  List<Object?> _fields() => [
+    for (final c in [_name, _strength, _dose, _frequency, _prescribedBy]) c.text,
+    _route,
+    _start,
+    _end,
+    _times.map(minutesOf).join(','),
+    ([..._days]..sort()).join(','),
+  ];
+
+  bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
   @override
   void dispose() {
@@ -219,7 +236,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               if (log.medicationId == medication.id) log,
           ]..sort((a, b) => (b.doneAt ?? b.loggedAt).compareTo(a.doneAt ?? a.loggedAt)));
 
-    return HealthPage(
+    final page = HealthPage(
       petId: _petId,
       title: _editing ? l10n.editMedicine : l10n.newMedicine,
       actions: [
@@ -364,6 +381,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
           ],
         ),
       ),
+    );
+    return ListenableBuilder(
+      listenable: Listenable.merge([_name, _strength, _dose, _frequency, _prescribedBy]),
+      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      child: page,
     );
   }
 }

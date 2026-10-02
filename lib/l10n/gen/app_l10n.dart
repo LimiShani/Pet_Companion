@@ -209,6 +209,30 @@ abstract class AppL10n {
   /// **'Something went wrong. Please try again.'**
   String get errorGeneric;
 
+  /// Asked when leaving an edit page with changes that were not saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get discardChangesTitle;
+
+  /// No description provided for @discardChangesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your changes will not be saved.'**
+  String get discardChangesBody;
+
+  /// No description provided for @discardChangesKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get discardChangesKeepEditing;
+
+  /// No description provided for @discardChangesDiscard.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get discardChangesDiscard;
+
   /// Screen-reader label of the round + button after the pet pills.
   ///
   /// In en, this message translates to:

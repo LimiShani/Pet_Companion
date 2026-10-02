@@ -66,6 +66,18 @@ class AppL10nHe extends AppL10n {
   String get errorGeneric => 'משהו השתבש. אפשר לנסות שוב.';
 
   @override
+  String get discardChangesTitle => 'לוותר על השינויים?';
+
+  @override
+  String get discardChangesBody => 'השינויים שעשית לא יישמרו.';
+
+  @override
+  String get discardChangesKeepEditing => 'להמשיך לערוך';
+
+  @override
+  String get discardChangesDiscard => 'לוותר';
+
+  @override
   String get petSelectorAdd => 'הוספת חיה';
 
   @override

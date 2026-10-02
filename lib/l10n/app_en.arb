@@ -24,6 +24,12 @@
   "commonYesterday": "Yesterday",
   "errorGeneric": "Something went wrong. Please try again.",
 
+  "discardChangesTitle": "Discard changes?",
+  "@discardChangesTitle": {"description": "Asked when leaving an edit page with changes that were not saved."},
+  "discardChangesBody": "Your changes will not be saved.",
+  "discardChangesKeepEditing": "Keep editing",
+  "discardChangesDiscard": "Discard",
+
   "petSelectorAdd": "Add a pet",
   "@petSelectorAdd": {"description": "Screen-reader label of the round + button after the pet pills."},
   "placeholderComingSoon": "{title} coming soon",

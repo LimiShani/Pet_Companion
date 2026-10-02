@@ -208,6 +208,10 @@ void main() {
 
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
+    // Something was typed: leaving asks first.
+    expect(find.text('Discard changes?'), findsOneWidget);
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
 
     expect(find.byType(ShareDealScreen), findsNothing);
     expect(find.text('23 deals for dogs'), findsOneWidget);
