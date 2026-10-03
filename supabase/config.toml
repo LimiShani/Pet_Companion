@@ -1,0 +1,17 @@
+# Supabase CLI settings for PetLoop's Edge Functions. Minimal on purpose:
+# only what the deploy needs.
+#
+# Both functions are called without a user JWT (the find-vet search works
+# without sign-in; the weekly job is called by pg_cron). Each one checks
+# what it needs itself: find-vet validates input and rate-limits by a hashed
+# client key, the weekly job requires the x-job-secret header.
+
+# A local name only (used by the CLI for local containers); it is not the
+# remote project ref, which `supabase link --project-ref <ref>` stores.
+project_id = "petloop"
+
+[functions.find-vet]
+verify_jwt = false
+
+[functions.vet-directory-weekly]
+verify_jwt = false
