@@ -31,7 +31,9 @@ values (
   'Hebrew University Veterinary Teaching Hospital',
   'בית החולים הווטרינרי האוניברסיטאי ע"ש קורת',
   'דרך המכבים 70, הקריה החקלאית', 'ראשון לציון',
-  -- APPROXIMATE, not verified: see the verify_coordinates review item below.
+  -- Checked 2026-10-03: within a few metres of the hospital building's own
+  -- map listing (the street-address point at the Beit Dagan junction is
+  -- ~770 m away). Approximate to 4 decimals, not copied from any provider.
   31.9946, 34.8226,
   '+97239688588',
   'https://vethospital.huji.ac.il/',
@@ -84,8 +86,9 @@ values (
   'Vet Center',
   null, -- the Hebrew trade name was not confirmed on the site; left empty
   'המרץ 7', 'ראש העין',
-  -- APPROXIMATE, not verified: see the verify_coordinates review item below.
-  32.1027, 34.9631,
+  -- From the clinic's own website (its Waze link, waze.com/ul?ll=...),
+  -- read 2026-10-03. The first seed guess was 2.3 km off.
+  32.10562482, 34.93914127,
   '+97299668133',
   'https://www.vetcenter.co.il/',
   'other', -- its type (hospital / clinic) was not confirmed; correct it in the SQL editor once known
