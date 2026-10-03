@@ -380,10 +380,8 @@ class CareLinkRow extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Icon(
-          Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left_rounded : Icons.chevron_right_rounded,
-          color: AppColors.brown,
-        ),
+        // Mirrors by itself: it points left on a right-to-left screen.
+        const Icon(Icons.chevron_right_rounded, color: AppColors.brown),
       ],
     ),
   );
