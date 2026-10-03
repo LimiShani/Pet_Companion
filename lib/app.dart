@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'l10n/l10n.dart';
 import 'navigation/app_router.dart';
+import 'notifications/notifications_host.dart';
 import 'theme/app_theme.dart';
 
 /// Root widget: wires the theme, the language and the router.
@@ -22,6 +23,9 @@ class PetLoopApp extends ConsumerWidget {
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationsDelegates,
       routerConfig: ref.watch(routerProvider),
+      // Reminders: every pet's are kept scheduled, and a tapped one opens
+      // its page (inert in tests, which have no phone notifications).
+      builder: (context, child) => NotificationsHost(child: child ?? const SizedBox.shrink()),
     );
   }
 }
