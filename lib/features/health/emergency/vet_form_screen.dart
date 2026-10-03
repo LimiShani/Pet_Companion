@@ -17,12 +17,14 @@ import '../widgets/health_widgets.dart';
 /// Opens the add / edit vet page over the whole app.
 ///
 /// With [petId] and [role], a new vet is linked to that pet when saved.
+/// [prefill] starts a new vet with fields already typed in (Find a vet's
+/// Save); the owner sees and confirms every one before saving.
 /// Returns the saved vet, or `null` when the owner went back or deleted it.
-Future<Vet?> openVetForm(BuildContext context, {String? petId, VetRole? role, Vet? vet}) =>
-    pushHealthPage<Vet>(context, VetFormScreen(petId: petId, role: role, vet: vet));
+Future<Vet?> openVetForm(BuildContext context, {String? petId, VetRole? role, Vet? vet, Vet? prefill}) =>
+    pushHealthPage<Vet>(context, VetFormScreen(petId: petId, role: role, vet: vet, prefill: prefill));
 
 class VetFormScreen extends ConsumerStatefulWidget {
-  const VetFormScreen({super.key, this.petId, this.role, this.vet});
+  const VetFormScreen({super.key, this.petId, this.role, this.vet, this.prefill});
 
   final String? petId;
   final VetRole? role;
@@ -30,17 +32,20 @@ class VetFormScreen extends ConsumerStatefulWidget {
   /// The vet being edited, or `null` to add one.
   final Vet? vet;
 
+  /// The fields a new vet starts with (ignored when [vet] is set).
+  final Vet? prefill;
+
   @override
   ConsumerState<VetFormScreen> createState() => _VetFormScreenState();
 }
 
 class _VetFormScreenState extends ConsumerState<VetFormScreen> {
   final _form = GlobalKey<FormState>();
-  late final _name = TextEditingController(text: widget.vet?.name ?? '');
-  late final _phone = TextEditingController(text: widget.vet?.phone ?? '');
-  late final _address = TextEditingController(text: widget.vet?.address ?? '');
-  late final _hours = TextEditingController(text: widget.vet?.openingHours ?? '');
-  late final _notes = TextEditingController(text: widget.vet?.notes ?? '');
+  late final _name = TextEditingController(text: (widget.vet ?? widget.prefill)?.name ?? '');
+  late final _phone = TextEditingController(text: (widget.vet ?? widget.prefill)?.phone ?? '');
+  late final _address = TextEditingController(text: (widget.vet ?? widget.prefill)?.address ?? '');
+  late final _hours = TextEditingController(text: (widget.vet ?? widget.prefill)?.openingHours ?? '');
+  late final _notes = TextEditingController(text: (widget.vet ?? widget.prefill)?.notes ?? '');
   late bool _whatsApp = widget.vet?.onWhatsApp ?? false;
   bool _saving = false;
 

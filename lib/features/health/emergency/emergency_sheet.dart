@@ -12,6 +12,7 @@ import '../health_strings.dart';
 import '../state/health_keeper.dart';
 import '../state/health_providers.dart';
 import '../widgets/health_widgets.dart';
+import '../../findvet/findvet.dart' show VetSearchMode, openFindVet;
 import 'contact_actions.dart';
 import 'contact_launcher.dart';
 import 'emergency_card_screen.dart';
@@ -77,6 +78,9 @@ Future<bool> callPrimaryEmergencyContact(BuildContext context, String petId) asy
 class EmergencySheet extends ConsumerWidget {
   const EmergencySheet({super.key, required this.pet});
 
+  /// Opens Find a vet's emergency path.
+  static const findVetKey = Key('emergency-find-vet');
+
   final Pet pet;
 
   @override
@@ -121,6 +125,18 @@ class EmergencySheet extends ConsumerWidget {
                       ),
                     ],
                   ),
+          ),
+          // Away from home, or no vet of their own: the nearest facilities.
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            key: EmergencySheet.findVetKey,
+            onPressed: () {
+              Navigator.of(context).pop();
+              openFindVet(context, mode: VetSearchMode.emergency);
+            },
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+            icon: const AppIcon(Icons.near_me_rounded),
+            label: Text(context.findVetL10n.emergencySheetFindVet),
           ),
           // Being ready, whatever is saved above.
           const SizedBox(height: 10),
