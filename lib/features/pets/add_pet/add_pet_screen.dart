@@ -10,6 +10,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
+import '../../firstdays/firstdays.dart';
 import '../../health/emergency/emergency.dart';
 import '../data/pets_repository_provider.dart';
 import '../icons/pet_icon_bank.dart';
@@ -60,6 +61,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   /// The picture chosen on step 1, not stored yet.
   PetPicture? _picture;
   PetBasicsController? _basics;
+
+  /// "Just arrived home?" on step 2.
+  ArrivalController? _arrival;
   int _step = 1;
   bool _busy = false;
   String? _error;
@@ -71,6 +75,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   void dispose() {
     _name.dispose();
     _basics?.dispose();
+    _arrival?.dispose();
     super.dispose();
   }
 
@@ -119,6 +124,8 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       _picture = null;
       _basics?.dispose();
       _basics = null;
+      _arrival?.dispose();
+      _arrival = null;
       _step = 1;
       _busy = false;
       _error = null;
@@ -190,6 +197,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       _picture = null;
       _basics?.species = _species;
       _basics ??= PetBasicsController(pet: pet, now: _now);
+      _arrival ??= ArrivalController.today(ref);
       _goTo(2);
       if (pictureFailed) {
         showPetsSnack(context, context.petsL10n.pictureNotSaved(pet.name));
@@ -216,12 +224,13 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     try {
       await ref.read(petsStoreProvider.notifier).save(basics.applyTo(pet, now: _now));
       basics.markSaved();
+      await _arrival?.apply(ref, pet.id);
       if (mounted) _goTo(3);
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = petsErrorOf(context, e);
+        _error = e is HealthException ? healthErrorOf(context, e) : petsErrorOf(context, e);
       });
     }
   }
@@ -379,6 +388,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             ],
           ),
           PetBasicsFields(controller: _basics!, now: _now),
+          if (_arrival != null) ArrivalQuestion(controller: _arrival!),
           if (_error != null) _errorText(),
           const SizedBox(height: 20),
           PrimaryButton(label: context.l10n.commonContinue, loading: _busy, onPressed: _saveAbout),

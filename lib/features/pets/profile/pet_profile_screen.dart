@@ -11,6 +11,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
+import '../../firstdays/firstdays.dart';
 import '../../health/emergency/emergency.dart';
 import '../checklist_sheet.dart';
 import '../data/pets_repository_provider.dart';
@@ -310,6 +311,8 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             PetVetTile(petId: pet.id, role: VetRole.emergency),
             PetsLabel(context.petsL10n.healthBasics),
             _HealthBasicsCard(pet: pet),
+            // Start the first 30 days, or see them (a summary once over).
+            FirstDaysProfileEntry(pet: pet),
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),

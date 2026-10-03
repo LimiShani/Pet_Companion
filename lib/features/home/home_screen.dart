@@ -9,6 +9,7 @@ import 'widgets/health_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/pet_hero.dart';
 import '../care/care.dart';
+import '../firstdays/firstdays.dart';
 import '../pets/pets.dart';
 
 /// The dashboard: a pinned top bar with the Emergency pill, then the pet
@@ -89,6 +90,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                       ),
+                      // --- The first 30 days (lib/features/firstdays) ---
+                      // Only while the pet's path runs: day 1 to 30, not
+                      // closed, not finished. Keeps its own data loaded.
+                      FirstDaysHomeCard(pet: pet),
+                      // --- End of the first 30 days ---
                     ],
                   ),
                 ),

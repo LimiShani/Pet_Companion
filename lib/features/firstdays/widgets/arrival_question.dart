@@ -29,6 +29,9 @@ Future<DateTime?> pickArrivalDay(BuildContext context, {required DateTime now, D
 class ArrivalController extends ChangeNotifier {
   ArrivalController({required DateTime today}) : _day = DateTime(today.year, today.month, today.day);
 
+  /// Starts on today by the app's clock (the sample data's day in the demo).
+  factory ArrivalController.today(WidgetRef ref) => ArrivalController(today: ref.read(healthClockProvider)());
+
   bool? _arrived;
   DateTime _day;
 
