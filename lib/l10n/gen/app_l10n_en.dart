@@ -246,7 +246,7 @@ class AppL10nEn extends AppL10n {
   String get settingsTitle => 'Settings';
 
   @override
-  String get settingsSummary => 'Language, week';
+  String get settingsSummary => 'Language, week, notifications';
 
   @override
   String get settingsWeek => 'Week';

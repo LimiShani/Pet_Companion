@@ -103,7 +103,7 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get exactAllowed => 'Allowed';
 
   @override
-  String get exactMissing => 'Not allowed yet: a reminder can come up to 15 minutes late.';
+  String get exactMissing => 'Not allowed yet: a reminder can come late, by up to an hour.';
 
   @override
   String get exactAllow => 'Allow';

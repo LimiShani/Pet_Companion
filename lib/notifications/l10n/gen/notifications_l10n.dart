@@ -254,7 +254,7 @@ abstract class NotificationsL10n {
   /// No description provided for @exactMissing.
   ///
   /// In en, this message translates to:
-  /// **'Not allowed yet: a reminder can come up to 15 minutes late.'**
+  /// **'Not allowed yet: a reminder can come late, by up to an hour.'**
   String get exactMissing;
 
   /// Button that opens Android's Alarms & reminders screen for PetLoop.

@@ -103,7 +103,7 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get exactAllowed => 'יש הרשאה';
 
   @override
-  String get exactMissing => 'עדיין אין הרשאה: תזכורת יכולה להגיע באיחור של עד 15 דקות.';
+  String get exactMissing => 'עדיין אין הרשאה: תזכורת יכולה להגיע באיחור, עד שעה.';
 
   @override
   String get exactAllow => 'מתן הרשאה';

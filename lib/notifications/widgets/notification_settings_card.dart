@@ -194,7 +194,9 @@ class _Exact extends StatelessWidget {
               if (allowed) ...[
                 const Icon(Icons.check_circle_rounded, color: AppColors.sage, size: 20),
                 const SizedBox(width: 6),
-                Flexible(
+                // Only as wide as it needs, so it sits at the end of the row.
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 140),
                   child: Text(l10n.exactAllowed, style: _noteStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ),
               ],

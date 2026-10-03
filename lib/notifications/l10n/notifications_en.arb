@@ -123,7 +123,7 @@
   "exactTitle": "Exact time",
   "exactNote": "For a medicine reminder to arrive on the minute, Android asks for “Alarms & reminders”.",
   "exactAllowed": "Allowed",
-  "exactMissing": "Not allowed yet: a reminder can come up to 15 minutes late.",
+  "exactMissing": "Not allowed yet: a reminder can come late, by up to an hour.",
   "exactAllow": "Allow",
   "@exactAllow": {
     "description": "Button that opens Android's Alarms & reminders screen for PetLoop."

@@ -321,7 +321,7 @@ void main() {
       expect(email, findsOneWidget);
       expect(tester.widget<Text>(email).textDirection, TextDirection.ltr);
       expect(find.text('הגדרות'), findsOneWidget);
-      expect(find.text('שפה, שבוע'), findsOneWidget);
+      expect(find.text('שפה, שבוע, התראות'), findsOneWidget);
       expect(find.text('יציאה מהחשבון'), findsOneWidget);
       // The language list itself is on the Settings page (test/settings/).
       expect(find.byType(LanguageChoice), findsNothing);
