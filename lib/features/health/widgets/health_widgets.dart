@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
@@ -489,7 +491,15 @@ class HealthSheetBody extends StatelessWidget {
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: media.size.height * 0.9),
       child: SingleChildScrollView(
-        padding: EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 0, AppSpacing.screen, 24 + media.viewInsets.bottom),
+        // Above the keyboard when it is open, else above the phone's own
+        // navigation bar (three-button navigation is ~48 px tall and the
+        // sheet runs under it), so the last row can always be reached.
+        padding: EdgeInsetsDirectional.fromSTEB(
+          AppSpacing.screen,
+          0,
+          AppSpacing.screen,
+          24 + math.max(media.viewInsets.bottom, media.viewPadding.bottom),
+        ),
         child: child,
       ),
     );

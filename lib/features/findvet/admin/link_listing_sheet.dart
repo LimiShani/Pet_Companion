@@ -99,7 +99,7 @@ class _ChooseFacility extends ConsumerWidget {
                   ListTile(
                     key: facilityKey(f.id),
                     minTileHeight: kHealthTapTarget,
-                    leading: const AppIcon(Icons.local_hospital_rounded, color: AppColors.coralDark),
+                    leading: const AppIcon(Icons.apartment_rounded, color: AppColors.coralDark),
                     title: Text(
                       f.nameHe == null ? f.name : '${f.name} · ${f.nameHe}',
                       maxLines: 2,
