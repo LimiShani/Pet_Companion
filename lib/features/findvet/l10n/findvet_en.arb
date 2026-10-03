@@ -344,5 +344,23 @@
   "adminLoadFailed": "Could not load the review queue.",
   "adminSaved": "Saved.",
   "adminActionFailed": "Could not save. Please try again.",
-  "adminNotAllowed": "This page is for directory reviewers."
+  "adminNotAllowed": "This page is for directory reviewers.",
+  "adminLinkAction": "Link to a directory facility",
+  "adminLinkTitle": "Link this Google listing to…",
+  "adminLinkNote": "Pick the facility this listing belongs to. From then on they show as one place, with PetLoop's checked details.",
+  "adminLinkConfirm": "Link \"{listing}\" to {facility}?",
+  "@adminLinkConfirm": {
+    "placeholders": {
+      "listing": {
+        "type": "String"
+      },
+      "facility": {
+        "type": "String"
+      }
+    }
+  },
+  "adminLinked": "Linked. The search now shows them as one place.",
+  "adminLinkFailed": "Could not link. Please try again.",
+  "adminLinkNoFacilities": "There are no facilities in the directory yet.",
+  "adminLink": "Link"
 }

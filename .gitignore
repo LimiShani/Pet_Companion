@@ -49,3 +49,6 @@ env.json
 
 # Live state of the agent control board (status files, notes)
 tools/agent_board/state/
+
+# Supabase CLI local state (linked project ref, CLI version)
+supabase/.temp/

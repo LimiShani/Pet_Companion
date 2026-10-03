@@ -249,3 +249,39 @@ test('a ZZ search uses ZZ ladders and echoes ZZ', async () => {
   assert.equal(response.radiusM, 30_000); // ZZ ladder 8 km -> 30 km
   assert.deepEqual(response.results.map((r) => r.key), ['f:z1']);
 });
+
+test('two Google listings linked to one facility show as ONE result, carried by the nearer listing', async () => {
+  // The Hebrew University hospital case: the building and a street-address
+  // pin ~770 m apart, both linked by an admin to the same facility.
+  const curated = [facility({ id: 'H', name: 'Teaching Hospital', ...at(3_000), emergency: ADVERTISED, placeIds: ['pBuilding', 'pPin'] })];
+  const store = new MemoryStore({ curated });
+  const providerPlaces = [
+    place({ placeId: 'pPin', name: 'Teaching Hospital near the junction', ...at(3_770) }),
+    place({ placeId: 'pBuilding', name: 'Teaching Hospital', ...at(3_000) }),
+  ];
+  const { d } = deps(store, { status: 'ok', value: providerPlaces });
+  const { response, linkCandidates } = await runSearch(req(), d);
+
+  const forH = response.results.filter((r) => r.facilityId === 'H');
+  assert.equal(forH.length, 1);
+  assert.equal(forH[0].placeId, 'pBuilding'); // the nearer listing carries it
+  assert.equal(forH[0].emergency.state, 'advertised');
+  assert.equal(response.results.some((r) => r.key === 'g:pPin'), false); // no stray duplicate
+  assert.equal(linkCandidates.length, 0);
+});
+
+test('an unlinked second listing of a linked facility stays a separate listing (until an admin links it)', async () => {
+  const curated = [facility({ id: 'H', name: 'Teaching Hospital', ...at(3_000), emergency: ADVERTISED, placeIds: ['pBuilding'] })];
+  const store = new MemoryStore({ curated });
+  const providerPlaces = [
+    place({ placeId: 'pBuilding', name: 'Teaching Hospital', ...at(3_000) }),
+    place({ placeId: 'pPin', name: 'Teaching Hospital near the junction', ...at(3_770) }),
+  ];
+  const { d } = deps(store, { status: 'ok', value: providerPlaces });
+  const { response } = await runSearch(req(), d);
+  assert.equal(response.results.filter((r) => r.facilityId === 'H').length, 1);
+  const pin = response.results.find((r) => r.key === 'g:pPin');
+  assert.ok(pin, 'the second listing is still shown');
+  assert.equal(pin!.fromCurated, false);
+  assert.equal(pin!.emergency.state, 'not_listed'); // never inherits the claim by name
+});

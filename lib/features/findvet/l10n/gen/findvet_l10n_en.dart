@@ -559,4 +559,30 @@ class FindVetL10nEn extends FindVetL10n {
 
   @override
   String get adminNotAllowed => 'This page is for directory reviewers.';
+
+  @override
+  String get adminLinkAction => 'Link to a directory facility';
+
+  @override
+  String get adminLinkTitle => 'Link this Google listing to…';
+
+  @override
+  String get adminLinkNote => 'Pick the facility this listing belongs to. From then on they show as one place, with PetLoop\'s checked details.';
+
+  @override
+  String adminLinkConfirm(String listing, String facility) {
+    return 'Link \"$listing\" to $facility?';
+  }
+
+  @override
+  String get adminLinked => 'Linked. The search now shows them as one place.';
+
+  @override
+  String get adminLinkFailed => 'Could not link. Please try again.';
+
+  @override
+  String get adminLinkNoFacilities => 'There are no facilities in the directory yet.';
+
+  @override
+  String get adminLink => 'Link';
 }

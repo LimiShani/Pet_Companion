@@ -559,4 +559,30 @@ class FindVetL10nHe extends FindVetL10n {
 
   @override
   String get adminNotAllowed => 'הדף הזה מיועד לבודקי המאגר.';
+
+  @override
+  String get adminLinkAction => 'קישור למקום במאגר';
+
+  @override
+  String get adminLinkTitle => 'קישור הרישום הזה של Google אל…';
+
+  @override
+  String get adminLinkNote => 'בחירת המקום שהרישום הזה שייך אליו. מעכשיו הם יופיעו כמקום אחד, עם הפרטים שנבדקו ב-PetLoop.';
+
+  @override
+  String adminLinkConfirm(String listing, String facility) {
+    return 'לקשר את ״\u2068$listing\u2069״ אל \u2068$facility\u2069?';
+  }
+
+  @override
+  String get adminLinked => 'קושר. בחיפוש הם יופיעו עכשיו כמקום אחד.';
+
+  @override
+  String get adminLinkFailed => 'הקישור לא הצליח. אפשר לנסות שוב.';
+
+  @override
+  String get adminLinkNoFacilities => 'עדיין אין מקומות במאגר.';
+
+  @override
+  String get adminLink => 'קישור';
 }

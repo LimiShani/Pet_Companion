@@ -167,5 +167,13 @@
   "adminLoadFailed": "לא הצלחנו לטעון את רשימת הבדיקה.",
   "adminSaved": "נשמר.",
   "adminActionFailed": "השמירה לא הצליחה. אפשר לנסות שוב.",
-  "adminNotAllowed": "הדף הזה מיועד לבודקי המאגר."
+  "adminNotAllowed": "הדף הזה מיועד לבודקי המאגר.",
+  "adminLinkAction": "קישור למקום במאגר",
+  "adminLinkTitle": "קישור הרישום הזה של Google אל…",
+  "adminLinkNote": "בחירת המקום שהרישום הזה שייך אליו. מעכשיו הם יופיעו כמקום אחד, עם הפרטים שנבדקו ב-PetLoop.",
+  "adminLinkConfirm": "לקשר את ״\u2068{listing}\u2069״ אל \u2068{facility}\u2069?",
+  "adminLinked": "קושר. בחיפוש הם יופיעו עכשיו כמקום אחד.",
+  "adminLinkFailed": "הקישור לא הצליח. אפשר לנסות שוב.",
+  "adminLinkNoFacilities": "עדיין אין מקומות במאגר.",
+  "adminLink": "קישור"
 }

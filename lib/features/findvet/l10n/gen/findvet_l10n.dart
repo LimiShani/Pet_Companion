@@ -1102,6 +1102,54 @@ abstract class FindVetL10n {
   /// In en, this message translates to:
   /// **'This page is for directory reviewers.'**
   String get adminNotAllowed;
+
+  /// No description provided for @adminLinkAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Link to a directory facility'**
+  String get adminLinkAction;
+
+  /// No description provided for @adminLinkTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Link this Google listing to…'**
+  String get adminLinkTitle;
+
+  /// No description provided for @adminLinkNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the facility this listing belongs to. From then on they show as one place, with PetLoop\'s checked details.'**
+  String get adminLinkNote;
+
+  /// No description provided for @adminLinkConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Link \"{listing}\" to {facility}?'**
+  String adminLinkConfirm(String listing, String facility);
+
+  /// No description provided for @adminLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked. The search now shows them as one place.'**
+  String get adminLinked;
+
+  /// No description provided for @adminLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not link. Please try again.'**
+  String get adminLinkFailed;
+
+  /// No description provided for @adminLinkNoFacilities.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no facilities in the directory yet.'**
+  String get adminLinkNoFacilities;
+
+  /// No description provided for @adminLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get adminLink;
 }
 
 class _FindVetL10nDelegate extends LocalizationsDelegate<FindVetL10n> {

@@ -280,6 +280,19 @@ facility, with Approve, Correct (edit a claim with its source URL),
 Withdraw emergency, and Withdraw facility. Every action goes through an
 RPC that checks the caller is an admin and writes who/when.
 
+**Linking extra Google listings.** One facility can have several Google
+listings (the Hebrew University hospital has the building and a street pin
+770 m apart). A reviewer links them in two ways: in the search results,
+every card that came only from Google shows **Link to a directory
+facility** (reviewers only), which lists our facilities (likely matches
+first, withdrawn ones left out) and links after a confirmation; and in the
+review queue, a **possible listing match** item (from the search's careful
+heuristic) has a one-tap **Link**. Both call `vet_admin_link_place`, which
+stores only the place id (allowed by Google), closes open candidates for
+that listing, and is audited. From then on the search shows the facility
+once, carried by the nearest of its listings; a listing never inherits an
+emergency claim by name.
+
 ## Privacy
 
 - Location is asked for only when the user taps "Use my location", after

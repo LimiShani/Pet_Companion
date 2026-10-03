@@ -25,6 +25,7 @@ class VetResultCard extends StatefulWidget {
     required this.onDirections,
     required this.onOpenLink,
     this.onSave,
+    this.onLink,
     this.optionLabel,
   });
 
@@ -33,6 +34,7 @@ class VetResultCard extends StatefulWidget {
   static Key directionsKey(String key) => Key('findvet-directions-$key');
   static Key saveKey(String key) => Key('findvet-save-$key');
   static Key detailsKey(String key) => Key('findvet-details-$key');
+  static Key linkKey(String key) => Key('findvet-link-$key');
 
   final VetResult result;
   final VetSearchMode mode;
@@ -44,6 +46,10 @@ class VetResultCard extends StatefulWidget {
   /// Long term care only: save as a pet's regular vet. `null` hides it
   /// (emergency, or nobody signed in).
   final VoidCallback? onSave;
+
+  /// Directory reviewers only, on a listing that came only from the places
+  /// provider: attach it to one of our facilities. `null` hides it.
+  final VoidCallback? onLink;
 
   /// "Nearest option" / "Second option" above the name.
   final String? optionLabel;
@@ -186,6 +192,14 @@ class _VetResultCardState extends State<VetResultCard> {
                     icon: const AppIcon(Icons.bookmark_add_outlined),
                     label: Text(l10n.save),
                   ),
+                ),
+              if (widget.onLink != null)
+                TextButton.icon(
+                  key: VetResultCard.linkKey(r.key),
+                  onPressed: widget.onLink,
+                  style: TextButton.styleFrom(minimumSize: const Size(kHealthTapTarget, kHealthTapTarget)),
+                  icon: const AppIcon(Icons.link_rounded, size: 18),
+                  label: Text(l10n.adminLinkAction),
                 ),
               if (hasDetails)
                 TextButton(

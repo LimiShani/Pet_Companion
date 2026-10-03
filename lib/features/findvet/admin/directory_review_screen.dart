@@ -166,6 +166,11 @@ class _ItemCard extends ConsumerWidget {
       await _act(context, ref, (repo) => repo.resolve(item.id, action, note));
     }
 
+    // A heuristic match the search found: the listing's place id and the
+    // facility it looked like. Linking closes the item on the server.
+    final candidatePlace = item.details['placeId'];
+    final canLink = item.kind == 'link_candidate' && item.facilityId != null && candidatePlace is String;
+
     return _Box(
       key: DirectoryReviewScreen.itemKey(item.id),
       border: severe ? AppColors.coralDark : null,
@@ -187,6 +192,13 @@ class _ItemCard extends ConsumerWidget {
         Wrap(
           spacing: 8,
           children: [
+            if (canLink)
+              FilledButton.icon(
+                key: Key('review-link-${item.id}'),
+                onPressed: () => _act(context, ref, (repo) => repo.linkPlace(item.facilityId!, candidatePlace)),
+                icon: const AppIcon(Icons.link_rounded, size: 18),
+                label: Text(l10n.adminLink),
+              ),
             TextButton(
               key: Key('review-resolve-${item.id}'),
               onPressed: () => close('resolve', l10n.adminResolve),

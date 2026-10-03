@@ -162,6 +162,12 @@ abstract class VetAdminRepository {
   });
 
   Future<void> withdrawClaim(String facilityId, String key, String note);
+
+  /// Links a places-provider listing ([placeId], the only provider content
+  /// we may keep) to our facility, so a search shows them as one place with
+  /// our sourced facts. A facility may have several listings (a building
+  /// and a street pin); open "possible match" items for the listing close.
+  Future<void> linkPlace(String facilityId, String placeId);
 }
 
 class SupabaseVetAdminRepository implements VetAdminRepository {
@@ -222,6 +228,10 @@ class SupabaseVetAdminRepository implements VetAdminRepository {
     'vet_admin_withdraw_claim',
     params: {'p_facility': facilityId, 'p_key': key, 'p_note': note},
   );
+
+  @override
+  Future<void> linkPlace(String facilityId, String placeId) =>
+      _client.rpc<void>('vet_admin_link_place', params: {'p_facility': facilityId, 'p_place_id': placeId});
 }
 
 /// In memory, for the demo and the tests. The demo account is an admin so
@@ -311,6 +321,12 @@ class FakeVetAdminRepository implements VetAdminRepository {
       key,
       AdminClaim(key: key, value: old.value, status: 'withdrawn', sourceUrl: old.sourceUrl, sourceKind: old.sourceKind),
     );
+  }
+
+  @override
+  Future<void> linkPlace(String facilityId, String placeId) async {
+    actions.add('link:$facilityId:$placeId');
+    items.removeWhere((i) => i.kind == 'link_candidate' && i.details['placeId'] == placeId);
   }
 
   void _replaceClaim(String facilityId, String key, AdminClaim claim) {

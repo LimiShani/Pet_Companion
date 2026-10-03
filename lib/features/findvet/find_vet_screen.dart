@@ -16,6 +16,7 @@ import '../health/emergency/contact_actions.dart' show launchOrExplain;
 import '../health/emergency/vet_form_screen.dart' show openVetForm;
 import '../health/data/health_models.dart' show Vet, VetRole;
 import '../health/widgets/health_widgets.dart' show kHealthTapTarget, showHealthSheet, SheetTitle, FinePrint;
+import 'admin/link_listing_sheet.dart';
 import 'data/location_service.dart';
 import 'data/supabase_vet_finder_repository.dart';
 import 'data/vet_models.dart';
@@ -377,6 +378,13 @@ class _ResultsState extends ConsumerState<_Results> {
 
   Future<void> _openLink(String url) => ref.read(vetLauncherProvider).openLink(url);
 
+  /// A reviewer attaches a Google-only listing to one of our facilities;
+  /// the search then runs again so the two show as one place.
+  Future<void> _link(VetResult r) async {
+    final linked = await linkListingToFacility(context, ref, r);
+    if (linked && mounted) await widget.controller.search(radiusM: widget.state.results?.value?.radiusM);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = context.findVetL10n;
@@ -417,6 +425,7 @@ class _ResultsState extends ConsumerState<_Results> {
     final now = ref.watch(findVetClockProvider)();
     _scheduleExpiry(result, now);
     final signedIn = ref.watch(authControllerProvider).value != null;
+    final reviewer = signedIn && (ref.watch(vetIsAdminProvider).value ?? false);
     final wider = widget.controller.widerRadius;
 
     VetResultCard card(VetResult r, {String? option}) => VetResultCard(
@@ -429,6 +438,7 @@ class _ResultsState extends ConsumerState<_Results> {
       onDirections: () => _directions(r),
       onOpenLink: _openLink,
       onSave: mode == VetSearchMode.longTerm && signedIn ? () => _save(r) : null,
+      onLink: reviewer && r.fromProvider && !r.fromCurated && r.placeId != null ? () => _link(r) : null,
     );
 
     final children = <Widget>[];
