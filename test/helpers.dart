@@ -7,6 +7,7 @@ import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/budget/budget.dart';
 import 'package:pet_companion/features/care/data/care_repository.dart';
 import 'package:pet_companion/features/care/state/care_providers.dart';
+import 'package:pet_companion/features/firstdays/firstdays.dart';
 import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
@@ -23,8 +24,8 @@ import 'package:pet_companion/widgets/primary_button.dart';
 ///
 /// [now] fixes the clock of the health and care data (the sample data
 /// lives around 10 June 2025) and makes their fake backends answer at
-/// once, for checks of what Home's cards count (the budget's and the
-/// basket's sample data too).
+/// once, for checks of what Home's cards count (the budget's, the
+/// basket's and the first 30 days' sample data too).
 Future<void> pumpApp(
   WidgetTester tester, {
   AppLanguage? language,
@@ -53,6 +54,7 @@ Future<void> pumpApp(
           healthRepositoryProvider.overrideWithValue(FakeHealthRepository(latency: Duration.zero, now: () => now)),
           careRepositoryProvider.overrideWithValue(FakeCareRepository(latency: Duration.zero)),
           budgetRepositoryProvider.overrideWithValue(FakeBudgetRepository(latency: Duration.zero, now: () => now)),
+          firstDaysRepositoryProvider.overrideWithValue(FakeFirstDaysRepository(latency: Duration.zero)),
         ],
       ],
       child: const PetLoopApp(),

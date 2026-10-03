@@ -11,6 +11,20 @@ import 'feed/feed_section.dart';
 import 'feed/post_composer_screen.dart';
 import 'guides/guides_section.dart';
 
+/// Set by another part of the app to have the Community tab show its
+/// guides (the first 30 days of a new pet links to them). The tab switches
+/// to the guides the next time it is built and clears the request.
+class CommunityGuidesRequest extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void request() => state = true;
+
+  void clear() => state = false;
+}
+
+final communityGuidesRequestProvider = NotifierProvider<CommunityGuidesRequest, bool>(CommunityGuidesRequest.new);
+
 /// The Community tab: a social feed, topic chat rooms and a library of
 /// guides, switched from the header.
 class CommunityScreen extends ConsumerStatefulWidget {
@@ -22,6 +36,7 @@ class CommunityScreen extends ConsumerStatefulWidget {
 
 class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   static const _feed = 0;
+  static const _guides = 2;
 
   var _index = _feed;
 
@@ -37,6 +52,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.communityL10n;
+    if (ref.watch(communityGuidesRequestProvider)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(communityGuidesRequestProvider.notifier).clear();
+        _select(_guides);
+      });
+    }
     // The "New post" button floats over the list of posts. A feed with no
     // posts, or one that could not load, shows a block of its own with its
     // own button in the middle of the page; the floating one would sit on
