@@ -148,7 +148,9 @@ class CardActionRow extends StatelessWidget {
         // Clock and gap, the text; the pill's padding and border.
         final lineWidth = 21 + width(text, AppText.body);
         final actionWidth = 31 + width(actionLabel, AppText.button(14));
-        if (lineWidth + 8 + actionWidth <= constraints.maxWidth) {
+        // A margin for what the measure cannot see (the font fallback the
+        // screen really uses, rounding): better under the line than cut.
+        if (lineWidth + 8 + actionWidth + 16 <= constraints.maxWidth) {
           return Row(
             children: [
               Expanded(child: NextEventLine(text: text)),

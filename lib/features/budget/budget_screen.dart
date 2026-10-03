@@ -135,7 +135,7 @@ class _MonthBody extends ConsumerWidget {
                   style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                 ),
               const SizedBox(height: 10),
-              Text(l10n.averageLine(money(month.average)), style: AppText.body),
+              Text(l10n.averageLine(money(month.average.roundToDouble())), style: AppText.body),
               Text(l10n.averageNote, style: AppText.secondary),
             ],
           ),
