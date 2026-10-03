@@ -49,8 +49,12 @@ class _NotificationPermissionSheetState extends State<NotificationPermissionShee
     setState(() => _busy = true);
     var nextStep = false;
     try {
-      final allowed = await widget.platform.requestPermission();
-      if (allowed) nextStep = (await widget.platform.access()).exact == false;
+      await widget.platform.requestPermission();
+      // What the phone allows now, rather than the prompt's answer: on a
+      // real run that answer once came back "not allowed" right after
+      // "Allow", and the sheet closed before the "on the minute" step.
+      final access = await widget.platform.access();
+      nextStep = access.allowed && access.exact == false;
     } catch (_) {
       // Nothing to add: Settings shows what the phone allows.
     }
