@@ -1,0 +1,150 @@
+{
+  "@@locale": "en",
+  "title": "PetLoop · {pet}",
+  "@title": {
+    "description": "Title of a reminder on the phone: the app and the pet's name.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBody": "{meal} · time to feed",
+  "@mealBody": {
+    "description": "Text of a meal reminder. {meal} is the routine's name, e.g. Dinner.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "walkFallback": "Time for a walk",
+  "@walkFallback": {
+    "description": "Text of a walk reminder whose routine has no name (a named one shows just its name, e.g. Evening walk)."
+  },
+  "medicineBody": "{medicine} · {dose}",
+  "@medicineBody": {
+    "description": "Text of a medicine reminder: the medicine and the dose, as the owner typed them (Joint tablets · 1 tablet).",
+    "placeholders": {
+      "medicine": {
+        "type": "String"
+      },
+      "dose": {
+        "type": "String"
+      }
+    }
+  },
+  "medicineNoDose": "{medicine} · time for a dose",
+  "@medicineNoDose": {
+    "description": "Text of a medicine reminder when no dose was entered.",
+    "placeholders": {
+      "medicine": {
+        "type": "String"
+      }
+    }
+  },
+  "appointmentToday": "Today {time}: {title}",
+  "@appointmentToday": {
+    "description": "Text of an appointment reminder for later today. {title} is the record's title.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "appointmentTomorrow": "Tomorrow {time}: {title}",
+  "@appointmentTomorrow": {
+    "description": "Text of the appointment reminder of the evening before.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "appointmentOn": "{date} {time}: {title}",
+  "@appointmentOn": {
+    "description": "Text of an appointment reminder for another day. {date} is like 12.06.25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "withPlace": "{text} · {place}",
+  "@withPlace": {
+    "description": "An appointment reminder's text followed by the vet or clinic.",
+    "placeholders": {
+      "text": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "snooze": "In 15 min",
+  "@snooze": {
+    "description": "Button on a reminder: show it again in 15 minutes."
+  },
+  "sectionTitle": "Notifications",
+  "@sectionTitle": {
+    "description": "Section of the Settings page."
+  },
+  "masterTitle": "Reminders on this phone",
+  "masterNote": "PetLoop rings at the time of each reminder",
+  "meals": "Meals",
+  "@meals": {
+    "description": "Switch in Settings, and the name of the phone's notification category."
+  },
+  "walks": "Walks",
+  "medicines": "Medicines",
+  "appointments": "Appointments and vaccinations",
+  "appointmentsNote": "The evening before (18:00) and 2 hours before",
+  "basket": "Basket: running low",
+  "@basket": {
+    "description": "Reminder that food or another basket item is about to run out."
+  },
+  "basketNote": "5 days before",
+  "quietHours": "Quiet hours, 22:00–07:00",
+  "quietHoursNote": "Medicines ring in quiet hours too",
+  "quietHoursMoved": "Meals, walks and the basket wait until 07:00",
+  "exactTitle": "Exact time",
+  "exactNote": "For a medicine reminder to arrive on the minute, Android asks for “Alarms & reminders”.",
+  "exactAllowed": "Allowed",
+  "exactMissing": "Not allowed yet: a reminder can come up to 15 minutes late.",
+  "exactAllow": "Allow",
+  "@exactAllow": {
+    "description": "Button that opens Android's Alarms & reminders screen for PetLoop."
+  },
+  "blockedTitle": "PetLoop may not show notifications",
+  "blockedNote": "Notifications are off for PetLoop in the phone's settings, so no reminder can ring.",
+  "openPhoneSettings": "Open phone settings",
+  "askTitle": "Reminders, right on time",
+  "@askTitle": {
+    "description": "Title of the sheet shown before the phone asks for permission to send notifications."
+  },
+  "askIntro": "PetLoop can ring when it is time for:",
+  "askMeals": "Meals and walks",
+  "askMedicines": "Medicine doses",
+  "askAppointments": "Vet appointments and vaccinations, the evening before and 2 hours before",
+  "askFoot": "In Settings you choose what rings, and you can add quiet hours.",
+  "askAllow": "Turn on reminders",
+  "askLater": "Not now",
+  "askExactTitle": "One more thing: on the minute",
+  "askExactAllow": "Open Alarms & reminders",
+  "@askExactAllow": {
+    "description": "Button that opens Android's Alarms & reminders screen."
+  }
+}
