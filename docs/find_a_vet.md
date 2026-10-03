@@ -208,7 +208,7 @@ radius, `429 {"error": "rate_limited"}`, `503 {"error": "unavailable"}`.
   (`GOOGLE_PLACES_API_KEY`). Restrict it to Places API (New) + Geocoding
   API, and set per-day quotas and a budget alert in Google Cloud.
 
-## Database (`0012_vet_directory.sql`)
+## Database (`0012_vet_directory.sql`, hardened by `0013`)
 
 | Table | What |
 |---|---|
@@ -399,7 +399,10 @@ kept inside its free monthly allowance by hard daily caps.
 
 1. Dashboard > SQL Editor > New query: paste
    `supabase/migrations/0012_vet_directory.sql` and Run (needs 0001; safe to
-   run again).
+   run again). Then run `0013_vet_directory_hardening.sql`: it moves the
+   owner-rights views and RPCs into the unexposed schema `vet_private` behind
+   caller-rights wrappers of the same names, which clears the Security
+   Advisor's errors and warnings without changing behaviour.
 2. Optional example data: run `supabase/seed/vet_directory_seed.sql`. It adds
    the Hebrew University Veterinary Teaching Hospital and Vet Center (Rosh
    HaAyin) as **pending** (not shown until approved), with their emergency
