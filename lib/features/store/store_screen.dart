@@ -10,8 +10,10 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
+import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pet_selector.dart';
+import '../budget/budget.dart';
 import 'data/deal.dart';
 import 'data/deal_filters.dart';
 import 'share_deal_screen.dart';
@@ -25,7 +27,8 @@ import 'widgets/store_messages.dart';
 /// out to its seller; nothing is bought inside the app.
 ///
 /// It opens on what suits the selected pet; "All animals" in the header
-/// shows the deals for every kind of animal.
+/// shows the deals for every kind of animal. A switch at the top turns it
+/// to "My basket", the owner's regular products (the budget feature).
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
@@ -34,7 +37,15 @@ class StoreScreen extends ConsumerStatefulWidget {
 }
 
 class _StoreScreenState extends ConsumerState<StoreScreen> {
-  late final _search = TextEditingController(text: ref.read(storeFilterProvider).query);
+  late final TextEditingController _search;
+
+  @override
+  void initState() {
+    super.initState();
+    // Made here rather than on first use: with "My basket" showing, the
+    // search field is never built, and dispose must not reach for ref.
+    _search = TextEditingController(text: ref.read(storeFilterProvider).query);
+  }
 
   @override
   void dispose() {
@@ -65,6 +76,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
     final species = ref.watch(storePetSpeciesProvider);
+    final basket = ref.watch(storeViewProvider) == StoreView.basket;
     // Load the user's saved and reported deals together with the catalogue,
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
@@ -73,6 +85,10 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // for that pet: "All animals" gives way to it.
     ref.listen(selectedPetProvider.select((pet) => pet.id), (previous, next) {
       if (previous != next) ref.read(storeFilterProvider.notifier).setAllAnimals(false);
+    });
+    // The basket's "deals on dog food" link sets the search too.
+    ref.listen(storeFilterProvider.select((filter) => filter.query), (_, query) {
+      if (_search.text != query) _search.text = query;
     });
 
     final loading = deals.isLoading && !deals.hasValue;
@@ -85,11 +101,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
     return Scaffold(
       key: const Key('store-screen'),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _shareDeal,
-        icon: const AppIcon(Icons.add_rounded),
-        label: Text(l10n.shareADeal),
-      ),
+      floatingActionButton: basket
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _shareDeal,
+              icon: const AppIcon(Icons.add_rounded),
+              label: Text(l10n.shareADeal),
+            ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -105,12 +123,23 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             bottom: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _PetScope(allAnimals: filter.allAnimals, onChanged: filters.setAllAnimals),
-                const SizedBox(height: 10),
-                _SearchField(controller: _search, onChanged: filters.setQuery),
+                CoralSegmentedControl(
+                  labels: [context.budgetL10n.deals, context.budgetL10n.myBasket],
+                  selectedIndex: basket ? 1 : 0,
+                  onChanged: (index) => ref.read(storeViewProvider.notifier).show(StoreView.values[index]),
+                ),
+                if (!basket) ...[
+                  const SizedBox(height: 10),
+                  _PetScope(allAnimals: filter.allAnimals, onChanged: filters.setAllAnimals),
+                  const SizedBox(height: 10),
+                  _SearchField(controller: _search, onChanged: filters.setQuery),
+                ],
               ],
             ),
           ),
+          if (basket)
+            const Expanded(child: BasketView())
+          else
           Expanded(
             child: RefreshIndicator(
               onRefresh: _refresh,
