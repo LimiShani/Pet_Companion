@@ -1,6 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Network access for Supabase and images (debug builds get this implicitly). -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Find a vet: one location fix, asked for only when the owner taps
+         "Use my location". Android 12+ lets the owner pick "approximate". -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <application
         android:label="PetLoop"
         android:name="${applicationName}"
