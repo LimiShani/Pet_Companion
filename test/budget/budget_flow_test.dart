@@ -326,6 +326,23 @@ void main() {
       expect(food.body, startsWith('Adult dry food for Kelly runs out in 5 days'));
       expect(food.payload, 'basket:kelly');
     });
+
+    testWidgets('in the demo (another day) the reminder moves to the real calendar', (tester) async {
+      final sink = RecordingSink();
+      // The sample data's day, 10 June 2025 in the afternoon.
+      await pumpBudgetApp(tester, sink: sink);
+      await openBasket(tester);
+
+      await tapVisible(tester, find.byKey(const ValueKey('basket-bought-b-kelly-food')));
+      await tapVisible(tester, find.byKey(BoughtAgainDialog.saveKey));
+
+      final food = sink.groups['basket:kelly']!.singleWhere((r) => r.key.startsWith('b-kelly-food@'));
+      // Bought "today": 42 days of food, the reminder 5 days before the end,
+      // counted from the real today rather than from June 2025.
+      final now = DateTime.now();
+      expect(food.at, DateTime(now.year, now.month, now.day + 37, 10));
+      expect(food.at.isAfter(now), isTrue);
+    });
   });
 
   group('Hebrew', () {

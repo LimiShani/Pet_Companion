@@ -21,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
+import '../features/budget/state/budget_providers.dart' show basketProvider;
 import '../features/health/data/health_models.dart';
 import '../features/health/data/reminder_scheduler.dart';
 import '../features/health/state/health_providers.dart';
@@ -333,6 +334,10 @@ class ReminderCoordinator {
               now: _container.read(healthClockProvider)(),
             ),
           );
+      if (_disposed || userId != _userId || !_loaded.containsKey(petId)) return;
+      // The basket's "running low" reminders, planned again for the same
+      // reasons (a new day, the feeding portion or meal times changed).
+      await _container.read(basketProvider.notifier).resyncReminders(petId);
     } catch (error) {
       debugPrint('PetLoop: could not load the reminders of a pet: $error');
     } finally {

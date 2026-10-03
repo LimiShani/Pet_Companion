@@ -8,6 +8,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../notifications/notification_sink.dart';
 import '../../../state/pets_provider.dart';
+import '../../../utils/calendar.dart';
 import '../../care/state/care_providers.dart';
 import '../../health/costs.dart';
 import '../../health/state/health_providers.dart' show carePlanProvider, healthClockProvider;
@@ -290,6 +291,19 @@ class BasketController extends AsyncNotifier<List<BasketItem>> {
     await _syncPets(petIds, items);
   }
 
+  /// Plans [petId]'s basket reminders again. The notifications' coordinator
+  /// calls it at sign-in and when the app comes back after a while: a run-out
+  /// day also moves when the feeding portion or the meal times change.
+  Future<void> resyncReminders(String petId) async {
+    final List<BasketItem> items;
+    try {
+      items = await future;
+    } catch (_) {
+      return;
+    }
+    await _syncPets({petId}, items);
+  }
+
   /// Plans the reminders of [petIds]' baskets again. A failure only means
   /// no reminder: it never fails what the owner did.
   Future<void> _syncPets(Set<String> petIds, List<BasketItem> items) async {
@@ -300,6 +314,11 @@ class BasketController extends AsyncNotifier<List<BasketItem>> {
       final format = ref.read(appFormatProvider);
       final pets = ref.read(petsProvider);
       final today = ref.read(healthClockProvider)();
+      // The sample data lives on another day (see healthClockProvider): its
+      // reminders move to the real calendar, so the demo rings too. On a
+      // real account the two days are the same.
+      final shift = daysBetween(today, DateTime.now());
+      DateTime moved(DateTime at) => DateTime(at.year, at.month, at.day + shift, at.hour, at.minute);
       final fed = _petsFedBy(items);
       for (final petId in petIds) {
         final rate = fed.contains(petId) ? await _feedingRate(petId) : null;
@@ -309,16 +328,28 @@ class BasketController extends AsyncNotifier<List<BasketItem>> {
           for (final item in items)
             if (item.petId == petId) basketLine(item, rate: rate, today: today),
         ];
-        final reminders = basketReminders(
-          petId: petId,
-          lines: lines,
-          // Reminders are for the phone's real clock, whatever day the
-          // sample data lives on.
-          now: DateTime.now(),
-          title: (line) => words.reminderTitle(line.item.name),
-          body: (line) =>
-              words.reminderBody(reminderDaysBefore, line.item.name, pet.name, format.dayMonth(line.runsOutOn!)),
-        );
+        final reminders = [
+          for (final r in basketReminders(
+            petId: petId,
+            lines: lines,
+            now: today,
+            title: (line) => words.reminderTitle(line.item.name),
+            body: (line) => words.reminderBody(
+              reminderDaysBefore,
+              line.item.name,
+              pet.name,
+              format.dayMonth(moved(line.runsOutOn!)),
+            ),
+          ))
+            PlannedNotification(
+              key: r.key,
+              kind: r.kind,
+              at: moved(r.at),
+              title: r.title,
+              body: r.body,
+              payload: r.payload,
+            ),
+        ];
         await sink.syncGroup(basketGroup(petId), reminders);
       }
     } catch (_) {
