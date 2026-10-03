@@ -272,11 +272,12 @@ Future<void> openHealthTab(WidgetTester tester, {String label = 'Health'}) async
 
 /// Scrolls [finder] into view and taps it.
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
-  await tester.ensureVisible(finder);
+  // Centred: at the top of a long Home it would sit under the pinned bar.
+  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
   await tester.pumpAndSettle();
   // A text field that was just typed in scrolls itself back into view
   // once; the second pass wins.
-  await tester.ensureVisible(finder);
+  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
   await tester.pump();
   await tester.tap(finder);
   await tester.pumpAndSettle();

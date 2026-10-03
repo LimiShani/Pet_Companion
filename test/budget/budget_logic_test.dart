@@ -194,10 +194,7 @@ void main() {
     });
 
     test('the average looks back twelve months at most', () {
-      final old = [
-        _expense('old', 1200, DateTime(2023, 1, 1)),
-        _expense('now', 100, DateTime(2025, 6, 1)),
-      ];
+      final old = [_expense('old', 1200, DateTime(2023, 1, 1)), _expense('now', 100, DateTime(2025, 6, 1))];
       final avg = monthlyAverage(expenses: old, health: const [], month: june, today: today, currency: 'ILS');
       expect(avg, closeTo(100 / 12, 0.01));
     });
@@ -244,7 +241,11 @@ void main() {
 
     test('no portion or no meal times: nothing to work out', () {
       expect(
-        feedingRateOf(plan: CarePlan(items: [_meal('a')]), settings: const CareSettings(petId: 'kelly'), today: today),
+        feedingRateOf(
+          plan: CarePlan(items: [_meal('a')]),
+          settings: const CareSettings(petId: 'kelly'),
+          today: today,
+        ),
         isNull,
       );
       expect(feedingRateOf(plan: const CarePlan(), settings: settings, today: today), isNull);
@@ -253,7 +254,11 @@ void main() {
     const rate = FeedingRate(portionGrams: 140, mealsPerDay: 2);
 
     test('food lasts by the feeding: 12 kg at 280 g a day is 42 days', () {
-      final line = basketLine(_item(bought: DateTime(2025, 5, 2)), rate: rate, today: today);
+      final line = basketLine(
+        _item(bought: DateTime(2025, 5, 2)),
+        rate: rate,
+        today: today,
+      );
       expect(line.by, LastsBy.feeding);
       expect(line.lastsDays, 42);
       expect(line.runsOutOn, DateTime(2025, 6, 13));
@@ -263,7 +268,11 @@ void main() {
     });
 
     test("the owner's own number wins over the feeding", () {
-      final line = basketLine(_item(bought: DateTime(2025, 5, 2), lastsDays: 60), rate: rate, today: today);
+      final line = basketLine(
+        _item(bought: DateTime(2025, 5, 2), lastsDays: 60),
+        rate: rate,
+        today: today,
+      );
       expect(line.by, LastsBy.owner);
       expect(line.runsOutOn, DateTime(2025, 7, 1));
       expect(line.isLow, isFalse);
@@ -291,10 +300,22 @@ void main() {
 
     test('running low is within a week, soonest first, the ones that ran out included', () {
       final lines = [
-        basketLine(_item(id: 'later', bought: DateTime(2025, 6, 1), lastsDays: 30), today: today),
-        basketLine(_item(id: 'week', bought: DateTime(2025, 6, 1), lastsDays: 16), today: today),
-        basketLine(_item(id: 'gone', bought: DateTime(2025, 5, 1), lastsDays: 30), today: today),
-        basketLine(_item(id: 'soon', bought: DateTime(2025, 6, 1), lastsDays: 11), today: today),
+        basketLine(
+          _item(id: 'later', bought: DateTime(2025, 6, 1), lastsDays: 30),
+          today: today,
+        ),
+        basketLine(
+          _item(id: 'week', bought: DateTime(2025, 6, 1), lastsDays: 16),
+          today: today,
+        ),
+        basketLine(
+          _item(id: 'gone', bought: DateTime(2025, 5, 1), lastsDays: 30),
+          today: today,
+        ),
+        basketLine(
+          _item(id: 'soon', bought: DateTime(2025, 6, 1), lastsDays: 11),
+          today: today,
+        ),
       ];
       expect(runningLow(lines).map((l) => l.item.id), ['gone', 'soon', 'week']);
     });
@@ -302,10 +323,22 @@ void main() {
 
   group('basket reminders', () {
     final lines = [
-      basketLine(_item(id: 'food', bought: DateTime(2025, 6, 1), lastsDays: 20), today: today),
-      basketLine(_item(id: 'soon', bought: DateTime(2025, 6, 1), lastsDays: 12), today: today),
-      basketLine(_item(id: 'unknown', kind: BasketKind.other, bought: today), today: today),
-      basketLine(_item(id: 'soya', pet: 'soya', bought: today, lastsDays: 30), today: today),
+      basketLine(
+        _item(id: 'food', bought: DateTime(2025, 6, 1), lastsDays: 20),
+        today: today,
+      ),
+      basketLine(
+        _item(id: 'soon', bought: DateTime(2025, 6, 1), lastsDays: 12),
+        today: today,
+      ),
+      basketLine(
+        _item(id: 'unknown', kind: BasketKind.other, bought: today),
+        today: today,
+      ),
+      basketLine(
+        _item(id: 'soya', pet: 'soya', bought: today, lastsDays: 30),
+        today: today,
+      ),
     ];
 
     test('five days before a product runs out, at 10:00, in the basket group of the pet', () {

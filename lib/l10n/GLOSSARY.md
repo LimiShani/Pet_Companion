@@ -105,6 +105,12 @@ Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
 | Expired · 12 days left · Ends today | הסתיים · נותרו 12 ימים · מסתיים היום |
 | Food, Treats, Toys, Health, Grooming, Accessories, Beds & crates | מזון, חטיפים, צעצועים, בריאות, טיפוח, אביזרים, מיטות וכלובים |
 | Biggest discount · Lowest price · Newest · Ending soon | ההנחה הגדולה ביותר · המחיר הנמוך ביותר · החדשים ביותר · מסתיימים בקרוב |
+| Budget · All the home · Whole home | תקציב · כל הבית · כל הבית |
+| Deals · My basket · Regular product | מבצעים · הסל שלי · מוצר קבוע |
+| Bought again (the owner's own words) | קניתי שוב |
+| Running low · 3 days left | מלאי נמוך · נשארו 3 ימים |
+| Food · Litter and consumables · Vet and medicines · Equipment · Services · Other | מזון · חול ומתכלים · וטרינר ותרופות · ציוד · שירותים · אחר |
+| Once · Every month · Every year | פעם אחת · כל חודש · כל שנה |
 | Sign in · Create an account · Sign out | כניסה · יצירת חשבון · יציאה מהחשבון |
 | Email · Password · Forgot password? | אימייל · סיסמה · שכחתי סיסמה |
 | Welcome back · New here? | טוב לראות אותך שוב · פעם ראשונה כאן? |

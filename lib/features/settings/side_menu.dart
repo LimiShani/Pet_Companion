@@ -8,12 +8,14 @@ import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/petloop_icon.dart';
+import '../budget/budget.dart';
 import '../pets/pets.dart';
 import 'settings_routes.dart';
 import 'widgets/menu_entry.dart';
 
 /// The app's side menu, opened by the three-bars button at the top of Home:
-/// who is signed in, My pets, Settings, and Sign out alone at the bottom.
+/// who is signed in, My pets, Budget, Settings, and Sign out alone at the
+/// bottom.
 ///
 /// It is the drawer of the tabs' scaffold, so it slides in from the
 /// button's side (the left in English, the right in Hebrew), covers the
@@ -24,6 +26,7 @@ class AppSideMenu extends ConsumerWidget {
 
   static const menuKey = Key('side-menu');
   static const myPetsKey = Key('side-menu-my-pets');
+  static const budgetKey = Key('side-menu-budget');
   static const settingsKey = Key('side-menu-settings');
   static const signOutKey = Key('side-menu-sign-out');
 
@@ -66,6 +69,17 @@ class AppSideMenu extends ConsumerWidget {
                   onTap: () {
                     close();
                     openMyPets(context);
+                  },
+                ),
+                const SizedBox(height: 4),
+                MenuEntry(
+                  key: budgetKey,
+                  icon: const Icon(Icons.account_balance_wallet_rounded),
+                  title: context.budgetL10n.budgetTitle,
+                  subtitle: context.budgetL10n.menuBudgetSummary,
+                  onTap: () {
+                    close();
+                    openBudget(context);
                   },
                 ),
                 const SizedBox(height: 4),

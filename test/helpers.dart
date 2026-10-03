@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
+import 'package:pet_companion/features/budget/budget.dart';
 import 'package:pet_companion/features/care/data/care_repository.dart';
 import 'package:pet_companion/features/care/state/care_providers.dart';
 import 'package:pet_companion/features/health/data/fake_health_repository.dart';
@@ -22,7 +23,8 @@ import 'package:pet_companion/widgets/primary_button.dart';
 ///
 /// [now] fixes the clock of the health and care data (the sample data
 /// lives around 10 June 2025) and makes their fake backends answer at
-/// once, for checks of what Home's cards count.
+/// once, for checks of what Home's cards count (the budget's and the
+/// basket's sample data too).
 Future<void> pumpApp(
   WidgetTester tester, {
   AppLanguage? language,
@@ -50,6 +52,7 @@ Future<void> pumpApp(
           healthClockProvider.overrideWithValue(() => now),
           healthRepositoryProvider.overrideWithValue(FakeHealthRepository(latency: Duration.zero, now: () => now)),
           careRepositoryProvider.overrideWithValue(FakeCareRepository(latency: Duration.zero)),
+          budgetRepositoryProvider.overrideWithValue(FakeBudgetRepository(latency: Duration.zero, now: () => now)),
         ],
       ],
       child: const PetLoopApp(),

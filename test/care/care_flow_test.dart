@@ -21,7 +21,8 @@ void main() {
   }
 
   Future<void> tapVisible(WidgetTester tester, Finder finder) async {
-    await tester.ensureVisible(finder);
+    // Centred: at the top of a long Home it would sit under the pinned bar.
+    await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
     await tester.pumpAndSettle();
     await tester.tap(finder);
     await tester.pumpAndSettle();

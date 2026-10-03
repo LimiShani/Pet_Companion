@@ -8,6 +8,7 @@ import 'widgets/feeding_card.dart';
 import 'widgets/health_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/pet_hero.dart';
+import '../budget/budget.dart';
 import '../care/care.dart';
 import '../pets/pets.dart';
 
@@ -89,6 +90,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ],
                         ),
                       ),
+                      // ---- Budget and basket (feature/budget) ----
+                      // "This month's spending" and "Running low": each
+                      // shows only while it has something, with its own gap.
+                      const BudgetHomeCards(),
+                      // ---- end of budget and basket ----
                     ],
                   ),
                 ),

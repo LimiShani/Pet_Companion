@@ -25,3 +25,4 @@ export 'data/budget_models.dart';
 export 'data/budget_repository.dart' show BudgetException, BudgetFailure, BudgetRepository, FakeBudgetRepository;
 export 'state/budget_providers.dart'
     show StoreView, basketProvider, budgetRepositoryProvider, expensesProvider, storeViewProvider;
+export 'widgets/home_cards.dart' show BudgetHomeCards, RunningLowCard, SpendingCard;
