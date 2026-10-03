@@ -15,6 +15,7 @@
 /// | `lib/features/care/l10n/`     | `CareL10n`      | `context.careL10n`      |
 /// | `lib/features/budget/l10n/`   | `BudgetL10n`    | `context.budgetL10n`    |
 /// | `lib/features/firstdays/l10n/`| `FirstDaysL10n` | `context.firstDaysL10n` |
+/// | `lib/features/findvet/l10n/`  | `FindVetL10n`   | `context.findVetL10n`   |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -30,6 +31,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../features/budget/l10n/gen/budget_l10n.dart';
 import '../features/care/l10n/gen/care_l10n.dart';
 import '../features/community/l10n/gen/community_l10n.dart';
+import '../features/findvet/l10n/gen/findvet_l10n.dart';
 import '../features/firstdays/l10n/gen/firstdays_l10n.dart';
 import '../features/health/l10n/gen/health_l10n.dart';
 import '../features/pets/l10n/gen/pets_l10n.dart';
@@ -40,6 +42,7 @@ import 'gen/app_l10n.dart';
 export '../features/budget/l10n/gen/budget_l10n.dart' show BudgetL10n, lookupBudgetL10n;
 export '../features/care/l10n/gen/care_l10n.dart' show CareL10n, lookupCareL10n;
 export '../features/community/l10n/gen/community_l10n.dart' show CommunityL10n, lookupCommunityL10n;
+export '../features/findvet/l10n/gen/findvet_l10n.dart' show FindVetL10n, lookupFindVetL10n;
 export '../features/firstdays/l10n/gen/firstdays_l10n.dart' show FirstDaysL10n, lookupFirstDaysL10n;
 export '../features/health/l10n/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
 export '../features/pets/l10n/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
@@ -51,7 +54,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the eight strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the nine strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -62,6 +65,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   CareL10n.delegate,
   BudgetL10n.delegate,
   FirstDaysL10n.delegate,
+  FindVetL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -90,6 +94,9 @@ extension L10nContext on BuildContext {
   BudgetL10n get budgetL10n => _strings(this, lookupBudgetL10n);
   /// The first 30 days of a pet that just arrived home.
   FirstDaysL10n get firstDaysL10n => _strings(this, lookupFirstDaysL10n);
+
+  /// Find a vet: emergency and long term care nearby, and the directory review.
+  FindVetL10n get findVetL10n => _strings(this, lookupFindVetL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
