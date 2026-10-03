@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
@@ -26,6 +27,9 @@ import 'package:pet_companion/widgets/primary_button.dart';
 /// lives around 10 June 2025) and makes their fake backends answer at
 /// once, for checks of what Home's cards count (the budget's, the
 /// basket's and the first 30 days' sample data too).
+///
+/// [overrides] are added last, for a feature's own fakes (Find a vet's
+/// location, launcher and search backend).
 Future<void> pumpApp(
   WidgetTester tester, {
   AppLanguage? language,
@@ -33,6 +37,7 @@ Future<void> pumpApp(
   Size size = const Size(390, 844),
   double textScale = 1,
   DateTime? now,
+  List<Override> overrides = const [],
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -56,6 +61,7 @@ Future<void> pumpApp(
           budgetRepositoryProvider.overrideWithValue(FakeBudgetRepository(latency: Duration.zero, now: () => now)),
           firstDaysRepositoryProvider.overrideWithValue(FakeFirstDaysRepository(latency: Duration.zero)),
         ],
+        ...overrides,
       ],
       child: const PetLoopApp(),
     ),

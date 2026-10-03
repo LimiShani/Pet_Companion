@@ -8,12 +8,17 @@ import '../../l10n/l10n.dart';
 import '../../navigation/app_router.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_icon.dart';
 import '../../widgets/primary_button.dart';
+import '../findvet/findvet.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_text_field.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
+
+  /// Opens Find a vet's emergency path: no account is needed for it.
+  static const findVetKey = Key('login-find-vet');
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
@@ -127,6 +132,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              Center(
+                child: OutlinedButton.icon(
+                  key: LoginScreen.findVetKey,
+                  onPressed: () => openFindVet(context, mode: VetSearchMode.emergency),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.coralDark,
+                    side: const BorderSide(color: AppColors.coralDark, width: 2),
+                    minimumSize: const Size(0, 48),
+                    shape: const StadiumBorder(),
+                  ),
+                  icon: const AppIcon(Icons.local_hospital_rounded, size: 20),
+                  label: Text(context.findVetL10n.loginEmergencyLink),
+                ),
               ),
             ],
           ),

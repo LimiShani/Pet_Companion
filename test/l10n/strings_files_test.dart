@@ -17,6 +17,7 @@ const _modules = {
   'budget': 'lib/features/budget/l10n',
   'firstdays': 'lib/features/firstdays/l10n',
   'notifications': 'lib/notifications/l10n',
+  'findvet': 'lib/features/findvet/l10n',
 };
 
 const _firstStrongIsolate = '\u{2068}';

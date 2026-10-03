@@ -52,6 +52,8 @@
 	<true/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>PetLoop uses your photo library so you can add pictures of your pets.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PetLoop uses your location once, when you ask it to find vets near you. It is not saved.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>PetLoop uses the camera so you can take pictures of your pets.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

@@ -9,6 +9,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/petloop_icon.dart';
 import '../budget/budget.dart';
+import '../findvet/findvet.dart';
 import '../pets/pets.dart';
 import 'settings_routes.dart';
 import 'widgets/menu_entry.dart';
@@ -25,6 +26,8 @@ class AppSideMenu extends ConsumerWidget {
   const AppSideMenu({super.key});
 
   static const menuKey = Key('side-menu');
+  static const findVetKey = Key('side-menu-find-vet');
+  static const directoryReviewKey = Key('side-menu-directory-review');
   static const myPetsKey = Key('side-menu-my-pets');
   static const budgetKey = Key('side-menu-budget');
   static const settingsKey = Key('side-menu-settings');
@@ -41,6 +44,7 @@ class AppSideMenu extends ConsumerWidget {
     final l10n = context.l10n;
     final user = ref.watch(authControllerProvider).value;
     final petCount = ref.watch(petsProvider.select((pets) => pets.length));
+    final reviewer = ref.watch(vetIsAdminProvider).value ?? false;
 
     void close() => Scaffold.maybeOf(context)?.closeDrawer();
 
@@ -61,6 +65,17 @@ class AppSideMenu extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               children: [
+                MenuEntry(
+                  key: findVetKey,
+                  icon: const Icon(Icons.local_hospital_rounded),
+                  title: context.findVetL10n.findVetTitle,
+                  subtitle: context.findVetL10n.findVetMenuSubtitle,
+                  onTap: () {
+                    close();
+                    openFindVet(context);
+                  },
+                ),
+                const SizedBox(height: 4),
                 MenuEntry(
                   key: myPetsKey,
                   icon: const PetLoopIcon(PetLoopGlyph.pet),
@@ -93,6 +108,19 @@ class AppSideMenu extends ConsumerWidget {
                     openSettings(context);
                   },
                 ),
+                if (reviewer) ...[
+                  const SizedBox(height: 4),
+                  MenuEntry(
+                    key: directoryReviewKey,
+                    icon: const Icon(Icons.fact_check_outlined),
+                    title: context.findVetL10n.adminTitle,
+                    subtitle: context.findVetL10n.adminMenuSubtitle,
+                    onTap: () {
+                      close();
+                      openDirectoryReview(context);
+                    },
+                  ),
+                ],
               ],
             ),
           ),
