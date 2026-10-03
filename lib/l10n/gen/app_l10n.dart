@@ -548,7 +548,7 @@ abstract class AppL10n {
   /// Under 'Settings' in the side menu and the account sheet: what the page holds.
   ///
   /// In en, this message translates to:
-  /// **'Language, week'**
+  /// **'Language, week, notifications'**
   String get settingsSummary;
 
   /// No description provided for @settingsWeek.

@@ -103,7 +103,7 @@
 
   "menuMyPets": "My pets",
   "settingsTitle": "Settings",
-  "settingsSummary": "Language, week",
+  "settingsSummary": "Language, week, notifications",
   "@settingsSummary": {"description": "Under 'Settings' in the side menu and the account sheet: what the page holds."},
   "settingsWeek": "Week",
   "settingsFirstDay": "First day of the week",

@@ -31,6 +31,7 @@ const modules = [
   L10nModule('care', 'lib/features/care/l10n', 'CareL10n'),
   L10nModule('budget', 'lib/features/budget/l10n', 'BudgetL10n'),
   L10nModule('firstdays', 'lib/features/firstdays/l10n', 'FirstDaysL10n'),
+  L10nModule('notifications', 'lib/notifications/l10n', 'NotificationsL10n'),
 ];
 
 Future<void> main(List<String> args) async {

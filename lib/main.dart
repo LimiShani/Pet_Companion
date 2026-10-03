@@ -8,7 +8,9 @@ import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import 'auth/supabase_auth_repository.dart';
 import 'config/app_config.dart';
+import 'features/health/data/reminder_scheduler.dart';
 import 'l10n/l10n.dart';
+import 'notifications/notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,11 +29,26 @@ Future<void> main() async {
   // be read the app still runs and simply does not remember them.
   final settings = await SharedPrefsSettingsStore.load();
 
+  // The phone's notifications (none on the web). The snooze button of iOS
+  // is named once, here, in the language the app opens in.
+  final language = AppLanguage.fromCode(settings?.read(languageSettingKey));
+  final locale = resolveAppLocale(
+    language,
+    WidgetsBinding.instance.platformDispatcher.locales,
+    hebrewFollowsDevice: true,
+  );
+  final notifications = await FlutterNotificationPlatform.start(snoozeLabel: lookupNotificationsL10n(locale).snooze);
+
   runApp(
     ProviderScope(
       overrides: [
         if (supabaseAuth != null) authRepositoryProvider.overrideWithValue(supabaseAuth),
         if (settings != null) settingsStoreProvider.overrideWithValue(settings),
+        if (notifications != null) ...[
+          notificationPlatformProvider.overrideWithValue(notifications),
+          notificationSinkProvider.overrideWith(localNotificationSink),
+          reminderSchedulerProvider.overrideWith(notificationReminderScheduler),
+        ],
       ],
       child: const PetLoopApp(),
     ),

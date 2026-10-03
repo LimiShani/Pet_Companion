@@ -75,18 +75,35 @@ void _syncReminders(Ref ref, String petId, {CarePlan? plan, List<HealthRecord>? 
   final now = ref.read(healthClockProvider)();
   final scheduler = ref.read(reminderSchedulerProvider);
   scheduler.sync(
-    ReminderPlan(
-      petId: petId,
-      petName: _pet(ref, petId)?.name ?? '',
-      items: [
-        for (final item in plan?.items ?? const <CarePlanItem>[])
-          if (item.active) item,
-      ],
-      upcoming: [
-        for (final record in records ?? const <HealthRecord>[])
-          if (!record.isDone && record.scheduledAt.isAfter(now)) record,
-      ],
-    ),
+    reminderPlanOf(petId: petId, petName: _pet(ref, petId)?.name ?? '', plan: plan, records: records, now: now),
+  );
+}
+
+/// The [ReminderPlan] of a pet from its care plan and its records, either
+/// of which may not be loaded (`null`). [now] is the Health clock.
+ReminderPlan reminderPlanOf({
+  required String petId,
+  required String petName,
+  required CarePlan? plan,
+  required List<HealthRecord>? records,
+  required DateTime now,
+}) {
+  return ReminderPlan(
+    petId: petId,
+    petName: petName,
+    items: [
+      for (final item in plan?.items ?? const <CarePlanItem>[])
+        if (item.active) item,
+    ],
+    upcoming: [
+      for (final record in records ?? const <HealthRecord>[])
+        if (!record.isDone && record.scheduledAt.isAfter(now)) record,
+    ],
+    medications: plan?.medications ?? const [],
+    logs: plan?.logs ?? const [],
+    itemsLoaded: plan != null,
+    upcomingLoaded: records != null,
+    today: now,
   );
 }
 

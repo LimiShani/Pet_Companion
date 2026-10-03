@@ -35,6 +35,14 @@ class PlannedNotification {
 /// [syncGroup] replaces everything scheduled under [group] (e.g.
 /// `health:<petId>`, `basket:<petId>`) with [items]; an empty list cancels
 /// the group. Items in the past are ignored.
+///
+/// The sink applies the owner's choices (Settings > Notifications: the
+/// kinds that are off, quiet hours), so callers send everything. Tapping a
+/// notification opens the page its [PlannedNotification.payload] names:
+/// `feeding:<petId>` the feeding page, `activity:<petId>` the activity
+/// page, `health:<petId>` Health's Schedule, `basket:<petId>` the Store
+/// tab; the pet becomes the selected pet first. The real sink is
+/// `LocalNotificationSink` (`local_notification_sink.dart`).
 abstract class NotificationSink {
   Future<void> syncGroup(String group, List<PlannedNotification> items);
 }

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../l10n/l10n.dart';
+import '../../notifications/widgets/notification_settings_card.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/language_choice.dart';
 import 'widgets/week_choice.dart';
 
-/// The Settings page: the app's language and the week layout. Every choice
-/// applies at once and is remembered on the phone (see `SettingsStore`).
+/// The Settings page: the app's language, the week layout and the
+/// notifications. Every choice applies at once and is remembered on the
+/// phone (see `SettingsStore`).
 ///
 /// Opened from the side menu and from the account sheet with
 /// `openSettings`.
@@ -45,6 +47,9 @@ class SettingsScreen extends StatelessWidget {
                   _SectionLabel(l10n.settingsWeek),
                   const WeekChoice(),
                   _Note(l10n.settingsWeekNote),
+                  const SizedBox(height: 16),
+                  _SectionLabel(context.notificationsL10n.sectionTitle),
+                  const NotificationSettingsCard(),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),
                 ],

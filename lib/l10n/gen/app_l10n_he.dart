@@ -246,7 +246,7 @@ class AppL10nHe extends AppL10n {
   String get settingsTitle => 'הגדרות';
 
   @override
-  String get settingsSummary => 'שפה, שבוע';
+  String get settingsSummary => 'שפה, שבוע, התראות';
 
   @override
   String get settingsWeek => 'שבוע';

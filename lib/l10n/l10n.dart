@@ -15,6 +15,7 @@
 /// | `lib/features/care/l10n/`     | `CareL10n`      | `context.careL10n`      |
 /// | `lib/features/budget/l10n/`   | `BudgetL10n`    | `context.budgetL10n`    |
 /// | `lib/features/firstdays/l10n/`| `FirstDaysL10n` | `context.firstDaysL10n` |
+/// | `lib/notifications/l10n/`     | `NotificationsL10n` | `context.notificationsL10n` |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -34,6 +35,7 @@ import '../features/firstdays/l10n/gen/firstdays_l10n.dart';
 import '../features/health/l10n/gen/health_l10n.dart';
 import '../features/pets/l10n/gen/pets_l10n.dart';
 import '../features/store/l10n/gen/store_l10n.dart';
+import '../notifications/l10n/gen/notifications_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
 
@@ -44,6 +46,7 @@ export '../features/firstdays/l10n/gen/firstdays_l10n.dart' show FirstDaysL10n, 
 export '../features/health/l10n/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
 export '../features/pets/l10n/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
 export '../features/store/l10n/gen/store_l10n.dart' show StoreL10n, lookupStoreL10n;
+export '../notifications/l10n/gen/notifications_l10n.dart' show NotificationsL10n, lookupNotificationsL10n;
 export 'app_format.dart';
 export 'app_language.dart';
 export 'bidi.dart';
@@ -51,7 +54,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the eight strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the nine strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -62,6 +65,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   CareL10n.delegate,
   BudgetL10n.delegate,
   FirstDaysL10n.delegate,
+  NotificationsL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -91,6 +95,10 @@ extension L10nContext on BuildContext {
   /// The first 30 days of a pet that just arrived home.
   FirstDaysL10n get firstDaysL10n => _strings(this, lookupFirstDaysL10n);
 
+  /// The phone's reminders: their texts, the Notifications settings and
+  /// the sheet that asks for permission.
+  NotificationsL10n get notificationsL10n => _strings(this, lookupNotificationsL10n);
+
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 }
@@ -110,3 +118,8 @@ final communityL10nProvider = Provider<CommunityL10n>((ref) => lookupCommunityL1
 final storeL10nProvider = Provider<StoreL10n>((ref) => lookupStoreL10n(ref.watch(appLocaleProvider)));
 final petsL10nProvider = Provider<PetsL10n>((ref) => lookupPetsL10n(ref.watch(appLocaleProvider)));
 final budgetL10nProvider = Provider<BudgetL10n>((ref) => lookupBudgetL10n(ref.watch(appLocaleProvider)));
+
+/// The texts of the phone's reminders, which are built outside any widget.
+final notificationsL10nProvider = Provider<NotificationsL10n>(
+  (ref) => lookupNotificationsL10n(ref.watch(appLocaleProvider)),
+);
