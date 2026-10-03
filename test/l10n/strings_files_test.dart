@@ -14,6 +14,7 @@ const _modules = {
   'store': 'lib/features/store/l10n',
   'pets': 'lib/features/pets/l10n',
   'care': 'lib/features/care/l10n',
+  'firstdays': 'lib/features/firstdays/l10n',
 };
 
 const _firstStrongIsolate = '\u{2068}';
