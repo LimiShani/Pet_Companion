@@ -71,6 +71,19 @@ Run the app with no `--dart-define`s and it uses the in-memory backend in
 demo account is seeded there; its credentials are the `demoEmail` /
 `demoPassword` constants in that file. Widget tests always use this backend.
 
+## Find a vet
+
+Emergency and long term vet search for Israel, built to add countries as
+modules. It needs migration `0012_vet_directory.sql`, two Edge Functions
+(`find-vet`, `vet-directory-weekly`), an optional Google Places key and a
+weekly schedule: see [docs/find_a_vet.md](docs/find_a_vet.md), section
+"Backend setup". Without them the app shows sample data in the demo, and
+only PetLoop's own directory against Supabase. Backend tests:
+
+```bash
+node --test "supabase/functions/_tests/*.test.ts"
+```
+
 ## Layout
 
 ```
