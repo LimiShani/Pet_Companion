@@ -172,55 +172,86 @@ class _TaskRow extends ConsumerWidget {
     final readOnly = view.hasEnded;
     final canToggle = !readOnly && !item.onlyAuto;
 
+    final tick = Semantics(
+      button: canToggle,
+      checked: item.isDone,
+      label: item.isDone ? l10n.markNotDone : l10n.markDone,
+      excludeSemantics: true,
+      child: InkResponse(
+        key: FirstDaysScreen.tickKey(task.id),
+        onTap: canToggle ? () => _toggle(context, ref) : null,
+        radius: 22,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Icon(
+            item.isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            size: 24,
+            color: item.isDone ? AppColors.sage : AppColors.brown.withValues(alpha: 0.6),
+          ),
+        ),
+      ),
+    );
+    final words = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          firstDaysTaskText(l10n, task.id),
+          style: AppText.body.copyWith(color: item.isDone ? AppColors.brown : AppColors.ink),
+        ),
+        if (item.autoDone) Text(l10n.tickedForYou, style: AppText.secondary.copyWith(fontSize: 12)),
+      ],
+    );
+    final label = action == null || readOnly ? null : firstDaysActionLabel(l10n, action.kind);
+    final pill = label == null
+        ? null
+        : CarePillButton(
+            key: FirstDaysScreen.actionKey(task.id),
+            label: label,
+            onPressed: () => runFirstDaysAction(context, view.pet, action!),
+          );
+
     return CareBox(
       padding: const EdgeInsetsDirectional.fromSTEB(4, 6, 10, 6),
-      child: Row(
-        children: [
-          Semantics(
-            button: canToggle,
-            checked: item.isDone,
-            label: item.isDone ? l10n.markNotDone : l10n.markDone,
-            excludeSemantics: true,
-            child: InkResponse(
-              key: FirstDaysScreen.tickKey(task.id),
-              onTap: canToggle ? () => _toggle(context, ref) : null,
-              radius: 22,
-              child: SizedBox(
-                width: 44,
-                height: 44,
-                child: Icon(
-                  item.isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
-                  size: 24,
-                  color: item.isDone ? AppColors.sage : AppColors.brown.withValues(alpha: 0.6),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          // The pill sits at the end of the row while the text keeps at
+          // least 120 px; otherwise (a narrow phone, large text) under it.
+          var pillBeside = true;
+          if (label != null) {
+            final painter = TextPainter(
+              text: TextSpan(text: label, style: AppText.button(14)),
+              textDirection: Directionality.of(context),
+              textScaler: MediaQuery.textScalerOf(context),
+              maxLines: 1,
+            )..layout();
+            pillBeside = constraints.maxWidth - 48 - 8 - (painter.width + 31) >= 120;
+            painter.dispose();
+          }
+          return Row(
+            crossAxisAlignment: pillBeside ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+            children: [
+              tick,
+              const SizedBox(width: 4),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: pillBeside || pill == null
+                      ? words
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            words,
+                            const SizedBox(height: 6),
+                            Align(alignment: AlignmentDirectional.centerEnd, child: pill),
+                          ],
+                        ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(width: 4),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    firstDaysTaskText(l10n, task.id),
-                    style: AppText.body.copyWith(color: item.isDone ? AppColors.brown : AppColors.ink),
-                  ),
-                  if (item.autoDone) Text(l10n.tickedForYou, style: AppText.secondary.copyWith(fontSize: 12)),
-                ],
-              ),
-            ),
-          ),
-          if (action != null && !readOnly) ...[
-            const SizedBox(width: 8),
-            CarePillButton(
-              key: FirstDaysScreen.actionKey(task.id),
-              label: firstDaysActionLabel(l10n, action.kind),
-              onPressed: () => runFirstDaysAction(context, view.pet, action),
-            ),
-          ],
-        ],
+              if (pillBeside && pill != null) ...[const SizedBox(width: 8), pill],
+            ],
+          );
+        },
       ),
     );
   }
