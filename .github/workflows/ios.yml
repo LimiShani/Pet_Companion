@@ -1,0 +1,62 @@
+# Builds the iPhone app on a Mac in the cloud, since Windows cannot.
+#
+# Every push to main (and a manual "Run workflow") produces an UNSIGNED
+# build, kept for 14 days as the artifact "PetLoop-ios-unsigned". It proves
+# the iOS app compiles; to put it on an iPhone it still has to be signed
+# (see docs/IOS.md).
+#
+# Without the repository secrets SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY
+# the build runs on the demo data; with them it talks to Supabase.
+name: iOS build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+
+      - name: Packages
+        run: flutter pub get
+
+      - name: Backend settings (only when the secrets exist)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s"}' "$SUPABASE_URL" "$SUPABASE_PUBLISHABLE_KEY" > env.json
+            echo "DEFINES=--dart-define-from-file=env.json" >> "$GITHUB_ENV"
+          else
+            echo "No Supabase secrets: building the demo."
+          fi
+
+      - name: Build (unsigned)
+        run: flutter build ios --release --no-codesign $DEFINES
+
+      - name: Package as an unsigned .ipa
+        run: |
+          mkdir -p Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/
+          zip -qry PetLoop-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PetLoop-ios-unsigned
+          path: PetLoop-unsigned.ipa
+          retention-days: 14

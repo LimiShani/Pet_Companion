@@ -54,5 +54,9 @@
 	<string>PetLoop uses your photo library so you can add pictures of your pets.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>PetLoop uses the camera so you can take pictures of your pets.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>PetLoop saves the pictures you choose to keep, such as a lost-pet card, to your photos.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
