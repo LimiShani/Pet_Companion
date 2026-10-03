@@ -13,6 +13,7 @@
 /// | `lib/features/store/l10n/`    | `StoreL10n`     | `context.storeL10n`     |
 /// | `lib/features/pets/l10n/`     | `PetsL10n`      | `context.petsL10n`      |
 /// | `lib/features/care/l10n/`     | `CareL10n`      | `context.careL10n`      |
+/// | `lib/features/budget/l10n/`   | `BudgetL10n`    | `context.budgetL10n`    |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -25,6 +26,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/budget/l10n/gen/budget_l10n.dart';
 import '../features/care/l10n/gen/care_l10n.dart';
 import '../features/community/l10n/gen/community_l10n.dart';
 import '../features/health/l10n/gen/health_l10n.dart';
@@ -33,6 +35,7 @@ import '../features/store/l10n/gen/store_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
 
+export '../features/budget/l10n/gen/budget_l10n.dart' show BudgetL10n, lookupBudgetL10n;
 export '../features/care/l10n/gen/care_l10n.dart' show CareL10n, lookupCareL10n;
 export '../features/community/l10n/gen/community_l10n.dart' show CommunityL10n, lookupCommunityL10n;
 export '../features/health/l10n/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
@@ -45,7 +48,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the six strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the seven strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -54,6 +57,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   StoreL10n.delegate,
   PetsL10n.delegate,
   CareL10n.delegate,
+  BudgetL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -78,6 +82,9 @@ extension L10nContext on BuildContext {
   /// Home's daily care: the feeding and activity pages and sheets.
   CareL10n get careL10n => _strings(this, lookupCareL10n);
 
+  /// The budget and the Store's basket.
+  BudgetL10n get budgetL10n => _strings(this, lookupBudgetL10n);
+
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 }
@@ -96,3 +103,4 @@ final healthL10nProvider = Provider<HealthL10n>((ref) => lookupHealthL10n(ref.wa
 final communityL10nProvider = Provider<CommunityL10n>((ref) => lookupCommunityL10n(ref.watch(appLocaleProvider)));
 final storeL10nProvider = Provider<StoreL10n>((ref) => lookupStoreL10n(ref.watch(appLocaleProvider)));
 final petsL10nProvider = Provider<PetsL10n>((ref) => lookupPetsL10n(ref.watch(appLocaleProvider)));
+final budgetL10nProvider = Provider<BudgetL10n>((ref) => lookupBudgetL10n(ref.watch(appLocaleProvider)));

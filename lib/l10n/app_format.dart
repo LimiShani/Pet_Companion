@@ -59,6 +59,12 @@ class AppFormat {
   /// "June 2025" / "יוני 2025".
   String monthYear(DateTime d) => DateFormat.yMMMM(_dateLocale).format(d);
 
+  /// "June" / "יוני".
+  String month(DateTime d) => DateFormat.MMMM(_dateLocale).format(d);
+
+  /// "07.10": a day and month, for short lines where the year is plain.
+  String dayMonth(DateTime d) => _pattern('dd.MM').format(d);
+
   /// "Tuesday, June 10" / "יום שלישי, 10 ביוני".
   String longDay(DateTime d) => DateFormat.MMMMEEEEd(_dateLocale).format(d);
 

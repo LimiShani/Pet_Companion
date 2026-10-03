@@ -1,0 +1,297 @@
+{
+  "@@locale": "en",
+  "budgetTitle": "Budget",
+  "@budgetTitle": {
+    "description": "Title of the budget page and of its row in the side menu."
+  },
+  "menuBudgetSummary": "What the pets cost each month",
+  "@menuBudgetSummary": {
+    "description": "Under \"Budget\" in the side menu."
+  },
+  "allHome": "All the home",
+  "@allHome": {
+    "description": "The pill that shows every pet's expenses and the ones of the whole home."
+  },
+  "wholeHome": "Whole home",
+  "@wholeHome": {
+    "description": "An expense that is not for one pet."
+  },
+  "previousMonth": "Previous month",
+  "nextMonth": "Next month",
+  "spentLabel": "Spent",
+  "@spentLabel": {
+    "description": "Above the month's total on the budget page."
+  },
+  "previousMonthLine": "{month}: {amount}",
+  "@previousMonthLine": {
+    "description": "The month before and its total: \"May: ₪570\".",
+    "placeholders": {
+      "month": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "changeUp": "↑ {percent}% from {month}",
+  "@changeUp": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "changeDown": "↓ {percent}% from {month}",
+  "@changeDown": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      },
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "changeSame": "Same as {month}",
+  "@changeSame": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "averageLine": "Monthly average: {amount}",
+  "@averageLine": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "averageNote": "Over the last 12 months at most. A yearly cost counts as 1/12 in every month.",
+  "byCategory": "By category",
+  "expensesTitle": "Expenses",
+  "noExpenses": "Nothing spent in this month.",
+  "addExpense": "Add expense",
+  "healthMissing": "The costs from Health could not be loaded, so they are not counted here.",
+  "loadFailed": "Could not load the budget",
+  "sourceHealth": "from Health",
+  "sourceBasket": "from the basket",
+  "sourceManual": "manual",
+  "tagEveryMonth": "every month",
+  "tagEveryYear": "every year",
+  "categoryFood": "Food",
+  "categoryLitter": "Litter and consumables",
+  "categoryVet": "Vet and medicines",
+  "categoryEquipment": "Equipment",
+  "categoryServices": "Services",
+  "categoryOther": "Other",
+  "newExpense": "New expense",
+  "editExpense": "Edit expense",
+  "amountLabel": "Amount",
+  "amountInvalid": "Enter an amount, like 120",
+  "categoryLabel": "Category",
+  "forLabel": "For",
+  "dateLabel": "Date",
+  "noteLabel": "Note",
+  "noteHint": "What was it? (optional)",
+  "howOften": "How often",
+  "once": "Once",
+  "everyMonth": "Every month",
+  "everyYear": "Every year",
+  "monthlyNote": "Entered once: it counts again every month from this date, until it is stopped.",
+  "yearlyNote": "Counts in this month every year. In the monthly average it counts as 1/12 a month.",
+  "stopRepeating": "Stop repeating",
+  "keepRepeating": "Repeat again",
+  "stoppedOn": "Stopped on {date}",
+  "@stoppedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteExpenseTitle": "Delete this expense?",
+  "deleteExpenseBody": "It will be removed from the budget. This cannot be undone.",
+  "deleteRecurringBody": "Every month it counted in will lose it. To keep the past months, stop it from repeating instead.",
+  "expenseSaved": "Saved",
+  "expenseDeleted": "Expense deleted",
+  "deals": "Deals",
+  "@deals": {
+    "description": "First half of the Store's switch: the deals."
+  },
+  "myBasket": "My basket",
+  "@myBasket": {
+    "description": "Second half of the Store's switch: the products the owner rebuys."
+  },
+  "basketEmptyTitle": "Nothing in your basket yet",
+  "basketEmptyMessage": "Add the food, litter and other things you buy again and again, and see when each one runs out.",
+  "regularProduct": "Regular product",
+  "@regularProduct": {
+    "description": "Button with a plus: adds a product to the basket."
+  },
+  "boughtAgain": "Bought again",
+  "boughtOn": "bought {date}",
+  "@boughtOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "runsOutOn": "runs out {date}",
+  "@runsOutOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "ranOutOn": "ran out {date}",
+  "@ranOutOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "byFeeding": "by {grams} g a day from feeding",
+  "@byFeeding": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "notBoughtYet": "Not bought yet",
+  "dealsOnFood": "{count, plural, =1{1 deal on food for {animals}} other{{count} deals on food for {animals}}}",
+  "@dealsOnFood": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "animals": {
+        "type": "String"
+      }
+    }
+  },
+  "dealsOnLitter": "{count, plural, =1{1 deal on litter and cleaning for {animals}} other{{count} deals on litter and cleaning for {animals}}}",
+  "@dealsOnLitter": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "animals": {
+        "type": "String"
+      }
+    }
+  },
+  "runsOutIn": "{count, plural, =0{runs out today} =1{runs out tomorrow} other{runs out in {count} days}}",
+  "@runsOutIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ranOut": "ran out",
+  "reminderTitle": "{name} is running low",
+  "@reminderTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reminderBody": "{count, plural, =1{{name} for {pet} runs out tomorrow ({date}).} other{{name} for {pet} runs out in {count} days ({date}).}}",
+  "@reminderBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "pet": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "newProduct": "New regular product",
+  "editProduct": "Edit product",
+  "productName": "Product",
+  "productNameHint": "Adult dry food",
+  "nameRequired": "Enter the product's name",
+  "kindLabel": "Kind",
+  "kindFood": "Food",
+  "kindLitter": "Litter",
+  "kindConsumable": "Consumable",
+  "kindOther": "Other",
+  "packageSize": "Package size",
+  "sizeInvalid": "Enter a size, like 12",
+  "unitKg": "kg",
+  "unitG": "g",
+  "unitL": "l",
+  "unitUnits": "units",
+  "lastPrice": "Price",
+  "boughtOnLabel": "Bought on",
+  "lastsLabel": "How long a package lasts",
+  "lastsByFeedingChoice": "By the feeding",
+  "lastsOwnChoice": "My own",
+  "lastsByFeeding": "About {days} days, by {grams} g a day from feeding.",
+  "@lastsByFeeding": {
+    "placeholders": {
+      "days": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "lastsNoFeeding": "Add the portion and the meal times on the feeding page, or the size in kg or g, to work it out from the feeding.",
+  "lastsAbout": "Lasts about",
+  "lastsInvalid": "Enter a number, like 30",
+  "days": "days",
+  "weeks": "weeks",
+  "lastsOptional": "Leave it empty if you are not sure: there is just no run-out date.",
+  "deleteProductTitle": "Remove this product?",
+  "deleteProductBody": "Its past purchases stay in the budget.",
+  "productDeleted": "Product removed",
+  "boughtAgainTitle": "Bought again: {name}",
+  "@boughtAgainTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "boughtAgainNote": "Saved as an expense in the budget.",
+  "addedToBudget": "{amount} added to the budget",
+  "@addedToBudget": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "spendingTitle": "This month's spending",
+  "openBudget": "Open the budget",
+  "runningLowTitle": "Running low",
+  "openBasket": "Open my basket",
+  "errorOffline": "Could not reach the server. Check your connection and try again.",
+  "errorSessionEnded": "Your session has ended. Please sign in again.",
+  "errorNotAllowed": "That is not allowed. Please sign in again.",
+  "errorInvalid": "Some of the details are not valid. Please check them.",
+  "errorPetNotStored": "This pet is not saved to your account yet, so nothing can be stored for it.",
+  "errorGone": "That item no longer exists.",
+  "errorNeedsUpdate": "The budget is not set up on the server yet.",
+  "errorUnknown": "Something went wrong. Please try again."
+}
