@@ -30,7 +30,9 @@ export const IL: RegionConfig = {
     'hospital', 'animal', 'animals', 'pet', 'pets', 'care', 'medical', 'emergency',
     'center', 'centre', 'dr', 'ltd', 'israel',
     // Hebrew
+    // Both spellings: וטרינרית and the common unvocalized ווטרינרית.
     'מרפאה', 'מרפאת', 'מרפאות', 'וטרינרית', 'וטרינרי', 'וטרינרים', 'וטרינר', 'וטרינרה',
+    'ווטרינרית', 'ווטרינרי', 'ווטרינרים', 'ווטרינר', 'ווטרינרה',
     'בית', 'חולים', 'בעלי', 'חיים', 'מרכז', 'חירום', 'רפואה', 'רפואי', 'רפואית',
     'דר', 'דוקטור', 'בעמ', 'ישראל', 'של',
   ],
@@ -39,6 +41,7 @@ export const IL: RegionConfig = {
   evidencePatterns: {
     emergency: ['24/7', '24 שעות', 'חירום', 'emergency'],
   },
-  closureWords: ['נסגר', 'סגור לצמיתות', 'permanently closed', 'closed permanently'],
+  // The feminine forms matter: "המרפאה נסגרה / סגורה לצמיתות" (the clinic closed for good).
+  closureWords: ['נסגר', 'סגור לצמיתות', 'סגורה לצמיתות', 'נסגרה לצמיתות', 'permanently closed', 'closed permanently'],
   timeZone: 'Asia/Jerusalem',
 };
