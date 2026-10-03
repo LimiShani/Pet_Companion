@@ -42,6 +42,12 @@ class CareL10nHe extends CareL10n {
   }
 
   @override
+  String get inviteWalkTimes => 'הוסיפו שעות טיול כדי לעקוב אחרי הפעילות';
+
+  @override
+  String get invitePlay => 'רשמו משחק כדי לעקוב אחרי הפעילות';
+
+  @override
   String get addFoodToCount => 'הוסיפו את המזון כדי לספור קלוריות';
 
   @override

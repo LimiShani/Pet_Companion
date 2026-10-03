@@ -57,6 +57,8 @@ void main() {
     expect(find.text('No goal set'), findsOneWidget);
     expect(find.text('Add the food to count calories'), findsOneWidget);
     expect(find.text('Next feeding · not set'), findsOneWidget);
+    expect(find.text('Add walk times to follow the activity'), findsOneWidget);
+    expect(find.text(isolate('0/0')), findsNothing);
     expect(find.text('No health events yet'), findsOneWidget);
   });
 

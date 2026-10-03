@@ -42,6 +42,12 @@ class CareL10nEn extends CareL10n {
   }
 
   @override
+  String get inviteWalkTimes => 'Add walk times to follow the activity';
+
+  @override
+  String get invitePlay => 'Log play to follow the activity';
+
+  @override
   String get addFoodToCount => 'Add the food to count calories';
 
   @override

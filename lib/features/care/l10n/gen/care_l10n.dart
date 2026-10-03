@@ -149,6 +149,18 @@ abstract class CareL10n {
   /// **'Goal: {minutes} min a day'**
   String goalMinutesLine(String minutes);
 
+  /// Home activity card of a dog with no walk times and nothing logged today.
+  ///
+  /// In en, this message translates to:
+  /// **'Add walk times to follow the activity'**
+  String get inviteWalkTimes;
+
+  /// Home activity card of a pet that does not go for walks, with nothing logged today.
+  ///
+  /// In en, this message translates to:
+  /// **'Log play to follow the activity'**
+  String get invitePlay;
+
   /// No description provided for @addFoodToCount.
   ///
   /// In en, this message translates to:

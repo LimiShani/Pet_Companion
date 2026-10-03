@@ -9,6 +9,8 @@
   "nextFeedingTomorrow": "ההאכלה הבאה · מחר \u2068{time}\u2069",
   "nextWalkTomorrow": "הטיול הבא · מחר \u2068{time}\u2069",
   "goalMinutesLine": "יעד: \u2068{minutes}\u2069 דקות ביום",
+  "inviteWalkTimes": "הוסיפו שעות טיול כדי לעקוב אחרי הפעילות",
+  "invitePlay": "רשמו משחק כדי לעקוב אחרי הפעילות",
   "addFoodToCount": "הוסיפו את המזון כדי לספור קלוריות",
   "walkRunning": "בטיול · \u2068{time}\u2069",
   "playRunning": "במשחק · \u2068{time}\u2069",

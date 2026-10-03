@@ -42,21 +42,30 @@ class ActivityCard extends ConsumerWidget {
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _Metric(
-                        value: '${format.integer(day.done)}/${format.integer(day.planned)}',
-                        label: walks ? care.walksTodayLabel : care.playTodayLabel,
+                // Nothing planned or logged today: an invitation rather
+                // than "0/0" (tapping the card opens the activity page,
+                // where walk times are added).
+                if (day.walks.isEmpty)
+                  Text(
+                    walks ? care.inviteWalkTimes : care.invitePlay,
+                    style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+                  )
+                else
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Metric(
+                          value: '${format.integer(day.done)}/${format.integer(day.planned)}',
+                          label: walks ? care.walksTodayLabel : care.playTodayLabel,
+                        ),
                       ),
-                    ),
-                    Container(width: 2, height: 40, color: AppColors.white.withValues(alpha: 0.7)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _Metric(value: format.integer(day.minutes), label: care.minutesLabel),
-                    ),
-                  ],
-                ),
+                      Container(width: 2, height: 40, color: AppColors.white.withValues(alpha: 0.7)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _Metric(value: format.integer(day.minutes), label: care.minutesLabel),
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 6),
                 if (running)
                   RunningWalkBox(pet: pet, onCard: true)

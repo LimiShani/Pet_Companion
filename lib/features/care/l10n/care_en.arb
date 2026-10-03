@@ -48,6 +48,14 @@
       }
     }
   },
+  "inviteWalkTimes": "Add walk times to follow the activity",
+  "@inviteWalkTimes": {
+    "description": "Home activity card of a dog with no walk times and nothing logged today."
+  },
+  "invitePlay": "Log play to follow the activity",
+  "@invitePlay": {
+    "description": "Home activity card of a pet that does not go for walks, with nothing logged today."
+  },
   "addFoodToCount": "Add the food to count calories",
   "walkRunning": "Walking · {time}",
   "@walkRunning": {
