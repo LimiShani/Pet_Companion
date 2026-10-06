@@ -17,8 +17,37 @@ final accessRepositoryProvider = Provider<AccessRepository>(
       : FakeAccessRepository(),
 );
 
+/// How long the last confirmed permissions stay in use while background
+/// refreshes fail for reasons unrelated to the account (offline, timeout,
+/// server briefly unavailable). The database enforces revocation on every
+/// request regardless; this only keeps the app's screens from closing.
+final accessOfflineGraceProvider = Provider<Duration>(
+  (ref) => const Duration(minutes: 10),
+);
+
+/// A failure that says nothing about the account's permissions. A server
+/// that answered (a database or auth error) is authoritative; anything
+/// else is connectivity, and so are gateway errors (HTTP 5xx).
+bool isTransientAccessFailure(Object error) => switch (error) {
+  AuthRetryableFetchException() => true,
+  AuthException() => false,
+  PostgrestException(:final code) =>
+    code != null && RegExp(r'^5\d\d$').hasMatch(code),
+  FormatException() || TypeError() => false,
+  _ => true,
+};
+
 class AccessController extends AsyncNotifier<AccessSnapshot> {
   int _request = 0;
+  final _sinceConfirmed = Stopwatch();
+
+  AccessSnapshot _confirmed(AccessSnapshot snapshot) {
+    _sinceConfirmed
+      ..reset()
+      ..start();
+    return snapshot;
+  }
+
   @override
   FutureOr<AccessSnapshot> build() {
     final userId = ref.watch(authControllerProvider.select((a) => a.value?.id));
@@ -31,8 +60,8 @@ class AccessController extends AsyncNotifier<AccessSnapshot> {
       ref.onDispose(timer.cancel);
     }
     return repository is FakeAccessRepository
-        ? repository.snapshot(userId)
-        : repository.fetch(userId);
+        ? _confirmed(repository.snapshot(userId))
+        : repository.fetch(userId).then(_confirmed);
   }
 
   Future<void> refresh() async {
@@ -42,12 +71,22 @@ class AccessController extends AsyncNotifier<AccessSnapshot> {
       final result = await ref
           .read(accessRepositoryProvider)
           .fetch(ref.read(authControllerProvider).value?.id);
-      if (ticket.current && request == _request) state = AsyncData(result);
-    } catch (error, stack) {
-      // Do not retain a stale grant when its bounded refresh fails.
       if (ticket.current && request == _request) {
-        state = AsyncError(error, stack);
+        state = AsyncData(_confirmed(result));
       }
+    } catch (error, stack) {
+      if (!ticket.current || request != _request) return;
+      // Keep the last confirmed grant through a short connectivity loss so
+      // open screens and unsaved forms survive; never past the grace period
+      // and never when the server itself refused.
+      final kept = state.hasError ? null : state.value;
+      if (kept != null &&
+          kept.userId == ref.read(authControllerProvider).value?.id &&
+          isTransientAccessFailure(error) &&
+          _sinceConfirmed.elapsed <= ref.read(accessOfflineGraceProvider)) {
+        return;
+      }
+      state = AsyncError(error, stack);
     }
   }
 }
