@@ -68,7 +68,10 @@ class FakeAccessRepository implements AccessRepository {
   final groups = <String, Map<String, AccessRule>>{
     'standard': {
       for (final c in capabilityCatalog.where(
-        (c) => c != 'access.admin' && c != 'findvet.admin',
+        (c) =>
+            c != 'access.admin' &&
+            c != 'findvet.admin' &&
+            c != 'community.moderate',
       ))
         c: AccessRule.allow,
     },

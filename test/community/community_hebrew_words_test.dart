@@ -186,6 +186,8 @@ void main() {
       CommunityFailure.photoUpload: 'The photo could not be uploaded. Please try again.',
       CommunityFailure.cameraNotAllowed: 'Cannot open the camera. Check that PetLoop is allowed to use it.',
       CommunityFailure.photosNotAllowed: 'Cannot open your photos. Check that PetLoop is allowed to see them.',
+      CommunityFailure.slowDown: 'That was quick! Please wait a minute before sending more.',
+      CommunityFailure.notModerator: 'Only community moderators can do this.',
       CommunityFailure.unknown: 'Something went wrong. Please try again.',
     };
     const hebrewWords = {
@@ -208,6 +210,8 @@ void main() {
           'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.',
       CommunityFailure.photosNotAllowed:
           'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.',
+      CommunityFailure.slowDown: 'רגע, זה היה מהר. כדאי לחכות דקה לפני שליחה נוספת.',
+      CommunityFailure.notModerator: 'רק מנהלי הקהילה יכולים לעשות את זה.',
       CommunityFailure.unknown: 'משהו השתבש. אפשר לנסות שוב.',
     };
 

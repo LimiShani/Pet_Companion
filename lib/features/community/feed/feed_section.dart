@@ -29,7 +29,7 @@ class FeedSection extends ConsumerWidget {
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final feed = ref.watch(feedControllerProvider);
-    final posts = feed.value;
+    final posts = ref.watch(visiblePostsProvider);
 
     if (posts == null) {
       if (feed.isLoading) {

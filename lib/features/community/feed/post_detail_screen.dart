@@ -16,6 +16,10 @@ import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/section_state.dart';
 import 'feed_controller.dart';
+import '../../../auth/auth_controller.dart';
+import '../../../widgets/app_icon.dart';
+import '../safety/safety_flows.dart';
+import '../safety/safety_providers.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
 
@@ -42,6 +46,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<void> _send() async {
     final text = _comment.text.trim();
     if (text.isEmpty || _sending) return;
+    if (!await ensureCommunityRules(context, ref)) return;
+    if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final errorWords = communityErrorWords(context);
     setState(() => _sending = true);
@@ -151,7 +157,10 @@ class _Comments extends ConsumerWidget {
     final l10n = context.communityL10n;
     final comments = ref.watch(commentsProvider(postId));
     final now = ref.watch(communityClockProvider)();
-    final list = comments.value;
+    final blocked = ref.watch(blockedIdsProvider);
+    final list = comments.value?.where(
+      (c) => !blocked.contains(c.authorId),
+    ).toList();
 
     if (list == null) {
       if (comments.isLoading) {
@@ -225,8 +234,63 @@ class _CommentRow extends StatelessWidget {
         Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
   );
 
+  Future<void> _options(BuildContext context, WidgetRef ref) async {
+    final l10n = context.communityL10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final errorWords = communityErrorWords(context);
+    final name = l10n.inLine(l10n.memberName(comment.authorName));
+    final report = await showModalBottomSheet<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const AppIcon(Icons.flag_outlined),
+              title: Text(l10n.report),
+              onTap: () => Navigator.of(context).pop(true),
+            ),
+            ListTile(
+              leading: const AppIcon(Icons.block_rounded),
+              title: Text(l10n.blockMember(name)),
+              onTap: () => Navigator.of(context).pop(false),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (report == null || !context.mounted) return;
+    if (!report) {
+      await blockMemberFlow(
+        context,
+        ref,
+        memberId: comment.authorId,
+        memberName: comment.authorName,
+      );
+      return;
+    }
+    final reason = await askReportReason(
+      context,
+      title: l10n.commentReportTitle,
+      body: l10n.commentReportBody,
+    );
+    if (reason == null) return;
+    try {
+      await ref
+          .read(commentsProvider(comment.postId).notifier)
+          .report(comment.id, reason);
+      showCommunitySnack(messenger, l10n.commentReportThanks);
+    } catch (e) {
+      showCommunitySnack(messenger, errorWords(e));
+    }
+  }
+
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
+    final mine =
+        comment.authorId ==
+        ref.watch(authControllerProvider.select((auth) => auth.value?.id));
     final when = l10n.relativeTime(
       context.l10n,
       AppFormat.of(context),
@@ -274,6 +338,18 @@ class _CommentRow extends StatelessWidget {
               ],
             ),
           ),
+          if (!mine)
+            IconButton(
+              onPressed: () => _options(context, ref),
+              tooltip: l10n.commentOptions,
+              icon: const AppIcon(
+                Icons.more_horiz_rounded,
+                size: 20,
+                color: AppColors.brown,
+              ),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints.tightFor(width: 40, height: 40),
+            ),
         ],
       ),
     );

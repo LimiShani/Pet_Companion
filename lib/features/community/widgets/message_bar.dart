@@ -21,6 +21,8 @@ class MessageBar extends StatelessWidget {
     required this.onSend,
     this.sending = false,
     this.inputFormatters,
+    this.leading,
+    this.above,
   });
 
   final TextEditingController controller;
@@ -32,9 +34,15 @@ class MessageBar extends StatelessWidget {
   final bool sending;
   final List<TextInputFormatter>? inputFormatters;
 
+  /// Before the field: the chat's "add a photo" button.
+  final Widget? leading;
+
+  /// Over the field: what is being answered, the photo to send.
+  final Widget? above;
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final bar = Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.screen,
         8,
@@ -44,6 +52,7 @@ class MessageBar extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          if (leading != null) ...[leading!, const SizedBox(width: 6)],
           Expanded(
             // What is being typed reads in its own direction, as it will
             // once it is sent; an empty field follows the screen.
@@ -98,6 +107,12 @@ class MessageBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+    if (above == null) return bar;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [above!, bar],
     );
   }
 }

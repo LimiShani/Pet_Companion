@@ -62,8 +62,7 @@ import 'community_l10n_he.dart';
 /// be consistent with the languages listed in the CommunityL10n.supportedLocales
 /// property.
 abstract class CommunityL10n {
-  CommunityL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  CommunityL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class CommunityL10n {
     return Localizations.of<CommunityL10n>(context, CommunityL10n)!;
   }
 
-  static const LocalizationsDelegate<CommunityL10n> delegate =
-      _CommunityL10nDelegate();
+  static const LocalizationsDelegate<CommunityL10n> delegate = _CommunityL10nDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class CommunityL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// Title of the Community tab's header.
@@ -1027,6 +1024,438 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Cannot open your photos. Check that PetLoop is allowed to see them.'**
   String get errPhotosNotAllowed;
+
+  /// No description provided for @errSlowDown.
+  ///
+  /// In en, this message translates to:
+  /// **'That was quick! Please wait a minute before sending more.'**
+  String get errSlowDown;
+
+  /// No description provided for @errNotModerator.
+  ///
+  /// In en, this message translates to:
+  /// **'Only community moderators can do this.'**
+  String get errNotModerator;
+
+  /// The room list's preview of the latest message when the reader wrote it.
+  ///
+  /// In en, this message translates to:
+  /// **'You: {text}'**
+  String roomLastMine(String text);
+
+  /// The room list's preview of the latest message.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}: {text}'**
+  String roomLastOther(String name, String text);
+
+  /// What a screen reader says for a room's unread badge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 unread message} other{{count} unread messages}}'**
+  String roomUnread(int count);
+
+  /// No description provided for @chatReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get chatReply;
+
+  /// No description provided for @chatCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get chatCopy;
+
+  /// No description provided for @chatCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Message copied'**
+  String get chatCopied;
+
+  /// No description provided for @chatDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this message?'**
+  String get chatDeleteTitle;
+
+  /// No description provided for @chatDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It disappears for everyone in the room.'**
+  String get chatDeleteBody;
+
+  /// No description provided for @chatDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Message deleted'**
+  String get chatDeleted;
+
+  /// No description provided for @chatReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report this message'**
+  String get chatReportTitle;
+
+  /// No description provided for @chatReportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what is wrong. We hide the message for you right away and review it.'**
+  String get chatReportBody;
+
+  /// No description provided for @chatReportThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. We have hidden this message and will review it.'**
+  String get chatReportThanks;
+
+  /// No description provided for @commentOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment options'**
+  String get commentOptions;
+
+  /// No description provided for @commentReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report this comment'**
+  String get commentReportTitle;
+
+  /// No description provided for @commentReportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell us what is wrong. We hide the comment for you right away and review it.'**
+  String get commentReportBody;
+
+  /// No description provided for @commentReportThanks.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. We have hidden this comment and will review it.'**
+  String get commentReportThanks;
+
+  /// No description provided for @messageOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Message options'**
+  String get messageOptions;
+
+  /// Above the message field while answering a message.
+  ///
+  /// In en, this message translates to:
+  /// **'Replying to {name}'**
+  String replyingTo(String name);
+
+  /// No description provided for @cancelReply.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel reply'**
+  String get cancelReply;
+
+  /// No description provided for @replyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The original message is not available'**
+  String get replyUnavailable;
+
+  /// No description provided for @messageSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get messageSending;
+
+  /// No description provided for @messageNotSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sent. Tap to try again.'**
+  String get messageNotSent;
+
+  /// No description provided for @messageNotSentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This message was not sent'**
+  String get messageNotSentTitle;
+
+  /// On the button that scrolls down to the latest message, when messages arrived while reading older ones.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 new message} other{{count} new messages}}'**
+  String newMessages(int count);
+
+  /// No description provided for @jumpToLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to the latest message'**
+  String get jumpToLatest;
+
+  /// No description provided for @conversationStart.
+  ///
+  /// In en, this message translates to:
+  /// **'This is the start of the conversation'**
+  String get conversationStart;
+
+  /// No description provided for @addPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo'**
+  String get addPhoto;
+
+  /// No description provided for @chatPhotoPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo to send'**
+  String get chatPhotoPreview;
+
+  /// No description provided for @openPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the photo'**
+  String get openPhoto;
+
+  /// Tooltip of an emoji in the reaction picker or under a message.
+  ///
+  /// In en, this message translates to:
+  /// **'React with {emoji}'**
+  String reactWith(String emoji);
+
+  /// What a screen reader says for one reaction under a message.
+  ///
+  /// In en, this message translates to:
+  /// **'{emoji} {count}'**
+  String reactionsSummary(String emoji, int count);
+
+  /// No description provided for @hideNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide this note'**
+  String get hideNotice;
+
+  /// No description provided for @roomInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'About this room'**
+  String get roomInfo;
+
+  /// Menu item on someone's post, comment or message.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}'**
+  String blockMember(String name);
+
+  /// No description provided for @blockTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Block {name}?'**
+  String blockTitle(String name);
+
+  /// No description provided for @blockBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Their posts, comments and messages will no longer appear for you. Nobody is told. You can undo this any time under Community safety.'**
+  String get blockBody;
+
+  /// No description provided for @blockConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get blockConfirm;
+
+  /// No description provided for @blockedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked {name}'**
+  String blockedDone(String name);
+
+  /// No description provided for @unblock.
+  ///
+  /// In en, this message translates to:
+  /// **'Unblock'**
+  String get unblock;
+
+  /// No description provided for @unblockedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is unblocked'**
+  String unblockedDone(String name);
+
+  /// No description provided for @rulesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community rules'**
+  String get rulesTitle;
+
+  /// No description provided for @rulesIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'PetLoop is a friendly place for pet owners. Before you share for the first time:'**
+  String get rulesIntro;
+
+  /// No description provided for @rule1.
+  ///
+  /// In en, this message translates to:
+  /// **'Be kind. Disagree with ideas, not with people.'**
+  String get rule1;
+
+  /// No description provided for @rule2.
+  ///
+  /// In en, this message translates to:
+  /// **'No selling animals, no ads and no spam.'**
+  String get rule2;
+
+  /// No description provided for @rule3.
+  ///
+  /// In en, this message translates to:
+  /// **'Share experience, not diagnoses. For anything urgent, call a vet.'**
+  String get rule3;
+
+  /// No description provided for @rule4.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep private details private, yours and other people\'s.'**
+  String get rule4;
+
+  /// No description provided for @rule5.
+  ///
+  /// In en, this message translates to:
+  /// **'Report what breaks the rules. Three reports hide something until a moderator looks at it.'**
+  String get rule5;
+
+  /// No description provided for @rulesAgree.
+  ///
+  /// In en, this message translates to:
+  /// **'Agree and continue'**
+  String get rulesAgree;
+
+  /// No description provided for @safetyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community safety'**
+  String get safetyTitle;
+
+  /// No description provided for @safetyIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocking and reporting are private: nobody is told who did it.'**
+  String get safetyIntro;
+
+  /// No description provided for @blockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked members'**
+  String get blockedTitle;
+
+  /// No description provided for @noBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not blocked anyone.'**
+  String get noBlocked;
+
+  /// No description provided for @blockedLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load your blocked members'**
+  String get blockedLoadFailed;
+
+  /// No description provided for @reviewReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Review reports'**
+  String get reviewReports;
+
+  /// No description provided for @reviewWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing waiting} =1{1 waiting} other{{count} waiting}}'**
+  String reviewWaiting(int count);
+
+  /// No description provided for @reviewEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All clear'**
+  String get reviewEmptyTitle;
+
+  /// No description provided for @reviewEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No reports are waiting for review.'**
+  String get reviewEmptyMessage;
+
+  /// No description provided for @reviewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load the reports'**
+  String get reviewLoadFailed;
+
+  /// No description provided for @kindPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Post'**
+  String get kindPost;
+
+  /// No description provided for @kindComment.
+  ///
+  /// In en, this message translates to:
+  /// **'Comment'**
+  String get kindComment;
+
+  /// No description provided for @kindMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat message'**
+  String get kindMessage;
+
+  /// No description provided for @reportCountLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 report} other{{count} reports}}'**
+  String reportCountLine(int count);
+
+  /// No description provided for @hiddenTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Hidden'**
+  String get hiddenTag;
+
+  /// Where a reported chat message was written.
+  ///
+  /// In en, this message translates to:
+  /// **'In {room}'**
+  String inRoom(String room);
+
+  /// No description provided for @keepItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get keepItem;
+
+  /// No description provided for @removeItem.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeItem;
+
+  /// No description provided for @removeItemTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove it for everyone?'**
+  String get removeItemTitle;
+
+  /// No description provided for @removeItemBody.
+  ///
+  /// In en, this message translates to:
+  /// **'It is deleted and cannot be brought back.'**
+  String get removeItemBody;
+
+  /// No description provided for @keptDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept. It shows again for everyone.'**
+  String get keptDone;
+
+  /// No description provided for @removedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed'**
+  String get removedDone;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {
@@ -1038,26 +1467,25 @@ class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_CommunityL10nDelegate old) => false;
 }
 
 CommunityL10n lookupCommunityL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return CommunityL10nEn();
-    case 'he':
-      return CommunityL10nHe();
+    case 'en': return CommunityL10nEn();
+    case 'he': return CommunityL10nHe();
   }
 
   throw FlutterError(
     'CommunityL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

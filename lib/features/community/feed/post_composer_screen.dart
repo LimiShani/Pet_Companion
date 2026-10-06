@@ -16,6 +16,7 @@ import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
+import '../safety/safety_flows.dart';
 
 /// Opens the full-screen composer above the bottom navigation bar.
 Future<void> openPostComposer(BuildContext context) {
@@ -72,6 +73,8 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   Future<void> _submit() async {
     if (!_hasText || _posting) return;
+    if (!await ensureCommunityRules(context, ref)) return;
+    if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final errorWords = communityErrorWords(context);

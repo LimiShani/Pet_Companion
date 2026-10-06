@@ -13,9 +13,10 @@ import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
 import '../widgets/speech_icon.dart';
+import '../safety/safety_flows.dart';
 import 'post_actions.dart';
 
-enum _PostAction { report, delete }
+enum _PostAction { report, block, delete }
 
 /// A post as a white card: author, text, photo, like and comment counts.
 ///
@@ -103,7 +104,7 @@ class PostCard extends ConsumerWidget {
                             label: app.commonDelete,
                           ),
                         )
-                      else
+                      else ...[
                         PopupMenuItem(
                           value: _PostAction.report,
                           child: _MenuRow(
@@ -111,6 +112,16 @@ class PostCard extends ConsumerWidget {
                             label: l10n.report,
                           ),
                         ),
+                        PopupMenuItem(
+                          value: _PostAction.block,
+                          child: _MenuRow(
+                            icon: Icons.block_rounded,
+                            label: l10n.blockMember(
+                              l10n.inLine(l10n.memberName(post.authorName)),
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -169,6 +180,12 @@ class PostCard extends ConsumerWidget {
   ) async {
     final flow = switch (action) {
       _PostAction.report => reportPostFlow(context, ref, post),
+      _PostAction.block => blockMemberFlow(
+        context,
+        ref,
+        memberId: post.authorId,
+        memberName: post.authorName,
+      ),
       _PostAction.delete => deletePostFlow(context, ref, post),
     };
     if (await flow) onRemoved?.call();
@@ -188,7 +205,14 @@ class _MenuRow extends StatelessWidget {
       children: [
         AppIcon(icon, size: 20, color: AppColors.ink),
         const SizedBox(width: 10),
-        Text(label, style: AppText.body.copyWith(fontSize: 15)),
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppText.body.copyWith(fontSize: 15),
+          ),
+        ),
       ],
     );
   }

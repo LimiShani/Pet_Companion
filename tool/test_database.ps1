@@ -30,6 +30,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Find-a-vet public switch tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/permission_checks_once_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Once-per-statement permission check tests failed.' }
 
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/community_chat_safety_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Community chat and safety tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/administration_history_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Administration history tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/history_persistence_write.sql

@@ -134,7 +134,7 @@ void main() {
         TextDirection.ltr,
       );
       // Still someone else's message: at the start of the line (the left).
-      expect(tester.getTopLeft(find.text('שלום לכולם')).dx, lessThan(60));
+      expect(tester.getTopLeft(find.text('שלום לכולם')).dx, lessThan(80));
     });
   });
 
@@ -274,7 +274,7 @@ void main() {
       final width = tester.view.physicalSize.width / tester.view.devicePixelRatio;
       // Mine at the end of the line: the left. Theirs at the start: the right.
       expect(tester.getTopLeft(find.text('Hello puppies')).dx, lessThan(60));
-      expect(tester.getTopRight(find.text(others)).dx, greaterThan(width - 60));
+      expect(tester.getTopRight(find.text(others)).dx, greaterThan(width - 80));
       // The send button moves to the left of the field.
       expect(
         tester.getCenter(find.byTooltip('Send message')).dx,

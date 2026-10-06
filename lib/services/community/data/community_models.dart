@@ -41,6 +41,12 @@ enum CommunityFailure {
   cameraNotAllowed,
   photosNotAllowed,
 
+  /// Too many posts, comments or messages in a short time.
+  slowDown,
+
+  /// Only moderators may do this.
+  notModerator,
+
   /// Anything the app has no words of its own for.
   unknown,
 }
@@ -212,6 +218,37 @@ class ChatChannel {
   final Audience audience;
 }
 
+/// The reactions a chat message can carry, in the order the picker shows
+/// them. The database accepts exactly these.
+const chatReactions = ['👍', '❤️', '😂', '😮', '😢', '🐾'];
+
+/// One emoji under a message: how many members chose it, and whether the
+/// viewer is one of them.
+class ChatReaction {
+  const ChatReaction({required this.emoji, required this.count, required this.mine});
+
+  final String emoji;
+  final int count;
+  final bool mine;
+}
+
+/// What a reply shows of the message it answers.
+class ChatReplyPreview {
+  const ChatReplyPreview({
+    required this.messageId,
+    required this.authorId,
+    required this.authorName,
+    required this.text,
+    this.hasPhoto = false,
+  });
+
+  final String messageId;
+  final String authorId;
+  final String authorName;
+  final String text;
+  final bool hasPhoto;
+}
+
 /// One message in a [ChatChannel].
 class ChatMessage {
   const ChatMessage({
@@ -221,15 +258,110 @@ class ChatMessage {
     required this.authorName,
     required this.text,
     required this.sentAt,
+    this.photo,
+    this.replyToId,
+    this.replyTo,
+    this.reactions = const [],
   });
 
   final String id;
   final String channelId;
   final String authorId;
   final String authorName;
+
+  /// May be empty when the message is a photo.
   final String text;
   final DateTime sentAt;
+  final PostPhoto? photo;
+
+  /// The message this one answers, by id: set even when that message is
+  /// gone or hidden from the viewer ([replyTo] is then `null`).
+  final String? replyToId;
+  final ChatReplyPreview? replyTo;
+  final List<ChatReaction> reactions;
+
+  ChatReplyPreview asReplyPreview() => ChatReplyPreview(
+        messageId: id,
+        authorId: authorId,
+        authorName: authorName,
+        text: text,
+        hasPhoto: photo != null,
+      );
 }
+
+/// A room's line in the room list: its latest message and how many
+/// messages from others arrived since the viewer last read it.
+class ChatRoomSummary {
+  const ChatRoomSummary({
+    required this.channelId,
+    this.lastAuthorId,
+    this.lastAuthorName = '',
+    this.lastText = '',
+    this.lastHasPhoto = false,
+    this.lastMessageAt,
+    this.unread = 0,
+  });
+
+  final String channelId;
+  final String? lastAuthorId;
+  final String lastAuthorName;
+  final String lastText;
+  final bool lastHasPhoto;
+
+  /// `null` for a room without messages.
+  final DateTime? lastMessageAt;
+  final int unread;
+}
+
+/// A member the viewer blocked: shown in the list where they can be
+/// unblocked.
+class BlockedMember {
+  const BlockedMember({required this.id, required this.name});
+
+  final String id;
+
+  /// As stored; empty for an account without a name.
+  final String name;
+}
+
+/// What a moderator reviews.
+enum ModerationKind { post, comment, message }
+
+/// Something members reported, waiting for a moderator.
+class ModerationItem {
+  const ModerationItem({
+    required this.kind,
+    required this.id,
+    required this.authorId,
+    required this.authorName,
+    required this.text,
+    required this.createdAt,
+    required this.reportCount,
+    required this.reasons,
+    required this.hidden,
+    this.photo,
+    this.context,
+  });
+
+  final ModerationKind kind;
+  final String id;
+  final String authorId;
+  final String authorName;
+  final String text;
+  final PostPhoto? photo;
+  final DateTime createdAt;
+  final int reportCount;
+  final List<ReportReason> reasons;
+
+  /// Hidden from members until a decision (three reports or more).
+  final bool hidden;
+
+  /// The room of a message, or the post of a comment.
+  final String? context;
+}
+
+/// A moderator's decision on a [ModerationItem].
+enum ModerationDecision { keep, remove }
 
 /// A member's display name as stored: trimmed, and empty when the account
 /// has none. The screen shows a friendly fallback in its own language for

@@ -7,6 +7,7 @@ import 'fake_chat_repository.dart';
 import 'fake_feed_repository.dart';
 import 'feed_repository.dart';
 import 'guides_repository.dart';
+import 'safety_repository.dart';
 import 'supabase_chat_repository.dart';
 import 'supabase_feed_repository.dart';
 
@@ -29,6 +30,14 @@ final chatRepositoryProvider = Provider<ChatRepository>(
   (ref) => AppConfig.hasSupabase
       ? SupabaseChatRepository(sb.Supabase.instance.client)
       : FakeChatRepository(now: ref.watch(communityClockProvider)),
+);
+
+/// Blocking, reports on comments and the moderators' review, chosen the
+/// same way.
+final communitySafetyRepositoryProvider = Provider<CommunitySafetyRepository>(
+  (ref) => AppConfig.hasSupabase
+      ? SupabaseCommunitySafetyRepository(sb.Supabase.instance.client)
+      : FakeCommunitySafetyRepository(now: ref.watch(communityClockProvider)),
 );
 
 /// Guides are bundled with the app in version 1.

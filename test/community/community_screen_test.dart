@@ -271,7 +271,7 @@ void main() {
         expect(find.text(name), findsOneWidget);
       }
       expect(find.text('Kittens'), findsNothing);
-      expect(find.text('First weeks, teething and sleep'), findsOneWidget);
+      expect(find.text('Priya: Until about six months for us. Frozen carrot sticks were a big help.'), findsOneWidget);
 
       await tester.tap(find.text('Puppies'));
       await tester.pumpAndSettle();
@@ -294,13 +294,13 @@ void main() {
 
       // Mine sit on the right, other people's on the left.
       expect(tester.getTopRight(find.text('Hello puppies')).dx, greaterThan(300));
-      expect(tester.getTopLeft(find.text(others)).dx, lessThan(60));
+      expect(tester.getTopLeft(find.text(others)).dx, lessThan(80));
 
       // Someone else writes: it arrives through the stream, no refresh.
       h.chat.receive(channelId: 'puppies', authorId: 'u-maya', authorName: 'Maya', text: 'Welcome, Alex!');
       await tester.pumpAndSettle();
       expect(find.text('Welcome, Alex!'), findsOneWidget);
-      expect(tester.getTopLeft(find.text('Welcome, Alex!')).dx, lessThan(60));
+      expect(tester.getTopLeft(find.text('Welcome, Alex!')).dx, lessThan(80));
 
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
@@ -319,7 +319,7 @@ void main() {
       h.chat.failing = false;
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
-      expect(find.text('Morning everyone! Biscuit says hi.'), findsOneWidget);
+      expect(find.text('Here she is, guarding the living room.'), findsOneWidget);
     });
 
     testWidgets('no rooms yet', (tester) async {

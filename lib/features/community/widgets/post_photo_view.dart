@@ -7,16 +7,22 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../services/community/data/community_models.dart';
 
-/// The picture of a post: rounded, 4:3, whatever its source.
+/// The picture of a post or a chat message: rounded, 4:3, whatever its
+/// source. With [aspectRatio] `null` it takes its own shape (the full
+/// screen photo viewer, with [fit] `BoxFit.contain`).
 class PostPhotoView extends StatelessWidget {
   const PostPhotoView({
     super.key,
     required this.photo,
     this.aspectRatio = 4 / 3,
+    this.fit = BoxFit.cover,
+    this.rounded = true,
   });
 
   final PostPhoto photo;
-  final double aspectRatio;
+  final double? aspectRatio;
+  final BoxFit fit;
+  final bool rounded;
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +30,14 @@ class PostPhotoView extends StatelessWidget {
       image: true,
       label: context.communityL10n.photoLabel,
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-        child: AspectRatio(
-          aspectRatio: aspectRatio,
-          child: switch (photo) {
+        borderRadius: BorderRadius.circular(
+          rounded ? AppSpacing.fieldRadius : 0,
+        ),
+        child: _shaped(
+          switch (photo) {
             AssetPostPhoto(:final asset) => Image.asset(
               asset,
-              fit: BoxFit.cover,
+              fit: fit,
               excludeFromSemantics: true,
               errorBuilder: (context, error, stack) => const _PhotoFallback(),
             ),
@@ -46,14 +53,14 @@ class PostPhotoView extends StatelessWidget {
             ),
             MemoryPostPhoto(:final bytes) => Image.memory(
               bytes,
-              fit: BoxFit.cover,
+              fit: fit,
               excludeFromSemantics: true,
               errorBuilder: (context, error, stack) => const _PhotoFallback(),
             ),
             RemotePostPhoto(:final url, :final cacheKey) => CachedNetworkImage(
               imageUrl: url,
               cacheKey: cacheKey,
-              fit: BoxFit.cover,
+              fit: fit,
               placeholder: (context, url) =>
                   const _PhotoFallback(loading: true),
               errorWidget: (context, url, error) => const _PhotoFallback(),
@@ -63,6 +70,10 @@ class PostPhotoView extends StatelessWidget {
       ),
     );
   }
+
+  Widget _shaped(Widget child) => aspectRatio == null
+      ? child
+      : AspectRatio(aspectRatio: aspectRatio!, child: child);
 }
 
 /// Shown while a picture loads and when it cannot be shown.

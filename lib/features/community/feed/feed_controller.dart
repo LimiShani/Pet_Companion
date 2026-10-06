@@ -8,6 +8,7 @@ import '../../../state/ordered_writes.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
 import '../../../services/community/data/feed_repository.dart';
+import '../safety/safety_providers.dart';
 
 /// No automatic retries: a failed load shows an error block with a "Try
 /// again" button instead of retrying behind the user's back.
@@ -188,11 +189,24 @@ final feedControllerProvider =
 /// One post of the loaded feed, or `null` when it is gone (deleted,
 /// reported, or the feed is not loaded).
 final postProvider = Provider.autoDispose.family<Post?, String>((ref, postId) {
-  final posts = ref.watch(feedControllerProvider).value ?? const <Post>[];
+  final posts = ref.watch(visiblePostsProvider) ?? const <Post>[];
   for (final p in posts) {
     if (p.id == postId) return p;
   }
   return null;
+});
+
+/// The loaded feed without the posts of members the viewer blocked;
+/// `null` while it has not loaded.
+final visiblePostsProvider = Provider.autoDispose<List<Post>?>((ref) {
+  final posts = ref.watch(feedControllerProvider).value;
+  if (posts == null) return null;
+  final blocked = ref.watch(blockedIdsProvider);
+  if (blocked.isEmpty) return posts;
+  return [
+    for (final p in posts)
+      if (!blocked.contains(p.authorId)) p,
+  ];
 });
 
 /// The comments under one post, oldest first.
@@ -222,6 +236,24 @@ class CommentsController extends SessionSafeAsyncNotifier<List<Comment>> {
           .addComment(author: author, postId: postId, text: text);
       state = AsyncData([...?state.value, comment]);
       ref.read(feedControllerProvider.notifier).commentAdded(postId);
+    });
+  }
+
+  /// Reports a comment; it disappears for the viewer at once.
+  Future<void> report(String commentId, ReportReason reason) async {
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'community.feed.post');
+      final viewer = ref.read(authControllerProvider).value;
+      if (viewer == null) {
+        throw const CommunityException(CommunityFailure.signInAgain);
+      }
+      await ref
+          .read(communitySafetyRepositoryProvider)
+          .reportComment(viewer: viewer, commentId: commentId, reason: reason);
+      state = AsyncData([
+        for (final c in state.value ?? const <Comment>[])
+          if (c.id != commentId) c,
+      ]);
     });
   }
 }

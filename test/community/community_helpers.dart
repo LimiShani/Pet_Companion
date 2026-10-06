@@ -19,6 +19,7 @@ import 'package:pet_companion/features/community/data/fake_chat_repository.dart'
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/photo_picker.dart';
+import 'package:pet_companion/services/community/data/safety_repository.dart';
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
@@ -103,11 +104,19 @@ class CommunityHarness {
     this.language,
     this.appLanguage,
     this.chatBackend,
+    this.rulesAccepted = true,
+    FakeCommunitySafetyRepository? safety,
   })  : feed = feed ?? FakeFeedRepository(latency: Duration.zero, now: testClock),
-        chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock);
+        chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock),
+        safety = safety ?? FakeCommunitySafetyRepository(latency: Duration.zero, now: testClock);
 
   final FakeFeedRepository feed;
   final FakeChatRepository chat;
+  final FakeCommunitySafetyRepository safety;
+
+  /// Whether the demo account already agreed to the community rules (most
+  /// tests are not about them).
+  final bool rulesAccepted;
   final picker = FakePhotoPicker();
 
   /// Replaces the sample pets (two dogs); the first one is selected.
@@ -128,7 +137,10 @@ class CommunityHarness {
   final AppLanguage? appLanguage;
 
   /// The saved choices of this app run (the language switch writes here).
-  late final settings = MemorySettingsStore({languageSettingKey: ?appLanguage?.code});
+  late final settings = MemorySettingsStore({
+    languageSettingKey: ?appLanguage?.code,
+    if (rulesAccepted) 'community.rules.${demoUser.id}': '1',
+  });
 
   /// Every source link the reader asked the phone to open.
   final openedSources = <Uri>[];
@@ -138,6 +150,7 @@ class CommunityHarness {
         communityClockProvider.overrideWithValue(testClock),
         feedRepositoryProvider.overrideWithValue(feed),
         chatRepositoryProvider.overrideWithValue(chatBackend ?? chat),
+        communitySafetyRepositoryProvider.overrideWithValue(safety),
         photoPickerProvider.overrideWithValue(picker),
         settingsStoreProvider.overrideWithValue(settings),
         if (language != null) communityLanguageProvider.overrideWithValue(language!),
@@ -249,8 +262,18 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 
 /// Scrolls the screen's main list until [finder] is in view. (The sections
 /// also hold a horizontal row of chips, so the list has to be named.)
+///
+/// A target that is not built may be above the view as well as below it
+/// (rooms are ordered by their latest message), so the list starts again
+/// from the top before looking downwards.
 Future<void> scrollTo(WidgetTester tester, Finder finder) async {
-  await tester.scrollUntilVisible(finder, 200, scrollable: find.byType(Scrollable).first);
+  final scrollable = find.byType(Scrollable).first;
+  if (finder.evaluate().isEmpty) {
+    final position = tester.state<ScrollableState>(scrollable).position;
+    position.jumpTo(position.minScrollExtent);
+    await tester.pumpAndSettle();
+  }
+  await tester.scrollUntilVisible(finder, 200, scrollable: scrollable);
   await tester.pumpAndSettle();
 }
 

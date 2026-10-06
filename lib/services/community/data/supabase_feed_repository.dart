@@ -1,7 +1,5 @@
 import '../../../platform/session.dart';
-import '../../../platform/storage_cleanup.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
-import 'package:uuid/uuid.dart';
 
 import '../../../auth/app_user.dart';
 import 'community_models.dart';
@@ -16,7 +14,9 @@ import 'supabase_community_support.dart';
 class SupabaseFeedRepository implements FeedRepository {
   SupabaseFeedRepository(sb.SupabaseClient client)
     : _backend = client,
-      _names = ProfileNames(client);
+      _names = ProfileNames(client) {
+    _photos = CommunityPhotos(() => _client);
+  }
 
   final sb.SupabaseClient _backend;
   sb.SupabaseClient get _client {
@@ -25,21 +25,12 @@ class SupabaseFeedRepository implements FeedRepository {
   }
 
   final ProfileNames _names;
+  late final CommunityPhotos _photos;
 
-  static const photoBucket = 'community-photos';
+  static const photoBucket = CommunityPhotos.bucket;
 
   /// How many posts the feed loads.
   static const pageSize = 50;
-
-  /// How long a photo link stays valid. The feed is refetched well within.
-  static const _signedUrlSeconds = 6 * 60 * 60;
-
-  static const _contentTypes = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'webp': 'image/webp',
-  };
 
   @override
   Future<List<Post>> fetchPosts({required AppUser viewer}) =>
@@ -51,7 +42,7 @@ class SupabaseFeedRepository implements FeedRepository {
             .select()
             .order('created_at', ascending: false)
             .limit(pageSize);
-        final urls = await _signedUrls([
+        final urls = await _photos.links([
           for (final row in rows)
             if (row['photo_path'] case final String path) path,
         ]);
@@ -71,22 +62,9 @@ class SupabaseFeedRepository implements FeedRepository {
     }
     final pet = petName?.trim() ?? '';
 
-    String? photoPath;
-    if (photo != null) {
-      final extension = _extensionOf(photo);
-      photoPath = '${author.id}/${const Uuid().v4()}.$extension';
-      await StorageCleanup(_client).reserve(photoBucket, photoPath);
-      await _client.storage
-          .from(photoBucket)
-          .uploadBinary(
-            photoPath,
-            photo.bytes,
-            fileOptions: sb.FileOptions(
-              contentType: _contentTypes[extension],
-              cacheControl: '31536000',
-            ),
-          );
-    }
+    final photoPath = photo == null
+        ? null
+        : await _photos.upload(author.id, photo);
 
     final Map<String, dynamic> row;
     try {
@@ -102,15 +80,11 @@ class SupabaseFeedRepository implements FeedRepository {
           .single();
     } catch (_) {
       // Do not leave an orphan picture behind.
-      if (photoPath != null) await _removePhoto(photoPath);
+      if (photoPath != null) await _photos.remove(photoPath);
       rethrow;
     }
 
-    if (photoPath != null) {
-      try {
-        await StorageCleanup(_client).attached(photoBucket, photoPath);
-      } catch (_) {}
-    }
+    if (photoPath != null) await _photos.attached(photoPath);
     return Post(
       id: row['id'] as String,
       authorId: author.id,
@@ -136,7 +110,7 @@ class SupabaseFeedRepository implements FeedRepository {
           throw const CommunityException(CommunityFailure.notYourPost);
         }
         if (deleted.first['photo_path'] case final String path) {
-          await _removePhoto(path);
+          await _photos.remove(path);
         }
       });
 
@@ -243,50 +217,5 @@ class SupabaseFeedRepository implements FeedRepository {
       likedByMe: row['liked_by_me'] as bool? ?? false,
       commentCount: (row['comment_count'] as num?)?.toInt() ?? 0,
     );
-  }
-
-  /// Signed links for [paths] in the private bucket. A failure here costs
-  /// the pictures, not the whole feed.
-  Future<Map<String, String>> _signedUrls(List<String> paths) async {
-    if (paths.isEmpty) return const {};
-    try {
-      final results = await _client.storage
-          .from(photoBucket)
-          .createSignedUrlsResult(paths, _signedUrlSeconds);
-      return {
-        for (final result in results)
-          if (result case sb.SignedUrlSuccess(:final path, :final signedUrl))
-            path: signedUrl,
-      };
-    } catch (_) {
-      return const {};
-    }
-  }
-
-  Future<void> _removePhoto(String path) async {
-    try {
-      await StorageCleanup(_client).enqueue(photoBucket, path);
-      await StorageCleanup(_client).drain();
-    } catch (_) {
-      // Best effort: the post is what matters to the user.
-    }
-  }
-
-  /// The file extension to store [photo] under: from its type, else its
-  /// name. The picker re-encodes to JPEG, so that is the fallback.
-  static String _extensionOf(PickedPhoto photo) {
-    final mime = photo.mimeType?.toLowerCase();
-    for (final entry in _contentTypes.entries) {
-      if (entry.value == mime) return entry.key == 'jpeg' ? 'jpg' : entry.key;
-    }
-    final dot = photo.name.lastIndexOf('.');
-    final extension = dot < 0
-        ? ''
-        : photo.name.substring(dot + 1).toLowerCase();
-    if (_contentTypes.containsKey(extension)) {
-      return extension == 'jpeg' ? 'jpg' : extension;
-    }
-    if (extension.isEmpty && mime == null) return 'jpg';
-    throw const CommunityException(CommunityFailure.photoUnsupported);
   }
 }

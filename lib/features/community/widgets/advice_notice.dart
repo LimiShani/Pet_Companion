@@ -18,10 +18,13 @@ Future<void> contactProfessional(BuildContext context, WidgetRef ref) async {
 }
 
 /// One slim line saying that members' answers are personal experience and
-/// not professional advice, with the way to a professional. Always shown:
-/// there is nothing to dismiss. The whole line is the tap target.
+/// not professional advice, with the way to a professional. The whole line
+/// is the tap target. With [onDismiss] it carries a close button (chat
+/// rooms, once read); without, it is always shown.
 class AdviceNotice extends ConsumerWidget {
-  const AdviceNotice({super.key});
+  const AdviceNotice({super.key, this.onDismiss});
+
+  final VoidCallback? onDismiss;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -70,6 +73,21 @@ class AdviceNotice extends ConsumerWidget {
                       style: style,
                     ),
                   ),
+                  if (onDismiss != null)
+                    IconButton(
+                      onPressed: onDismiss,
+                      tooltip: l10n.hideNotice,
+                      icon: const AppIcon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color: AppColors.brown,
+                      ),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 36,
+                        height: 36,
+                      ),
+                    ),
                 ],
               ),
             ),

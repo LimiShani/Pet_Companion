@@ -128,6 +128,13 @@ extension CommunityWords on CommunityL10n {
     ReportReason.other => reportOther,
   };
 
+  /// What a reported item is, in the review list.
+  String moderationKind(ModerationKind kind) => switch (kind) {
+    ModerationKind.post => kindPost,
+    ModerationKind.comment => kindComment,
+    ModerationKind.message => kindMessage,
+  };
+
   /// A member's name as shown: their own, or a friendly fallback for an
   /// account without one.
   String memberName(String stored) =>
@@ -153,6 +160,8 @@ extension CommunityWords on CommunityL10n {
     CommunityFailure.photoUpload => errPhotoUpload,
     CommunityFailure.cameraNotAllowed => errCameraNotAllowed,
     CommunityFailure.photosNotAllowed => errPhotosNotAllowed,
+    CommunityFailure.slowDown => errSlowDown,
+    CommunityFailure.notModerator => errNotModerator,
     CommunityFailure.unknown => null,
   };
 

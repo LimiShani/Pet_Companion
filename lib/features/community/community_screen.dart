@@ -2,12 +2,14 @@ import '../../access/feature_gate.dart';
 import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/l10n.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import 'chat/chat_section.dart';
+import 'community_routes.dart';
 import 'feed/feed_controller.dart';
 import 'feed/feed_section.dart';
 import 'feed/post_composer_screen.dart';
@@ -92,6 +94,13 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         children: [
           CoralHeader(
             title: l10n.tabTitle,
+            actions: [
+              CoralHeaderAction(
+                icon: Icons.shield_outlined,
+                tooltip: l10n.safetyTitle,
+                onPressed: () => context.go(CommunityRoutes.safety),
+              ),
+            ],
             bottom: CoralSegmentedControl(
               labels: [
                 for (final section in visible)

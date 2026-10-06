@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
-import '../../../theme/app_colors.dart';
-import '../../../theme/app_theme.dart';
-import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
 import '../../../services/community/data/community_models.dart';
+import '../safety/safety_flows.dart';
 import 'feed_controller.dart';
 
 void showCommunitySnack(ScaffoldMessengerState messenger, String message) {
@@ -45,11 +43,10 @@ Future<bool> reportPostFlow(
   final l10n = context.communityL10n;
   final errorWords = communityErrorWords(context);
 
-  final reason = await showModalBottomSheet<ReportReason>(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    builder: (context) => const _ReportSheet(),
+  final reason = await askReportReason(
+    context,
+    title: l10n.reportTitle,
+    body: l10n.reportBody,
   );
   if (reason == null) return false;
 
@@ -102,77 +99,5 @@ Future<bool> deletePostFlow(
   } catch (e) {
     showCommunitySnack(messenger, errorWords(e));
     return false;
-  }
-}
-
-class _ReportSheet extends StatelessWidget {
-  const _ReportSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.communityL10n;
-    final radius = BorderRadius.circular(AppSpacing.fieldRadius);
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screen,
-          0,
-          AppSpacing.screen,
-          16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              l10n.reportTitle,
-              style: AppText.cardTitle.copyWith(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              l10n.reportBody,
-              style: AppText.body.copyWith(color: AppColors.brown),
-            ),
-            const SizedBox(height: 12),
-            for (final reason in ReportReason.values)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Material(
-                  color: AppColors.white,
-                  borderRadius: radius,
-                  child: InkWell(
-                    borderRadius: radius,
-                    onTap: () => Navigator.of(context).pop(reason),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 14,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              l10n.reportReason(reason),
-                              style: AppText.body.copyWith(fontSize: 15),
-                            ),
-                          ),
-                          // Mirrors itself in a right-to-left layout.
-                          const AppIcon(
-                            Icons.chevron_right_rounded,
-                            color: AppColors.brown,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
   }
 }
