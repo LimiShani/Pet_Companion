@@ -83,6 +83,8 @@ serve as the procedure for a fresh project.
      with stored files be deleted; their files stay queued for clean-up)
    * `supabase/migrations/0019_findvet_service_reads.sql` (turning public vet
      search off keeps the curated directory for signed-in searches)
+   * `supabase/migrations/0020_permission_checks_once.sql` (permission checks
+     run once per query instead of once per row)
 2. Run `supabase/seed/access_admin_bootstrap.sql` in SQL Editor. It provisions
    **pixel123@gmail.com** and aborts if that auth account does not exist. No email
    check or administrator secret is embedded in the mobile client.
