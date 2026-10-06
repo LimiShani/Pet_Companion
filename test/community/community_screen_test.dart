@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
@@ -212,6 +213,32 @@ void main() {
       expect(find.text(alexPost), findsNothing);
       expect(find.text('Your post was deleted.'), findsOneWidget);
       expect((await storedPosts(tester, h)).any((p) => p.authorId == 'demo'), isFalse);
+    });
+
+    testWidgets('without permission to edit posts, your own post offers no delete', (tester) async {
+      final access = FakeAccessRepository();
+      await access.change('user_rule', {'user_id': 'demo', 'capability': 'community.feed.edit', 'allowed': false});
+      await pumpCommunity(tester, harness: CommunityHarness(access: access));
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
+
+      // The menu stays for sharing, without editing or deleting.
+      await tapVisible(tester, inCard('Alex', find.byTooltip('Post options')));
+      expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Delete'), findsNothing);
+      expect(find.text('Edit'), findsNothing);
+    });
+
+    testWidgets('without permission to post, others\' posts offer no report', (tester) async {
+      final access = FakeAccessRepository();
+      await access.change('user_rule', {'user_id': 'demo', 'capability': 'community.feed.post', 'allowed': false});
+      await pumpCommunity(tester, harness: CommunityHarness(access: access));
+
+      // Sharing and blocking stay; reporting needs permission to post.
+      await tester.tap(inCard('Maya', find.byTooltip('Post options')));
+      await tester.pumpAndSettle();
+      expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Block Maya'), findsOneWidget);
+      expect(find.text('Report'), findsNothing);
     });
 
     testWidgets('report hides a post and records the report', (tester) async {

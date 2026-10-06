@@ -29,6 +29,8 @@ docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file
 if ($LASTEXITCODE -ne 0) { throw 'Find-a-vet public switch tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/permission_checks_once_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Once-per-statement permission check tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/content_delete_permissions_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Content delete permission tests failed.' }
 
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/community_chat_safety_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Community chat and safety tests failed.' }

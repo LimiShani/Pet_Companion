@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/store/deal_detail_screen.dart';
 
 import 'store_test_helpers.dart';
@@ -65,6 +66,16 @@ void main() {
     expect(find.byType(DealDetailScreen), findsOneWidget);
     expect(find.text('Cannot reach the server. Check your connection and try again.'), findsOneWidget);
     expect(find.text('Salmon training treats, 500 g'), findsOneWidget);
+  });
+
+  testWidgets('without permission to edit deals, your own deal offers no delete', (tester) async {
+    final access = FakeAccessRepository();
+    await access.change('user_rule', {'user_id': 'demo', 'capability': 'store.deals.edit', 'allowed': false});
+    await pumpStore(tester, access: access);
+    await openDeal(tester, mine);
+
+    expect(find.text('Shared by you'), findsOneWidget);
+    expect(find.text('Delete my deal'), findsNothing);
   });
 
   testWidgets('deals shared by others and curated deals cannot be deleted', (tester) async {

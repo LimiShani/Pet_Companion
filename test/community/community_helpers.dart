@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
@@ -22,7 +23,6 @@ import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/services/community/data/safety_repository.dart';
 import 'package:pet_companion/services/community/data/members_repository.dart';
 import 'package:pet_companion/features/community/feed/post_actions.dart' show communityShareProvider;
-import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
@@ -107,6 +107,7 @@ class CommunityHarness {
     this.language,
     this.appLanguage,
     this.chatBackend,
+    this.access,
     this.rulesAccepted = true,
     this.moderator = false,
     FakeCommunitySafetyRepository? safety,
@@ -151,6 +152,9 @@ class CommunityHarness {
   /// A chat backend of the test's own, used instead of [chat].
   final ChatRepository? chatBackend;
 
+  /// The demo account's permissions, when a test restricts them.
+  final FakeAccessRepository? access;
+
   /// The language the app starts in: English when left out.
   final AppLanguage? appLanguage;
 
@@ -171,10 +175,6 @@ class CommunityHarness {
         communitySafetyRepositoryProvider.overrideWithValue(safety),
         communityMembersRepositoryProvider.overrideWithValue(members),
         communityShareProvider.overrideWithValue((text) async => shared.add(text)),
-        if (moderator)
-          accessRepositoryProvider.overrideWithValue(
-            FakeAccessRepository()..users[demoUser.id] = {'community.moderate': AccessRule.allow},
-          ),
         photoPickerProvider.overrideWithValue(picker),
         settingsStoreProvider.overrideWithValue(settings),
         if (language != null) communityLanguageProvider.overrideWithValue(language!),
@@ -184,6 +184,12 @@ class CommunityHarness {
         }),
         if (guides != null) guidesRepositoryProvider.overrideWithValue(guides!),
         if (pets != null) petsProvider.overrideWith(() => FixedPets(pets!)),
+        if (access != null)
+          accessRepositoryProvider.overrideWithValue(access!)
+        else if (moderator)
+          accessRepositoryProvider.overrideWithValue(
+            FakeAccessRepository()..users[demoUser.id] = {'community.moderate': AccessRule.allow},
+          ),
       ];
 }
 
