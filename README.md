@@ -60,6 +60,24 @@ flutter build apk --dart-define-from-file=env.json
 Sessions persist on the device, so a signed-in user stays signed in across
 restarts.
 
+### Android release signing
+
+Release builds are signed with the upload key from `android/key.properties`
+(gitignored, like the keystore itself):
+
+```properties
+storeFile=upload-keystore.jks
+storePassword=...
+keyAlias=upload
+keyPassword=...
+```
+
+`storeFile` is relative to `android/`. Without this file a release build
+stops with an error instead of shipping with the debug key. For a local
+`flutter run --release` that is never distributed, set
+`PETLOOP_ALLOW_DEBUG_SIGNED_RELEASE=true` (or pass
+`'-Ppetloop.allowDebugSignedRelease=true'` to Gradle).
+
 ### Free plan notes
 
 - Projects on the Free plan pause after 7 days without activity. Restore

@@ -1,9 +1,28 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// The upload key lives in android/key.properties (gitignored). Without it a
+// release build fails rather than quietly shipping with the debug key; set
+// PETLOOP_ALLOW_DEBUG_SIGNED_RELEASE=true (or -Ppetloop.allowDebugSignedRelease=true)
+// for a local `flutter run --release` that is never distributed.
+val keyPropertiesFile = rootProject.file("key.properties")
+val keyProperties = Properties().apply {
+    if (keyPropertiesFile.exists()) keyPropertiesFile.inputStream().use { load(it) }
+}
+val hasReleaseKey = keyPropertiesFile.exists()
+val allowDebugSignedRelease =
+    System.getenv("PETLOOP_ALLOW_DEBUG_SIGNED_RELEASE") == "true" ||
+        (findProperty("petloop.allowDebugSignedRelease") as String?) == "true"
+
+fun releaseKeyProperty(name: String): String =
+    keyProperties.getProperty(name)?.takeIf { it.isNotBlank() }
+        ?: throw GradleException("android/key.properties is missing '$name'.")
 
 android {
     namespace = "com.limi.pet_companion"
@@ -33,11 +52,43 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseKey) {
+            create("release") {
+                keyAlias = releaseKeyProperty("keyAlias")
+                keyPassword = releaseKeyProperty("keyPassword")
+                storeFile = rootProject.file(releaseKeyProperty("storeFile"))
+                storePassword = releaseKeyProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = when {
+                hasReleaseKey -> signingConfigs.getByName("release")
+                allowDebugSignedRelease -> signingConfigs.getByName("debug")
+                else -> null
+            }
+        }
+    }
+}
+
+// Checked when a release variant is actually built, so debug builds and
+// IDE syncs work without the key.
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        if (!hasReleaseKey && !allowDebugSignedRelease) {
+            throw GradleException(
+                "Release signing is not configured. Create android/key.properties " +
+                    "(storeFile, storePassword, keyAlias, keyPassword); see " +
+                    "https://docs.flutter.dev/deployment/android#configure-signing-in-gradle. " +
+                    "For a local, never-distributed release run set " +
+                    "PETLOOP_ALLOW_DEBUG_SIGNED_RELEASE=true.",
+            )
+        }
+        if (!hasReleaseKey) {
+            logger.warn("WARNING: this release build is signed with the DEBUG key. Do not distribute it.")
         }
     }
 }
