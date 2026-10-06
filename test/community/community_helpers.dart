@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
@@ -103,6 +104,7 @@ class CommunityHarness {
     this.language,
     this.appLanguage,
     this.chatBackend,
+    this.access,
   })  : feed = feed ?? FakeFeedRepository(latency: Duration.zero, now: testClock),
         chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock);
 
@@ -123,6 +125,9 @@ class CommunityHarness {
 
   /// A chat backend of the test's own, used instead of [chat].
   final ChatRepository? chatBackend;
+
+  /// The demo account's permissions, when a test restricts them.
+  final FakeAccessRepository? access;
 
   /// The language the app starts in: English when left out.
   final AppLanguage? appLanguage;
@@ -147,6 +152,7 @@ class CommunityHarness {
         }),
         if (guides != null) guidesRepositoryProvider.overrideWithValue(guides!),
         if (pets != null) petsProvider.overrideWith(() => FixedPets(pets!)),
+        if (access != null) accessRepositoryProvider.overrideWithValue(access!),
       ];
 }
 

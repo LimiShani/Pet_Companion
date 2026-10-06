@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
@@ -93,6 +94,7 @@ Future<FakeStoreRepository> pumpStore(
   Size size = const Size(390, 844),
   List<Pet> extraPets = const [],
   AppLanguage? language,
+  FakeAccessRepository? access,
 }) async {
   tester.view.physicalSize = size * 3;
   tester.view.devicePixelRatio = 3;
@@ -112,6 +114,7 @@ Future<FakeStoreRepository> pumpStore(
         petsRepositoryProvider.overrideWithValue(pets),
         linkOpenerProvider.overrideWithValue(opener ?? FakeLinkOpener()),
         settingsStoreProvider.overrideWithValue(MemorySettingsStore({languageSettingKey: ?language?.code})),
+        if (access != null) accessRepositoryProvider.overrideWithValue(access),
       ],
       child: const PetLoopApp(),
     ),

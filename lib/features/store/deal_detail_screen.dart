@@ -1,3 +1,4 @@
+import '../../access/access_provider.dart';
 import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -329,7 +330,8 @@ class _DealBody extends ConsumerWidget {
                           ),
                   ),
                 ],
-                if (mine) ...[
+                if (mine &&
+                    ref.watch(capabilityProvider('store.deals.edit'))) ...[
                   const SizedBox(height: 10),
                   OutlinedButton.icon(
                     onPressed: busy ? null : onDelete,

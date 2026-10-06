@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
@@ -39,6 +39,11 @@ class PostCard extends ConsumerWidget {
       authControllerProvider.select((auth) => auth.value?.id),
     );
     final isMine = post.authorId == viewerId;
+    // Only offer what the account may do: the database refuses the rest.
+    final canDelete =
+        isMine && ref.watch(capabilityProvider('community.feed.edit'));
+    final canReport =
+        !isMine && ref.watch(capabilityProvider('community.feed.post'));
     final meta = dotted([
       // A name in the other script is kept as one unit, so it cannot
       // reorder the line.
@@ -83,36 +88,37 @@ class PostCard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  PopupMenuButton<_PostAction>(
-                    tooltip: l10n.postOptions,
-                    icon: const AppIcon(
-                      Icons.more_horiz_rounded,
-                      color: AppColors.brown,
-                    ),
-                    color: AppColors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    onSelected: (action) => _onAction(context, ref, action),
-                    itemBuilder: (context) => [
-                      if (isMine)
-                        PopupMenuItem(
-                          value: _PostAction.delete,
-                          child: _MenuRow(
-                            icon: Icons.delete_outline_rounded,
-                            label: app.commonDelete,
+                  if (canDelete || canReport)
+                    PopupMenuButton<_PostAction>(
+                      tooltip: l10n.postOptions,
+                      icon: const AppIcon(
+                        Icons.more_horiz_rounded,
+                        color: AppColors.brown,
+                      ),
+                      color: AppColors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      onSelected: (action) => _onAction(context, ref, action),
+                      itemBuilder: (context) => [
+                        if (canDelete)
+                          PopupMenuItem(
+                            value: _PostAction.delete,
+                            child: _MenuRow(
+                              icon: Icons.delete_outline_rounded,
+                              label: app.commonDelete,
+                            ),
+                          )
+                        else
+                          PopupMenuItem(
+                            value: _PostAction.report,
+                            child: _MenuRow(
+                              icon: Icons.flag_outlined,
+                              label: l10n.report,
+                            ),
                           ),
-                        )
-                      else
-                        PopupMenuItem(
-                          value: _PostAction.report,
-                          child: _MenuRow(
-                            icon: Icons.flag_outlined,
-                            label: l10n.report,
-                          ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
               Padding(
