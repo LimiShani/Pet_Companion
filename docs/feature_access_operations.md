@@ -105,6 +105,10 @@ For a vet reviewer, both the reviewer role and `findvet.admin` grant are require
 The app refreshes real-account access at most every 60 seconds and on Android/iOS
 resume. Database requests enforce revocation immediately. Device content already
 viewed or exported cannot be recalled; export controls gate app export actions.
+When a refresh fails for a reason unrelated to the account (offline, timeout,
+gateway error), the app keeps the last confirmed permissions for up to 10
+minutes so open screens and unsaved forms survive; a database or auth refusal,
+or a longer outage, still closes access at once.
 
 ## Include or omit implementations
 
