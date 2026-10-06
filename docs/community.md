@@ -1,4 +1,4 @@
-# Community: chat, safety and moderation
+# Community: feed, chat, members, safety and moderation
 
 What the Community tab does beyond the feed and the guides, where it lives in
 the code, and what the owner has to do on the server.
@@ -15,7 +15,38 @@ the code, and what the owner has to do on the server.
    up `chat_message_reactions` from the publication change in 0021.
 
 Before 0021 is run the app still works: rooms load, text messages send,
-reactions and the room list's unread counts are simply missing.
+reactions and the room list's unread counts are simply missing. Before 0022
+the feed loads and posts are written (as moments for everyone); filtering by
+kind or animal, edits, helpful answers, profiles and activity need it.
+
+## Feed
+
+| What | Where |
+|---|---|
+| Animal / kind / search header, endless list | `lib/features/community/feed/feed_section.dart` |
+| Query, paging (30 a page), edit, helpful answer, posts opened from outside the feed | `FeedController`, `feedFilterProvider`, `feedQueryProvider`, `outsidePostsProvider` in `feed/feed_controller.dart` |
+| Card: tags, Edited, menu (edit, delete, share, report, block), double tap on the photo | `feed/post_card.dart`, `feed/post_actions.dart` (`communityShareProvider`) |
+| Composer: kinds, hints, edit mode, the pet's animal | `feed/post_composer_screen.dart` |
+| Helpful answer on the post page | `feed/post_detail_screen.dart` |
+| Backend | `FeedRepository` (`fetchPosts(query, before)`, `fetchPost`, `updatePost`, `setHelpful`) |
+
+- A post's animal comes from the tagged pet (`audienceOfSpecies`); posts
+  without a pet are for everyone and show under every chip.
+- Paging uses `created_at` of the last post shown (`before`).
+- Double tap likes only on a photo: on the whole card it would make every
+  button wait for a possible second tap.
+
+## Members and activity
+
+| What | Where |
+|---|---|
+| Member page, own profile form | `members/member_screen.dart` (route `/community/member/:id`) |
+| Activity page, the bell's dot | `members/activity_screen.dart` (route `/community/activity`), `activityProvider`, `activitySeenProvider`, `hasNewActivityProvider` |
+| Muted rooms | `mutedRoomsProvider` (kept on the phone under `community.muted.<user id>`) |
+| Backend | `lib/services/community/data/members_repository.dart` (+ fake that reads the fake feed and chat, + Supabase on `community_members`, `profiles`, `community_activity`) |
+
+Member, post and room pages opened from Activity or a profile are pushed,
+so Back returns to where the member was.
 
 ## Chat
 
@@ -68,6 +99,10 @@ Server rules (0021):
 
 ## Tests
 
+- `test/community/community_feed_members_test.dart`: kinds, search, the
+  animal chips, paging, composing a question, editing, the helpful answer,
+  sharing, double tap, member pages, own profile, chat names, activity,
+  muting, Hebrew at 320 px.
 - `test/community/community_chat_safety_test.dart`: room list, runs,
   replies, reactions, copy and delete, failed sends, photos, paging, the jump
   button, the advice note, rules, reports, blocking, the safety page,

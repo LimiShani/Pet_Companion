@@ -39,14 +39,38 @@ class SupabaseFeedRepository implements FeedRepository {
   }) => guardCommunity(() async {
     // The view adds the author's name, the counts and "liked by me";
     // posts the viewer reported, hidden posts and blocked members' posts
-    // are filtered out by the select policies. Filters are only sent when
-    // used, so the feed still loads before 0022 is run.
+    // are filtered out by the select policies.
+    List<Map<String, dynamic>> rows;
+    try {
+      rows = await _feedRows(query, before, limit, kinds: true);
+    } on sb.PostgrestException catch (e) {
+      if (!_missingColumn(e)) rethrow;
+      // Before 0022 there are no kinds or animals: every post is a moment
+      // for everyone, so a narrower kind finds nothing.
+      if (query.kind != null && query.kind != PostKind.moment) return const [];
+      rows = await _feedRows(query, before, limit, kinds: false);
+    }
+    final urls = await _photos.links([
+      for (final row in rows)
+        if (row['photo_path'] case final String path) path,
+    ]);
+    return [for (final row in rows) _toPost(row, urls)];
+  });
+
+  Future<List<Map<String, dynamic>>> _feedRows(
+    FeedQuery query,
+    DateTime? before,
+    int limit, {
+    required bool kinds,
+  }) async {
     var request = _client.from('community_feed').select();
-    if (query.kind case final kind?) request = request.eq('kind', kind.key);
-    if (query.audiences case final audiences?) {
-      request = request.inFilter('audience', [
-        for (final a in audiences) a.key,
-      ]);
+    if (kinds) {
+      if (query.kind case final kind?) request = request.eq('kind', kind.key);
+      if (query.audiences case final audiences?) {
+        request = request.inFilter('audience', [
+          for (final a in audiences) a.key,
+        ]);
+      }
     }
     if (query.authorId case final author?) {
       request = request.eq('author_id', author);
@@ -58,15 +82,15 @@ class SupabaseFeedRepository implements FeedRepository {
     if (before != null) {
       request = request.lt('created_at', before.toUtc().toIso8601String());
     }
-    final rows = await request
-        .order('created_at', ascending: false)
-        .limit(limit);
-    final urls = await _photos.links([
-      for (final row in rows)
-        if (row['photo_path'] case final String path) path,
-    ]);
-    return [for (final row in rows) _toPost(row, urls)];
-  });
+    return request.order('created_at', ascending: false).limit(limit);
+  }
+
+  /// A column this app asks for that the database does not have yet: a
+  /// migration has not been run.
+  static bool _missingColumn(sb.PostgrestException e) =>
+      e.code == '42703' ||
+      e.code == 'PGRST204' ||
+      e.message.toLowerCase().contains('column');
 
   @override
   Future<Post?> fetchPost({required AppUser viewer, required String postId}) =>
@@ -153,21 +177,31 @@ class SupabaseFeedRepository implements FeedRepository {
         ? null
         : await _photos.upload(author.id, photo);
 
+    final values = {
+      'author_id': author.id,
+      'body': body,
+      'pet_name': pet.isEmpty ? null : pet,
+      'photo_path': photoPath,
+    };
+    Future<Map<String, dynamic>> insert(Map<String, dynamic> values) => _client
+        .from('community_posts')
+        .insert(values)
+        .select('id, created_at')
+        .single();
     final Map<String, dynamic> row;
     try {
-      row = await _client
-          .from('community_posts')
-          .insert({
-            'author_id': author.id,
-            'body': body,
-            'pet_name': pet.isEmpty ? null : pet,
-            'photo_path': photoPath,
-            // Only sent when used, so posting still works before 0022.
+      row =
+          await insert({
+            ...values,
             if (kind != PostKind.moment) 'kind': kind.key,
             if (audience != Audience.everyone) 'audience': audience.key,
-          })
-          .select('id, created_at')
-          .single();
+          }).catchError((Object e) {
+            // Before 0022 a post has no kind or animal: post it without.
+            if (e is sb.PostgrestException && _missingColumn(e)) {
+              return insert(values);
+            }
+            throw e;
+          });
     } catch (_) {
       // Do not leave an orphan picture behind.
       if (photoPath != null) await _photos.remove(photoPath);

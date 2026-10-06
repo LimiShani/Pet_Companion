@@ -8,6 +8,8 @@ health log, reminders, community and a bargain store. Flutter, Android + iOS
 
 For module composition, administrator access and required migrations, see
 [Feature access operations](docs/feature_access_operations.md).
+Community (chat, safety, moderation, members) and its migrations 0021 and
+0022: [Community](docs/community.md).
 
 ```bash
 flutter pub get
