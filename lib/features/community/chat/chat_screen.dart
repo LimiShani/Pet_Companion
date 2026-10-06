@@ -20,6 +20,7 @@ import '../feed/post_actions.dart' show showCommunitySnack;
 import '../safety/safety_flows.dart';
 import '../widgets/advice_notice.dart';
 import '../widgets/auto_direction_text.dart';
+import '../widgets/community_keeper.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/section_state.dart';
 import 'chat_message_tile.dart';
@@ -128,9 +129,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     if (latest == null || latest.message.id == _latestId) return;
     final previous = _latestId;
     _latestId = latest.message.id;
-    final viewerId = ref.read(authControllerProvider).value?.id;
-    if (previous != null && _away && latest.message.authorId != viewerId) {
-      setState(() => _arrived++);
+    if (previous != null && _away) {
+      // Everyone else's messages after the one that was latest before.
+      final viewerId = ref.read(authControllerProvider).value?.id;
+      final entries = conversation.entries;
+      final from = entries.indexWhere((e) => e.message.id == previous);
+      final added = from < 0
+          ? 0
+          : entries
+                .skip(from + 1)
+                .where(
+                  (e) => e.pending == null && e.message.authorId != viewerId,
+                )
+                .length;
+      if (added > 0) setState(() => _arrived += added);
     }
     unawaited(
       ref
@@ -319,12 +331,15 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       Navigator.of(context).pop(const _MessageAction.delete()),
                 ),
               if (!mine) ...[
-                ListTile(
-                  leading: const AppIcon(Icons.flag_outlined),
-                  title: Text(l10n.report),
-                  onTap: () =>
-                      Navigator.of(context).pop(const _MessageAction.report()),
-                ),
+                // Reports are kept only from members who may write here.
+                if (canSend)
+                  ListTile(
+                    leading: const AppIcon(Icons.flag_outlined),
+                    title: Text(l10n.report),
+                    onTap: () => Navigator.of(
+                      context,
+                    ).pop(const _MessageAction.report()),
+                  ),
                 ListTile(
                   leading: const AppIcon(Icons.block_rounded),
                   title: Text(l10n.blockMember(name)),
@@ -466,86 +481,91 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       if (next.value case final conversation?) _onConversation(conversation);
     });
 
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CoralHeader(
-            title: name,
-            showBack: true,
-            actions: [
-              CoralHeaderAction(
-                icon: Icons.info_outline_rounded,
-                tooltip: l10n.roomInfo,
-                onPressed: () => _showRoomInfo(channel, name),
-              ),
-            ],
-          ),
-          if (showNotice)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.screen,
-                10,
-                AppSpacing.screen,
-                0,
-              ),
-              child: AdviceNotice(
-                onDismiss: _noticeDismissible ? _hideNotice : null,
-              ),
-            ),
-          Expanded(
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: _Messages(
-                    channelId: widget.channelId,
-                    scroll: _scroll,
-                    canReact: canSend,
-                    onLongPress: _messageActions,
-                    onFailedTap: _failedActions,
-                  ),
+    return CommunityKeeper(
+      channelId: widget.channelId,
+      child: Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CoralHeader(
+              title: name,
+              showBack: true,
+              actions: [
+                CoralHeaderAction(
+                  icon: Icons.info_outline_rounded,
+                  tooltip: l10n.roomInfo,
+                  onPressed: () => _showRoomInfo(channel, name),
                 ),
-                if (_away)
-                  PositionedDirectional(
-                    end: 16,
-                    bottom: 12,
-                    child: _JumpButton(arrived: _arrived, onTap: _toLatest),
-                  ),
               ],
             ),
-          ),
-          if (canSend)
-            MessageBar(
-              controller: _message,
-              hint: l10n.messageHint(l10n.inLine(name)),
-              sendTooltip: l10n.sendMessage,
-              onSend: _send,
-              inputFormatters: [
-                LengthLimitingTextInputFormatter(CommunityLimits.messageLength),
-              ],
-              leading: IconButton(
-                onPressed: _pickPhoto,
-                tooltip: l10n.addPhoto,
-                icon: const AppIcon(
-                  Icons.add_photo_alternate_outlined,
-                  color: AppColors.brown,
+            if (showNotice)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  10,
+                  AppSpacing.screen,
+                  0,
                 ),
-                constraints: const BoxConstraints.tightFor(
-                  width: 44,
-                  height: 48,
+                child: AdviceNotice(
+                  onDismiss: _noticeDismissible ? _hideNotice : null,
                 ),
-                padding: EdgeInsets.zero,
               ),
-              above: _reply == null && _photo == null
-                  ? null
-                  : _ComposerExtras(
-                      reply: _reply,
-                      photo: _photo,
-                      onCancelReply: () => setState(() => _reply = null),
-                      onRemovePhoto: () => setState(() => _photo = null),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: _Messages(
+                      channelId: widget.channelId,
+                      scroll: _scroll,
+                      canReact: canSend,
+                      onLongPress: _messageActions,
+                      onFailedTap: _failedActions,
                     ),
+                  ),
+                  if (_away)
+                    PositionedDirectional(
+                      end: 16,
+                      bottom: 12,
+                      child: _JumpButton(arrived: _arrived, onTap: _toLatest),
+                    ),
+                ],
+              ),
             ),
-        ],
+            if (canSend)
+              MessageBar(
+                controller: _message,
+                hint: l10n.messageHint(l10n.inLine(name)),
+                sendTooltip: l10n.sendMessage,
+                onSend: _send,
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(
+                    CommunityLimits.messageLength,
+                  ),
+                ],
+                leading: IconButton(
+                  onPressed: _pickPhoto,
+                  tooltip: l10n.addPhoto,
+                  icon: const AppIcon(
+                    Icons.add_photo_alternate_outlined,
+                    color: AppColors.brown,
+                  ),
+                  constraints: const BoxConstraints.tightFor(
+                    width: 44,
+                    height: 48,
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+                above: _reply == null && _photo == null
+                    ? null
+                    : _ComposerExtras(
+                        reply: _reply,
+                        photo: _photo,
+                        onCancelReply: () => setState(() => _reply = null),
+                        onRemovePhoto: () => setState(() => _photo = null),
+                      ),
+              ),
+          ],
+        ),
       ),
     );
   }

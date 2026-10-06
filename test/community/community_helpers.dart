@@ -20,6 +20,7 @@ import 'package:pet_companion/features/community/data/fake_feed_repository.dart'
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/services/community/data/safety_repository.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
@@ -105,6 +106,7 @@ class CommunityHarness {
     this.appLanguage,
     this.chatBackend,
     this.rulesAccepted = true,
+    this.moderator = false,
     FakeCommunitySafetyRepository? safety,
   })  : feed = feed ?? FakeFeedRepository(latency: Duration.zero, now: testClock),
         chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock),
@@ -117,6 +119,9 @@ class CommunityHarness {
   /// Whether the demo account already agreed to the community rules (most
   /// tests are not about them).
   final bool rulesAccepted;
+
+  /// Gives the demo account the moderator capability.
+  final bool moderator;
   final picker = FakePhotoPicker();
 
   /// Replaces the sample pets (two dogs); the first one is selected.
@@ -151,6 +156,10 @@ class CommunityHarness {
         feedRepositoryProvider.overrideWithValue(feed),
         chatRepositoryProvider.overrideWithValue(chatBackend ?? chat),
         communitySafetyRepositoryProvider.overrideWithValue(safety),
+        if (moderator)
+          accessRepositoryProvider.overrideWithValue(
+            FakeAccessRepository()..users[demoUser.id] = {'community.moderate': AccessRule.allow},
+          ),
         photoPickerProvider.overrideWithValue(picker),
         settingsStoreProvider.overrideWithValue(settings),
         if (language != null) communityLanguageProvider.overrideWithValue(language!),

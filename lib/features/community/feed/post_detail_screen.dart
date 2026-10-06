@@ -16,6 +16,7 @@ import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/section_state.dart';
 import 'feed_controller.dart';
+import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../widgets/app_icon.dart';
 import '../safety/safety_flows.dart';
@@ -239,6 +240,7 @@ class _CommentRow extends StatelessWidget {
     final messenger = ScaffoldMessenger.of(context);
     final errorWords = communityErrorWords(context);
     final name = l10n.inLine(l10n.memberName(comment.authorName));
+    final canReport = ref.read(capabilityProvider('community.feed.post'));
     final report = await showModalBottomSheet<bool>(
       context: context,
       useRootNavigator: true,
@@ -246,11 +248,12 @@ class _CommentRow extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(
-              leading: const AppIcon(Icons.flag_outlined),
-              title: Text(l10n.report),
-              onTap: () => Navigator.of(context).pop(true),
-            ),
+            if (canReport)
+              ListTile(
+                leading: const AppIcon(Icons.flag_outlined),
+                title: Text(l10n.report),
+                onTap: () => Navigator.of(context).pop(true),
+              ),
             ListTile(
               leading: const AppIcon(Icons.block_rounded),
               title: Text(l10n.blockMember(name)),

@@ -32,6 +32,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Once-per-statement permission check tests fail
 
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/community_chat_safety_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Community chat and safety tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/community_feed_profiles_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Community feed and profile tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/administration_history_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Administration history tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/history_persistence_write.sql

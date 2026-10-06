@@ -18,6 +18,7 @@ import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
 import '../widgets/small_tag.dart';
 import '../widgets/section_state.dart';
+import '../safety/safety_providers.dart';
 import 'chat_providers.dart';
 
 /// The Chat section of the Community tab: the topic rooms for the chosen
@@ -60,9 +61,16 @@ class ChatSection extends ConsumerWidget {
       );
     }
 
-    final summaries =
-        ref.watch(chatRoomSummariesProvider).value ??
-        const <String, ChatRoomSummary>{};
+    final blocked = ref.watch(blockedIdsProvider);
+    // A room whose latest message is a blocked member's shows its
+    // description instead (the server leaves such messages out already).
+    final summaries = {
+      for (final entry
+          in (ref.watch(chatRoomSummariesProvider).value ??
+                  const <String, ChatRoomSummary>{})
+              .entries)
+        if (!blocked.contains(entry.value.lastAuthorId)) entry.key: entry.value,
+    };
     // The liveliest rooms first; rooms without messages keep their order
     // after them.
     final visible =
