@@ -81,6 +81,8 @@ serve as the procedure for a fresh project.
    * `supabase/migrations/0017_administration_history.sql`
    * `supabase/migrations/0018_account_deletion_cleanup.sql` (lets accounts
      with stored files be deleted; their files stay queued for clean-up)
+   * `supabase/migrations/0019_findvet_service_reads.sql` (turning public vet
+     search off keeps the curated directory for signed-in searches)
 2. Run `supabase/seed/access_admin_bootstrap.sql` in SQL Editor. It provisions
    **pixel123@gmail.com** and aborts if that auth account does not exist. No email
    check or administrator secret is embedded in the mobile client.
