@@ -212,6 +212,39 @@ void main() {
     expect(phone.log, contains('cancelAll'));
   });
 
+  testWidgets('a session that ended while the app was closed silences its reminders', (tester) async {
+    final phone = FakeNotificationPlatform(currentAccess: const NotificationAccess(allowed: true, exact: true));
+    await pumpAppWithNotifications(tester, phone);
+    await _signIn(tester);
+    expect(phone.scheduled, isNotEmpty);
+
+    // The app restarts signed out (password changed, or signed out on
+    // another device): nobody signs in, the previous reminders must go.
+    await pumpAppWithNotifications(tester, phone);
+    await _settle(tester);
+    expect(phone.scheduled, isEmpty);
+  });
+
+  testWidgets('the next account to sign in does not inherit "running low" reminders', (tester) async {
+    final phone = FakeNotificationPlatform(currentAccess: const NotificationAccess(allowed: true, exact: true));
+    // Left on the phone by another account's pet before the app started.
+    final other = ScheduledNotification(
+      group: 'basket:someone-elses-pet',
+      key: 'low:food',
+      kind: NotificationKind.basket,
+      at: DateTime(2025, 6, 11, 9),
+      title: 'PetLoop · Rex',
+      body: 'Food is running low',
+    );
+    phone.scheduled[other.id] = other;
+
+    await pumpAppWithNotifications(tester, phone);
+    await _signIn(tester);
+
+    expect(phone.of('basket:someone-elses-pet'), isEmpty);
+    expect(phone.of('health:kelly'), isNotEmpty);
+  });
+
   testWidgets('turning meals off in Settings takes them off the phone at once', (tester) async {
     final phone = FakeNotificationPlatform(currentAccess: const NotificationAccess(allowed: true, exact: true));
     await pumpAppWithNotifications(tester, phone);
