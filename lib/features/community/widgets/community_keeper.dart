@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import '../chat/chat_providers.dart';
 import '../feed/feed_controller.dart';
+import '../members/members_providers.dart';
 import '../safety/safety_providers.dart';
 
 /// Keeps the Community tab's lists active while [child] is mounted, for the
@@ -51,6 +52,7 @@ class _CommunityKeeperState extends State<CommunityKeeper> {
     keep(blockedIdsProvider);
     keep(visiblePostsProvider);
     keep(chatRoomSummariesProvider);
+    keep(hasNewActivityProvider);
     if (widget.channelId case final id?) keep(chatConversationProvider(id));
   }
 

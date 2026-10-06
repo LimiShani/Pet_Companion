@@ -815,4 +815,216 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get removedDone => 'Removed';
+
+  @override
+  String get kindMoment => 'Moment';
+
+  @override
+  String get kindQuestion => 'Question';
+
+  @override
+  String get kindTip => 'Tip';
+
+  @override
+  String get kindRecommendation => 'Recommendation';
+
+  @override
+  String get kindLostFound => 'Lost & found';
+
+  @override
+  String get kindsAll => 'All posts';
+
+  @override
+  String get composerKind => 'What kind of post?';
+
+  @override
+  String get composerHintQuestion => 'What would you like to ask other owners?';
+
+  @override
+  String get composerHintTip => 'Share something that worked for you';
+
+  @override
+  String get composerHintRecommendation => 'A place, a product or a professional you recommend, and why';
+
+  @override
+  String get composerHintLostFound => 'Describe the animal, where and when, and how to reach you';
+
+  @override
+  String get postsShownForDogs => 'Showing posts about dogs, and posts for everyone.';
+
+  @override
+  String get postsShownForCats => 'Showing posts about cats, and posts for everyone.';
+
+  @override
+  String get postsShownForAll => 'Showing every post.';
+
+  @override
+  String postsMatchedTo(String pet) {
+    return 'Matched to $pet. Tap Everything to see all posts.';
+  }
+
+  @override
+  String get searchPosts => 'Search posts';
+
+  @override
+  String get searchPostsHint => 'Search posts';
+
+  @override
+  String get noPostsMatchTitle => 'No posts found';
+
+  @override
+  String get noPostsMatchMessage => 'Try other words, another kind of post, or Everything.';
+
+  @override
+  String get loadingMorePosts => 'Loading more posts';
+
+  @override
+  String get editPost => 'Edit';
+
+  @override
+  String get editPostTitle => 'Edit post';
+
+  @override
+  String get saveChanges => 'Save';
+
+  @override
+  String get postEdited => 'Edited';
+
+  @override
+  String get postSaved => 'Your post was updated';
+
+  @override
+  String get sharePost => 'Share';
+
+  @override
+  String shareText(String name, String text) {
+    return '$name on PetLoop: $text';
+  }
+
+  @override
+  String get answeredTag => 'Answered';
+
+  @override
+  String get helpfulAnswer => 'Helpful answer';
+
+  @override
+  String get markHelpful => 'Mark as the helpful answer';
+
+  @override
+  String get unmarkHelpful => 'Not the helpful answer';
+
+  @override
+  String get markedHelpful => 'Marked as the helpful answer';
+
+  @override
+  String get likedByDoubleTap => 'Liked';
+
+  @override
+  String get activityTitle => 'Activity';
+
+  @override
+  String get activityTooltip => 'Activity';
+
+  @override
+  String get activityNew => 'New activity';
+
+  @override
+  String get activityEmptyTitle => 'Nothing new yet';
+
+  @override
+  String get activityEmptyMessage => 'Comments, likes and answers to your posts and messages show here.';
+
+  @override
+  String get activityLoadFailed => 'Cannot load your activity';
+
+  @override
+  String activityComment(String name) {
+    return '$name commented on your post';
+  }
+
+  @override
+  String activityLike(String name) {
+    return '$name liked your post';
+  }
+
+  @override
+  String activityReply(String name) {
+    return '$name answered your message';
+  }
+
+  @override
+  String get memberTitle => 'Member';
+
+  @override
+  String memberSince(String date) {
+    return 'Member since $date';
+  }
+
+  @override
+  String memberPostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count posts',
+      one: '1 post',
+      zero: 'No posts yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memberPosts => 'Posts';
+
+  @override
+  String get memberLoadFailed => 'Cannot load this member';
+
+  @override
+  String get memberGoneTitle => 'Member not found';
+
+  @override
+  String get memberGoneMessage => 'The account may have been deleted.';
+
+  @override
+  String openProfile(String name) {
+    return 'Open $name\'s profile';
+  }
+
+  @override
+  String get editProfile => 'Edit profile';
+
+  @override
+  String get profileBio => 'About me';
+
+  @override
+  String get profileBioHint => 'A line other members see, such as your pets or what you love talking about';
+
+  @override
+  String get profileCity => 'City';
+
+  @override
+  String get profileCityHint => 'Optional';
+
+  @override
+  String get profileSaved => 'Your profile was updated';
+
+  @override
+  String get profilePublicNote => 'Other members see this. Leave anything you prefer to keep private out.';
+
+  @override
+  String get blockedMemberNote => 'You blocked this member.';
+
+  @override
+  String get muteRoom => 'Mute this room';
+
+  @override
+  String get unmuteRoom => 'Unmute this room';
+
+  @override
+  String get roomMuted => 'Muted: no unread count for this room';
+
+  @override
+  String get roomUnmuted => 'Unmuted';
+
+  @override
+  String get mutedTag => 'Muted';
 }

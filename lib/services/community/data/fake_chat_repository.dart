@@ -378,6 +378,24 @@ class FakeChatRepository implements ChatRepository {
     ).id;
   }
 
+  /// Answers by others to the messages of [viewerId], as activity.
+  List<ActivityItem> repliesTo(String viewerId) => [
+    for (final list in _messages.values)
+      for (final m in list)
+        if (m.replyToId != null && m.authorId != viewerId)
+          if (_find(m.replyToId!) case final replied?
+              when replied.authorId == viewerId)
+            ActivityItem(
+              kind: ActivityKind.reply,
+              id: m.id,
+              targetId: m.channelId,
+              actorId: m.authorId,
+              actorName: m.authorName,
+              preview: m.text,
+              at: m.sentAt,
+            ),
+  ];
+
   /// Simulates someone else reacting (for tests and demos).
   void reactAs(String userId, String messageId, String emoji) {
     final m = _find(messageId)!;

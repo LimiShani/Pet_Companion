@@ -53,7 +53,16 @@ enum CommunityScope {
   };
 }
 
-/// The view chosen in the Chat and Guides sections (one choice for both).
+/// The audience of something written about a pet of [species]: posts
+/// carry it, so the feed can be filtered like the rooms.
+Audience audienceOfSpecies(PetSpecies species) => switch (species) {
+  PetSpecies.dog => Audience.dogs,
+  PetSpecies.cat => Audience.cats,
+  _ => Audience.other,
+};
+
+/// The view chosen in the Feed, Chat and Guides sections (one choice for
+/// all three).
 ///
 /// Starts on the selected pet's kind and goes back to it whenever another
 /// pet is selected. Not remembered between launches.

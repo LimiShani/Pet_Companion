@@ -139,6 +139,7 @@ void main() {
         expect(tester.widget<Text>(reads('עם Biscuit · לפני 12 דקות')).data, contains(isolate('Biscuit')));
 
         // The numbers are read out in words, with the Hebrew form for two.
+        await scrollTo(tester, inCard('Maya', find.byTooltip('לייק')));
         expect(tester.widget<Text>(inCard('Maya', find.text('14'))).semanticsLabel, '14 לייקים');
         expect(tester.widget<Text>(inCard('Maya', find.text('2'))).semanticsLabel, 'שתי תגובות');
 
@@ -154,9 +155,9 @@ void main() {
         await scrollTo(tester, reads('עם Milo · לפני 6 ימים'));
         await toTop(tester);
 
-        // The post with its comments.
-        await tester.tap(find.text(mayaPost));
-        await tester.pumpAndSettle();
+        // The post with its comments (below the feed's chips on a small
+        // phone).
+        await tapVisible(tester, find.text(mayaPost));
         expect(headerTitle('פוסט'), findsOneWidget);
         await scrollTo(tester, find.text('תגובות'));
         expect(adviceWordsIn(he), findsOneWidget);
@@ -221,6 +222,7 @@ void main() {
         expect(headerTitle('פוסט חדש'), findsOneWidget);
         expect(find.text('הפוסט גלוי לכל הקהילה'), findsOneWidget);
         expect(find.text('מה חדש אצל החיה שלך?'), findsOneWidget);
+        await scrollOnTop(tester, find.text('תמונה'));
         expect(find.text('על מי הפוסט'), findsOneWidget);
         expect(find.text('תמונה'), findsOneWidget);
         final publish = find.widgetWithText(FilledButton, 'פרסום');
@@ -480,6 +482,7 @@ void main() {
 
         // A like the backend refuses is put back, with the reason.
         feed.failing = true;
+        await scrollTo(tester, inCard('Maya', find.byTooltip('לייק')));
         await tester.tap(inCard('Maya', find.byTooltip('לייק')));
         await tester.pumpAndSettle();
         expect(inCard('Maya', find.text('14')), findsOneWidget);

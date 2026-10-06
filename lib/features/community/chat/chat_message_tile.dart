@@ -52,6 +52,7 @@ class ChatMessageTile extends StatelessWidget {
     required this.onLongPress,
     required this.onReaction,
     this.onFailedTap,
+    this.onAuthorTap,
   });
 
   final ChatEntry entry;
@@ -65,6 +66,9 @@ class ChatMessageTile extends StatelessWidget {
 
   /// Tapping a message that failed to send.
   final VoidCallback? onFailedTap;
+
+  /// Tapping the avatar or the name of someone else's message.
+  final VoidCallback? onAuthorTap;
 
   @override
   Widget build(BuildContext context) {
@@ -137,14 +141,17 @@ class ChatMessageTile extends StatelessWidget {
         if (!mine && position.first)
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 8, bottom: 3),
-            child: AutoDirectionText(
-              l10n.memberName(message.authorName),
-              style: AppText.label.copyWith(
-                fontWeight: FontWeight.w800,
-                color: AppColors.brown,
+            child: GestureDetector(
+              onTap: onAuthorTap,
+              child: AutoDirectionText(
+                l10n.memberName(message.authorName),
+                style: AppText.label.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.brown,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         GestureDetector(
@@ -205,10 +212,21 @@ class ChatMessageTile extends StatelessWidget {
                         child: position.first
                             ? Padding(
                                 padding: const EdgeInsets.only(top: 18),
-                                child: AuthorAvatar(
-                                  name: message.authorName,
-                                  authorId: message.authorId,
-                                  size: 30,
+                                child: Semantics(
+                                  button: true,
+                                  label: l10n.openProfile(
+                                    l10n.inLine(
+                                      l10n.memberName(message.authorName),
+                                    ),
+                                  ),
+                                  child: GestureDetector(
+                                    onTap: onAuthorTap,
+                                    child: AuthorAvatar(
+                                      name: message.authorName,
+                                      authorId: message.authorId,
+                                      size: 30,
+                                    ),
+                                  ),
                                 ),
                               )
                             : null,

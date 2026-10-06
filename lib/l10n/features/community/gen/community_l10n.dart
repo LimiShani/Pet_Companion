@@ -1456,6 +1456,384 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Removed'**
   String get removedDone;
+
+  /// No description provided for @kindMoment.
+  ///
+  /// In en, this message translates to:
+  /// **'Moment'**
+  String get kindMoment;
+
+  /// No description provided for @kindQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get kindQuestion;
+
+  /// No description provided for @kindTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip'**
+  String get kindTip;
+
+  /// No description provided for @kindRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendation'**
+  String get kindRecommendation;
+
+  /// No description provided for @kindLostFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost & found'**
+  String get kindLostFound;
+
+  /// The first chip above the feed: no filter by kind of post.
+  ///
+  /// In en, this message translates to:
+  /// **'All posts'**
+  String get kindsAll;
+
+  /// No description provided for @composerKind.
+  ///
+  /// In en, this message translates to:
+  /// **'What kind of post?'**
+  String get composerKind;
+
+  /// No description provided for @composerHintQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'What would you like to ask other owners?'**
+  String get composerHintQuestion;
+
+  /// No description provided for @composerHintTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share something that worked for you'**
+  String get composerHintTip;
+
+  /// No description provided for @composerHintRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'A place, a product or a professional you recommend, and why'**
+  String get composerHintRecommendation;
+
+  /// No description provided for @composerHintLostFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the animal, where and when, and how to reach you'**
+  String get composerHintLostFound;
+
+  /// No description provided for @postsShownForDogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing posts about dogs, and posts for everyone.'**
+  String get postsShownForDogs;
+
+  /// No description provided for @postsShownForCats.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing posts about cats, and posts for everyone.'**
+  String get postsShownForCats;
+
+  /// No description provided for @postsShownForAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing every post.'**
+  String get postsShownForAll;
+
+  /// Under the chips of the feed, when the view is the selected pet's kind.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched to {pet}. Tap Everything to see all posts.'**
+  String postsMatchedTo(String pet);
+
+  /// No description provided for @searchPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search posts'**
+  String get searchPosts;
+
+  /// No description provided for @searchPostsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search posts'**
+  String get searchPostsHint;
+
+  /// No description provided for @noPostsMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No posts found'**
+  String get noPostsMatchTitle;
+
+  /// No description provided for @noPostsMatchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Try other words, another kind of post, or Everything.'**
+  String get noPostsMatchMessage;
+
+  /// No description provided for @loadingMorePosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading more posts'**
+  String get loadingMorePosts;
+
+  /// No description provided for @editPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editPost;
+
+  /// No description provided for @editPostTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit post'**
+  String get editPostTitle;
+
+  /// No description provided for @saveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveChanges;
+
+  /// Next to the time of a post its author changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Edited'**
+  String get postEdited;
+
+  /// No description provided for @postSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your post was updated'**
+  String get postSaved;
+
+  /// No description provided for @sharePost.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get sharePost;
+
+  /// What is shared outside the app when a member shares a post.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} on PetLoop: {text}'**
+  String shareText(String name, String text);
+
+  /// No description provided for @answeredTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get answeredTag;
+
+  /// No description provided for @helpfulAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Helpful answer'**
+  String get helpfulAnswer;
+
+  /// No description provided for @markHelpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as the helpful answer'**
+  String get markHelpful;
+
+  /// No description provided for @unmarkHelpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Not the helpful answer'**
+  String get unmarkHelpful;
+
+  /// No description provided for @markedHelpful.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as the helpful answer'**
+  String get markedHelpful;
+
+  /// No description provided for @likedByDoubleTap.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked'**
+  String get likedByDoubleTap;
+
+  /// No description provided for @activityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityTitle;
+
+  /// No description provided for @activityTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get activityTooltip;
+
+  /// No description provided for @activityNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New activity'**
+  String get activityNew;
+
+  /// No description provided for @activityEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing new yet'**
+  String get activityEmptyTitle;
+
+  /// No description provided for @activityEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments, likes and answers to your posts and messages show here.'**
+  String get activityEmptyMessage;
+
+  /// No description provided for @activityLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load your activity'**
+  String get activityLoadFailed;
+
+  /// No description provided for @activityComment.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} commented on your post'**
+  String activityComment(String name);
+
+  /// No description provided for @activityLike.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} liked your post'**
+  String activityLike(String name);
+
+  /// No description provided for @activityReply.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} answered your message'**
+  String activityReply(String name);
+
+  /// No description provided for @memberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Member'**
+  String get memberTitle;
+
+  /// No description provided for @memberSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Member since {date}'**
+  String memberSince(String date);
+
+  /// No description provided for @memberPostCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No posts yet} =1{1 post} other{{count} posts}}'**
+  String memberPostCount(int count);
+
+  /// No description provided for @memberPosts.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get memberPosts;
+
+  /// No description provided for @memberLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load this member'**
+  String get memberLoadFailed;
+
+  /// No description provided for @memberGoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Member not found'**
+  String get memberGoneTitle;
+
+  /// No description provided for @memberGoneMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The account may have been deleted.'**
+  String get memberGoneMessage;
+
+  /// No description provided for @openProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {name}\'s profile'**
+  String openProfile(String name);
+
+  /// No description provided for @editProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit profile'**
+  String get editProfile;
+
+  /// No description provided for @profileBio.
+  ///
+  /// In en, this message translates to:
+  /// **'About me'**
+  String get profileBio;
+
+  /// No description provided for @profileBioHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A line other members see, such as your pets or what you love talking about'**
+  String get profileBioHint;
+
+  /// No description provided for @profileCity.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get profileCity;
+
+  /// No description provided for @profileCityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get profileCityHint;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile was updated'**
+  String get profileSaved;
+
+  /// No description provided for @profilePublicNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Other members see this. Leave anything you prefer to keep private out.'**
+  String get profilePublicNote;
+
+  /// No description provided for @blockedMemberNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked this member.'**
+  String get blockedMemberNote;
+
+  /// No description provided for @muteRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute this room'**
+  String get muteRoom;
+
+  /// No description provided for @unmuteRoom.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmute this room'**
+  String get unmuteRoom;
+
+  /// No description provided for @roomMuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted: no unread count for this room'**
+  String get roomMuted;
+
+  /// No description provided for @roomUnmuted.
+  ///
+  /// In en, this message translates to:
+  /// **'Unmuted'**
+  String get roomUnmuted;
+
+  /// No description provided for @mutedTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted'**
+  String get mutedTag;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

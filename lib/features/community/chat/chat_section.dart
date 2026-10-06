@@ -18,6 +18,7 @@ import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
 import '../widgets/small_tag.dart';
 import '../widgets/section_state.dart';
+import '../members/members_providers.dart';
 import '../safety/safety_providers.dart';
 import 'chat_providers.dart';
 
@@ -61,6 +62,7 @@ class ChatSection extends ConsumerWidget {
       );
     }
 
+    final muted = ref.watch(mutedRoomsProvider);
     final blocked = ref.watch(blockedIdsProvider);
     // A room whose latest message is a blocked member's shows its
     // description instead (the server leaves such messages out already).
@@ -119,6 +121,7 @@ class ChatSection extends ConsumerWidget {
               child: _ChannelCard(
                 channel: channel,
                 summary: summaries[channel.id],
+                muted: muted.contains(channel.id),
                 // Under Everything each room says which animal it is for.
                 tag: scope == CommunityScope.everything
                     ? SmallTag.forAudience(l10n, channel.audience)
@@ -132,9 +135,17 @@ class ChatSection extends ConsumerWidget {
 }
 
 class _ChannelCard extends StatelessWidget {
-  const _ChannelCard({required this.channel, this.summary, this.tag});
+  const _ChannelCard({
+    required this.channel,
+    this.summary,
+    this.tag,
+    this.muted = false,
+  });
 
   final ChatChannel channel;
+
+  /// Muted on this phone: no unread count.
+  final bool muted;
 
   /// The latest message and the unread count; `null` for a room without
   /// messages, or while they load.
@@ -158,7 +169,7 @@ class _ChannelCard extends StatelessWidget {
       authControllerProvider.select((auth) => auth.value?.id),
     );
     final summary = this.summary;
-    final unread = summary?.unread ?? 0;
+    final unread = muted ? 0 : summary?.unread ?? 0;
     final when = summary?.lastMessageAt;
     String? preview;
     if (summary != null) {
@@ -251,6 +262,17 @@ class _ChannelCard extends StatelessWidget {
                           if (unread > 0) ...[
                             const SizedBox(width: 8),
                             _UnreadBadge(count: unread),
+                          ],
+                          if (muted) ...[
+                            const SizedBox(width: 8),
+                            Tooltip(
+                              message: l10n.mutedTag,
+                              child: const AppIcon(
+                                Icons.notifications_off_outlined,
+                                size: 18,
+                                color: AppColors.brown,
+                              ),
+                            ),
                           ],
                         ],
                       ),

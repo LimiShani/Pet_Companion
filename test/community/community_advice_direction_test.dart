@@ -176,6 +176,7 @@ void main() {
         expect(headerTitle('New post'), findsOneWidget);
         await tester.enterText(find.byType(TextField), 'A post from a small phone.');
         await tester.pumpAndSettle();
+        await scrollOnTop(tester, find.text('Camera'));
         await tapVisible(tester, find.text('Camera'));
         expect(find.byTooltip('Remove photo'), findsOneWidget);
         await tester.tap(find.widgetWithText(FilledButton, 'Post'));

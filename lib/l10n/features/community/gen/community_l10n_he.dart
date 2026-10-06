@@ -826,4 +826,217 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get removedDone => 'התוכן הוסר';
+
+  @override
+  String get kindMoment => 'רגע';
+
+  @override
+  String get kindQuestion => 'שאלה';
+
+  @override
+  String get kindTip => 'טיפ';
+
+  @override
+  String get kindRecommendation => 'המלצה';
+
+  @override
+  String get kindLostFound => 'אבדות ומציאות';
+
+  @override
+  String get kindsAll => 'כל הפוסטים';
+
+  @override
+  String get composerKind => 'איזה סוג פוסט?';
+
+  @override
+  String get composerHintQuestion => 'מה רוצים לשאול בעלי חיות אחרים?';
+
+  @override
+  String get composerHintTip => 'משהו שעבד אצלך ושכדאי לשתף';
+
+  @override
+  String get composerHintRecommendation => 'מקום, מוצר או איש מקצוע שמומלצים, ולמה';
+
+  @override
+  String get composerHintLostFound => 'תיאור החיה, איפה ומתי, ואיך אפשר ליצור קשר';
+
+  @override
+  String get postsShownForDogs => 'מוצגים פוסטים על כלבים ופוסטים לכולם.';
+
+  @override
+  String get postsShownForCats => 'מוצגים פוסטים על חתולים ופוסטים לכולם.';
+
+  @override
+  String get postsShownForAll => 'מוצגים כל הפוסטים.';
+
+  @override
+  String postsMatchedTo(String pet) {
+    return 'מותאם ל־\u2068$pet\u2069. אפשר להקיש על ״הכול״ כדי לראות את כל הפוסטים.';
+  }
+
+  @override
+  String get searchPosts => 'חיפוש פוסטים';
+
+  @override
+  String get searchPostsHint => 'חיפוש פוסטים';
+
+  @override
+  String get noPostsMatchTitle => 'לא נמצאו פוסטים';
+
+  @override
+  String get noPostsMatchMessage => 'אפשר לנסות מילים אחרות, סוג פוסט אחר או ״הכול״.';
+
+  @override
+  String get loadingMorePosts => 'טוענים עוד פוסטים';
+
+  @override
+  String get editPost => 'עריכה';
+
+  @override
+  String get editPostTitle => 'עריכת הפוסט';
+
+  @override
+  String get saveChanges => 'שמירה';
+
+  @override
+  String get postEdited => 'נערך';
+
+  @override
+  String get postSaved => 'הפוסט עודכן';
+
+  @override
+  String get sharePost => 'שיתוף';
+
+  @override
+  String shareText(String name, String text) {
+    return '\u2068$name\u2069 ב־PetLoop: \u2068$text\u2069';
+  }
+
+  @override
+  String get answeredTag => 'נענתה';
+
+  @override
+  String get helpfulAnswer => 'תשובה מועילה';
+
+  @override
+  String get markHelpful => 'סימון כתשובה המועילה';
+
+  @override
+  String get unmarkHelpful => 'ביטול הסימון כתשובה מועילה';
+
+  @override
+  String get markedHelpful => 'סומנה כתשובה המועילה';
+
+  @override
+  String get likedByDoubleTap => 'לייק';
+
+  @override
+  String get activityTitle => 'פעילות';
+
+  @override
+  String get activityTooltip => 'פעילות';
+
+  @override
+  String get activityNew => 'יש פעילות חדשה';
+
+  @override
+  String get activityEmptyTitle => 'אין עדיין חדש';
+
+  @override
+  String get activityEmptyMessage => 'תגובות, לייקים ותשובות לפוסטים ולהודעות שלך יופיעו כאן.';
+
+  @override
+  String get activityLoadFailed => 'אי אפשר לטעון את הפעילות';
+
+  @override
+  String activityComment(String name) {
+    return 'תגובה חדשה מ־\u2068$name\u2069 לפוסט שלך';
+  }
+
+  @override
+  String activityLike(String name) {
+    return 'לייק מ־\u2068$name\u2069 לפוסט שלך';
+  }
+
+  @override
+  String activityReply(String name) {
+    return 'תשובה מ־\u2068$name\u2069 להודעה שלך';
+  }
+
+  @override
+  String get memberTitle => 'פרופיל';
+
+  @override
+  String memberSince(String date) {
+    return 'בקהילה מאז \u2068$date\u2069';
+  }
+
+  @override
+  String memberPostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count פוסטים',
+      two: 'שני פוסטים',
+      one: 'פוסט אחד',
+      zero: 'עדיין אין פוסטים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memberPosts => 'פוסטים';
+
+  @override
+  String get memberLoadFailed => 'אי אפשר לטעון את הפרופיל';
+
+  @override
+  String get memberGoneTitle => 'הפרופיל לא נמצא';
+
+  @override
+  String get memberGoneMessage => 'ייתכן שהחשבון נמחק.';
+
+  @override
+  String openProfile(String name) {
+    return 'פתיחת הפרופיל של \u2068$name\u2069';
+  }
+
+  @override
+  String get editProfile => 'עריכת הפרופיל';
+
+  @override
+  String get profileBio => 'קצת עליי';
+
+  @override
+  String get profileBioHint => 'שורה שחברי הקהילה רואים, למשל על החיות שלך או על מה כיף לך לדבר';
+
+  @override
+  String get profileCity => 'עיר';
+
+  @override
+  String get profileCityHint => 'לא חובה';
+
+  @override
+  String get profileSaved => 'הפרופיל עודכן';
+
+  @override
+  String get profilePublicNote => 'חברי הקהילה רואים את זה. כדאי להשאיר בחוץ כל מה שעדיף שיישאר פרטי.';
+
+  @override
+  String get blockedMemberNote => 'החשבון הזה חסום אצלך.';
+
+  @override
+  String get muteRoom => 'השתקת החדר';
+
+  @override
+  String get unmuteRoom => 'ביטול ההשתקה';
+
+  @override
+  String get roomMuted => 'החדר מושתק: לא יוצג בו מספר הודעות שלא נקראו';
+
+  @override
+  String get roomUnmuted => 'ההשתקה בוטלה';
+
+  @override
+  String get mutedTag => 'מושתק';
 }

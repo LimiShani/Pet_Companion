@@ -70,12 +70,12 @@ void main() {
       expect(inCard('Maya', find.text('14')), findsOneWidget); // likes
       expect(inCard('Maya', find.text('2')), findsOneWidget); // comments
 
-      await tester.scrollUntilVisible(find.text('with Kelly · 2 h ago'), 200);
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
       expect(find.text(alexPost), findsOneWidget);
       expect(inCard('Alex', find.byType(PostPhotoView)), findsOneWidget);
 
-      await tester.scrollUntilVisible(find.text('22 h ago'), 200); // no pet tagged
-      await tester.scrollUntilVisible(find.text('with Milo · 6 days ago'), 200);
+      await scrollTo(tester, find.text('22 h ago')); // no pet tagged
+      await scrollTo(tester, find.text('with Milo · 6 days ago'));
     });
 
     testWidgets('like and unlike', (tester) async {
@@ -198,7 +198,7 @@ void main() {
 
     testWidgets('delete own post', (tester) async {
       final h = await pumpCommunity(tester);
-      await tester.scrollUntilVisible(find.text('with Kelly · 2 h ago'), 200);
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
 
       await tapVisible(tester, inCard('Alex', find.byTooltip('Post options')));
       expect(find.text('Report'), findsNothing); // you cannot report yourself

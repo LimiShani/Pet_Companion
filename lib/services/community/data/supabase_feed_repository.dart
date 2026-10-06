@@ -2,6 +2,7 @@ import '../../../platform/session.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/app_user.dart';
+import 'audience.dart';
 import 'community_models.dart';
 import 'feed_repository.dart';
 import 'supabase_community_support.dart';
@@ -29,25 +30,109 @@ class SupabaseFeedRepository implements FeedRepository {
 
   static const photoBucket = CommunityPhotos.bucket;
 
-  /// How many posts the feed loads.
-  static const pageSize = 50;
+  @override
+  Future<List<Post>> fetchPosts({
+    required AppUser viewer,
+    FeedQuery query = const FeedQuery(),
+    DateTime? before,
+    int limit = feedPageSize,
+  }) => guardCommunity(() async {
+    // The view adds the author's name, the counts and "liked by me";
+    // posts the viewer reported, hidden posts and blocked members' posts
+    // are filtered out by the select policies. Filters are only sent when
+    // used, so the feed still loads before 0022 is run.
+    var request = _client.from('community_feed').select();
+    if (query.kind case final kind?) request = request.eq('kind', kind.key);
+    if (query.audiences case final audiences?) {
+      request = request.inFilter('audience', [
+        for (final a in audiences) a.key,
+      ]);
+    }
+    if (query.authorId case final author?) {
+      request = request.eq('author_id', author);
+    }
+    final words = query.search.trim();
+    if (words.isNotEmpty) {
+      request = request.ilike('body', '%${_escapeLike(words)}%');
+    }
+    if (before != null) {
+      request = request.lt('created_at', before.toUtc().toIso8601String());
+    }
+    final rows = await request
+        .order('created_at', ascending: false)
+        .limit(limit);
+    final urls = await _photos.links([
+      for (final row in rows)
+        if (row['photo_path'] case final String path) path,
+    ]);
+    return [for (final row in rows) _toPost(row, urls)];
+  });
 
   @override
-  Future<List<Post>> fetchPosts({required AppUser viewer}) =>
+  Future<Post?> fetchPost({required AppUser viewer, required String postId}) =>
       guardCommunity(() async {
-        // The view adds the author's name, the counts and "liked by me";
-        // posts the viewer reported are filtered out by the select policy.
-        final rows = await _client
+        final row = await _client
             .from('community_feed')
             .select()
-            .order('created_at', ascending: false)
-            .limit(pageSize);
+            .eq('id', postId)
+            .maybeSingle();
+        if (row == null) return null;
         final urls = await _photos.links([
-          for (final row in rows)
-            if (row['photo_path'] case final String path) path,
+          if (row['photo_path'] case final String path) path,
         ]);
-        return [for (final row in rows) _toPost(row, urls)];
+        return _toPost(row, urls);
       });
+
+  @override
+  Future<Post> updatePost({
+    required AppUser viewer,
+    required Post post,
+    required String text,
+    required PostKind kind,
+  }) => guardCommunity(() async {
+    final body = text.trim();
+    if (body.isEmpty) {
+      throw const CommunityException(CommunityFailure.emptyPost);
+    }
+    final rows = await _client
+        .from('community_posts')
+        .update({'body': body, 'kind': kind.key})
+        .eq('id', post.id)
+        .eq('author_id', viewer.id)
+        .select('edited_at');
+    if (rows.isEmpty) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+    final edited = rows.first['edited_at'];
+    return post.copyWith(
+      text: body,
+      kind: kind,
+      editedAt: edited == null ? null : parseTimestamp(edited),
+    );
+  });
+
+  @override
+  Future<void> setHelpful({
+    required AppUser viewer,
+    required String postId,
+    String? commentId,
+  }) => guardCommunity(() async {
+    final rows = await _client
+        .from('community_posts')
+        .update({'helpful_comment_id': commentId})
+        .eq('id', postId)
+        .eq('author_id', viewer.id)
+        .select('id');
+    if (rows.isEmpty) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+  });
+
+  /// [words] as a literal inside an `ilike` pattern.
+  static String _escapeLike(String words) => words
+      .replaceAll(r'\', r'\\')
+      .replaceAll('%', r'\%')
+      .replaceAll('_', r'\_');
 
   @override
   Future<Post> createPost({
@@ -55,6 +140,8 @@ class SupabaseFeedRepository implements FeedRepository {
     required String text,
     String? petName,
     PickedPhoto? photo,
+    PostKind kind = PostKind.moment,
+    Audience audience = Audience.everyone,
   }) => guardCommunity(() async {
     final body = text.trim();
     if (body.isEmpty) {
@@ -75,6 +162,9 @@ class SupabaseFeedRepository implements FeedRepository {
             'body': body,
             'pet_name': pet.isEmpty ? null : pet,
             'photo_path': photoPath,
+            // Only sent when used, so posting still works before 0022.
+            if (kind != PostKind.moment) 'kind': kind.key,
+            if (audience != Audience.everyone) 'audience': audience.key,
           })
           .select('id, created_at')
           .single();
@@ -94,6 +184,8 @@ class SupabaseFeedRepository implements FeedRepository {
       // Shown from memory until the next fetch brings a signed link.
       photo: photo == null ? null : MemoryPostPhoto(photo.bytes),
       createdAt: parseTimestamp(row['created_at']),
+      kind: kind,
+      audience: audience,
     );
   });
 
@@ -216,6 +308,12 @@ class SupabaseFeedRepository implements FeedRepository {
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: row['liked_by_me'] as bool? ?? false,
       commentCount: (row['comment_count'] as num?)?.toInt() ?? 0,
+      kind: PostKind.fromKey(row['kind'] as String?),
+      audience: Audience.fromKey(row['audience'] as String?),
+      editedAt: row['edited_at'] == null
+          ? null
+          : parseTimestamp(row['edited_at']),
+      helpfulCommentId: row['helpful_comment_id'] as String?,
     );
   }
 }

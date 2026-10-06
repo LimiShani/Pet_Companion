@@ -7,6 +7,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../state/ordered_writes.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
+import '../../../services/community/data/audience.dart';
 import '../../../services/community/data/feed_repository.dart';
 import '../safety/safety_providers.dart';
 
@@ -14,7 +15,48 @@ import '../safety/safety_providers.dart';
 /// again" button instead of retrying behind the user's back.
 Duration? noRetry(int retryCount, Object error) => null;
 
-/// The posts of the feed for the signed-in user, newest first.
+/// What the member narrowed the feed to: a kind of post, words in it.
+class FeedFilter {
+  const FeedFilter({this.kind, this.search = ''});
+
+  final PostKind? kind;
+  final String search;
+}
+
+class FeedFilterNotifier extends Notifier<FeedFilter> {
+  @override
+  FeedFilter build() => const FeedFilter();
+
+  void kind(PostKind? kind) =>
+      state = FeedFilter(kind: kind, search: state.search);
+
+  void search(String words) =>
+      state = FeedFilter(kind: state.kind, search: words.trim());
+}
+
+final feedFilterProvider = NotifierProvider<FeedFilterNotifier, FeedFilter>(
+  FeedFilterNotifier.new,
+);
+
+/// The feed's query: the filter, and the animal chosen in the Dogs / Cats /
+/// Everything chips (shared with Chat and Guides). Posts for everyone show
+/// under every animal.
+final feedQueryProvider = Provider<FeedQuery>((ref) {
+  final filter = ref.watch(feedFilterProvider);
+  final scope = ref.watch(communityScopeProvider);
+  return FeedQuery(
+    kind: filter.kind,
+    search: filter.search,
+    audiences: switch (scope) {
+      CommunityScope.dogs => const {Audience.everyone, Audience.dogs},
+      CommunityScope.cats => const {Audience.everyone, Audience.cats},
+      CommunityScope.everything => null,
+    },
+  );
+});
+
+/// The posts of the feed for the signed-in user, newest first, one page at
+/// a time ([loadMore]).
 ///
 /// Actions update the list in place and throw a [CommunityException] when
 /// the backend refuses, so the screen can show a snack bar.
@@ -31,10 +73,17 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
 
   List<Post> get _posts => state.value ?? const [];
 
+  /// Every post of the query is loaded: no more pages.
+  bool get exhausted => _exhausted;
+  var _exhausted = false;
+  var _loadingMore = false;
+  FeedQuery _query = const FeedQuery();
+
   @override
   Future<List<Post>> build() async {
     ref.watch(sessionEpochProvider);
     if (!ref.watch(capabilityProvider('community.feed.view'))) {
+      _exhausted = true;
       return const <Post>[];
     }
 
@@ -43,16 +92,52 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
     final viewerId = ref.watch(
       authControllerProvider.select((auth) => auth.value?.id),
     );
-    if (viewerId == null) return const [];
-    return repo.fetchPosts(viewer: _viewer);
+    _query = ref.watch(feedQueryProvider);
+    if (viewerId == null) {
+      _exhausted = true;
+      return const [];
+    }
+    final page = await repo.fetchPosts(viewer: _viewer, query: _query);
+    _exhausted = page.length < feedPageSize;
+    return page;
   }
 
   /// Pull to refresh: keeps the current list on screen while loading.
   Future<void> refresh() async {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'community.feed.view');
-      state = AsyncData(await _repo.fetchPosts(viewer: _viewer));
+      final page = await _repo.fetchPosts(viewer: _viewer, query: _query);
+      _exhausted = page.length < feedPageSize;
+      state = AsyncData(page);
     });
+  }
+
+  /// Loads the next page, below the posts already shown.
+  Future<void> loadMore() async {
+    if (_exhausted || _loadingMore || !state.hasValue || _posts.isEmpty) {
+      return;
+    }
+    _loadingMore = true;
+    try {
+      await sessionOperation(ref, () async {
+        final query = _query;
+        final page = await _repo.fetchPosts(
+          viewer: _viewer,
+          query: query,
+          before: _posts.last.createdAt,
+        );
+        if (!identical(query, _query) && query != _query) return;
+        _exhausted = page.length < feedPageSize;
+        final known = {for (final p in _posts) p.id};
+        state = AsyncData([
+          ..._posts,
+          for (final p in page)
+            if (!known.contains(p.id)) p,
+        ]);
+      });
+    } finally {
+      _loadingMore = false;
+    }
   }
 
   /// Quick taps on one heart reach the backend in the order they were made.
@@ -69,13 +154,18 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
   /// refuses the newest tap, the heart and the count show what the backend
   /// has and this throws. A failed tap already overruled by a newer one
   /// changes nothing and does not throw.
-  Future<void> setLiked(String postId, {required bool liked}) async {
+  ///
+  /// [known] is the post as shown, for one the feed has not loaded (on a
+  /// member's page): it is kept beside the feed from then on.
+  Future<void> setLiked(
+    String postId, {
+    required bool liked,
+    Post? known,
+  }) async {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'community.feed.post');
-      Post? before;
-      for (final p in _posts) {
-        if (p.id == postId) before = p;
-      }
+      if (_lookup(postId) == null && known != null) keep(known);
+      final before = _lookup(postId);
       if (before == null || before.likedByMe == liked) return;
       final original = before;
       if (!_likeWrites.busy(postId)) {
@@ -110,10 +200,7 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
       } catch (_) {
         if (_latestTap[postId] != tap) return;
         final stored = _storedLike[postId];
-        Post? current;
-        for (final p in _posts) {
-          if (p.id == postId) current = p;
-        }
+        final current = _lookup(postId);
         if (stored != null && current != null && ref.mounted) {
           _replace(
             current.copyWith(likedByMe: stored.liked, likeCount: stored.count),
@@ -128,6 +215,8 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
     required String text,
     String? petName,
     PickedPhoto? photo,
+    PostKind kind = PostKind.moment,
+    Audience audience = Audience.everyone,
   }) async {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'community.feed.post');
@@ -136,9 +225,68 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
         text: text,
         petName: petName,
         photo: photo,
+        kind: kind,
+        audience: audience,
       );
       state = AsyncData([post, ..._posts]);
     });
+  }
+
+  /// Changes the text and kind of one of the viewer's posts.
+  Future<void> edit(Post post, {required String text, required PostKind kind}) {
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'community.feed.edit');
+      _replace(
+        await _repo.updatePost(
+          viewer: _viewer,
+          post: post,
+          text: text,
+          kind: kind,
+        ),
+      );
+    });
+  }
+
+  /// Marks the helpful answer to the viewer's question, or clears it.
+  Future<void> setHelpful(String postId, String? commentId) {
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'community.feed.edit');
+      await _repo.setHelpful(
+        viewer: _viewer,
+        postId: postId,
+        commentId: commentId,
+      );
+      final post = _lookup(postId);
+      if (post != null) {
+        _replace(post.copyWith(helpfulCommentId: () => commentId));
+      }
+    });
+  }
+
+  /// A post opened from outside the feed (a profile, the activity page):
+  /// kept beside the feed so liking it and its comments work the same.
+  Future<Post?> open(String postId) {
+    return sessionOperation(ref, () async {
+      final known = _lookup(postId);
+      if (known != null) return known;
+      final post = await _repo.fetchPost(viewer: _viewer, postId: postId);
+      if (post != null) ref.read(outsidePostsProvider.notifier).put(post);
+      return post;
+    });
+  }
+
+  /// Keeps [post] beside the feed when the feed does not hold it.
+  void keep(Post post) {
+    if (_lookup(post.id) == null) {
+      ref.read(outsidePostsProvider.notifier).put(post);
+    }
+  }
+
+  Post? _lookup(String postId) {
+    for (final p in _posts) {
+      if (p.id == postId) return p;
+    }
+    return ref.read(outsidePostsProvider)[postId];
   }
 
   Future<void> delete(String postId) async {
@@ -159,14 +307,15 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
 
   /// Keeps the comment count of a post in step after a comment was added.
   void commentAdded(String postId) {
-    for (final p in _posts) {
-      if (p.id == postId) {
-        _replace(p.copyWith(commentCount: p.commentCount + 1));
-      }
+    final post = _lookup(postId);
+    if (post != null) {
+      _replace(post.copyWith(commentCount: post.commentCount + 1));
     }
   }
 
   void _replace(Post post) {
+    final outside = ref.read(outsidePostsProvider.notifier);
+    if (ref.read(outsidePostsProvider).containsKey(post.id)) outside.put(post);
     if (!state.hasValue) return;
     state = AsyncData([
       for (final p in _posts)
@@ -175,10 +324,31 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
   }
 
   void _remove(String postId) {
+    ref.read(outsidePostsProvider.notifier).remove(postId);
     if (!state.hasValue) return;
     state = AsyncData(_posts.where((p) => p.id != postId).toList());
   }
 }
+
+/// Posts opened from outside the feed, by id (see [FeedController.open]).
+class OutsidePosts extends Notifier<Map<String, Post>> {
+  @override
+  Map<String, Post> build() {
+    ref.watch(sessionEpochProvider);
+    return const {};
+  }
+
+  void put(Post post) => state = {...state, post.id: post};
+
+  void remove(String postId) {
+    if (!state.containsKey(postId)) return;
+    state = {...state}..remove(postId);
+  }
+}
+
+final outsidePostsProvider = NotifierProvider<OutsidePosts, Map<String, Post>>(
+  OutsidePosts.new,
+);
 
 final feedControllerProvider =
     AsyncNotifierProvider<FeedController, List<Post>>(
@@ -192,6 +362,11 @@ final postProvider = Provider.autoDispose.family<Post?, String>((ref, postId) {
   final posts = ref.watch(visiblePostsProvider) ?? const <Post>[];
   for (final p in posts) {
     if (p.id == postId) return p;
+  }
+  final outside = ref.watch(outsidePostsProvider)[postId];
+  if (outside != null &&
+      !ref.watch(blockedIdsProvider).contains(outside.authorId)) {
+    return outside;
   }
   return null;
 });

@@ -123,6 +123,69 @@ class PickedPhoto {
   final String? mimeType;
 }
 
+/// What a post is: the chips of the composer and of the feed. [key] is
+/// what the database stores.
+enum PostKind {
+  moment('moment'),
+  question('question'),
+  tip('tip'),
+  recommendation('recommendation'),
+  lostFound('lost_found');
+
+  const PostKind(this.key);
+
+  final String key;
+
+  /// Posts written before kinds existed are moments.
+  static PostKind fromKey(String? key) =>
+      values.firstWhere((k) => k.key == key, orElse: () => moment);
+}
+
+/// What the feed is asked for: one kind of post, the posts about some
+/// animals, words in the text, one member's posts. Empty means everything.
+class FeedQuery {
+  const FeedQuery({this.kind, this.audiences, this.search = '', this.authorId});
+
+  final PostKind? kind;
+
+  /// `null` for every animal.
+  final Set<Audience>? audiences;
+  final String search;
+  final String? authorId;
+
+  /// Whether the member narrowed the feed themselves (a kind or words);
+  /// the animal follows the selected pet and does not count.
+  bool get narrowed => kind != null || search.trim().isNotEmpty;
+
+  bool matches(Post post) {
+    if (kind != null && post.kind != kind) return false;
+    if (audiences != null && !audiences!.contains(post.audience)) return false;
+    if (authorId != null && post.authorId != authorId) return false;
+    final words = search.trim().toLowerCase();
+    return words.isEmpty || post.text.toLowerCase().contains(words);
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is FeedQuery &&
+      other.kind == kind &&
+      other.search == search &&
+      other.authorId == authorId &&
+      _sameSet(other.audiences, audiences);
+
+  @override
+  int get hashCode => Object.hash(
+    kind,
+    search,
+    authorId,
+    audiences == null ? null : Object.hashAllUnordered(audiences!),
+  );
+
+  static bool _sameSet(Set<Audience>? a, Set<Audience>? b) => a == null
+      ? b == null
+      : b != null && a.length == b.length && a.containsAll(b);
+}
+
 /// One entry of the community feed.
 class Post {
   const Post({
@@ -136,6 +199,10 @@ class Post {
     this.likeCount = 0,
     this.likedByMe = false,
     this.commentCount = 0,
+    this.kind = PostKind.moment,
+    this.audience = Audience.everyone,
+    this.editedAt,
+    this.helpfulCommentId,
   });
 
   final String id;
@@ -152,21 +219,45 @@ class Post {
   /// Whether the viewer the post was fetched for has liked it.
   final bool likedByMe;
   final int commentCount;
+  final PostKind kind;
+
+  /// Which animal the post is about (from the pet it was written about).
+  final Audience audience;
+
+  /// When the author last changed the text; `null` when never.
+  final DateTime? editedAt;
+
+  /// The comment the author of a question marked as the helpful answer.
+  final String? helpfulCommentId;
 
   String get authorInitial => initialOf(authorName);
 
-  Post copyWith({int? likeCount, bool? likedByMe, int? commentCount}) {
+  Post copyWith({
+    int? likeCount,
+    bool? likedByMe,
+    int? commentCount,
+    String? text,
+    PostKind? kind,
+    DateTime? editedAt,
+    String? Function()? helpfulCommentId,
+  }) {
     return Post(
       id: id,
       authorId: authorId,
       authorName: authorName,
       petName: petName,
-      text: text,
+      text: text ?? this.text,
       photo: photo,
       createdAt: createdAt,
       likeCount: likeCount ?? this.likeCount,
       likedByMe: likedByMe ?? this.likedByMe,
       commentCount: commentCount ?? this.commentCount,
+      kind: kind ?? this.kind,
+      audience: audience,
+      editedAt: editedAt ?? this.editedAt,
+      helpfulCommentId: helpfulCommentId == null
+          ? this.helpfulCommentId
+          : helpfulCommentId(),
     );
   }
 }
@@ -225,7 +316,11 @@ const chatReactions = ['👍', '❤️', '😂', '😮', '😢', '🐾'];
 /// One emoji under a message: how many members chose it, and whether the
 /// viewer is one of them.
 class ChatReaction {
-  const ChatReaction({required this.emoji, required this.count, required this.mine});
+  const ChatReaction({
+    required this.emoji,
+    required this.count,
+    required this.mine,
+  });
 
   final String emoji;
   final int count;
@@ -281,12 +376,12 @@ class ChatMessage {
   final List<ChatReaction> reactions;
 
   ChatReplyPreview asReplyPreview() => ChatReplyPreview(
-        messageId: id,
-        authorId: authorId,
-        authorName: authorName,
-        text: text,
-        hasPhoto: photo != null,
-      );
+    messageId: id,
+    authorId: authorId,
+    authorName: authorName,
+    text: text,
+    hasPhoto: photo != null,
+  );
 }
 
 /// A room's line in the room list: its latest message and how many
@@ -362,6 +457,54 @@ class ModerationItem {
 
 /// A moderator's decision on a [ModerationItem].
 enum ModerationDecision { keep, remove }
+
+/// What other members see of a member.
+class MemberProfile {
+  const MemberProfile({
+    required this.id,
+    required this.name,
+    this.bio = '',
+    this.city = '',
+    this.memberSince,
+    this.postCount = 0,
+  });
+
+  final String id;
+
+  /// As stored; empty for an account without a name.
+  final String name;
+  final String bio;
+  final String city;
+  final DateTime? memberSince;
+  final int postCount;
+}
+
+/// What happened to the member's posts and messages.
+enum ActivityKind { comment, like, reply }
+
+class ActivityItem {
+  const ActivityItem({
+    required this.kind,
+    required this.id,
+    required this.targetId,
+    required this.actorId,
+    required this.actorName,
+    required this.preview,
+    required this.at,
+  });
+
+  final ActivityKind kind;
+  final String id;
+
+  /// The post (comment, like) or the room (reply) it happened in.
+  final String targetId;
+  final String actorId;
+  final String actorName;
+
+  /// The comment, the answer, or the liked post's text.
+  final String preview;
+  final DateTime at;
+}
 
 /// A member's display name as stored: trimmed, and empty when the account
 /// has none. The screen shows a friendly fallback in its own language for

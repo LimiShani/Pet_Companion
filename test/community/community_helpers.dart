@@ -20,6 +20,8 @@ import 'package:pet_companion/features/community/data/fake_feed_repository.dart'
 import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/services/community/data/safety_repository.dart';
+import 'package:pet_companion/services/community/data/members_repository.dart';
+import 'package:pet_companion/features/community/feed/post_actions.dart' show communityShareProvider;
 import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
@@ -116,6 +118,17 @@ class CommunityHarness {
   final FakeChatRepository chat;
   final FakeCommunitySafetyRepository safety;
 
+  /// Profiles and activity, read from [feed] and [chat].
+  late final members = FakeCommunityMembersRepository(
+    latency: Duration.zero,
+    now: testClock,
+    feed: feed,
+    chat: chat,
+  );
+
+  /// Every text handed to the share sheet.
+  final shared = <String>[];
+
   /// Whether the demo account already agreed to the community rules (most
   /// tests are not about them).
   final bool rulesAccepted;
@@ -156,6 +169,8 @@ class CommunityHarness {
         feedRepositoryProvider.overrideWithValue(feed),
         chatRepositoryProvider.overrideWithValue(chatBackend ?? chat),
         communitySafetyRepositoryProvider.overrideWithValue(safety),
+        communityMembersRepositoryProvider.overrideWithValue(members),
+        communityShareProvider.overrideWithValue((text) async => shared.add(text)),
         if (moderator)
           accessRepositoryProvider.overrideWithValue(
             FakeAccessRepository()..users[demoUser.id] = {'community.moderate': AccessRule.allow},
@@ -283,6 +298,13 @@ Future<void> scrollTo(WidgetTester tester, Finder finder) async {
     await tester.pumpAndSettle();
   }
   await tester.scrollUntilVisible(finder, 200, scrollable: scrollable);
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls the list of the page on top (a pushed composer or post, not
+/// the tab below it) until [finder] is in view.
+Future<void> scrollOnTop(WidgetTester tester, Finder finder) async {
+  await tester.scrollUntilVisible(finder, 150, scrollable: find.byType(Scrollable).hitTestable().first);
   await tester.pumpAndSettle();
 }
 

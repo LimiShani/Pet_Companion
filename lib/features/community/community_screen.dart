@@ -11,6 +11,8 @@ import '../../widgets/coral_segmented_control.dart';
 import 'chat/chat_section.dart';
 import 'community_routes.dart';
 import 'widgets/community_keeper.dart';
+import 'members/members_providers.dart';
+import '../../theme/app_colors.dart';
 import 'feed/feed_controller.dart';
 import 'feed/feed_section.dart';
 import 'feed/post_composer_screen.dart';
@@ -97,6 +99,19 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             CoralHeader(
               title: l10n.tabTitle,
               actions: [
+                Badge(
+                  isLabelVisible: ref.watch(hasNewActivityProvider),
+                  smallSize: 9,
+                  backgroundColor: AppColors.yellow,
+                  offset: const Offset(-6, 6),
+                  child: CoralHeaderAction(
+                    icon: Icons.notifications_none_rounded,
+                    tooltip: ref.watch(hasNewActivityProvider)
+                        ? l10n.activityNew
+                        : l10n.activityTooltip,
+                    onPressed: () => context.go(CommunityRoutes.activity),
+                  ),
+                ),
                 CoralHeaderAction(
                   icon: Icons.shield_outlined,
                   tooltip: l10n.safetyTitle,

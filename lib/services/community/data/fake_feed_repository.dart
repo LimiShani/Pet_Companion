@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../auth/app_user.dart';
 import '../../../theme/app_colors.dart';
+import 'audience.dart';
 import 'community_models.dart';
 import 'feed_repository.dart';
 
@@ -45,13 +46,96 @@ class FakeFeedRepository implements FeedRepository {
   );
 
   @override
-  Future<List<Post>> fetchPosts({required AppUser viewer}) async {
+  Future<List<Post>> fetchPosts({
+    required AppUser viewer,
+    FeedQuery query = const FeedQuery(),
+    DateTime? before,
+    int limit = feedPageSize,
+  }) async {
     await _wait();
-    final visible =
+    final newestFirst =
         _posts.where((p) => !p.reportedBy.contains(viewer.id)).toList()
           ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
-    return [for (final p in visible) p.toPost(viewer.id)];
+    return [
+      for (final p in newestFirst)
+        if (before == null || p.createdAt.isBefore(before))
+          if (p.toPost(viewer.id) case final post when query.matches(post))
+            post,
+    ].take(limit).toList();
   }
+
+  @override
+  Future<Post?> fetchPost({
+    required AppUser viewer,
+    required String postId,
+  }) async {
+    await _wait();
+    for (final p in _posts) {
+      if (p.id == postId && !p.reportedBy.contains(viewer.id)) {
+        return p.toPost(viewer.id);
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<Post> updatePost({
+    required AppUser viewer,
+    required Post post,
+    required String text,
+    required PostKind kind,
+  }) async {
+    await _wait();
+    final record = _find(post.id);
+    if (record.authorId != viewer.id) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+    final body = text.trim();
+    if (body.isEmpty) {
+      throw const CommunityException(CommunityFailure.emptyPost);
+    }
+    if (body != record.text) record.editedAt = _now();
+    record
+      ..text = body
+      ..kind = kind;
+    return record.toPost(viewer.id);
+  }
+
+  @override
+  Future<void> setHelpful({
+    required AppUser viewer,
+    required String postId,
+    String? commentId,
+  }) async {
+    await _wait();
+    final record = _find(postId);
+    if (record.authorId != viewer.id) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+    if (commentId != null &&
+        (record.kind != PostKind.question ||
+            !record.comments.any((c) => c.id == commentId))) {
+      throw const CommunityException(CommunityFailure.textInvalid);
+    }
+    record.helpfulCommentId = commentId;
+  }
+
+  /// Comments by others under the posts of [viewerId], as activity.
+  List<ActivityItem> activityFor(String viewerId) => [
+    for (final p in _posts)
+      if (p.authorId == viewerId)
+        for (final c in p.comments)
+          if (c.authorId != viewerId)
+            ActivityItem(
+              kind: ActivityKind.comment,
+              id: c.id,
+              targetId: p.id,
+              actorId: c.authorId,
+              actorName: c.authorName,
+              preview: c.text,
+              at: c.createdAt,
+            ),
+  ];
 
   @override
   Future<Post> createPost({
@@ -59,6 +143,8 @@ class FakeFeedRepository implements FeedRepository {
     required String text,
     String? petName,
     PickedPhoto? photo,
+    PostKind kind = PostKind.moment,
+    Audience audience = Audience.everyone,
   }) async {
     await _wait();
     final body = text.trim();
@@ -74,6 +160,8 @@ class FakeFeedRepository implements FeedRepository {
       text: body,
       photo: photo == null ? null : MemoryPostPhoto(photo.bytes),
       createdAt: _now(),
+      kind: kind,
+      audience: audience,
     );
     _posts.add(record);
     return record.toPost(author.id);
@@ -165,6 +253,8 @@ class FakeFeedRepository implements FeedRepository {
       String? petName,
       PostPhoto? photo,
       int otherLikes = 0,
+      PostKind kind = PostKind.moment,
+      Audience audience = Audience.everyone,
       List<(String authorId, String authorName, Duration ago, String text)>
           comments =
           const [],
@@ -179,6 +269,8 @@ class FakeFeedRepository implements FeedRepository {
           photo: photo,
           createdAt: now.subtract(ago),
           otherLikes: otherLikes,
+          kind: kind,
+          audience: audience,
         )
         ..comments.addAll([
           for (final c in comments)
@@ -241,6 +333,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'u-jonas',
         authorName: 'Jonas',
         petName: 'Luna',
+        kind: PostKind.tip,
         ago: const Duration(hours: 5),
         text:
             'Rainy day plan: a towel rolled up with treats inside. Luna spent twenty happy minutes '
@@ -276,6 +369,7 @@ class FakeFeedRepository implements FeedRepository {
       post(
         authorId: 'u-priya',
         authorName: 'Priya',
+        kind: PostKind.question,
         ago: const Duration(hours: 22),
         text:
             'Does anyone have tips for a dog who pulls towards every other dog on the lead? '
@@ -339,13 +433,19 @@ class _PostRecord {
     this.petName,
     this.photo,
     this.otherLikes = 0,
+    this.kind = PostKind.moment,
+    this.audience = Audience.everyone,
   });
 
   final String id;
   final String authorId;
   final String authorName;
   final String? petName;
-  final String text;
+  String text;
+  PostKind kind;
+  final Audience audience;
+  DateTime? editedAt;
+  String? helpfulCommentId;
   final PostPhoto? photo;
   final DateTime createdAt;
 
@@ -366,5 +466,9 @@ class _PostRecord {
     likeCount: otherLikes + likedBy.length,
     likedByMe: likedBy.contains(viewerId),
     commentCount: comments.length,
+    kind: kind,
+    audience: audience,
+    editedAt: editedAt,
+    helpfulCommentId: helpfulCommentId,
   );
 }

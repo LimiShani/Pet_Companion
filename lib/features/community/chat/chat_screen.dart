@@ -16,7 +16,8 @@ import '../community_words.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
 import '../data/photo_picker.dart';
-import '../feed/post_actions.dart' show showCommunitySnack;
+import '../feed/post_actions.dart' show openMember, showCommunitySnack;
+import '../members/members_providers.dart';
 import '../safety/safety_flows.dart';
 import '../widgets/advice_notice.dart';
 import '../widgets/auto_direction_text.dart';
@@ -246,7 +247,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   style: AppText.body.copyWith(color: AppColors.brown),
                 ),
               ],
-              const SizedBox(height: 14),
+              const SizedBox(height: 8),
+              Consumer(
+                builder: (context, ref, _) {
+                  final muted = ref
+                      .watch(mutedRoomsProvider)
+                      .contains(widget.channelId);
+                  return SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: muted,
+                    title: Text(l10n.muteRoom),
+                    subtitle: muted ? Text(l10n.roomMuted) : null,
+                    onChanged: (_) => ref
+                        .read(mutedRoomsProvider.notifier)
+                        .toggle(widget.channelId),
+                  );
+                },
+              ),
+              const SizedBox(height: 6),
               const AdviceNotice(),
               const SizedBox(height: 8),
               Align(
@@ -693,6 +711,7 @@ class _Messages extends ConsumerWidget {
               position: ChatRunPosition.of(entries, i),
               onLongPress: () => onLongPress(entry),
               onFailedTap: () => onFailedTap(entry),
+              onAuthorTap: () => openMember(context, message.authorId),
               onReaction: canReact && entry.pending == null
                   ? (emoji) async {
                       try {

@@ -21,6 +21,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../widgets/app_icon.dart';
 import '../safety/safety_flows.dart';
 import '../safety/safety_providers.dart';
+import '../widgets/small_tag.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
 
@@ -120,7 +121,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                   const AdviceNotice(),
                   const SizedBox(height: 10),
-                  _Comments(postId: post.id),
+                  _Comments(post: post),
                 ],
               ),
             ),
@@ -142,9 +143,11 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 }
 
 class _Comments extends ConsumerWidget {
-  const _Comments({required this.postId});
+  const _Comments({required this.post});
 
-  final String postId;
+  final Post post;
+
+  String get postId => post.id;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
@@ -159,9 +162,21 @@ class _Comments extends ConsumerWidget {
     final comments = ref.watch(commentsProvider(postId));
     final now = ref.watch(communityClockProvider)();
     final blocked = ref.watch(blockedIdsProvider);
-    final list = comments.value?.where(
-      (c) => !blocked.contains(c.authorId),
-    ).toList();
+    // The helpful answer to a question comes first.
+    final list =
+        comments.value?.where((c) => !blocked.contains(c.authorId)).toList()
+          ?..sort(
+            (a, b) => (b.id == post.helpfulCommentId ? 1 : 0).compareTo(
+              a.id == post.helpfulCommentId ? 1 : 0,
+            ),
+          );
+    final viewerId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
+    final canMarkHelpful =
+        post.kind == PostKind.question &&
+        post.authorId == viewerId &&
+        ref.watch(capabilityProvider('community.feed.edit'));
 
     if (list == null) {
       if (comments.isLoading) {
@@ -212,7 +227,12 @@ class _Comments extends ConsumerWidget {
           children: [
             for (var i = 0; i < list.length; i++) ...[
               if (i > 0) const Divider(),
-              _CommentRow(comment: list[i], now: now),
+              _CommentRow(
+                comment: list[i],
+                now: now,
+                helpful: list[i].id == post.helpfulCommentId,
+                canMarkHelpful: canMarkHelpful,
+              ),
             ],
           ],
         ),
@@ -221,11 +241,24 @@ class _Comments extends ConsumerWidget {
   }
 }
 
+enum _CommentAction { report, block, helpful }
+
 class _CommentRow extends StatelessWidget {
-  const _CommentRow({required this.comment, required this.now});
+  const _CommentRow({
+    required this.comment,
+    required this.now,
+    this.helpful = false,
+    this.canMarkHelpful = false,
+  });
 
   final Comment comment;
   final DateTime now;
+
+  /// The author of the question marked this comment as its helpful answer.
+  final bool helpful;
+
+  /// The reader asked the question: they may mark (or unmark) the answer.
+  final bool canMarkHelpful;
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -241,30 +274,47 @@ class _CommentRow extends StatelessWidget {
     final errorWords = communityErrorWords(context);
     final name = l10n.inLine(l10n.memberName(comment.authorName));
     final canReport = ref.read(capabilityProvider('community.feed.post'));
-    final report = await showModalBottomSheet<bool>(
+    final action = await showModalBottomSheet<_CommentAction>(
       context: context,
       useRootNavigator: true,
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            if (canMarkHelpful)
+              ListTile(
+                leading: const AppIcon(Icons.check_circle_outline_rounded),
+                title: Text(helpful ? l10n.unmarkHelpful : l10n.markHelpful),
+                onTap: () => Navigator.of(context).pop(_CommentAction.helpful),
+              ),
             if (canReport)
               ListTile(
                 leading: const AppIcon(Icons.flag_outlined),
                 title: Text(l10n.report),
-                onTap: () => Navigator.of(context).pop(true),
+                onTap: () => Navigator.of(context).pop(_CommentAction.report),
               ),
             ListTile(
               leading: const AppIcon(Icons.block_rounded),
               title: Text(l10n.blockMember(name)),
-              onTap: () => Navigator.of(context).pop(false),
+              onTap: () => Navigator.of(context).pop(_CommentAction.block),
             ),
           ],
         ),
       ),
     );
-    if (report == null || !context.mounted) return;
-    if (!report) {
+    if (action == null || !context.mounted) return;
+    if (action == _CommentAction.helpful) {
+      try {
+        await ref
+            .read(feedControllerProvider.notifier)
+            .setHelpful(comment.postId, helpful ? null : comment.id);
+        if (!helpful) showCommunitySnack(messenger, l10n.markedHelpful);
+      } catch (e) {
+        showCommunitySnack(messenger, errorWords(e));
+      }
+      return;
+    }
+    if (action == _CommentAction.block) {
       await blockMemberFlow(
         context,
         ref,
@@ -301,15 +351,24 @@ class _CommentRow extends StatelessWidget {
       now,
     );
 
-    return Padding(
+    final row = Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AuthorAvatar(
-            name: comment.authorName,
-            authorId: comment.authorId,
-            size: 32,
+          Semantics(
+            button: true,
+            label: l10n.openProfile(
+              l10n.inLine(l10n.memberName(comment.authorName)),
+            ),
+            child: GestureDetector(
+              onTap: () => openMember(context, comment.authorId),
+              child: AuthorAvatar(
+                name: comment.authorName,
+                authorId: comment.authorId,
+                size: 32,
+              ),
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -353,6 +412,27 @@ class _CommentRow extends StatelessWidget {
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints.tightFor(width: 40, height: 40),
             ),
+        ],
+      ),
+    );
+    if (!helpful) return row;
+    // The helpful answer, in a soft green frame with its tag.
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 0),
+      decoration: BoxDecoration(
+        color: AppColors.sage.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SmallTag(
+            l10n.helpfulAnswer,
+            color: AppColors.sage,
+            icon: Icons.check_rounded,
+          ),
+          row,
         ],
       ),
     );
