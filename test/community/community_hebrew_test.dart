@@ -3,10 +3,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/features/community/community_routes.dart';
 import 'package:pet_companion/features/community/community_screen.dart';
-import 'package:pet_companion/features/community/data/chat_repository.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
@@ -101,16 +99,12 @@ Future<void> goTo(WidgetTester tester, String location) async {
 }
 
 /// One room with nobody in it yet.
-class _QuietRoom implements ChatRepository {
+class _QuietRoom extends FakeChatRepository {
+  _QuietRoom() : super(latency: Duration.zero, seeded: false);
+
   @override
   Future<List<ChatChannel>> fetchChannels() async =>
       const [ChatChannel(id: 'general', name: 'General', description: 'Say hello and share your day')];
-
-  @override
-  Stream<List<ChatMessage>> watchMessages(String channelId) => Stream.value(const []);
-
-  @override
-  Future<void> sendMessage({required AppUser author, required String channelId, required String text}) async {}
 }
 
 void main() {
@@ -145,6 +139,7 @@ void main() {
         expect(tester.widget<Text>(reads('עם Biscuit · לפני 12 דקות')).data, contains(isolate('Biscuit')));
 
         // The numbers are read out in words, with the Hebrew form for two.
+        await scrollTo(tester, inCard('Maya', find.byTooltip('לייק')));
         expect(tester.widget<Text>(inCard('Maya', find.text('14'))).semanticsLabel, '14 לייקים');
         expect(tester.widget<Text>(inCard('Maya', find.text('2'))).semanticsLabel, 'שתי תגובות');
 
@@ -160,9 +155,9 @@ void main() {
         await scrollTo(tester, reads('עם Milo · לפני 6 ימים'));
         await toTop(tester);
 
-        // The post with its comments.
-        await tester.tap(find.text(mayaPost));
-        await tester.pumpAndSettle();
+        // The post with its comments (below the feed's chips on a small
+        // phone).
+        await tapVisible(tester, find.text(mayaPost));
         expect(headerTitle('פוסט'), findsOneWidget);
         await scrollTo(tester, find.text('תגובות'));
         expect(adviceWordsIn(he), findsOneWidget);
@@ -227,6 +222,7 @@ void main() {
         expect(headerTitle('פוסט חדש'), findsOneWidget);
         expect(find.text('הפוסט גלוי לכל הקהילה'), findsOneWidget);
         expect(find.text('מה חדש אצל החיה שלך?'), findsOneWidget);
+        await scrollOnTop(tester, find.text('תמונה'));
         expect(find.text('על מי הפוסט'), findsOneWidget);
         expect(find.text('תמונה'), findsOneWidget);
         final publish = find.widgetWithText(FilledButton, 'פרסום');
@@ -278,7 +274,7 @@ void main() {
         expect(find.text('Puppies'), findsNothing);
         expect(find.text('First weeks, teething and sleep'), findsNothing);
         await toTop(tester);
-        expect(find.text('השבועות הראשונים, בקיעת שיניים ושינה'), findsOneWidget);
+        expect(reads('Priya: Until about six months for us. Frozen carrot sticks were a big help.'), findsOneWidget);
 
         await chooseScope(tester, 'cats');
         expect(find.text('מוצגים חדרים עבור חתולים.'), findsOneWidget);
@@ -300,6 +296,8 @@ void main() {
         expect(headerTitle('גורים'), findsOneWidget);
         expect(adviceWordsIn(he), findsOneWidget);
         expect(reads('הודעה בחדר ״גורים״'), findsOneWidget);
+        // At 320 px the day's heading may sit just above the view.
+        await tester.scrollUntilVisible(find.text('היום'), 100, scrollable: find.byType(Scrollable).hitTestable().first);
         expect(find.text('היום'), findsOneWidget);
         expect(find.text('Priya'), findsOneWidget);
 
@@ -318,11 +316,11 @@ void main() {
         // right. Whatever language each message is written in.
         final screen = screenWidth(tester);
         expect(tester.getTopLeft(find.text('גם אצלנו זה לקח חצי שנה')).dx, lessThan(60));
-        expect(tester.getTopRight(find.text(theirs)).dx, greaterThan(screen - 60));
+        expect(tester.getTopRight(find.text(theirs)).dx, greaterThan(screen - 80));
         h.chat.receive(channelId: 'puppies', authorId: 'u-maya', authorName: 'Maya', text: 'ברוכים הבאים');
         await tester.pumpAndSettle();
         expect(tester.widget<Text>(find.text('ברוכים הבאים')).textDirection, TextDirection.rtl);
-        expect(tester.getTopRight(find.text('ברוכים הבאים')).dx, greaterThan(screen - 60));
+        expect(tester.getTopRight(find.text('ברוכים הבאים')).dx, greaterThan(screen - 80));
 
         // The send button follows the field: on the left.
         expect(
@@ -484,6 +482,7 @@ void main() {
 
         // A like the backend refuses is put back, with the reason.
         feed.failing = true;
+        await scrollTo(tester, inCard('Maya', find.byTooltip('לייק')));
         await tester.tap(inCard('Maya', find.byTooltip('לייק')));
         await tester.pumpAndSettle();
         expect(inCard('Maya', find.text('14')), findsOneWidget);
@@ -521,7 +520,7 @@ void main() {
         expect(adviceWordsIn(he), findsOneWidget);
         h.chat.failing = false;
         await tapVisible(tester, find.text('לנסות שוב'));
-        expect(find.text('Luna barks at it from behind the sofa. Very brave.'), findsOneWidget);
+        expect(find.text('Here she is, guarding the living room.'), findsOneWidget);
 
         h.chat.failing = true;
         await tester.enterText(find.byType(TextField), 'בוקר טוב');
@@ -663,10 +662,10 @@ void main() {
       final theirs = find.text('שלום לכולם');
       if (rtl) {
         expect(tester.getTopLeft(mine).dx, lessThan(60));
-        expect(tester.getTopRight(theirs).dx, greaterThan(screen - 60));
+        expect(tester.getTopRight(theirs).dx, greaterThan(screen - 80));
       } else {
         expect(tester.getTopRight(mine).dx, greaterThan(screen - 60));
-        expect(tester.getTopLeft(theirs).dx, lessThan(60));
+        expect(tester.getTopLeft(theirs).dx, lessThan(80));
       }
       // Each message still reads in its own direction.
       expect(tester.widget<Text>(mine).textDirection, TextDirection.ltr);

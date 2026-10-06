@@ -2,12 +2,17 @@ import '../../access/feature_gate.dart';
 import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../l10n/l10n.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import 'chat/chat_section.dart';
+import 'community_routes.dart';
+import 'widgets/community_keeper.dart';
+import 'members/members_providers.dart';
+import '../../theme/app_colors.dart';
 import 'feed/feed_controller.dart';
 import 'feed/feed_section.dart';
 import 'feed/post_composer_screen.dart';
@@ -86,51 +91,73 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
       ),
     );
 
-    return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CoralHeader(
-            title: l10n.tabTitle,
-            bottom: CoralSegmentedControl(
-              labels: [
-                for (final section in visible)
-                  [
-                    l10n.sectionFeed,
-                    l10n.sectionChat,
-                    l10n.sectionGuides,
-                  ][section],
+    return CommunityKeeper(
+      child: Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CoralHeader(
+              title: l10n.tabTitle,
+              actions: [
+                Badge(
+                  isLabelVisible: ref.watch(hasNewActivityProvider),
+                  smallSize: 9,
+                  backgroundColor: AppColors.yellow,
+                  offset: const Offset(-6, 6),
+                  child: CoralHeaderAction(
+                    icon: Icons.notifications_none_rounded,
+                    tooltip: ref.watch(hasNewActivityProvider)
+                        ? l10n.activityNew
+                        : l10n.activityTooltip,
+                    onPressed: () => context.go(CommunityRoutes.activity),
+                  ),
+                ),
+                CoralHeaderAction(
+                  icon: Icons.shield_outlined,
+                  tooltip: l10n.safetyTitle,
+                  onPressed: () => context.go(CommunityRoutes.safety),
+                ),
               ],
-              selectedIndex: visible.indexOf(index),
-              onChanged: (selected) => _select(visible[selected]),
+              bottom: CoralSegmentedControl(
+                labels: [
+                  for (final section in visible)
+                    [
+                      l10n.sectionFeed,
+                      l10n.sectionChat,
+                      l10n.sectionGuides,
+                    ][section],
+                ],
+                selectedIndex: visible.indexOf(index),
+                onChanged: (selected) => _select(visible[selected]),
+              ),
             ),
-          ),
-          Expanded(
-            child: IndexedStack(
-              index: index,
-              children: [
-                const FeedSection(),
-                (_visited.contains(1) || index == 1) && visible.contains(1)
-                    ? const ChatSection()
-                    : const SizedBox.shrink(),
-                (_visited.contains(2) || index == 2) && visible.contains(2)
-                    ? const GuidesSection()
-                    : const SizedBox.shrink(),
-              ],
+            Expanded(
+              child: IndexedStack(
+                index: index,
+                children: [
+                  const FeedSection(),
+                  (_visited.contains(1) || index == 1) && visible.contains(1)
+                      ? const ChatSection()
+                      : const SizedBox.shrink(),
+                  (_visited.contains(2) || index == 2) && visible.contains(2)
+                      ? const GuidesSection()
+                      : const SizedBox.shrink(),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
+        floatingActionButton:
+            index == _feed &&
+                feedShowsPosts &&
+                ref.watch(capabilityProvider('community.feed.post'))
+            ? FloatingActionButton.extended(
+                onPressed: () => openPostComposer(context),
+                icon: const AppIcon(Icons.edit_rounded),
+                label: Text(l10n.newPost),
+              )
+            : null,
       ),
-      floatingActionButton:
-          index == _feed &&
-              feedShowsPosts &&
-              ref.watch(capabilityProvider('community.feed.post'))
-          ? FloatingActionButton.extended(
-              onPressed: () => openPostComposer(context),
-              icon: const AppIcon(Icons.edit_rounded),
-              label: Text(l10n.newPost),
-            )
-          : null,
     );
   }
 }

@@ -73,12 +73,10 @@ class CommunityL10nHe extends CommunityL10n {
   String get guidesShownForAll => 'מוצגים המדריכים של כל החיות.';
 
   @override
-  String get noRoomsForDogs =>
-      'עדיין אין חדרים עבור כלבים. לחיצה על ״הכול״ מציגה את כל החדרים.';
+  String get noRoomsForDogs => 'עדיין אין חדרים עבור כלבים. לחיצה על ״הכול״ מציגה את כל החדרים.';
 
   @override
-  String get noRoomsForCats =>
-      'עדיין אין חדרים עבור חתולים. לחיצה על ״הכול״ מציגה את כל החדרים.';
+  String get noRoomsForCats => 'עדיין אין חדרים עבור חתולים. לחיצה על ״הכול״ מציגה את כל החדרים.';
 
   @override
   String get feedLoadFailed => 'לא הצלחנו לטעון את הפיד';
@@ -87,8 +85,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get noPostsTitle => 'עדיין אין פוסטים';
 
   @override
-  String get noPostsMessage =>
-      'הפוסט הראשון יכול להיות שלך: תמונה או סיפור על החיה שלך.';
+  String get noPostsMessage => 'הפוסט הראשון יכול להיות שלך: תמונה או סיפור על החיה שלך.';
 
   @override
   String get writeAPost => 'כתיבת פוסט';
@@ -191,8 +188,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get deletePostTitle => 'למחוק את הפוסט?';
 
   @override
-  String get deletePostBody =>
-      'התגובות והלייקים שלו יימחקו יחד איתו. אי אפשר לבטל את הפעולה הזאת.';
+  String get deletePostBody => 'התגובות והלייקים שלו יימחקו יחד איתו. אי אפשר לבטל את הפעולה הזאת.';
 
   @override
   String get postDeleted => 'הפוסט שלך נמחק.';
@@ -359,8 +355,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get roomHealth => 'שאלות בריאות';
 
   @override
-  String get roomHealthAbout =>
-      'אפשר לשאול בעלי חיות אחרים. בכל דבר דחוף כדאי לפנות לווטרינר';
+  String get roomHealthAbout => 'אפשר לשאול בעלי חיות אחרים. בכל דבר דחוף כדאי לפנות לווטרינר';
 
   @override
   String get guidesLoadFailed => 'לא הצלחנו לטעון את המדריכים';
@@ -500,12 +495,10 @@ class CommunityL10nHe extends CommunityL10n {
   String get sourceOpenFailed => 'לא הצלחנו לפתוח את המקור כרגע.';
 
   @override
-  String get guideDisclaimer =>
-      'המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.';
+  String get guideDisclaimer => 'המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.';
 
   @override
-  String get adviceNotice =>
-      'חברי הקהילה משתפים מניסיון אישי, לא ייעוץ מקצועי.';
+  String get adviceNotice => 'חברי הקהילה משתפים מניסיון אישי, לא ייעוץ מקצועי.';
 
   @override
   String get contactProfessional => 'פנייה לאיש מקצוע';
@@ -514,12 +507,10 @@ class CommunityL10nHe extends CommunityL10n {
   String get errUnreachable => 'לא הצלחנו להתחבר לקהילה כרגע. אפשר לנסות שוב.';
 
   @override
-  String get errChatUnreachable =>
-      'לא הצלחנו להתחבר לצ׳אט כרגע. אפשר לנסות שוב.';
+  String get errChatUnreachable => 'לא הצלחנו להתחבר לצ׳אט כרגע. אפשר לנסות שוב.';
 
   @override
-  String get errOffline =>
-      'אין חיבור לקהילה כרגע. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
+  String get errOffline => 'אין חיבור לקהילה כרגע. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
 
   @override
   String get errPostGone => 'הפוסט הזה כבר לא זמין.';
@@ -549,8 +540,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get errNotSetUp => 'הקהילה עדיין לא הוגדרה בשרת.';
 
   @override
-  String get errPhotoTooLarge =>
-      'התמונה גדולה מדי. אפשר לבחור תמונה קטנה יותר.';
+  String get errPhotoTooLarge => 'התמונה גדולה מדי. אפשר לבחור תמונה קטנה יותר.';
 
   @override
   String get errPhotoUnsupported => 'צריך לבחור תמונה מסוג JPEG, PNG או WebP.';
@@ -559,10 +549,494 @@ class CommunityL10nHe extends CommunityL10n {
   String get errPhotoUpload => 'לא הצלחנו להעלות את התמונה. אפשר לנסות שוב.';
 
   @override
-  String get errCameraNotAllowed =>
-      'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.';
+  String get errCameraNotAllowed => 'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.';
 
   @override
-  String get errPhotosNotAllowed =>
-      'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.';
+  String get errPhotosNotAllowed => 'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.';
+
+  @override
+  String get errSlowDown => 'רגע, זה היה מהר. כדאי לחכות דקה לפני שליחה נוספת.';
+
+  @override
+  String get errNotModerator => 'רק מנהלי הקהילה יכולים לעשות את זה.';
+
+  @override
+  String roomLastMine(String text) {
+    return 'אני: \u2068$text\u2069';
+  }
+
+  @override
+  String roomLastOther(String name, String text) {
+    return '\u2068$name\u2069: \u2068$text\u2069';
+  }
+
+  @override
+  String roomUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count הודעות שלא נקראו',
+      two: 'שתי הודעות שלא נקראו',
+      one: 'הודעה אחת שלא נקראה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatReply => 'תשובה';
+
+  @override
+  String get chatCopy => 'העתקה';
+
+  @override
+  String get chatCopied => 'ההודעה הועתקה';
+
+  @override
+  String get chatDeleteTitle => 'למחוק את ההודעה?';
+
+  @override
+  String get chatDeleteBody => 'היא תימחק אצל כל מי שבחדר.';
+
+  @override
+  String get chatDeleted => 'ההודעה נמחקה';
+
+  @override
+  String get chatReportTitle => 'דיווח על ההודעה';
+
+  @override
+  String get chatReportBody => 'מה לא בסדר בהודעה? נסתיר אותה אצלך מיד ונבדוק אותה.';
+
+  @override
+  String get chatReportThanks => 'תודה. הסתרנו את ההודעה ונבדוק אותה.';
+
+  @override
+  String get commentOptions => 'אפשרויות התגובה';
+
+  @override
+  String get commentReportTitle => 'דיווח על התגובה';
+
+  @override
+  String get commentReportBody => 'מה לא בסדר בתגובה? נסתיר אותה אצלך מיד ונבדוק אותה.';
+
+  @override
+  String get commentReportThanks => 'תודה. הסתרנו את התגובה ונבדוק אותה.';
+
+  @override
+  String get messageOptions => 'אפשרויות ההודעה';
+
+  @override
+  String replyingTo(String name) {
+    return 'תשובה אל \u2068$name\u2069';
+  }
+
+  @override
+  String get cancelReply => 'ביטול התשובה';
+
+  @override
+  String get replyUnavailable => 'ההודעה המקורית אינה זמינה';
+
+  @override
+  String get messageSending => 'בשליחה…';
+
+  @override
+  String get messageNotSent => 'לא נשלחה. אפשר להקיש כדי לנסות שוב.';
+
+  @override
+  String get messageNotSentTitle => 'ההודעה לא נשלחה';
+
+  @override
+  String newMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count הודעות חדשות',
+      two: 'שתי הודעות חדשות',
+      one: 'הודעה חדשה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get jumpToLatest => 'מעבר להודעה האחרונה';
+
+  @override
+  String get conversationStart => 'כאן מתחילה השיחה';
+
+  @override
+  String get addPhoto => 'הוספת תמונה';
+
+  @override
+  String get chatPhotoPreview => 'התמונה לשליחה';
+
+  @override
+  String get openPhoto => 'פתיחת התמונה';
+
+  @override
+  String reactWith(String emoji) {
+    return 'סימון \u2068$emoji\u2069';
+  }
+
+  @override
+  String reactionsSummary(String emoji, int count) {
+    return '\u2068$emoji\u2069 $count';
+  }
+
+  @override
+  String get hideNotice => 'הסתרת ההערה';
+
+  @override
+  String get roomInfo => 'על החדר';
+
+  @override
+  String blockMember(String name) {
+    return 'חסימת \u2068$name\u2069';
+  }
+
+  @override
+  String blockTitle(String name) {
+    return 'לחסום את \u2068$name\u2069?';
+  }
+
+  @override
+  String get blockBody => 'הפוסטים, התגובות וההודעות לא יופיעו אצלך יותר. אף אחד לא מקבל על כך הודעה. אפשר לבטל את החסימה בכל עת במסך ״בטיחות בקהילה״.';
+
+  @override
+  String get blockConfirm => 'חסימה';
+
+  @override
+  String blockedDone(String name) {
+    return 'חסמת את \u2068$name\u2069';
+  }
+
+  @override
+  String get unblock => 'ביטול החסימה';
+
+  @override
+  String unblockedDone(String name) {
+    return 'החסימה של \u2068$name\u2069 בוטלה';
+  }
+
+  @override
+  String get rulesTitle => 'כללי הקהילה';
+
+  @override
+  String get rulesIntro => 'PetLoop הוא מקום ידידותי לבעלי חיות. לפני השיתוף הראשון:';
+
+  @override
+  String get rule1 => 'שומרים על אדיבות. מתווכחים עם רעיונות, לא עם אנשים.';
+
+  @override
+  String get rule2 => 'בלי מכירת בעלי חיים, בלי פרסומות ובלי ספאם.';
+
+  @override
+  String get rule3 => 'משתפים ניסיון, לא אבחנות. בכל דבר דחוף פונים לווטרינר.';
+
+  @override
+  String get rule4 => 'פרטים אישיים נשארים פרטיים, שלך ושל אחרים.';
+
+  @override
+  String get rule5 => 'מדווחים על מה שמפר את הכללים. שלושה דיווחים מסתירים תוכן עד שמנהל קהילה יבדוק אותו.';
+
+  @override
+  String get rulesAgree => 'הסכמה והמשך';
+
+  @override
+  String get safetyTitle => 'בטיחות בקהילה';
+
+  @override
+  String get safetyIntro => 'חסימה ודיווח הם פרטיים: אף אחד לא יודע מי ביצע אותם.';
+
+  @override
+  String get blockedTitle => 'חשבונות חסומים';
+
+  @override
+  String get noBlocked => 'אין חשבונות חסומים.';
+
+  @override
+  String get blockedLoadFailed => 'אי אפשר לטעון את החשבונות החסומים';
+
+  @override
+  String get reviewReports => 'בדיקת דיווחים';
+
+  @override
+  String reviewWaiting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count דיווחים ממתינים',
+      two: 'שני דיווחים ממתינים',
+      one: 'דיווח אחד ממתין',
+      zero: 'אין דיווחים ממתינים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewEmptyTitle => 'הכול נקי';
+
+  @override
+  String get reviewEmptyMessage => 'אין דיווחים שממתינים לבדיקה.';
+
+  @override
+  String get reviewLoadFailed => 'אי אפשר לטעון את הדיווחים';
+
+  @override
+  String get kindPost => 'פוסט';
+
+  @override
+  String get kindComment => 'תגובה';
+
+  @override
+  String get kindMessage => 'הודעה בצ׳אט';
+
+  @override
+  String reportCountLine(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count דיווחים',
+      two: 'שני דיווחים',
+      one: 'דיווח אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hiddenTag => 'מוסתר';
+
+  @override
+  String inRoom(String room) {
+    return 'בחדר ״\u2068$room\u2069״';
+  }
+
+  @override
+  String get keepItem => 'השארה';
+
+  @override
+  String get removeItem => 'הסרה';
+
+  @override
+  String get removeItemTitle => 'להסיר את התוכן אצל כולם?';
+
+  @override
+  String get removeItemBody => 'התוכן יימחק ואי אפשר יהיה לשחזר אותו.';
+
+  @override
+  String get keptDone => 'התוכן נשאר ומוצג שוב לכולם.';
+
+  @override
+  String get removedDone => 'התוכן הוסר';
+
+  @override
+  String get kindMoment => 'רגע';
+
+  @override
+  String get kindQuestion => 'שאלה';
+
+  @override
+  String get kindTip => 'טיפ';
+
+  @override
+  String get kindRecommendation => 'המלצה';
+
+  @override
+  String get kindLostFound => 'אבדות ומציאות';
+
+  @override
+  String get kindsAll => 'כל הפוסטים';
+
+  @override
+  String get composerKind => 'איזה סוג פוסט?';
+
+  @override
+  String get composerHintQuestion => 'מה רוצים לשאול בעלי חיות אחרים?';
+
+  @override
+  String get composerHintTip => 'משהו שעבד אצלך ושכדאי לשתף';
+
+  @override
+  String get composerHintRecommendation => 'מקום, מוצר או איש מקצוע שמומלצים, ולמה';
+
+  @override
+  String get composerHintLostFound => 'תיאור החיה, איפה ומתי, ואיך אפשר ליצור קשר';
+
+  @override
+  String get postsShownForDogs => 'מוצגים פוסטים על כלבים ופוסטים לכולם.';
+
+  @override
+  String get postsShownForCats => 'מוצגים פוסטים על חתולים ופוסטים לכולם.';
+
+  @override
+  String get postsShownForAll => 'מוצגים כל הפוסטים.';
+
+  @override
+  String postsMatchedTo(String pet) {
+    return 'מותאם ל־\u2068$pet\u2069. אפשר להקיש על ״הכול״ כדי לראות את כל הפוסטים.';
+  }
+
+  @override
+  String get searchPosts => 'חיפוש פוסטים';
+
+  @override
+  String get searchPostsHint => 'חיפוש פוסטים';
+
+  @override
+  String get noPostsMatchTitle => 'לא נמצאו פוסטים';
+
+  @override
+  String get noPostsMatchMessage => 'אפשר לנסות מילים אחרות, סוג פוסט אחר או ״הכול״.';
+
+  @override
+  String get loadingMorePosts => 'טוענים עוד פוסטים';
+
+  @override
+  String get editPost => 'עריכה';
+
+  @override
+  String get editPostTitle => 'עריכת הפוסט';
+
+  @override
+  String get saveChanges => 'שמירה';
+
+  @override
+  String get postEdited => 'נערך';
+
+  @override
+  String get postSaved => 'הפוסט עודכן';
+
+  @override
+  String get sharePost => 'שיתוף';
+
+  @override
+  String shareText(String name, String text) {
+    return '\u2068$name\u2069 ב־PetLoop: \u2068$text\u2069';
+  }
+
+  @override
+  String get answeredTag => 'נענתה';
+
+  @override
+  String get helpfulAnswer => 'תשובה מועילה';
+
+  @override
+  String get markHelpful => 'סימון כתשובה המועילה';
+
+  @override
+  String get unmarkHelpful => 'ביטול הסימון כתשובה מועילה';
+
+  @override
+  String get markedHelpful => 'סומנה כתשובה המועילה';
+
+  @override
+  String get likedByDoubleTap => 'לייק';
+
+  @override
+  String get activityTitle => 'פעילות';
+
+  @override
+  String get activityTooltip => 'פעילות';
+
+  @override
+  String get activityNew => 'יש פעילות חדשה';
+
+  @override
+  String get activityEmptyTitle => 'אין עדיין חדש';
+
+  @override
+  String get activityEmptyMessage => 'תגובות, לייקים ותשובות לפוסטים ולהודעות שלך יופיעו כאן.';
+
+  @override
+  String get activityLoadFailed => 'אי אפשר לטעון את הפעילות';
+
+  @override
+  String activityComment(String name) {
+    return 'תגובה חדשה מ־\u2068$name\u2069 לפוסט שלך';
+  }
+
+  @override
+  String activityLike(String name) {
+    return 'לייק מ־\u2068$name\u2069 לפוסט שלך';
+  }
+
+  @override
+  String activityReply(String name) {
+    return 'תשובה מ־\u2068$name\u2069 להודעה שלך';
+  }
+
+  @override
+  String get memberTitle => 'פרופיל';
+
+  @override
+  String memberSince(String date) {
+    return 'בקהילה מאז \u2068$date\u2069';
+  }
+
+  @override
+  String memberPostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count פוסטים',
+      two: 'שני פוסטים',
+      one: 'פוסט אחד',
+      zero: 'עדיין אין פוסטים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memberPosts => 'פוסטים';
+
+  @override
+  String get memberLoadFailed => 'אי אפשר לטעון את הפרופיל';
+
+  @override
+  String get memberGoneTitle => 'הפרופיל לא נמצא';
+
+  @override
+  String get memberGoneMessage => 'ייתכן שהחשבון נמחק.';
+
+  @override
+  String openProfile(String name) {
+    return 'פתיחת הפרופיל של \u2068$name\u2069';
+  }
+
+  @override
+  String get editProfile => 'עריכת הפרופיל';
+
+  @override
+  String get profileBio => 'קצת עליי';
+
+  @override
+  String get profileBioHint => 'שורה שחברי הקהילה רואים, למשל על החיות שלך או על מה כיף לך לדבר';
+
+  @override
+  String get profileCity => 'עיר';
+
+  @override
+  String get profileCityHint => 'לא חובה';
+
+  @override
+  String get profileSaved => 'הפרופיל עודכן';
+
+  @override
+  String get profilePublicNote => 'חברי הקהילה רואים את זה. כדאי להשאיר בחוץ כל מה שעדיף שיישאר פרטי.';
+
+  @override
+  String get blockedMemberNote => 'החשבון הזה חסום אצלך.';
+
+  @override
+  String get muteRoom => 'השתקת החדר';
+
+  @override
+  String get unmuteRoom => 'ביטול ההשתקה';
+
+  @override
+  String get roomMuted => 'החדר מושתק: לא יוצג בו מספר הודעות שלא נקראו';
+
+  @override
+  String get roomUnmuted => 'ההשתקה בוטלה';
+
+  @override
+  String get mutedTag => 'מושתק';
 }

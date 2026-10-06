@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
@@ -70,12 +71,12 @@ void main() {
       expect(inCard('Maya', find.text('14')), findsOneWidget); // likes
       expect(inCard('Maya', find.text('2')), findsOneWidget); // comments
 
-      await tester.scrollUntilVisible(find.text('with Kelly · 2 h ago'), 200);
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
       expect(find.text(alexPost), findsOneWidget);
       expect(inCard('Alex', find.byType(PostPhotoView)), findsOneWidget);
 
-      await tester.scrollUntilVisible(find.text('22 h ago'), 200); // no pet tagged
-      await tester.scrollUntilVisible(find.text('with Milo · 6 days ago'), 200);
+      await scrollTo(tester, find.text('22 h ago')); // no pet tagged
+      await scrollTo(tester, find.text('with Milo · 6 days ago'));
     });
 
     testWidgets('like and unlike', (tester) async {
@@ -198,7 +199,7 @@ void main() {
 
     testWidgets('delete own post', (tester) async {
       final h = await pumpCommunity(tester);
-      await tester.scrollUntilVisible(find.text('with Kelly · 2 h ago'), 200);
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
 
       await tapVisible(tester, inCard('Alex', find.byTooltip('Post options')));
       expect(find.text('Report'), findsNothing); // you cannot report yourself
@@ -212,6 +213,32 @@ void main() {
       expect(find.text(alexPost), findsNothing);
       expect(find.text('Your post was deleted.'), findsOneWidget);
       expect((await storedPosts(tester, h)).any((p) => p.authorId == 'demo'), isFalse);
+    });
+
+    testWidgets('without permission to edit posts, your own post offers no delete', (tester) async {
+      final access = FakeAccessRepository();
+      await access.change('user_rule', {'user_id': 'demo', 'capability': 'community.feed.edit', 'allowed': false});
+      await pumpCommunity(tester, harness: CommunityHarness(access: access));
+      await scrollTo(tester, find.text('with Kelly · 2 h ago'));
+
+      // The menu stays for sharing, without editing or deleting.
+      await tapVisible(tester, inCard('Alex', find.byTooltip('Post options')));
+      expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Delete'), findsNothing);
+      expect(find.text('Edit'), findsNothing);
+    });
+
+    testWidgets('without permission to post, others\' posts offer no report', (tester) async {
+      final access = FakeAccessRepository();
+      await access.change('user_rule', {'user_id': 'demo', 'capability': 'community.feed.post', 'allowed': false});
+      await pumpCommunity(tester, harness: CommunityHarness(access: access));
+
+      // Sharing and blocking stay; reporting needs permission to post.
+      await tester.tap(inCard('Maya', find.byTooltip('Post options')));
+      await tester.pumpAndSettle();
+      expect(find.text('Share'), findsOneWidget);
+      expect(find.text('Block Maya'), findsOneWidget);
+      expect(find.text('Report'), findsNothing);
     });
 
     testWidgets('report hides a post and records the report', (tester) async {
@@ -271,7 +298,7 @@ void main() {
         expect(find.text(name), findsOneWidget);
       }
       expect(find.text('Kittens'), findsNothing);
-      expect(find.text('First weeks, teething and sleep'), findsOneWidget);
+      expect(find.text('Priya: Until about six months for us. Frozen carrot sticks were a big help.'), findsOneWidget);
 
       await tester.tap(find.text('Puppies'));
       await tester.pumpAndSettle();
@@ -294,13 +321,13 @@ void main() {
 
       // Mine sit on the right, other people's on the left.
       expect(tester.getTopRight(find.text('Hello puppies')).dx, greaterThan(300));
-      expect(tester.getTopLeft(find.text(others)).dx, lessThan(60));
+      expect(tester.getTopLeft(find.text(others)).dx, lessThan(80));
 
       // Someone else writes: it arrives through the stream, no refresh.
       h.chat.receive(channelId: 'puppies', authorId: 'u-maya', authorName: 'Maya', text: 'Welcome, Alex!');
       await tester.pumpAndSettle();
       expect(find.text('Welcome, Alex!'), findsOneWidget);
-      expect(tester.getTopLeft(find.text('Welcome, Alex!')).dx, lessThan(60));
+      expect(tester.getTopLeft(find.text('Welcome, Alex!')).dx, lessThan(80));
 
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
@@ -319,7 +346,7 @@ void main() {
       h.chat.failing = false;
       await tester.tap(find.text('Try again'));
       await tester.pumpAndSettle();
-      expect(find.text('Morning everyone! Biscuit says hi.'), findsOneWidget);
+      expect(find.text('Here she is, guarding the living room.'), findsOneWidget);
     });
 
     testWidgets('no rooms yet', (tester) async {

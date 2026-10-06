@@ -9,10 +9,10 @@ import '../community_words.dart';
 import '../../../services/community/data/audience.dart';
 
 /// What a section with a [ScopeBar] lists.
-enum ScopeBarSubject { rooms, guides }
+enum ScopeBarSubject { posts, rooms, guides }
 
-/// The Dogs · Cats · Everything chips at the top of the Chat and Guides
-/// sections, with a line saying what is shown and why.
+/// The Dogs · Cats · Everything chips at the top of the Feed, Chat and
+/// Guides sections, with a line saying what is shown and why.
 ///
 /// The choice starts on the selected pet's kind; Everything is always one
 /// tap away.
@@ -33,6 +33,7 @@ class ScopeBar extends ConsumerWidget {
         pet.name.isNotEmpty;
     final matchedPet = matched ? l10n.inLine(pet.name) : null;
     final caption = switch (what) {
+      ScopeBarSubject.posts => l10n.postsCaption(scope, matchedPet: matchedPet),
       ScopeBarSubject.rooms => l10n.roomsCaption(scope, matchedPet: matchedPet),
       ScopeBarSubject.guides => l10n.guidesCaption(
         scope,

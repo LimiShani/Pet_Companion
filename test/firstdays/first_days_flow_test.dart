@@ -220,6 +220,9 @@ void main() {
       expect(page, findsNothing);
       expect(find.byType(GuidesSection), findsOneWidget);
       expect(container.read(communityGuidesRequestProvider), isFalse);
+      // The Community tab also loads its activity and blocked members on
+      // the demo backend's short delay: let them answer.
+      await tester.pump(const Duration(seconds: 1));
     });
 
     testWidgets('"Close" asks first, then the page is a summary and the Home card is gone', (tester) async {

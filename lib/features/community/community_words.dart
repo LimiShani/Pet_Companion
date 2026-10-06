@@ -56,6 +56,34 @@ extension CommunityWords on CommunityL10n {
     };
   }
 
+  /// The line under the chips of the Feed section.
+  String postsCaption(CommunityScope scope, {String? matchedPet}) {
+    if (matchedPet != null) return postsMatchedTo(matchedPet);
+    return switch (scope) {
+      CommunityScope.dogs => postsShownForDogs,
+      CommunityScope.cats => postsShownForCats,
+      CommunityScope.everything => postsShownForAll,
+    };
+  }
+
+  /// A kind of post: the chip and the tag on the card.
+  String postKind(PostKind kind) => switch (kind) {
+    PostKind.moment => kindMoment,
+    PostKind.question => kindQuestion,
+    PostKind.tip => kindTip,
+    PostKind.recommendation => kindRecommendation,
+    PostKind.lostFound => kindLostFound,
+  };
+
+  /// The composer's hint for a kind of post.
+  String composerHintFor(PostKind kind) => switch (kind) {
+    PostKind.moment => composerHint,
+    PostKind.question => composerHintQuestion,
+    PostKind.tip => composerHintTip,
+    PostKind.recommendation => composerHintRecommendation,
+    PostKind.lostFound => composerHintLostFound,
+  };
+
   /// The line under the chips of the Guides section.
   String guidesCaption(CommunityScope scope, {String? matchedPet}) {
     if (matchedPet != null) return guidesMatchedTo(matchedPet);
@@ -128,6 +156,13 @@ extension CommunityWords on CommunityL10n {
     ReportReason.other => reportOther,
   };
 
+  /// What a reported item is, in the review list.
+  String moderationKind(ModerationKind kind) => switch (kind) {
+    ModerationKind.post => kindPost,
+    ModerationKind.comment => kindComment,
+    ModerationKind.message => kindMessage,
+  };
+
   /// A member's name as shown: their own, or a friendly fallback for an
   /// account without one.
   String memberName(String stored) =>
@@ -153,6 +188,8 @@ extension CommunityWords on CommunityL10n {
     CommunityFailure.photoUpload => errPhotoUpload,
     CommunityFailure.cameraNotAllowed => errCameraNotAllowed,
     CommunityFailure.photosNotAllowed => errPhotosNotAllowed,
+    CommunityFailure.slowDown => errSlowDown,
+    CommunityFailure.notModerator => errNotModerator,
     CommunityFailure.unknown => null,
   };
 

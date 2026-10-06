@@ -1,9 +1,8 @@
 import '../../../platform/session.dart';
-import '../../../platform/storage_cleanup.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
-import 'package:uuid/uuid.dart';
 
 import '../../../auth/app_user.dart';
+import 'audience.dart';
 import 'community_models.dart';
 import 'feed_repository.dart';
 import 'supabase_community_support.dart';
@@ -16,7 +15,9 @@ import 'supabase_community_support.dart';
 class SupabaseFeedRepository implements FeedRepository {
   SupabaseFeedRepository(sb.SupabaseClient client)
     : _backend = client,
-      _names = ProfileNames(client);
+      _names = ProfileNames(client) {
+    _photos = CommunityPhotos(() => _client);
+  }
 
   final sb.SupabaseClient _backend;
   sb.SupabaseClient get _client {
@@ -25,38 +26,137 @@ class SupabaseFeedRepository implements FeedRepository {
   }
 
   final ProfileNames _names;
+  late final CommunityPhotos _photos;
 
-  static const photoBucket = 'community-photos';
-
-  /// How many posts the feed loads.
-  static const pageSize = 50;
-
-  /// How long a photo link stays valid. The feed is refetched well within.
-  static const _signedUrlSeconds = 6 * 60 * 60;
-
-  static const _contentTypes = {
-    'jpg': 'image/jpeg',
-    'jpeg': 'image/jpeg',
-    'png': 'image/png',
-    'webp': 'image/webp',
-  };
+  static const photoBucket = CommunityPhotos.bucket;
 
   @override
-  Future<List<Post>> fetchPosts({required AppUser viewer}) =>
+  Future<List<Post>> fetchPosts({
+    required AppUser viewer,
+    FeedQuery query = const FeedQuery(),
+    DateTime? before,
+    int limit = feedPageSize,
+  }) => guardCommunity(() async {
+    // The view adds the author's name, the counts and "liked by me";
+    // posts the viewer reported, hidden posts and blocked members' posts
+    // are filtered out by the select policies.
+    List<Map<String, dynamic>> rows;
+    try {
+      rows = await _feedRows(query, before, limit, kinds: true);
+    } on sb.PostgrestException catch (e) {
+      if (!_missingColumn(e)) rethrow;
+      // Before 0022 there are no kinds or animals: every post is a moment
+      // for everyone, so a narrower kind finds nothing.
+      if (query.kind != null && query.kind != PostKind.moment) return const [];
+      rows = await _feedRows(query, before, limit, kinds: false);
+    }
+    final urls = await _photos.links([
+      for (final row in rows)
+        if (row['photo_path'] case final String path) path,
+    ]);
+    return [for (final row in rows) _toPost(row, urls)];
+  });
+
+  Future<List<Map<String, dynamic>>> _feedRows(
+    FeedQuery query,
+    DateTime? before,
+    int limit, {
+    required bool kinds,
+  }) async {
+    var request = _client.from('community_feed').select();
+    if (kinds) {
+      if (query.kind case final kind?) request = request.eq('kind', kind.key);
+      if (query.audiences case final audiences?) {
+        request = request.inFilter('audience', [
+          for (final a in audiences) a.key,
+        ]);
+      }
+    }
+    if (query.authorId case final author?) {
+      request = request.eq('author_id', author);
+    }
+    final words = query.search.trim();
+    if (words.isNotEmpty) {
+      request = request.ilike('body', '%${_escapeLike(words)}%');
+    }
+    if (before != null) {
+      request = request.lt('created_at', before.toUtc().toIso8601String());
+    }
+    return request.order('created_at', ascending: false).limit(limit);
+  }
+
+  /// A column this app asks for that the database does not have yet: a
+  /// migration has not been run.
+  static bool _missingColumn(sb.PostgrestException e) =>
+      e.code == '42703' ||
+      e.code == 'PGRST204' ||
+      e.message.toLowerCase().contains('column');
+
+  @override
+  Future<Post?> fetchPost({required AppUser viewer, required String postId}) =>
       guardCommunity(() async {
-        // The view adds the author's name, the counts and "liked by me";
-        // posts the viewer reported are filtered out by the select policy.
-        final rows = await _client
+        final row = await _client
             .from('community_feed')
             .select()
-            .order('created_at', ascending: false)
-            .limit(pageSize);
-        final urls = await _signedUrls([
-          for (final row in rows)
-            if (row['photo_path'] case final String path) path,
+            .eq('id', postId)
+            .maybeSingle();
+        if (row == null) return null;
+        final urls = await _photos.links([
+          if (row['photo_path'] case final String path) path,
         ]);
-        return [for (final row in rows) _toPost(row, urls)];
+        return _toPost(row, urls);
       });
+
+  @override
+  Future<Post> updatePost({
+    required AppUser viewer,
+    required Post post,
+    required String text,
+    required PostKind kind,
+  }) => guardCommunity(() async {
+    final body = text.trim();
+    if (body.isEmpty) {
+      throw const CommunityException(CommunityFailure.emptyPost);
+    }
+    final rows = await _client
+        .from('community_posts')
+        .update({'body': body, 'kind': kind.key})
+        .eq('id', post.id)
+        .eq('author_id', viewer.id)
+        .select('edited_at');
+    if (rows.isEmpty) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+    final edited = rows.first['edited_at'];
+    return post.copyWith(
+      text: body,
+      kind: kind,
+      editedAt: edited == null ? null : parseTimestamp(edited),
+    );
+  });
+
+  @override
+  Future<void> setHelpful({
+    required AppUser viewer,
+    required String postId,
+    String? commentId,
+  }) => guardCommunity(() async {
+    final rows = await _client
+        .from('community_posts')
+        .update({'helpful_comment_id': commentId})
+        .eq('id', postId)
+        .eq('author_id', viewer.id)
+        .select('id');
+    if (rows.isEmpty) {
+      throw const CommunityException(CommunityFailure.notYourPost);
+    }
+  });
+
+  /// [words] as a literal inside an `ilike` pattern.
+  static String _escapeLike(String words) => words
+      .replaceAll(r'\', r'\\')
+      .replaceAll('%', r'\%')
+      .replaceAll('_', r'\_');
 
   @override
   Future<Post> createPost({
@@ -64,6 +164,8 @@ class SupabaseFeedRepository implements FeedRepository {
     required String text,
     String? petName,
     PickedPhoto? photo,
+    PostKind kind = PostKind.moment,
+    Audience audience = Audience.everyone,
   }) => guardCommunity(() async {
     final body = text.trim();
     if (body.isEmpty) {
@@ -71,46 +173,42 @@ class SupabaseFeedRepository implements FeedRepository {
     }
     final pet = petName?.trim() ?? '';
 
-    String? photoPath;
-    if (photo != null) {
-      final extension = _extensionOf(photo);
-      photoPath = '${author.id}/${const Uuid().v4()}.$extension';
-      await StorageCleanup(_client).reserve(photoBucket, photoPath);
-      await _client.storage
-          .from(photoBucket)
-          .uploadBinary(
-            photoPath,
-            photo.bytes,
-            fileOptions: sb.FileOptions(
-              contentType: _contentTypes[extension],
-              cacheControl: '31536000',
-            ),
-          );
-    }
+    final photoPath = photo == null
+        ? null
+        : await _photos.upload(author.id, photo);
 
+    final values = {
+      'author_id': author.id,
+      'body': body,
+      'pet_name': pet.isEmpty ? null : pet,
+      'photo_path': photoPath,
+    };
+    Future<Map<String, dynamic>> insert(Map<String, dynamic> values) => _client
+        .from('community_posts')
+        .insert(values)
+        .select('id, created_at')
+        .single();
     final Map<String, dynamic> row;
     try {
-      row = await _client
-          .from('community_posts')
-          .insert({
-            'author_id': author.id,
-            'body': body,
-            'pet_name': pet.isEmpty ? null : pet,
-            'photo_path': photoPath,
-          })
-          .select('id, created_at')
-          .single();
+      row =
+          await insert({
+            ...values,
+            if (kind != PostKind.moment) 'kind': kind.key,
+            if (audience != Audience.everyone) 'audience': audience.key,
+          }).catchError((Object e) {
+            // Before 0022 a post has no kind or animal: post it without.
+            if (e is sb.PostgrestException && _missingColumn(e)) {
+              return insert(values);
+            }
+            throw e;
+          });
     } catch (_) {
       // Do not leave an orphan picture behind.
-      if (photoPath != null) await _removePhoto(photoPath);
+      if (photoPath != null) await _photos.remove(photoPath);
       rethrow;
     }
 
-    if (photoPath != null) {
-      try {
-        await StorageCleanup(_client).attached(photoBucket, photoPath);
-      } catch (_) {}
-    }
+    if (photoPath != null) await _photos.attached(photoPath);
     return Post(
       id: row['id'] as String,
       authorId: author.id,
@@ -120,6 +218,8 @@ class SupabaseFeedRepository implements FeedRepository {
       // Shown from memory until the next fetch brings a signed link.
       photo: photo == null ? null : MemoryPostPhoto(photo.bytes),
       createdAt: parseTimestamp(row['created_at']),
+      kind: kind,
+      audience: audience,
     );
   });
 
@@ -136,7 +236,7 @@ class SupabaseFeedRepository implements FeedRepository {
           throw const CommunityException(CommunityFailure.notYourPost);
         }
         if (deleted.first['photo_path'] case final String path) {
-          await _removePhoto(path);
+          await _photos.remove(path);
         }
       });
 
@@ -242,51 +342,12 @@ class SupabaseFeedRepository implements FeedRepository {
       likeCount: (row['like_count'] as num?)?.toInt() ?? 0,
       likedByMe: row['liked_by_me'] as bool? ?? false,
       commentCount: (row['comment_count'] as num?)?.toInt() ?? 0,
+      kind: PostKind.fromKey(row['kind'] as String?),
+      audience: Audience.fromKey(row['audience'] as String?),
+      editedAt: row['edited_at'] == null
+          ? null
+          : parseTimestamp(row['edited_at']),
+      helpfulCommentId: row['helpful_comment_id'] as String?,
     );
-  }
-
-  /// Signed links for [paths] in the private bucket. A failure here costs
-  /// the pictures, not the whole feed.
-  Future<Map<String, String>> _signedUrls(List<String> paths) async {
-    if (paths.isEmpty) return const {};
-    try {
-      final results = await _client.storage
-          .from(photoBucket)
-          .createSignedUrlsResult(paths, _signedUrlSeconds);
-      return {
-        for (final result in results)
-          if (result case sb.SignedUrlSuccess(:final path, :final signedUrl))
-            path: signedUrl,
-      };
-    } catch (_) {
-      return const {};
-    }
-  }
-
-  Future<void> _removePhoto(String path) async {
-    try {
-      await StorageCleanup(_client).enqueue(photoBucket, path);
-      await StorageCleanup(_client).drain();
-    } catch (_) {
-      // Best effort: the post is what matters to the user.
-    }
-  }
-
-  /// The file extension to store [photo] under: from its type, else its
-  /// name. The picker re-encodes to JPEG, so that is the fallback.
-  static String _extensionOf(PickedPhoto photo) {
-    final mime = photo.mimeType?.toLowerCase();
-    for (final entry in _contentTypes.entries) {
-      if (entry.value == mime) return entry.key == 'jpeg' ? 'jpg' : entry.key;
-    }
-    final dot = photo.name.lastIndexOf('.');
-    final extension = dot < 0
-        ? ''
-        : photo.name.substring(dot + 1).toLowerCase();
-    if (_contentTypes.containsKey(extension)) {
-      return extension == 'jpeg' ? 'jpg' : extension;
-    }
-    if (extension.isEmpty && mime == null) return 'jpg';
-    throw const CommunityException(CommunityFailure.photoUnsupported);
   }
 }

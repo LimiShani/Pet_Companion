@@ -70,6 +70,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
       'share' => _text('Share', 'שיתוף'),
       'search' => _text('Search', 'חיפוש'),
       'admin' => _text('Review directory', 'ניהול המדריך'),
+      'moderate' => _text('Moderate reports', 'בדיקת דיווחים'),
       _ => action,
     };
     return '${_featureLabel(parts.join('.'))} · $label';

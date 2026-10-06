@@ -10,27 +10,32 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
+import '../../../services/community/data/audience.dart';
 import '../../../services/community/data/community_models.dart';
 import '../data/photo_picker.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
+import '../safety/safety_flows.dart';
 
-/// Opens the full-screen composer above the bottom navigation bar.
-Future<void> openPostComposer(BuildContext context) {
+/// Opens the full-screen composer above the bottom navigation bar: for a
+/// new post, or to change [editing] (one of the member's own).
+Future<void> openPostComposer(BuildContext context, {Post? editing}) {
   return Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
       fullscreenDialog: true,
-      builder: (context) => const PostComposerScreen(),
+      builder: (context) => PostComposerScreen(editing: editing),
     ),
   );
 }
 
-/// Full-screen form for a new post: text, an optional pet tag and one
-/// optional photo.
+/// Full-screen form for a post: its kind, text, an optional pet tag and one
+/// optional photo. Editing changes only the text and the kind.
 class PostComposerScreen extends ConsumerStatefulWidget {
-  const PostComposerScreen({super.key});
+  const PostComposerScreen({super.key, this.editing});
+
+  final Post? editing;
 
   @override
   ConsumerState<PostComposerScreen> createState() => _PostComposerScreenState();
@@ -40,16 +45,25 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   final _text = TextEditingController();
   String? _petId;
   PickedPhoto? _photo;
+  var _kind = PostKind.moment;
   var _posting = false;
 
+  Post? get _editing => widget.editing;
   bool get _hasText => _text.text.trim().isNotEmpty;
-  bool get _dirty => _hasText || _photo != null;
+  bool get _dirty => _editing == null
+      ? _hasText || _photo != null || _kind != PostKind.moment
+      : _text.text.trim() != _editing!.text || _kind != _editing!.kind;
 
   @override
   void initState() {
     super.initState();
-    // The pet shown across the app starts tagged; one tap removes the tag.
-    _petId = ref.read(selectedPetProvider).id;
+    if (_editing case final post?) {
+      _text.text = post.text;
+      _kind = post.kind;
+    } else {
+      // The pet shown across the app starts tagged; one tap removes it.
+      _petId = ref.read(selectedPetProvider).id;
+    }
     _text.addListener(() => setState(() {}));
   }
 
@@ -72,19 +86,37 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   Future<void> _submit() async {
     if (!_hasText || _posting) return;
+    if (!await ensureCommunityRules(context, ref)) return;
+    if (!mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final errorWords = communityErrorWords(context);
+    final saved = context.communityL10n.postSaved;
     String? petName;
+    var audience = Audience.everyone;
     for (final pet in ref.read(petsProvider)) {
-      if (pet.id == _petId) petName = pet.name;
+      if (pet.id == _petId) {
+        petName = pet.name;
+        // The post is about this pet: it shows under its animal's chip.
+        audience = audienceOfSpecies(pet.species);
+      }
     }
 
     setState(() => _posting = true);
     try {
-      await ref
-          .read(feedControllerProvider.notifier)
-          .create(text: _text.text, petName: petName, photo: _photo);
+      final feed = ref.read(feedControllerProvider.notifier);
+      if (_editing case final post?) {
+        await feed.edit(post, text: _text.text, kind: _kind);
+        showCommunitySnack(messenger, saved);
+      } else {
+        await feed.create(
+          text: _text.text,
+          petName: petName,
+          photo: _photo,
+          kind: _kind,
+          audience: audience,
+        );
+      }
       navigator.pop();
     } catch (e) {
       showCommunitySnack(messenger, errorWords(e));
@@ -117,7 +149,9 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   @override
   Widget build(BuildContext context) => FeatureGate(
-    capability: 'community.feed.post',
+    capability: widget.editing == null
+        ? 'community.feed.post'
+        : 'community.feed.edit',
     hidden: false,
     builder: (context) =>
         Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
@@ -125,6 +159,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
+    final editing = _editing != null;
     final user = ref.watch(authControllerProvider).value;
     final pets = ref.watch(petsProvider);
     final storedName = storedAuthorName(user?.displayName);
@@ -139,11 +174,13 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CoralHeader(
-              title: l10n.newPost,
+              title: editing ? l10n.editPostTitle : l10n.newPost,
               showBack: true,
               actions: [
                 FilledButton(
-                  onPressed: _hasText && !_posting ? _submit : null,
+                  onPressed: _hasText && !_posting && (!editing || _dirty)
+                      ? _submit
+                      : null,
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.yellow,
                     foregroundColor: AppColors.ink,
@@ -167,7 +204,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                             color: AppColors.ink,
                           ),
                         )
-                      : Text(l10n.postButton),
+                      : Text(editing ? l10n.saveChanges : l10n.postButton),
                 ),
               ],
             ),
@@ -209,6 +246,21 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       ),
                     ],
                   ),
+                  _Label(l10n.composerKind),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final kind in PostKind.values)
+                        ChoiceChip(
+                          key: ValueKey('compose-kind-${kind.name}'),
+                          label: Text(l10n.postKind(kind)),
+                          selected: kind == _kind,
+                          showCheckmark: false,
+                          onSelected: (_) => setState(() => _kind = kind),
+                        ),
+                    ],
+                  ),
                   const SizedBox(height: 14),
                   TextField(
                     controller: _text,
@@ -222,7 +274,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                     textDirection: contentDirection(context, _text.text),
                     style: AppText.body.copyWith(fontSize: 16, height: 1.5),
                     decoration: InputDecoration(
-                      hintText: l10n.composerHint,
+                      hintText: l10n.composerHintFor(_kind),
                       border: _fieldBorder,
                       enabledBorder: _fieldBorder,
                       focusedBorder: _fieldBorder.copyWith(
@@ -236,7 +288,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       ),
                     ),
                   ),
-                  if (pets.isNotEmpty) ...[
+                  if (pets.isNotEmpty && !editing) ...[
                     _Label(l10n.composerAbout),
                     Wrap(
                       spacing: 8,
@@ -254,8 +306,8 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       ],
                     ),
                   ],
-                  _Label(l10n.composerPhoto),
-                  if (_photo != null) ...[
+                  if (!editing) _Label(l10n.composerPhoto),
+                  if (_photo != null && !editing) ...[
                     Stack(
                       children: [
                         ClipRRect(
@@ -301,6 +353,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                     ),
                     const SizedBox(height: 12),
                   ],
+                  if (!editing)
                   Row(
                     children: [
                       Expanded(

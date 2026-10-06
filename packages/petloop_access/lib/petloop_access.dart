@@ -22,6 +22,7 @@ const capabilityCatalog = <String>[
   'community.chat.view',
   'community.chat.send',
   'community.guides.view',
+  'community.moderate',
   'store.deals.view',
   'store.deals.share',
   'store.deals.edit',
@@ -43,6 +44,7 @@ String? requiredView(String capability) {
     return null;
   }
   if (capability == 'findvet.admin') return 'findvet.search';
+  if (capability == 'community.moderate') return 'community.feed.view';
   if (capability.endsWith('.view')) return null;
   return '${capability.substring(0, capability.lastIndexOf('.'))}.view';
 }

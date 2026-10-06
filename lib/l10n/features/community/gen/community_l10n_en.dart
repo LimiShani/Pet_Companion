@@ -73,12 +73,10 @@ class CommunityL10nEn extends CommunityL10n {
   String get guidesShownForAll => 'Showing guides for every animal.';
 
   @override
-  String get noRoomsForDogs =>
-      'No rooms for dogs yet. Tap Everything to see all rooms.';
+  String get noRoomsForDogs => 'No rooms for dogs yet. Tap Everything to see all rooms.';
 
   @override
-  String get noRoomsForCats =>
-      'No rooms for cats yet. Tap Everything to see all rooms.';
+  String get noRoomsForCats => 'No rooms for cats yet. Tap Everything to see all rooms.';
 
   @override
   String get feedLoadFailed => 'Cannot load the feed';
@@ -87,8 +85,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get noPostsTitle => 'No posts yet';
 
   @override
-  String get noPostsMessage =>
-      'Be the first to share a photo or a story about your pet.';
+  String get noPostsMessage => 'Be the first to share a photo or a story about your pet.';
 
   @override
   String get writeAPost => 'Write a post';
@@ -180,15 +177,13 @@ class CommunityL10nEn extends CommunityL10n {
   String get photoLabel => 'Photo';
 
   @override
-  String get reportThanks =>
-      'Thanks. We have hidden this post and will review it.';
+  String get reportThanks => 'Thanks. We have hidden this post and will review it.';
 
   @override
   String get deletePostTitle => 'Delete this post?';
 
   @override
-  String get deletePostBody =>
-      'Its comments and likes go with it. This cannot be undone.';
+  String get deletePostBody => 'Its comments and likes go with it. This cannot be undone.';
 
   @override
   String get postDeleted => 'Your post was deleted.';
@@ -197,8 +192,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get reportTitle => 'Report this post';
 
   @override
-  String get reportBody =>
-      'Tell us what is wrong. We hide the post for you right away and review it.';
+  String get reportBody => 'Tell us what is wrong. We hide the post for you right away and review it.';
 
   @override
   String get reportSpam => 'Spam or advertising';
@@ -344,8 +338,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get roomCatBehaviour => 'Cat behaviour and play';
 
   @override
-  String get roomCatBehaviourAbout =>
-      'Scratching, night-time energy, a second cat';
+  String get roomCatBehaviourAbout => 'Scratching, night-time energy, a second cat';
 
   @override
   String get roomSeniorCats => 'Senior cats';
@@ -357,8 +350,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get roomHealth => 'Health questions';
 
   @override
-  String get roomHealthAbout =>
-      'Ask other owners. For anything urgent, call your vet';
+  String get roomHealthAbout => 'Ask other owners. For anything urgent, call your vet';
 
   @override
   String get guidesLoadFailed => 'Cannot load the guides';
@@ -414,8 +406,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get noGuidesMatchTitle => 'No guides match';
 
   @override
-  String get noGuidesMatchMessage =>
-      'Try a different word or another category.';
+  String get noGuidesMatchMessage => 'Try a different word or another category.';
 
   @override
   String readTime(int minutes) {
@@ -451,8 +442,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get guideNotFoundTitle => 'Guide not found';
 
   @override
-  String get guideNotFoundMessage =>
-      'This guide is not in the library any more.';
+  String get guideNotFoundMessage => 'This guide is not in the library any more.';
 
   @override
   String get backToGuides => 'Back to the guides';
@@ -498,27 +488,22 @@ class CommunityL10nEn extends CommunityL10n {
   String get sourceOpenFailed => 'Cannot open this source right now.';
 
   @override
-  String get guideDisclaimer =>
-      'This guide is general guidance and not a substitute for advice from your veterinarian.';
+  String get guideDisclaimer => 'This guide is general guidance and not a substitute for advice from your veterinarian.';
 
   @override
-  String get adviceNotice =>
-      'Members share personal experience, not professional advice.';
+  String get adviceNotice => 'Members share personal experience, not professional advice.';
 
   @override
   String get contactProfessional => 'Contact a professional';
 
   @override
-  String get errUnreachable =>
-      'Cannot reach the community right now. Please try again.';
+  String get errUnreachable => 'Cannot reach the community right now. Please try again.';
 
   @override
-  String get errChatUnreachable =>
-      'Cannot reach the chat right now. Please try again.';
+  String get errChatUnreachable => 'Cannot reach the chat right now. Please try again.';
 
   @override
-  String get errOffline =>
-      'Cannot reach the community right now. Check your connection and try again.';
+  String get errOffline => 'Cannot reach the community right now. Check your connection and try again.';
 
   @override
   String get errPostGone => 'This post is no longer available.';
@@ -548,21 +533,498 @@ class CommunityL10nEn extends CommunityL10n {
   String get errNotSetUp => 'The community is not set up on the server yet.';
 
   @override
-  String get errPhotoTooLarge =>
-      'That photo is too large. Please choose a smaller one.';
+  String get errPhotoTooLarge => 'That photo is too large. Please choose a smaller one.';
 
   @override
   String get errPhotoUnsupported => 'Please choose a JPEG, PNG or WebP photo.';
 
   @override
-  String get errPhotoUpload =>
-      'The photo could not be uploaded. Please try again.';
+  String get errPhotoUpload => 'The photo could not be uploaded. Please try again.';
 
   @override
-  String get errCameraNotAllowed =>
-      'Cannot open the camera. Check that PetLoop is allowed to use it.';
+  String get errCameraNotAllowed => 'Cannot open the camera. Check that PetLoop is allowed to use it.';
 
   @override
-  String get errPhotosNotAllowed =>
-      'Cannot open your photos. Check that PetLoop is allowed to see them.';
+  String get errPhotosNotAllowed => 'Cannot open your photos. Check that PetLoop is allowed to see them.';
+
+  @override
+  String get errSlowDown => 'That was quick! Please wait a minute before sending more.';
+
+  @override
+  String get errNotModerator => 'Only community moderators can do this.';
+
+  @override
+  String roomLastMine(String text) {
+    return 'You: $text';
+  }
+
+  @override
+  String roomLastOther(String name, String text) {
+    return '$name: $text';
+  }
+
+  @override
+  String roomUnread(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread messages',
+      one: '1 unread message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get chatReply => 'Reply';
+
+  @override
+  String get chatCopy => 'Copy';
+
+  @override
+  String get chatCopied => 'Message copied';
+
+  @override
+  String get chatDeleteTitle => 'Delete this message?';
+
+  @override
+  String get chatDeleteBody => 'It disappears for everyone in the room.';
+
+  @override
+  String get chatDeleted => 'Message deleted';
+
+  @override
+  String get chatReportTitle => 'Report this message';
+
+  @override
+  String get chatReportBody => 'Tell us what is wrong. We hide the message for you right away and review it.';
+
+  @override
+  String get chatReportThanks => 'Thanks. We have hidden this message and will review it.';
+
+  @override
+  String get commentOptions => 'Comment options';
+
+  @override
+  String get commentReportTitle => 'Report this comment';
+
+  @override
+  String get commentReportBody => 'Tell us what is wrong. We hide the comment for you right away and review it.';
+
+  @override
+  String get commentReportThanks => 'Thanks. We have hidden this comment and will review it.';
+
+  @override
+  String get messageOptions => 'Message options';
+
+  @override
+  String replyingTo(String name) {
+    return 'Replying to $name';
+  }
+
+  @override
+  String get cancelReply => 'Cancel reply';
+
+  @override
+  String get replyUnavailable => 'The original message is not available';
+
+  @override
+  String get messageSending => 'Sending…';
+
+  @override
+  String get messageNotSent => 'Not sent. Tap to try again.';
+
+  @override
+  String get messageNotSentTitle => 'This message was not sent';
+
+  @override
+  String newMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count new messages',
+      one: '1 new message',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get jumpToLatest => 'Go to the latest message';
+
+  @override
+  String get conversationStart => 'This is the start of the conversation';
+
+  @override
+  String get addPhoto => 'Add a photo';
+
+  @override
+  String get chatPhotoPreview => 'The photo to send';
+
+  @override
+  String get openPhoto => 'Open the photo';
+
+  @override
+  String reactWith(String emoji) {
+    return 'React with $emoji';
+  }
+
+  @override
+  String reactionsSummary(String emoji, int count) {
+    return '$emoji $count';
+  }
+
+  @override
+  String get hideNotice => 'Hide this note';
+
+  @override
+  String get roomInfo => 'About this room';
+
+  @override
+  String blockMember(String name) {
+    return 'Block $name';
+  }
+
+  @override
+  String blockTitle(String name) {
+    return 'Block $name?';
+  }
+
+  @override
+  String get blockBody => 'Their posts, comments and messages will no longer appear for you. Nobody is told. You can undo this any time under Community safety.';
+
+  @override
+  String get blockConfirm => 'Block';
+
+  @override
+  String blockedDone(String name) {
+    return 'You blocked $name';
+  }
+
+  @override
+  String get unblock => 'Unblock';
+
+  @override
+  String unblockedDone(String name) {
+    return '$name is unblocked';
+  }
+
+  @override
+  String get rulesTitle => 'Community rules';
+
+  @override
+  String get rulesIntro => 'PetLoop is a friendly place for pet owners. Before you share for the first time:';
+
+  @override
+  String get rule1 => 'Be kind. Disagree with ideas, not with people.';
+
+  @override
+  String get rule2 => 'No selling animals, no ads and no spam.';
+
+  @override
+  String get rule3 => 'Share experience, not diagnoses. For anything urgent, call a vet.';
+
+  @override
+  String get rule4 => 'Keep private details private, yours and other people\'s.';
+
+  @override
+  String get rule5 => 'Report what breaks the rules. Three reports hide something until a moderator looks at it.';
+
+  @override
+  String get rulesAgree => 'Agree and continue';
+
+  @override
+  String get safetyTitle => 'Community safety';
+
+  @override
+  String get safetyIntro => 'Blocking and reporting are private: nobody is told who did it.';
+
+  @override
+  String get blockedTitle => 'Blocked members';
+
+  @override
+  String get noBlocked => 'You have not blocked anyone.';
+
+  @override
+  String get blockedLoadFailed => 'Cannot load your blocked members';
+
+  @override
+  String get reviewReports => 'Review reports';
+
+  @override
+  String reviewWaiting(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count waiting',
+      one: '1 waiting',
+      zero: 'Nothing waiting',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get reviewEmptyTitle => 'All clear';
+
+  @override
+  String get reviewEmptyMessage => 'No reports are waiting for review.';
+
+  @override
+  String get reviewLoadFailed => 'Cannot load the reports';
+
+  @override
+  String get kindPost => 'Post';
+
+  @override
+  String get kindComment => 'Comment';
+
+  @override
+  String get kindMessage => 'Chat message';
+
+  @override
+  String reportCountLine(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count reports',
+      one: '1 report',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hiddenTag => 'Hidden';
+
+  @override
+  String inRoom(String room) {
+    return 'In $room';
+  }
+
+  @override
+  String get keepItem => 'Keep';
+
+  @override
+  String get removeItem => 'Remove';
+
+  @override
+  String get removeItemTitle => 'Remove it for everyone?';
+
+  @override
+  String get removeItemBody => 'It is deleted and cannot be brought back.';
+
+  @override
+  String get keptDone => 'Kept. It shows again for everyone.';
+
+  @override
+  String get removedDone => 'Removed';
+
+  @override
+  String get kindMoment => 'Moment';
+
+  @override
+  String get kindQuestion => 'Question';
+
+  @override
+  String get kindTip => 'Tip';
+
+  @override
+  String get kindRecommendation => 'Recommendation';
+
+  @override
+  String get kindLostFound => 'Lost & found';
+
+  @override
+  String get kindsAll => 'All posts';
+
+  @override
+  String get composerKind => 'What kind of post?';
+
+  @override
+  String get composerHintQuestion => 'What would you like to ask other owners?';
+
+  @override
+  String get composerHintTip => 'Share something that worked for you';
+
+  @override
+  String get composerHintRecommendation => 'A place, a product or a professional you recommend, and why';
+
+  @override
+  String get composerHintLostFound => 'Describe the animal, where and when, and how to reach you';
+
+  @override
+  String get postsShownForDogs => 'Showing posts about dogs, and posts for everyone.';
+
+  @override
+  String get postsShownForCats => 'Showing posts about cats, and posts for everyone.';
+
+  @override
+  String get postsShownForAll => 'Showing every post.';
+
+  @override
+  String postsMatchedTo(String pet) {
+    return 'Matched to $pet. Tap Everything to see all posts.';
+  }
+
+  @override
+  String get searchPosts => 'Search posts';
+
+  @override
+  String get searchPostsHint => 'Search posts';
+
+  @override
+  String get noPostsMatchTitle => 'No posts found';
+
+  @override
+  String get noPostsMatchMessage => 'Try other words, another kind of post, or Everything.';
+
+  @override
+  String get loadingMorePosts => 'Loading more posts';
+
+  @override
+  String get editPost => 'Edit';
+
+  @override
+  String get editPostTitle => 'Edit post';
+
+  @override
+  String get saveChanges => 'Save';
+
+  @override
+  String get postEdited => 'Edited';
+
+  @override
+  String get postSaved => 'Your post was updated';
+
+  @override
+  String get sharePost => 'Share';
+
+  @override
+  String shareText(String name, String text) {
+    return '$name on PetLoop: $text';
+  }
+
+  @override
+  String get answeredTag => 'Answered';
+
+  @override
+  String get helpfulAnswer => 'Helpful answer';
+
+  @override
+  String get markHelpful => 'Mark as the helpful answer';
+
+  @override
+  String get unmarkHelpful => 'Not the helpful answer';
+
+  @override
+  String get markedHelpful => 'Marked as the helpful answer';
+
+  @override
+  String get likedByDoubleTap => 'Liked';
+
+  @override
+  String get activityTitle => 'Activity';
+
+  @override
+  String get activityTooltip => 'Activity';
+
+  @override
+  String get activityNew => 'New activity';
+
+  @override
+  String get activityEmptyTitle => 'Nothing new yet';
+
+  @override
+  String get activityEmptyMessage => 'Comments, likes and answers to your posts and messages show here.';
+
+  @override
+  String get activityLoadFailed => 'Cannot load your activity';
+
+  @override
+  String activityComment(String name) {
+    return '$name commented on your post';
+  }
+
+  @override
+  String activityLike(String name) {
+    return '$name liked your post';
+  }
+
+  @override
+  String activityReply(String name) {
+    return '$name answered your message';
+  }
+
+  @override
+  String get memberTitle => 'Member';
+
+  @override
+  String memberSince(String date) {
+    return 'Member since $date';
+  }
+
+  @override
+  String memberPostCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count posts',
+      one: '1 post',
+      zero: 'No posts yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get memberPosts => 'Posts';
+
+  @override
+  String get memberLoadFailed => 'Cannot load this member';
+
+  @override
+  String get memberGoneTitle => 'Member not found';
+
+  @override
+  String get memberGoneMessage => 'The account may have been deleted.';
+
+  @override
+  String openProfile(String name) {
+    return 'Open $name\'s profile';
+  }
+
+  @override
+  String get editProfile => 'Edit profile';
+
+  @override
+  String get profileBio => 'About me';
+
+  @override
+  String get profileBioHint => 'A line other members see, such as your pets or what you love talking about';
+
+  @override
+  String get profileCity => 'City';
+
+  @override
+  String get profileCityHint => 'Optional';
+
+  @override
+  String get profileSaved => 'Your profile was updated';
+
+  @override
+  String get profilePublicNote => 'Other members see this. Leave anything you prefer to keep private out.';
+
+  @override
+  String get blockedMemberNote => 'You blocked this member.';
+
+  @override
+  String get muteRoom => 'Mute this room';
+
+  @override
+  String get unmuteRoom => 'Unmute this room';
+
+  @override
+  String get roomMuted => 'Muted: no unread count for this room';
+
+  @override
+  String get roomUnmuted => 'Unmuted';
+
+  @override
+  String get mutedTag => 'Muted';
 }
