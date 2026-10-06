@@ -21,6 +21,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
+import '../services/budget/state/basket_logic.dart' show basketGroup;
 import '../services/budget/state/budget_providers.dart' show basketProvider;
 import '../services/pet_records/data/health_models.dart';
 import '../services/pet_records/data/reminder_scheduler.dart';
@@ -211,8 +212,9 @@ ReminderScheduler notificationReminderScheduler(Ref ref) {
 /// keeps moving) and hands them to the scheduler. The providers are only
 /// held while loading; Health disposes them as usual afterwards.
 ///
-/// A pet that is removed or archived stops ringing. Signing out cancels
-/// every reminder on the phone; reminders survive a restart of the app.
+/// A pet that is removed or archived stops ringing. Signing out, or a
+/// session that ended while the app was closed, cancels every reminder on
+/// the phone; reminders survive a restart of the app.
 class ReminderCoordinator {
   ReminderCoordinator(this._container, {DateTime Function() now = DateTime.now})
     : _now = now;
@@ -223,6 +225,9 @@ class ReminderCoordinator {
 
   String? _userId;
 
+  /// Whether the phone's reminders were cleared for the current signed-out
+  /// period.
+  bool _clearedSignedOut = false;
   /// The pets loaded for [_userId], by id, with the name they were loaded
   /// with.
   Map<String, String> _loaded = {};
@@ -272,9 +277,13 @@ class ReminderCoordinator {
     if (auth.isLoading || auth.hasError) return;
     final user = auth.value;
     if (user == null) {
-      if (_userId != null) _signedOut();
+      // Also when this run never saw the account: the session may have
+      // ended while the app was closed (password change, sign-out on
+      // another device), leaving its reminders scheduled on the phone.
+      if (_userId != null || !_clearedSignedOut) _signedOut();
       return;
     }
+    _clearedSignedOut = false;
     if (user.id != _userId) {
       _userId = user.id;
       _loaded = {};
@@ -299,9 +308,13 @@ class ReminderCoordinator {
     }
     if (firstLoad) {
       _loadedAt = _now();
-      // Reminders of pets that are gone (scheduled before the app started).
+      // Reminders of pets that are gone, or of another account, scheduled
+      // before the app started.
       sink?.retainGroups('health:', {
         for (final id in pets.keys) healthGroupOf(id),
+      });
+      sink?.retainGroups('basket:', {
+        for (final id in pets.keys) basketGroup(id),
       });
     }
   }
@@ -310,6 +323,7 @@ class ReminderCoordinator {
     _userId = null;
     _loaded = {};
     _loadedAt = null;
+    _clearedSignedOut = true;
     _scheduler?.clear();
     final sink = _container.read(notificationSinkProvider);
     if (sink is LocalNotificationSink) sink.cancelAll();
