@@ -35,7 +35,12 @@ class MessageBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 8, AppSpacing.screen, 12),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        8,
+        AppSpacing.screen,
+        12,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -54,9 +59,15 @@ class MessageBar extends StatelessWidget {
                 style: AppText.body.copyWith(fontSize: 15),
                 decoration: InputDecoration(
                   hintText: hint,
-                  hintStyle: AppText.body.copyWith(fontSize: 15, color: AppColors.brown.withValues(alpha: 0.6)),
+                  hintStyle: AppText.body.copyWith(
+                    fontSize: 15,
+                    color: AppColors.brown.withValues(alpha: 0.6),
+                  ),
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ),
@@ -68,7 +79,9 @@ class MessageBar extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: AppColors.coralDark,
               foregroundColor: AppColors.white,
-              disabledBackgroundColor: AppColors.coralDark.withValues(alpha: 0.6),
+              disabledBackgroundColor: AppColors.coralDark.withValues(
+                alpha: 0.6,
+              ),
               disabledForegroundColor: AppColors.white,
               fixedSize: const Size(48, 48),
             ),
@@ -76,7 +89,10 @@ class MessageBar extends StatelessWidget {
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.white),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.5,
+                      color: AppColors.white,
+                    ),
                   )
                 : const AppIcon(Icons.send_rounded, size: 22),
           ),

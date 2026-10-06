@@ -6,7 +6,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
-import '../data/community_models.dart';
+import '../../../services/community/data/community_models.dart';
 import 'feed_controller.dart';
 
 void showCommunitySnack(ScaffoldMessengerState messenger, String message) {
@@ -16,11 +16,17 @@ void showCommunitySnack(ScaffoldMessengerState messenger, String message) {
 }
 
 /// Likes or unlikes [post], reporting a failure in a snack bar.
-Future<void> togglePostLike(BuildContext context, WidgetRef ref, Post post) async {
+Future<void> togglePostLike(
+  BuildContext context,
+  WidgetRef ref,
+  Post post,
+) async {
   final messenger = ScaffoldMessenger.of(context);
   final errorWords = communityErrorWords(context);
   try {
-    await ref.read(feedControllerProvider.notifier).setLiked(post.id, liked: !post.likedByMe);
+    await ref
+        .read(feedControllerProvider.notifier)
+        .setLiked(post.id, liked: !post.likedByMe);
   } catch (e) {
     showCommunitySnack(messenger, errorWords(e));
   }
@@ -28,7 +34,11 @@ Future<void> togglePostLike(BuildContext context, WidgetRef ref, Post post) asyn
 
 /// Asks for a reason, records the report and hides the post. Returns
 /// whether the post was reported.
-Future<bool> reportPostFlow(BuildContext context, WidgetRef ref, Post post) async {
+Future<bool> reportPostFlow(
+  BuildContext context,
+  WidgetRef ref,
+  Post post,
+) async {
   // Looked up before the first await: the card may be gone afterwards.
   final messenger = ScaffoldMessenger.of(context);
   final controller = ref.read(feedControllerProvider.notifier);
@@ -55,7 +65,11 @@ Future<bool> reportPostFlow(BuildContext context, WidgetRef ref, Post post) asyn
 
 /// Confirms, then deletes the user's own post. Returns whether it was
 /// deleted.
-Future<bool> deletePostFlow(BuildContext context, WidgetRef ref, Post post) async {
+Future<bool> deletePostFlow(
+  BuildContext context,
+  WidgetRef ref,
+  Post post,
+) async {
   final messenger = ScaffoldMessenger.of(context);
   final controller = ref.read(feedControllerProvider.notifier);
   final l10n = context.communityL10n;
@@ -68,8 +82,14 @@ Future<bool> deletePostFlow(BuildContext context, WidgetRef ref, Post post) asyn
       title: Text(l10n.deletePostTitle),
       content: Text(l10n.deletePostBody),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(app.commonCancel)),
-        FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(app.commonDelete)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(app.commonCancel),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(app.commonDelete),
+        ),
       ],
     ),
   );
@@ -94,14 +114,28 @@ class _ReportSheet extends StatelessWidget {
     final radius = BorderRadius.circular(AppSpacing.fieldRadius);
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 0, AppSpacing.screen, 16),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          0,
+          AppSpacing.screen,
+          16,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(l10n.reportTitle, style: AppText.cardTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800)),
+            Text(
+              l10n.reportTitle,
+              style: AppText.cardTitle.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
             const SizedBox(height: 4),
-            Text(l10n.reportBody, style: AppText.body.copyWith(color: AppColors.brown)),
+            Text(
+              l10n.reportBody,
+              style: AppText.body.copyWith(color: AppColors.brown),
+            ),
             const SizedBox(height: 12),
             for (final reason in ReportReason.values)
               Padding(
@@ -113,12 +147,23 @@ class _ReportSheet extends StatelessWidget {
                     borderRadius: radius,
                     onTap: () => Navigator.of(context).pop(reason),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       child: Row(
                         children: [
-                          Expanded(child: Text(l10n.reportReason(reason), style: AppText.body.copyWith(fontSize: 15))),
+                          Expanded(
+                            child: Text(
+                              l10n.reportReason(reason),
+                              style: AppText.body.copyWith(fontSize: 15),
+                            ),
+                          ),
                           // Mirrors itself in a right-to-left layout.
-                          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+                          const AppIcon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.brown,
+                          ),
                         ],
                       ),
                     ),

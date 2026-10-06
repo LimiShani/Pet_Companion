@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
-import '../state/first_days_providers.dart';
+import '../../../services/firstdays/state/first_days_providers.dart';
 
 /// Keeps a pet's first 30 days (and, once a path exists, the health and
 /// care data that tick its tasks) active while [child] is mounted, for the
@@ -45,8 +45,9 @@ class _FirstDaysKeeperState extends State<FirstDaysKeeper> {
     _subscriptions.clear();
     final container = _container!;
     final id = widget.petId;
-    void keep<T>(ProviderListenable<T> provider) =>
-        _subscriptions.add(container.listen<T>(provider, (_, _) {}, onError: (_, _) {}));
+    void keep<T>(ProviderListenable<T> provider) => _subscriptions.add(
+      container.listen<T>(provider, (_, _) {}, onError: (_, _) {}),
+    );
     keep(firstDaysProvider(id));
     // Watches the health and care data itself, once a path exists.
     keep(firstDaysViewProvider(id));

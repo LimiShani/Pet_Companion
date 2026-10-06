@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'community_models.dart';
+import '../../../services/community/data/community_models.dart';
 
 enum PhotoSource { gallery, camera }
 
@@ -16,7 +16,8 @@ abstract class PhotoPicker {
 /// [PhotoPicker] backed by the `image_picker` plugin. Pictures are scaled
 /// down and re-encoded on the device so uploads stay small.
 class ImagePickerPhotoPicker implements PhotoPicker {
-  ImagePickerPhotoPicker([ImagePicker? picker]) : _picker = picker ?? ImagePicker();
+  ImagePickerPhotoPicker([ImagePicker? picker])
+    : _picker = picker ?? ImagePicker();
 
   final ImagePicker _picker;
 
@@ -27,19 +28,29 @@ class ImagePickerPhotoPicker implements PhotoPicker {
   Future<PickedPhoto?> pick(PhotoSource source) async {
     try {
       final file = await _picker.pickImage(
-        source: source == PhotoSource.camera ? ImageSource.camera : ImageSource.gallery,
+        source: source == PhotoSource.camera
+            ? ImageSource.camera
+            : ImageSource.gallery,
         maxWidth: maxDimension,
         maxHeight: maxDimension,
         imageQuality: 82,
       );
       if (file == null) return null;
-      return PickedPhoto(bytes: await file.readAsBytes(), name: file.name, mimeType: file.mimeType);
+      return PickedPhoto(
+        bytes: await file.readAsBytes(),
+        name: file.name,
+        mimeType: file.mimeType,
+      );
     } on PlatformException {
       throw CommunityException(
-        source == PhotoSource.camera ? CommunityFailure.cameraNotAllowed : CommunityFailure.photosNotAllowed,
+        source == PhotoSource.camera
+            ? CommunityFailure.cameraNotAllowed
+            : CommunityFailure.photosNotAllowed,
       );
     }
   }
 }
 
-final photoPickerProvider = Provider<PhotoPicker>((ref) => ImagePickerPhotoPicker());
+final photoPickerProvider = Provider<PhotoPicker>(
+  (ref) => ImagePickerPhotoPicker(),
+);

@@ -35,7 +35,15 @@ class AuthBanner extends StatelessWidget {
 
   /// The layers of the picture, back to front: `assets/banner/<name>.svg`,
   /// traced from the approved design (reference.png in the banner pack).
-  static const _layers = ['background', 'accents', 'foliage_left', 'foliage_right', 'bird', 'dog', 'cat'];
+  static const _layers = [
+    'background',
+    'accents',
+    'foliage_left',
+    'foliage_right',
+    'bird',
+    'dog',
+    'cat',
+  ];
 
   /// Frames of the logo pieces, in canvas units, measured on the approved
   /// design (reference.png in the pack): the outlined mark, and the white
@@ -56,16 +64,24 @@ class AuthBanner extends StatelessWidget {
         // The canvas fills the width, unless that would make it taller than
         // its share of the screen (a tablet, a phone on its side): then it
         // keeps that height and sits in the middle, on coral.
-        final k = math.min(box.maxWidth / _canvasWidth, maxHeight / _canvasHeight);
+        final k = math.min(
+          box.maxWidth / _canvasWidth,
+          maxHeight / _canvasHeight,
+        );
 
         // Every layer is a vector drawing of the whole canvas, so they stack
         // exactly; each can be moved on its own (an animation later).
         Widget layer(String name) => Positioned.fill(
-          child: SvgPicture.asset('assets/banner/$name.svg', fit: BoxFit.fill, excludeFromSemantics: true),
+          child: SvgPicture.asset(
+            'assets/banner/$name.svg',
+            fit: BoxFit.fill,
+            excludeFromSemantics: true,
+          ),
         );
 
         // Mirrored with the picture, so the logo keeps its place in it.
-        double left(double x, double width) => (mirrored ? _canvasWidth - x - width : x) * k;
+        double left(double x, double width) =>
+            (mirrored ? _canvasWidth - x - width : x) * k;
 
         final art = Stack(
           clipBehavior: Clip.none,
@@ -76,7 +92,9 @@ class AuthBanner extends StatelessWidget {
         );
 
         return ClipRRect(
-          borderRadius: BorderRadius.vertical(bottom: Radius.circular(_cornerRadius * k)),
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(_cornerRadius * k),
+          ),
           child: Container(
             // Exactly the canvas's height, whatever room the parent offers.
             height: _canvasHeight * k,
@@ -89,19 +107,27 @@ class AuthBanner extends StatelessWidget {
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    Positioned.fill(child: mirrored ? Transform.flip(flipX: true, child: art) : art),
+                    Positioned.fill(
+                      child: mirrored
+                          ? Transform.flip(flipX: true, child: art)
+                          : art,
+                    ),
                     Positioned(
                       left: left(_mark.left, _mark.width),
                       top: _mark.top * k,
                       width: _mark.width * k,
                       height: _mark.height * k,
-                      child: SvgPicture.asset('assets/banner/logo-mark-outlined.svg', excludeFromSemantics: true),
+                      child: SvgPicture.asset(
+                        'assets/banner/logo-mark-outlined.svg',
+                        excludeFromSemantics: true,
+                      ),
                     ),
                     Positioned(
                       left: left(_wordmarkLeft, _wordmarkWidth),
                       top: _wordmarkTop * k,
                       child: PetLoopWordmark(
-                        height: _wordmarkWidth / PetLoopWordmark.aspectRatio * k,
+                        height:
+                            _wordmarkWidth / PetLoopWordmark.aspectRatio * k,
                         tone: BrandTone.white,
                       ),
                     ),

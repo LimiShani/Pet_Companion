@@ -1,0 +1,16 @@
+{
+  "tasks": {
+    "check": "deno check supabase/functions/find-vet/index.ts supabase/functions/vet-directory-weekly/index.ts supabase/functions/storage-cleanup/index.ts supabase/functions/_tests/*.test.ts",
+    "test": "deno test --no-prompt supabase/functions/_tests/",
+    "lint": "deno lint",
+    "fmt": "deno fmt"
+  },
+  "lint": {
+    "include": ["supabase/functions/"]
+  },
+  "fmt": {
+    "include": ["supabase/functions/"],
+    "singleQuote": true,
+    "lineWidth": 100
+  }
+}

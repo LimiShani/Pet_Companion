@@ -8,7 +8,7 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../data/photo_services.dart';
-import '../pet_words.dart';
+import '../../../presentation/pet_words.dart';
 
 /// Fits a photo into the round profile shape: the photo moves and zooms
 /// under a fixed round window, and two small previews show the result at
@@ -56,7 +56,9 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
       if (!mounted) return;
       setState(() {
         _working = false;
-        _error = e is StateError ? context.petsL10n.cropFailed : petsErrorOf(context, e);
+        _error = e is StateError
+            ? context.petsL10n.cropFailed
+            : petsErrorOf(context, e);
       });
     }
   }
@@ -75,11 +77,16 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () => Navigator.of(context).pop(const CropOutcome.cancelled()),
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pop(const CropOutcome.cancelled()),
                     tooltip: context.l10n.commonBack,
                     icon: const AppIcon(Icons.arrow_back_rounded),
                     color: AppColors.white,
-                    constraints: const BoxConstraints.tightFor(width: 48, height: 48),
+                    constraints: const BoxConstraints.tightFor(
+                      width: 48,
+                      height: 48,
+                    ),
                   ),
                   const SizedBox(width: 4),
                   Expanded(
@@ -87,7 +94,10 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                       context.petsL10n.cropTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppText.appTitle.copyWith(fontSize: 20, color: AppColors.white),
+                      style: AppText.appTitle.copyWith(
+                        fontSize: 20,
+                        color: AppColors.white,
+                      ),
                     ),
                   ),
                 ],
@@ -107,11 +117,18 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                   fixCropRect: true,
                   baseColor: Colors.black,
                   maskColor: const Color(0xAD1E140C),
-                  initialRectBuilder: InitialRectBuilder.withSizeAndRatio(size: 0.9, aspectRatio: 1),
+                  initialRectBuilder: InitialRectBuilder.withSizeAndRatio(
+                    size: 0.9,
+                    aspectRatio: 1,
+                  ),
                   cornerDotBuilder: (_, _) => const SizedBox.shrink(),
-                  progressIndicator: const CircularProgressIndicator(color: AppColors.yellow),
+                  progressIndicator: const CircularProgressIndicator(
+                    color: AppColors.yellow,
+                  ),
                   onStatusChanged: (status) {
-                    if (mounted && status == CropStatus.ready && !_ready) setState(() => _ready = true);
+                    if (mounted && status == CropStatus.ready && !_ready) {
+                      setState(() => _ready = true);
+                    }
                   },
                   onMoved: (window, _) {
                     if (mounted) setState(() => _window = window);
@@ -137,7 +154,9 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                         textAlign: TextAlign.center,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.secondary.copyWith(color: _error == null ? white : AppColors.yellow),
+                        style: AppText.secondary.copyWith(
+                          color: _error == null ? white : AppColors.yellow,
+                        ),
                       ),
                     ),
                   ),
@@ -148,8 +167,16 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                     spacing: 18,
                     runSpacing: 8,
                     children: [
-                      Text(context.petsL10n.cropPreview, style: AppText.label.copyWith(color: white)),
-                      _CropPreview(photo: widget.photo, window: _window, photoRect: _photoRect, size: 22),
+                      Text(
+                        context.petsL10n.cropPreview,
+                        style: AppText.label.copyWith(color: white),
+                      ),
+                      _CropPreview(
+                        photo: widget.photo,
+                        window: _window,
+                        photoRect: _photoRect,
+                        size: 22,
+                      ),
                       _CropPreview(
                         photo: widget.photo,
                         window: _window,
@@ -164,14 +191,24 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: _working ? null : () => Navigator.of(context).pop(const CropOutcome.another()),
+                          onPressed: _working
+                              ? null
+                              : () => Navigator.of(
+                                  context,
+                                ).pop(const CropOutcome.another()),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.white,
                             side: BorderSide(color: white, width: 2),
                             minimumSize: const Size.fromHeight(50),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
                           ),
-                          child: Text(context.petsL10n.cropChooseAnother, textAlign: TextAlign.center),
+                          child: Text(
+                            context.petsL10n.cropChooseAnother,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 10),
@@ -181,18 +218,28 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.yellow,
                             foregroundColor: AppColors.ink,
-                            disabledBackgroundColor: AppColors.yellow.withValues(alpha: 0.5),
+                            disabledBackgroundColor: AppColors.yellow
+                                .withValues(alpha: 0.5),
                             disabledForegroundColor: AppColors.ink,
                             minimumSize: const Size.fromHeight(50),
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 12,
+                            ),
                           ),
                           child: _working
                               ? const SizedBox(
                                   width: 20,
                                   height: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.ink),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: AppColors.ink,
+                                  ),
                                 )
-                              : Text(context.petsL10n.cropUsePhoto, textAlign: TextAlign.center),
+                              : Text(
+                                  context.petsL10n.cropUsePhoto,
+                                  textAlign: TextAlign.center,
+                                ),
                         ),
                       ),
                     ],
@@ -255,7 +302,9 @@ class _CropPreview extends StatelessWidget {
         shape: BoxShape.circle,
         border: ring ? Border.all(color: AppColors.coral, width: 3) : null,
       ),
-      child: ClipOval(child: SizedBox.square(dimension: size, child: content)),
+      child: ClipOval(
+        child: SizedBox.square(dimension: size, child: content),
+      ),
     );
   }
 }

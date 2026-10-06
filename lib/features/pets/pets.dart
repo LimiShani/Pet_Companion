@@ -11,13 +11,23 @@
 library;
 
 export 'checklist_sheet.dart' show showPetChecklist;
-export 'data/fake_pets_repository.dart' show FakePetsRepository;
-export 'data/pets_repository.dart' show PetsException, PetsFailure, PetsRepository;
-export 'data/pets_repository_provider.dart' show petsClockProvider, petsErrorMessage, petsRepositoryProvider;
-export 'pet_words.dart';
-export 'pet_actions.dart' show changePetPicture, openAddPet, openMyPets, openPetInfoItem, openPetProfile;
-export 'state/pet_completeness.dart' show PetCompleteness, PetInfoItem, petCompletenessProvider;
-export 'data/pets_repository.dart' show PetPhotoData;
-export 'widgets/pet_avatar.dart' show PetAvatar, petPhotoProvider;
+export '../../services/pets/data/fake_pets_repository.dart'
+    show FakePetsRepository;
+export '../../services/pets/data/pets_repository.dart'
+    show PetsException, PetsFailure, PetsRepository;
+export '../../services/pets/data/pets_repository_provider.dart'
+    show petsClockProvider, petsErrorMessage, petsRepositoryProvider;
+export '../../presentation/pet_words.dart';
+export 'pet_actions.dart'
+    show
+        changePetPicture,
+        openAddPet,
+        openMyPets,
+        openPetInfoItem,
+        openPetProfile;
+export '../../services/pets/state/pet_completeness.dart'
+    show PetCompleteness, PetInfoItem, petCompletenessProvider;
+export '../../services/pets/data/pets_repository.dart' show PetPhotoData;
+export '../../presentation/pet_avatar.dart' show PetAvatar, petPhotoProvider;
 export 'widgets/pet_essentials_keeper.dart' show PetEssentialsKeeper;
 export 'widgets/pet_reminder_card.dart' show PetAttentionDot, PetReminderCard;

@@ -7,7 +7,14 @@ import 'petloop_icon.dart';
 /// otherwise. Use it wherever an [Icon] would go: the app's icons then
 /// follow the brand from this one table.
 class AppIcon extends StatelessWidget {
-  const AppIcon(this.icon, {super.key, this.size, this.color, this.semanticLabel, this.textDirection});
+  const AppIcon(
+    this.icon, {
+    super.key,
+    this.size,
+    this.color,
+    this.semanticLabel,
+    this.textDirection,
+  });
 
   final IconData? icon;
   final double? size;
@@ -70,10 +77,23 @@ class AppIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     final glyph = glyphFor(icon);
     if (glyph == null) {
-      return Icon(icon, size: size, color: color, semanticLabel: semanticLabel, textDirection: textDirection);
+      return Icon(
+        icon,
+        size: size,
+        color: color,
+        semanticLabel: semanticLabel,
+        textDirection: textDirection,
+      );
     }
     final direction = textDirection ?? Directionality.maybeOf(context);
-    final drawn = PetLoopIcon(glyph, size: size, color: color, semanticLabel: semanticLabel);
-    return icon!.matchTextDirection && direction == TextDirection.rtl ? Transform.flip(flipX: true, child: drawn) : drawn;
+    final drawn = PetLoopIcon(
+      glyph,
+      size: size,
+      color: color,
+      semanticLabel: semanticLabel,
+    );
+    return icon!.matchTextDirection && direction == TextDirection.rtl
+        ? Transform.flip(flipX: true, child: drawn)
+        : drawn;
   }
 }

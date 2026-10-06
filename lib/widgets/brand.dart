@@ -32,7 +32,11 @@ class PetLoopMark extends StatelessWidget {
 /// wordmark for English and Hebrew screens alike. Decorative, as
 /// [PetLoopMark].
 class PetLoopWordmark extends StatelessWidget {
-  const PetLoopWordmark({super.key, this.height = 24, this.tone = BrandTone.color});
+  const PetLoopWordmark({
+    super.key,
+    this.height = 24,
+    this.tone = BrandTone.color,
+  });
 
   /// Width over height of the artwork (its viewBox is 455 x 124).
   static const aspectRatio = 455 / 124;

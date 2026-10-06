@@ -6,9 +6,10 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../health/emergency/emergency.dart' show PrepareHealthFilesRemoval, prepareHealthFilesRemovalProvider;
-import '../data/pets_repository_provider.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../services/pet_records/state/health_providers.dart'
+    show PrepareHealthFilesRemoval, prepareHealthFilesRemovalProvider;
+import '../../../services/pets/data/pets_repository_provider.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// What the Health feature keeps in file storage for a pet (its document
 /// files), which has to go with the pet. The database rows of Health go
@@ -29,7 +30,11 @@ enum RemoveChoice { archive, delete }
 /// kept, restorable from My pets) or **Delete for good** (says what is
 /// erased; cannot be undone). With [canArchive] false (the last visible
 /// pet) only deleting is offered. Returns `null` on "Cancel".
-Future<RemoveChoice?> askHowToRemovePet(BuildContext context, Pet pet, {required bool canArchive}) {
+Future<RemoveChoice?> askHowToRemovePet(
+  BuildContext context,
+  Pet pet, {
+  required bool canArchive,
+}) {
   return showDialog<RemoveChoice>(
     context: context,
     useRootNavigator: true,
@@ -40,7 +45,9 @@ Future<RemoveChoice?> askHowToRemovePet(BuildContext context, Pet pet, {required
 /// Hides [pet] from the app without losing anything.
 Future<void> archivePet(ProviderContainer container, Pet pet) async {
   final now = container.read(petsClockProvider)();
-  await container.read(petsStoreProvider.notifier).save(pet.withArchivedAt(now));
+  await container
+      .read(petsStoreProvider.notifier)
+      .save(pet.withArchivedAt(now));
 }
 
 /// Brings an archived [pet] back.
@@ -50,7 +57,9 @@ Future<void> restorePet(ProviderContainer container, Pet pet) =>
 /// Deletes [pet] for good: its row, with which its health rows go, then its
 /// picture and Health's files (see [petHealthCleanupProvider]).
 Future<void> deletePet(ProviderContainer container, Pet pet) async {
-  final removeHealthFiles = await container.read(petHealthCleanupProvider)(pet.id);
+  final removeHealthFiles = await container.read(petHealthCleanupProvider)(
+    pet.id,
+  );
   await container.read(petsStoreProvider.notifier).delete(pet);
   await removeHealthFiles();
 }
@@ -85,7 +94,9 @@ class _RemoveDialog extends StatelessWidget {
               button: PillButton(
                 l10n.archivePet(name),
                 key: const Key('remove-archive'),
-                onPressed: canArchive ? () => Navigator.of(context).pop(RemoveChoice.archive) : null,
+                onPressed: canArchive
+                    ? () => Navigator.of(context).pop(RemoveChoice.archive)
+                    : null,
               ),
             ),
             const SizedBox(height: 12),
@@ -102,7 +113,10 @@ class _RemoveDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            PetsTextButton(context.l10n.commonCancel, onPressed: () => Navigator.of(context).pop()),
+            PetsTextButton(
+              context.l10n.commonCancel,
+              onPressed: () => Navigator.of(context).pop(),
+            ),
           ],
         ),
       ),
@@ -131,7 +145,10 @@ class _Choice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(22)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(22),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -142,12 +159,20 @@ class _Choice extends StatelessWidget {
               Expanded(child: Text(title, style: AppText.cardTitle)),
               if (suggested) ...[
                 const SizedBox(width: 8),
-                Flexible(child: PetsTag(context.petsL10n.suggested, tone: TagTone.green)),
+                Flexible(
+                  child: PetsTag(
+                    context.petsL10n.suggested,
+                    tone: TagTone.green,
+                  ),
+                ),
               ],
             ],
           ),
           const SizedBox(height: 8),
-          Text(message, style: AppText.secondary.copyWith(color: AppColors.brown)),
+          Text(
+            message,
+            style: AppText.secondary.copyWith(color: AppColors.brown),
+          ),
           const SizedBox(height: 10),
           button,
         ],

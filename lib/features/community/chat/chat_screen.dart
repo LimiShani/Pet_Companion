@@ -1,3 +1,6 @@
+import '../../../access/feature_gate.dart';
+import '../../../access/access_provider.dart';
+import '../../../platform/session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,8 +11,8 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
-import '../data/community_models.dart';
-import '../data/community_providers.dart';
+import '../../../services/community/data/community_models.dart';
+import '../../../services/community/data/community_providers.dart';
 import '../feed/post_actions.dart' show showCommunitySnack;
 import '../widgets/advice_notice.dart';
 import '../widgets/auto_direction_text.dart';
@@ -38,6 +41,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _send() async {
+    if (!ref.read(capabilityProvider('community.chat.send'))) return;
+    final ticket = SessionTicket.widget(ref);
     final text = _message.text.trim();
     final author = ref.read(authControllerProvider).value;
     if (text.isEmpty || _sending || author == null) return;
@@ -45,9 +50,13 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final errorWords = communityErrorWords(context);
     setState(() => _sending = true);
     try {
-      await ref.read(chatRepositoryProvider).sendMessage(author: author, channelId: widget.channelId, text: text);
+      await ref
+          .read(chatRepositoryProvider)
+          .sendMessage(author: author, channelId: widget.channelId, text: text);
+      if (!ticket.current) return;
       _message.clear();
     } catch (e) {
+      if (!ticket.current) return;
       showCommunitySnack(messenger, errorWords(e));
     } finally {
       if (mounted) setState(() => _sending = false);
@@ -55,9 +64,17 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.chat.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
-    final channels = ref.watch(chatChannelsProvider).value ?? const <ChatChannel>[];
+    final channels =
+        ref.watch(chatChannelsProvider).value ?? const <ChatChannel>[];
     ChatChannel? channel;
     for (final c in channels) {
       if (c.id == widget.channelId) channel = c;
@@ -71,18 +88,26 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           CoralHeader(title: name, showBack: true),
           // Pinned: it stays in view while the conversation scrolls.
           const Padding(
-            padding: EdgeInsets.fromLTRB(AppSpacing.screen, 10, AppSpacing.screen, 0),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              10,
+              AppSpacing.screen,
+              0,
+            ),
             child: AdviceNotice(),
           ),
           Expanded(child: _Messages(channelId: widget.channelId)),
-          MessageBar(
-            controller: _message,
-            hint: l10n.messageHint(l10n.inLine(name)),
-            sendTooltip: l10n.sendMessage,
-            sending: _sending,
-            onSend: _send,
-            inputFormatters: [LengthLimitingTextInputFormatter(CommunityLimits.messageLength)],
-          ),
+          if (ref.watch(capabilityProvider('community.chat.send')))
+            MessageBar(
+              controller: _message,
+              hint: l10n.messageHint(l10n.inLine(name)),
+              sendTooltip: l10n.sendMessage,
+              sending: _sending,
+              onSend: _send,
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(CommunityLimits.messageLength),
+              ],
+            ),
         ],
       ),
     );
@@ -95,17 +120,28 @@ class _Messages extends ConsumerWidget {
   final String channelId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'community.chat.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final app = context.l10n;
     final format = AppFormat.of(context);
     final messages = ref.watch(chatMessagesProvider(channelId));
-    final viewerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
+    final viewerId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
     final now = ref.watch(communityClockProvider)();
     final list = messages.value;
 
     if (list == null) {
-      if (messages.isLoading) return const Center(child: CircularProgressIndicator());
+      if (messages.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
       return SectionState(
         icon: Icons.cloud_off_rounded,
         title: l10n.chatLoadFailed,
@@ -127,12 +163,18 @@ class _Messages extends ConsumerWidget {
     // as new ones arrive.
     return ListView.builder(
       reverse: true,
-      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 8),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        16,
+        AppSpacing.screen,
+        8,
+      ),
       itemCount: list.length,
       itemBuilder: (context, index) {
         final i = list.length - 1 - index;
         final message = list[i];
-        final startsDay = i == 0 || !isSameDay(list[i - 1].sentAt, message.sentAt);
+        final startsDay =
+            i == 0 || !isSameDay(list[i - 1].sentAt, message.sentAt);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -145,7 +187,11 @@ class _Messages extends ConsumerWidget {
                   style: AppText.label.copyWith(color: AppColors.brown),
                 ),
               ),
-            _Bubble(key: ValueKey(message.id), message: message, mine: message.authorId == viewerId),
+            _Bubble(
+              key: ValueKey(message.id),
+              message: message,
+              mine: message.authorId == viewerId,
+            ),
           ],
         );
       },
@@ -160,7 +206,14 @@ class _Bubble extends StatelessWidget {
   final bool mine;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.chat.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     const big = Radius.circular(20);
     const small = Radius.circular(6);
@@ -173,27 +226,42 @@ class _Bubble extends StatelessWidget {
         // right and left in English, mirrored in a right-to-left layout.
         // The side says whose message it is, so it follows the screen and
         // not the language the message happens to be written in.
-        alignment: mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
+        alignment: mine
+            ? AlignmentDirectional.centerEnd
+            : AlignmentDirectional.centerStart,
         child: FractionallySizedBox(
           widthFactor: 0.82,
-          alignment: mine ? AlignmentDirectional.centerEnd : AlignmentDirectional.centerStart,
+          alignment: mine
+              ? AlignmentDirectional.centerEnd
+              : AlignmentDirectional.centerStart,
           child: Padding(
             padding: const EdgeInsets.only(bottom: 10),
             child: Column(
-              crossAxisAlignment: mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: mine
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
                 if (!mine)
                   Padding(
-                    padding: const EdgeInsetsDirectional.only(start: 8, bottom: 3),
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 8,
+                      bottom: 3,
+                    ),
                     child: AutoDirectionText(
                       l10n.memberName(message.authorName),
-                      style: AppText.label.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown),
+                      style: AppText.label.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.brown,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: mine ? AppColors.yellow : AppColors.white,
                     borderRadius: BorderRadiusDirectional.only(
@@ -203,7 +271,10 @@ class _Bubble extends StatelessWidget {
                       bottomEnd: mine ? small : big,
                     ),
                   ),
-                  child: AutoDirectionText(message.text, style: AppText.body.copyWith(fontSize: 15, height: 1.4)),
+                  child: AutoDirectionText(
+                    message.text,
+                    style: AppText.body.copyWith(fontSize: 15, height: 1.4),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 3, 8, 0),

@@ -1,0 +1,336 @@
+{
+  "@@locale": "en",
+  "fed": "Fed",
+  "@fed": {
+    "description": "Home feeding card button: log a meal now."
+  },
+  "walkAction": "Walk",
+  "@walkAction": {
+    "description": "Home activity card button for a dog."
+  },
+  "playAction": "Play",
+  "@playAction": {
+    "description": "Home activity card button for any other pet."
+  },
+  "walksTodayLabel": "walks today",
+  "@walksTodayLabel": {
+    "description": "Under \"1/2\" on the activity card."
+  },
+  "playTodayLabel": "sessions today",
+  "@playTodayLabel": {
+    "description": "Under the count on the activity card of a pet that is not a dog."
+  },
+  "minutesLabel": "active minutes",
+  "@minutesLabel": {
+    "description": "Under the minutes number on the activity card."
+  },
+  "nextFeedingTomorrow": "Next feeding · tomorrow {time}",
+  "@nextFeedingTomorrow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "nextWalkTomorrow": "Next walk · tomorrow {time}",
+  "@nextWalkTomorrow": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "goalMinutesLine": "Goal: {minutes} min a day",
+  "@goalMinutesLine": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "inviteWalkTimes": "Add walk times to follow the activity",
+  "@inviteWalkTimes": {
+    "description": "Home activity card of a dog with no walk times and nothing logged today."
+  },
+  "invitePlay": "Log play to follow the activity",
+  "@invitePlay": {
+    "description": "Home activity card of a pet that does not go for walks, with nothing logged today."
+  },
+  "addFoodToCount": "Add the food to count calories",
+  "walkRunning": "Walking · {time}",
+  "@walkRunning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    },
+    "description": "A walk in progress and how long it has run."
+  },
+  "playRunning": "Playing · {time}",
+  "@playRunning": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "finish": "Finish",
+  "savedMinutes": "Saved {minutes} min",
+  "@savedMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "doseToday": "Today · {time}",
+  "@doseToday": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    },
+    "description": "When a medicine dose is due on the health card."
+  },
+  "medicineItem": "Medicine: {name}",
+  "@medicineItem": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openFeeding": "Open feeding",
+  "openActivity": "Open activity",
+  "openHealth": "Open health",
+  "loadFailed": "Could not load. Tap to try again.",
+  "feedingTitle": "Feeding · {name}",
+  "@feedingTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "today": "Today",
+  "caloriesOfGoal": "{eaten} / {goal} cal",
+  "@caloriesOfGoal": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesOnly": "{eaten} cal",
+  "@caloriesOnly": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      }
+    }
+  },
+  "mealAmount": "{grams} g · {calories} cal",
+  "@mealAmount": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      },
+      "calories": {
+        "type": "String"
+      }
+    }
+  },
+  "gramsValue": "{grams} g",
+  "@gramsValue": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "mealNotEaten": "Not eaten",
+  "@mealNotEaten": {
+    "description": "A meal the owner marked as not eaten."
+  },
+  "mealDone": "Done",
+  "extraMeal": "Snack or extra meal",
+  "thisWeek": "This week",
+  "weekGoalLine": "Goal: {goal} · Average: {average}",
+  "@weekGoalLine": {
+    "placeholders": {
+      "goal": {
+        "type": "String"
+      },
+      "average": {
+        "type": "String"
+      }
+    }
+  },
+  "weekAverageLine": "Average: {average}",
+  "@weekAverageLine": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      }
+    }
+  },
+  "foodAndPortion": "Food and portion",
+  "foodSummary": "{kcal} cal per 100 g",
+  "@foodSummary": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "portionSummary": "{grams} g a meal",
+  "@portionSummary": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "mealTimes": "Meal times",
+  "noMealTimes": "No meal times yet",
+  "addMealTime": "Add a meal time",
+  "sameAsSchedule": "The same times as in Health · Schedule.",
+  "noMealsToday": "No meals today yet",
+  "removeEntry": "Remove entry",
+  "removeEntryQuestion": "Remove this entry? The time opens again.",
+  "remove": "Remove",
+  "logMealTitle": "Log a meal",
+  "whichMeal": "Which meal",
+  "extra": "Extra",
+  "@extra": {
+    "description": "An extra meal or snack nobody planned."
+  },
+  "howMuch": "How much",
+  "wholePortion": "Whole portion",
+  "halfPortion": "Half",
+  "notEaten": "Did not eat",
+  "@notEaten": {
+    "description": "The meal was not eaten."
+  },
+  "equalsCalories": "= {calories} cal",
+  "@equalsCalories": {
+    "placeholders": {
+      "calories": {
+        "type": "String"
+      }
+    }
+  },
+  "time": "Time",
+  "less": "Less",
+  "more": "More",
+  "mealTitleExtra": "Extra meal",
+  "@mealTitleExtra": {
+    "description": "Title stored for an extra meal."
+  },
+  "foodName": "Food name",
+  "foodNameHint": "Dry food",
+  "kcalPer100g": "Calories per 100 g",
+  "gramsPerCup": "Grams in a cup (optional)",
+  "portion": "Usual portion per meal (grams)",
+  "portionCups": "{cups} cups",
+  "@portionCups": {
+    "placeholders": {
+      "cups": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyGoal": "Daily goal",
+  "goalEstimateNote": "Worked out from the weight ({kg} kg), the age and neutering. A general estimate: your vet can give an exact goal.",
+  "@goalEstimateNote": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "goalNoWeight": "Add the weight in the profile for an estimate, or set a goal of your own.",
+  "goalNoSpecies": "There is no estimate for this kind of animal. Set a goal of your own.",
+  "goalByEstimate": "By the estimate",
+  "goalOwn": "My own goal",
+  "caloriesADay": "Calories a day",
+  "foodBagNote": "The calories are printed on the bag.",
+  "numberRange": "Enter a number from {min} to {max}",
+  "@numberRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "save": "Save",
+  "cancel": "Cancel",
+  "activityTitle": "Activity · {name}",
+  "@activityTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesOfGoal": "{minutes} / {goal} min",
+  "@minutesOfGoal": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "minutesValue": "{minutes} min",
+  "@minutesValue": {
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "start": "Start",
+  "extraWalk": "Another walk or play",
+  "extraPlay": "Log play",
+  "weekMinutes": "This week (minutes)",
+  "activityGoal": "Daily activity goal",
+  "walkTimes": "Walk times",
+  "noWalkTimes": "No walk times yet",
+  "addWalkTime": "Add a walk time",
+  "noWalksToday": "No walks today yet",
+  "noPlayToday": "No play logged today",
+  "goalSheetTitle": "Minutes of activity a day",
+  "skipped": "Skipped",
+  "walkTitle": "Walk",
+  "playTitle": "Play",
+  "startNow": "Going out now",
+  "startPlayNow": "Starting to play now",
+  "startNowNote": "The clock keeps running even when the app is closed. Finish saves the minutes.",
+  "logPast": "Or log one that already happened",
+  "whichWalk": "Which walk",
+  "howLong": "How long (minutes)",
+  "otherMinutes": "Other",
+  "activityType": "Type",
+  "typeWalk": "Walk",
+  "typePlay": "Play",
+  "typeRun": "Run",
+  "when": "When",
+  "todayAt": "Today · {time}",
+  "@todayAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelWalk": "Cancel the walk"
+}

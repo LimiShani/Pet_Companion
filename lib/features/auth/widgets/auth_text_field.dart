@@ -60,7 +60,10 @@ class _AuthTextFieldState extends State<AuthTextField> {
       children: [
         Padding(
           padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
-          child: Text(widget.label, style: AppText.label.copyWith(color: AppColors.brown)),
+          child: Text(
+            widget.label,
+            style: AppText.label.copyWith(color: AppColors.brown),
+          ),
         ),
         TextFormField(
           controller: widget.controller,
@@ -76,11 +79,19 @@ class _AuthTextFieldState extends State<AuthTextField> {
           style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
           decoration: InputDecoration(
             hintText: widget.hint,
-            hintTextDirection: widget.leftToRightHint ? TextDirection.ltr : Directionality.of(context),
-            hintStyle: AppText.body.copyWith(fontSize: 16, color: AppColors.brown.withValues(alpha: 0.55)),
+            hintTextDirection: widget.leftToRightHint
+                ? TextDirection.ltr
+                : Directionality.of(context),
+            hintStyle: AppText.body.copyWith(
+              fontSize: 16,
+              color: AppColors.brown.withValues(alpha: 0.55),
+            ),
             filled: true,
             fillColor: AppColors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
             border: _border(Colors.transparent),
             enabledBorder: _border(Colors.transparent),
             focusedBorder: _border(AppColors.coral, 2),
@@ -90,8 +101,14 @@ class _AuthTextFieldState extends State<AuthTextField> {
             suffixIcon: widget.obscure
                 ? IconButton(
                     onPressed: () => setState(() => _hidden = !_hidden),
-                    tooltip: _hidden ? l10n.authShowPassword : l10n.authHidePassword,
-                    icon: AppIcon(_hidden ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    tooltip: _hidden
+                        ? l10n.authShowPassword
+                        : l10n.authHidePassword,
+                    icon: AppIcon(
+                      _hidden
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
                     color: AppColors.brown,
                   )
                 : null,
@@ -101,7 +118,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
     );
   }
 
-  static OutlineInputBorder _border(Color color, [double width = 1]) => OutlineInputBorder(
+  static OutlineInputBorder _border(Color color, [double width = 1]) =>
+      OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
         borderSide: BorderSide(color: color, width: width),
       );

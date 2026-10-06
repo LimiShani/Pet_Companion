@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -12,27 +13,28 @@ import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
-import '../health/emergency/contact_actions.dart' show launchOrExplain;
-import '../health/emergency/vet_form_screen.dart' show openVetForm;
-import '../health/data/health_models.dart' show Vet, VetRole;
-import '../health/widgets/health_widgets.dart' show kHealthTapTarget, showHealthSheet, SheetTitle, FinePrint;
+import '../../presentation/launch_or_explain.dart';
+import '../../platform/feature_ui.dart';
+import '../../services/pet_records/data/health_models.dart' show Vet, VetRole;
+import '../../presentation/health_widgets.dart'
+    show kHealthTapTarget, showHealthSheet, SheetTitle, FinePrint;
 import 'admin/link_listing_sheet.dart';
-import 'data/location_service.dart';
-import 'data/supabase_vet_finder_repository.dart';
-import 'data/vet_models.dart';
+import '../../services/findvet/data/location_service.dart';
+import '../../services/findvet/data/supabase_vet_finder_repository.dart';
+import '../../services/findvet/data/vet_models.dart';
 import 'findvet_words.dart';
-import 'regions/regions.dart';
-import 'state/find_vet_providers.dart';
+import '../../services/findvet/regions/regions.dart';
+import '../../services/findvet/state/find_vet_providers.dart';
 import 'widgets/area_picker.dart';
 import 'widgets/vet_result_card.dart';
 
 /// Opens Find a vet over the whole app (also from the sign-in screen: it
 /// needs no account). With [mode], it opens straight on that path; the
 /// Emergency sheet opens it on [VetSearchMode.emergency].
-Future<void> openFindVet(BuildContext context, {VetSearchMode? mode}) => Navigator.of(
-  context,
-  rootNavigator: true,
-).push<void>(MaterialPageRoute(builder: (_) => FindVetScreen(initialMode: mode)));
+Future<void> openFindVet(BuildContext context, {VetSearchMode? mode}) =>
+    Navigator.of(context, rootNavigator: true).push<void>(
+      MaterialPageRoute(builder: (_) => FindVetScreen(initialMode: mode)),
+    );
 
 class FindVetScreen extends ConsumerStatefulWidget {
   const FindVetScreen({super.key, this.initialMode});
@@ -67,7 +69,14 @@ class _FindVetScreenState extends ConsumerState<FindVetScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final provider = findVetControllerProvider(widget.initialMode);
     final state = ref.watch(provider);
     final controller = ref.read(provider.notifier);
@@ -94,7 +103,11 @@ class _FindVetScreenState extends ConsumerState<FindVetScreen> {
                   : CoralSegmentedControl(
                       labels: [l10n.modeEmergency, l10n.modeLongTerm],
                       selectedIndex: mode == VetSearchMode.emergency ? 0 : 1,
-                      onChanged: (i) => controller.chooseMode(i == 0 ? VetSearchMode.emergency : VetSearchMode.longTerm),
+                      onChanged: (i) => controller.chooseMode(
+                        i == 0
+                            ? VetSearchMode.emergency
+                            : VetSearchMode.longTerm,
+                      ),
                     ),
             ),
             Expanded(
@@ -106,9 +119,16 @@ class _FindVetScreenState extends ConsumerState<FindVetScreen> {
                   24 + MediaQuery.paddingOf(context).bottom,
                 ),
                 children: [
-                  if (demo) ...[const _DemoBanner(), const SizedBox(height: 12)],
+                  if (demo) ...[
+                    const _DemoBanner(),
+                    const SizedBox(height: 12),
+                  ],
                   if (mode == null)
-                    _Choice(state: state, onChoose: controller.chooseMode, onChangeArea: controller.changeArea)
+                    _Choice(
+                      state: state,
+                      onChoose: controller.chooseMode,
+                      onChangeArea: controller.changeArea,
+                    )
                   else if (state.area == null)
                     AreaPicker(
                       locating: state.locating,
@@ -122,8 +142,12 @@ class _FindVetScreenState extends ConsumerState<FindVetScreen> {
                                 : LocationOutcome.deniedForever,
                           ),
                       onPicked: controller.setArea,
-                      lookUp: (query) =>
-                          controller.lookUp(query, appLanguage: Localizations.localeOf(context).languageCode),
+                      lookUp: (query) => controller.lookUp(
+                        query,
+                        appLanguage: Localizations.localeOf(
+                          context,
+                        ).languageCode,
+                      ),
                     )
                   else ...[
                     AreaBar(
@@ -148,7 +172,14 @@ class _DemoBanner extends StatelessWidget {
   const _DemoBanner();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Container(
       key: FindVetScreen.demoBannerKey,
       padding: const EdgeInsets.all(12),
@@ -161,9 +192,18 @@ class _DemoBanner extends StatelessWidget {
         children: [
           const Padding(
             padding: EdgeInsetsDirectional.only(end: 8),
-            child: AppIcon(Icons.science_outlined, size: 20, color: AppColors.ink),
+            child: AppIcon(
+              Icons.science_outlined,
+              size: 20,
+              color: AppColors.ink,
+            ),
           ),
-          Expanded(child: Text(context.findVetL10n.demoBanner, style: AppText.secondary.copyWith(color: AppColors.ink))),
+          Expanded(
+            child: Text(
+              context.findVetL10n.demoBanner,
+              style: AppText.secondary.copyWith(color: AppColors.ink),
+            ),
+          ),
         ],
       ),
     );
@@ -172,19 +212,36 @@ class _DemoBanner extends StatelessWidget {
 
 /// The first screen: Emergency care or Long term care.
 class _Choice extends StatelessWidget {
-  const _Choice({required this.state, required this.onChoose, required this.onChangeArea});
+  const _Choice({
+    required this.state,
+    required this.onChoose,
+    required this.onChangeArea,
+  });
 
   final FindVetState state;
   final ValueChanged<VetSearchMode> onChoose;
   final VoidCallback onChangeArea;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(header: true, child: Text(l10n.choiceQuestion, style: AppText.cardTitle.copyWith(fontSize: 19))),
+        Semantics(
+          header: true,
+          child: Text(
+            l10n.choiceQuestion,
+            style: AppText.cardTitle.copyWith(fontSize: 19),
+          ),
+        ),
         const SizedBox(height: 12),
         _ChoiceCard(
           key: FindVetScreen.emergencyChoiceKey,
@@ -233,7 +290,14 @@ class _ChoiceCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Semantics(
       button: true,
       child: Material(
@@ -249,7 +313,10 @@ class _ChoiceCard extends StatelessWidget {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: BoxDecoration(color: AppColors.white.withValues(alpha: 0.9), shape: BoxShape.circle),
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.9),
+                    shape: BoxShape.circle,
+                  ),
                   child: AppIcon(icon, size: 28, color: AppColors.coralDark),
                 ),
                 const SizedBox(width: 14),
@@ -257,9 +324,21 @@ class _ChoiceCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(title, style: AppText.cardTitle.copyWith(fontSize: 19, color: foreground)),
+                      Text(
+                        title,
+                        style: AppText.cardTitle.copyWith(
+                          fontSize: 19,
+                          color: foreground,
+                        ),
+                      ),
                       const SizedBox(height: 2),
-                      Text(body, style: AppText.body.copyWith(color: foreground, fontWeight: FontWeight.w600)),
+                      Text(
+                        body,
+                        style: AppText.body.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -301,7 +380,11 @@ class _ResultsState extends ConsumerState<_Results> {
     DateTime? next;
     for (final r in result.results) {
       final expires = r.intake.expiresAt;
-      if (expires != null && expires.isAfter(now) && (next == null || expires.isBefore(next))) next = expires;
+      if (expires != null &&
+          expires.isAfter(now) &&
+          (next == null || expires.isBefore(next))) {
+        next = expires;
+      }
     }
     if (next == null) return;
     _expiry = Timer(next.difference(now) + const Duration(seconds: 1), () {
@@ -336,21 +419,28 @@ class _ResultsState extends ConsumerState<_Results> {
     final l10n = context.findVetL10n;
     final pets = ref.read(petsProvider);
     if (pets.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.saveNeedsPet)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.saveNeedsPet)));
       return;
     }
     final pet = pets.length == 1 ? pets.single : await _choosePet(pets);
     if (pet == null || !mounted) return;
     // The owner sees every field in Health's vet form and saves it there:
     // the stored vet is their own contact entry.
-    final saved = await openVetForm(
-      context,
-      petId: pet.id,
-      role: VetRole.regular,
-      prefill: Vet(id: '', name: r.name, phone: r.phone ?? '', address: r.address ?? ''),
-    );
+    final saved = await openFeature<Vet>(context, 'vet-form', pet.id, {
+      'role': VetRole.regular,
+      'prefill': Vet(
+        id: '',
+        name: r.name,
+        phone: r.phone ?? '',
+        address: r.address ?? '',
+      ),
+    });
     if (saved != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.savedVet)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.savedVet)));
     }
   }
 
@@ -367,7 +457,10 @@ class _ResultsState extends ConsumerState<_Results> {
             ListTile(
               key: Key('findvet-save-pet-${pet.id}'),
               minTileHeight: kHealthTapTarget,
-              leading: const AppIcon(Icons.pets_rounded, color: AppColors.coralDark),
+              leading: const AppIcon(
+                Icons.pets_rounded,
+                color: AppColors.coralDark,
+              ),
               title: Text(pet.name),
               onTap: () => Navigator.of(context).pop(pet),
             ),
@@ -376,17 +469,29 @@ class _ResultsState extends ConsumerState<_Results> {
     ),
   );
 
-  Future<void> _openLink(String url) => ref.read(vetLauncherProvider).openLink(url);
+  Future<void> _openLink(String url) =>
+      ref.read(vetLauncherProvider).openLink(url);
 
   /// A reviewer attaches a Google-only listing to one of our facilities;
   /// the search then runs again so the two show as one place.
   Future<void> _link(VetResult r) async {
     final linked = await linkListingToFacility(context, ref, r);
-    if (linked && mounted) await widget.controller.search(radiusM: widget.state.results?.value?.radiusM);
+    if (linked && mounted) {
+      await widget.controller.search(
+        radiusM: widget.state.results?.value?.radiusM,
+      );
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     final value = widget.state.results;
     final mode = widget.state.mode!;
@@ -399,7 +504,10 @@ class _ResultsState extends ConsumerState<_Results> {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 12),
-              Text(l10n.searching, style: AppText.body.copyWith(color: AppColors.brown)),
+              Text(
+                l10n.searching,
+                style: AppText.body.copyWith(color: AppColors.brown),
+              ),
             ],
           ),
         ),
@@ -411,7 +519,11 @@ class _ResultsState extends ConsumerState<_Results> {
         title: l10n.errorTitle,
         body: l10n.failure(value.error!),
         actions: [
-          FilledButton(key: FindVetScreen.retryKey, onPressed: widget.controller.search, child: Text(l10n.tryAgain)),
+          FilledButton(
+            key: FindVetScreen.retryKey,
+            onPressed: widget.controller.search,
+            child: Text(l10n.tryAgain),
+          ),
           OutlinedButton(
             key: FindVetScreen.otherAreaKey,
             onPressed: widget.controller.changeArea,
@@ -437,20 +549,36 @@ class _ResultsState extends ConsumerState<_Results> {
       onCall: () => _call(r),
       onDirections: () => _directions(r),
       onOpenLink: _openLink,
-      onSave: mode == VetSearchMode.longTerm && signedIn ? () => _save(r) : null,
-      onLink: reviewer && r.fromProvider && !r.fromCurated && r.placeId != null ? () => _link(r) : null,
+      onSave: mode == VetSearchMode.longTerm && signedIn
+          ? () => _save(r)
+          : null,
+      onLink: reviewer && r.fromProvider && !r.fromCurated && r.placeId != null
+          ? () => _link(r)
+          : null,
     );
 
     final children = <Widget>[];
     if (mode == VetSearchMode.emergency) children.add(const _CallFirstBanner());
     if (result.directoryCopyFrom != null) {
-      children.add(_Notice(l10n.noticeDirectoryCopy(AppFormat.of(context).dateTime(result.directoryCopyFrom!.toLocal()))));
+      children.add(
+        _Notice(
+          l10n.noticeDirectoryCopy(
+            AppFormat.of(context).dateTime(result.directoryCopyFrom!.toLocal()),
+          ),
+        ),
+      );
     } else if (result.usedFallback) {
       children.add(
-        _Notice(mode == VetSearchMode.emergency ? l10n.noticeProviderDown : l10n.noticeProviderDownLongTerm),
+        _Notice(
+          mode == VetSearchMode.emergency
+              ? l10n.noticeProviderDown
+              : l10n.noticeProviderDownLongTerm,
+        ),
       );
     }
-    if (result.expanded) children.add(_Notice(l10n.noticeExpanded(radiusKm(result.radiusM))));
+    if (result.expanded) {
+      children.add(_Notice(l10n.noticeExpanded(radiusKm(result.radiusM))));
+    }
 
     final widerButton = wider == null
         ? null
@@ -489,10 +617,16 @@ class _ResultsState extends ConsumerState<_Results> {
 
       final advertised = result.results.where(top).toList();
       final unverified = result.results
-          .where((r) => !top(r) && r.emergencyState == EmergencyClaimState.unverified)
+          .where(
+            (r) =>
+                !top(r) && r.emergencyState == EmergencyClaimState.unverified,
+          )
           .toList();
       final others = result.results
-          .where((r) => !top(r) && r.emergencyState != EmergencyClaimState.unverified)
+          .where(
+            (r) =>
+                !top(r) && r.emergencyState != EmergencyClaimState.unverified,
+          )
           .toList();
 
       if (advertised.isNotEmpty) {
@@ -510,25 +644,50 @@ class _ResultsState extends ConsumerState<_Results> {
           );
         }
         if (advertised.length == 1) {
-          children.add(_Notice(l10n.onlyOneAdvertised(radiusKm(result.radiusM))));
-          if (widerButton != null) children.add(Align(alignment: AlignmentDirectional.centerStart, child: widerButton));
+          children.add(
+            _Notice(l10n.onlyOneAdvertised(radiusKm(result.radiusM))),
+          );
+          if (widerButton != null) {
+            children.add(
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: widerButton,
+              ),
+            );
+          }
         }
       } else {
-        children.add(_Notice(l10n.noEmergencyResultsBody(radiusKm(result.radiusM))));
-        if (widerButton != null) children.add(Align(alignment: AlignmentDirectional.centerStart, child: widerButton));
+        children.add(
+          _Notice(l10n.noEmergencyResultsBody(radiusKm(result.radiusM))),
+        );
+        if (widerButton != null) {
+          children.add(
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: widerButton,
+            ),
+          );
+        }
       }
       if (unverified.isNotEmpty) {
         children.add(_SectionTitle(l10n.sectionUnverified));
         children.addAll(unverified.map(card));
       }
       if (others.isNotEmpty) {
-        children.add(_SectionTitle(l10n.sectionOther, note: l10n.sectionOtherNote));
+        children.add(
+          _SectionTitle(l10n.sectionOther, note: l10n.sectionOtherNote),
+        );
         children.addAll(others.map(card));
       }
     } else {
       children.addAll(result.results.map(card));
       if (widerButton != null && result.results.length < 3) {
-        children.add(Align(alignment: AlignmentDirectional.centerStart, child: widerButton));
+        children.add(
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: widerButton,
+          ),
+        );
       }
     }
 
@@ -539,7 +698,9 @@ class _ResultsState extends ConsumerState<_Results> {
         child: TextButton.icon(
           key: FindVetScreen.legendKey,
           onPressed: () => showHealthSheet<void>(context, const _Legend()),
-          style: TextButton.styleFrom(minimumSize: const Size(kHealthTapTarget, kHealthTapTarget)),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
+          ),
           icon: const AppIcon(Icons.info_outline_rounded, size: 18),
           label: Text(l10n.legendLink),
         ),
@@ -549,7 +710,10 @@ class _ResultsState extends ConsumerState<_Results> {
       children.add(_Attribution(result.attribution!));
     }
 
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    );
   }
 }
 
@@ -558,25 +722,41 @@ class _CallFirstBanner extends StatelessWidget {
   const _CallFirstBanner();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+      decoration: BoxDecoration(
+        color: AppColors.yellow,
+        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+      ),
       child: MergeSemantics(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
               padding: EdgeInsetsDirectional.only(end: 10, top: 2),
-              child: AppIcon(Icons.phone_in_talk_rounded, color: AppColors.coralDark),
+              child: AppIcon(
+                Icons.phone_in_talk_rounded,
+                color: AppColors.coralDark,
+              ),
             ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.callFirstTitle, style: AppText.cardTitle.copyWith(fontSize: 16)),
+                  Text(
+                    l10n.callFirstTitle,
+                    style: AppText.cardTitle.copyWith(fontSize: 16),
+                  ),
                   Text(l10n.callFirstBody, style: AppText.body),
                 ],
               ),
@@ -594,7 +774,14 @@ class _Notice extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
       child: Semantics(
@@ -619,14 +806,28 @@ class _SectionTitle extends StatelessWidget {
   final String? note;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 6, bottom: 8, start: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Semantics(header: true, child: Text(title, style: AppText.cardTitle.copyWith(fontSize: 16))),
-          if (note != null) Text(note!, style: AppText.secondary.copyWith(color: AppColors.brown)),
+          Semantics(
+            header: true,
+            child: Text(title, style: AppText.cardTitle.copyWith(fontSize: 16)),
+          ),
+          if (note != null)
+            Text(
+              note!,
+              style: AppText.secondary.copyWith(color: AppColors.brown),
+            ),
         ],
       ),
     );
@@ -634,7 +835,12 @@ class _SectionTitle extends StatelessWidget {
 }
 
 class _Message extends StatelessWidget {
-  const _Message({required this.icon, required this.title, required this.body, required this.actions});
+  const _Message({
+    required this.icon,
+    required this.title,
+    required this.body,
+    required this.actions,
+  });
 
   final IconData icon;
   final String title;
@@ -642,7 +848,14 @@ class _Message extends StatelessWidget {
   final List<Widget> actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Semantics(
       liveRegion: true,
       child: Padding(
@@ -652,15 +865,31 @@ class _Message extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.yellow,
+                shape: BoxShape.circle,
+              ),
               child: AppIcon(icon, size: 34, color: AppColors.coralDark),
             ),
             const SizedBox(height: 12),
-            Text(title, textAlign: TextAlign.center, style: AppText.cardTitle.copyWith(fontSize: 18)),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppText.cardTitle.copyWith(fontSize: 18),
+            ),
             const SizedBox(height: 4),
-            Text(body, textAlign: TextAlign.center, style: AppText.body.copyWith(color: AppColors.brown)),
+            Text(
+              body,
+              textAlign: TextAlign.center,
+              style: AppText.body.copyWith(color: AppColors.brown),
+            ),
             const SizedBox(height: 12),
-            Wrap(alignment: WrapAlignment.center, spacing: 8, runSpacing: 8, children: actions),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 8,
+              runSpacing: 8,
+              children: actions,
+            ),
           ],
         ),
       ),
@@ -676,14 +905,24 @@ class _Attribution extends StatelessWidget {
   final String name;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: 4, top: 4),
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
         spacing: 6,
         children: [
-          Text(context.findVetL10n.listingsFrom, style: AppText.secondary.copyWith(color: AppColors.brown)),
+          Text(
+            context.findVetL10n.listingsFrom,
+            style: AppText.secondary.copyWith(color: AppColors.brown),
+          ),
           Text(
             name,
             textDirection: TextDirection.ltr,
@@ -707,7 +946,14 @@ class _Legend extends StatelessWidget {
   const _Legend();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     Widget entry(IconData icon, String title, String body) => Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -723,8 +969,14 @@ class _Legend extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppText.body.copyWith(fontWeight: FontWeight.w800)),
-                  Text(body, style: AppText.secondary.copyWith(color: AppColors.ink)),
+                  Text(
+                    title,
+                    style: AppText.body.copyWith(fontWeight: FontWeight.w800),
+                  ),
+                  Text(
+                    body,
+                    style: AppText.secondary.copyWith(color: AppColors.ink),
+                  ),
                 ],
               ),
             ),
@@ -739,10 +991,26 @@ class _Legend extends StatelessWidget {
         SheetTitle(l10n.legendLink),
         const SizedBox(height: 12),
         entry(Icons.place_outlined, l10n.evidenceListed, l10n.legendListedBody),
-        entry(Icons.verified_outlined, l10n.evidenceAdvertised, l10n.legendAdvertisedBody),
-        entry(Icons.schedule_rounded, l10n.evidenceOpenNow, l10n.legendOpenBody),
-        entry(Icons.check_circle_rounded, l10n.evidenceAccepting, l10n.legendAcceptingBody),
-        entry(Icons.phone_in_talk_rounded, l10n.callToConfirm, l10n.legendCallBody),
+        entry(
+          Icons.verified_outlined,
+          l10n.evidenceAdvertised,
+          l10n.legendAdvertisedBody,
+        ),
+        entry(
+          Icons.schedule_rounded,
+          l10n.evidenceOpenNow,
+          l10n.legendOpenBody,
+        ),
+        entry(
+          Icons.check_circle_rounded,
+          l10n.evidenceAccepting,
+          l10n.legendAcceptingBody,
+        ),
+        entry(
+          Icons.phone_in_talk_rounded,
+          l10n.callToConfirm,
+          l10n.legendCallBody,
+        ),
         const SizedBox(height: 4),
         FinePrint(context.healthL10n.safetyLine),
       ],

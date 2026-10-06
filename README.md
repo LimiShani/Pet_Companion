@@ -6,6 +6,9 @@ health log, reminders, community and a bargain store. Flutter, Android + iOS
 
 ## Run
 
+For module composition, administrator access and required migrations, see
+[Feature access operations](docs/feature_access_operations.md).
+
 ```bash
 flutter pub get
 flutter run            # pick a connected device or emulator
@@ -22,8 +25,8 @@ flutter test
 ## Backend: Supabase (free plan)
 
 Accounts and data live in a Supabase project. The app is built with the
-project's URL and publishable key; without them it falls back to an
-in-memory auth backend (see "Without Supabase" below).
+project's URL and publishable key. Debug builds without settings use a marked
+in-memory demo. Releases require both settings or explicit `PETLOOP_DEMO=true`.
 
 ### One-time setup
 
@@ -83,6 +86,36 @@ only PetLoop's own directory against Supabase. Backend tests:
 ```bash
 node --test "supabase/functions/_tests/*.test.ts"
 ```
+
+### Deno development
+
+Use Deno 2.9 or later for the Supabase Edge Functions. On Windows, install
+the CLI using the [official PowerShell installer](https://docs.deno.com/runtime/getting_started/installation/):
+
+```powershell
+irm https://deno.land/install.ps1 | iex
+deno --version
+```
+
+Restart VS Code after installation so it picks up the updated PATH, and
+open `pet_companion` as the workspace folder. Install the recommended
+`denoland.vscode-deno` extension. Workspace settings enable Deno only for
+`supabase/functions`; Dart and Flutter continue to use their own extensions.
+
+From the project root:
+
+```bash
+deno task check  # type-check both functions and the existing tests
+deno task test   # run the existing node:test suite under Deno
+deno task lint   # lint the Edge Functions and tests
+deno task fmt    # format only the Edge Functions and tests
+```
+
+The tests use fakes and run without network, environment, filesystem, or
+subprocess permissions. No npm dependencies are needed for the current
+functions. The original Node test command remains supported. Linting currently
+reports existing `no-explicit-any` and `require-await` findings; these are
+separate from the Deno setup.
 
 ## Layout
 

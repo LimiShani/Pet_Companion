@@ -39,6 +39,10 @@ class AuthException implements Exception {
 /// in-memory implementation can be swapped for Supabase (or Firebase)
 /// without touching the screens.
 abstract class AuthRepository {
+  Stream<bool> get recoveryChanges;
+  bool get isRecovering;
+  Future<void> updatePassword(String password);
+
   /// Emits the current user whenever it changes (sign in, sign out, token
   /// refresh, a link opened from an email). `null` means signed out.
   Stream<AppUser?> get userChanges;
@@ -48,7 +52,11 @@ abstract class AuthRepository {
 
   Future<AppUser> signIn({required String email, required String password});
 
-  Future<AppUser> signUp({required String displayName, required String email, required String password});
+  Future<AppUser> signUp({
+    required String displayName,
+    required String email,
+    required String password,
+  });
 
   Future<void> signOut();
 

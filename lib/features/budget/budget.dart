@@ -19,10 +19,17 @@
 /// (kind `basket`, group and payload `basket:<petId>`).
 library;
 
-export 'basket/basket_view.dart' show BasketView;
+export '../basket/basket_view.dart' show BasketView;
 export 'budget_screen.dart' show BudgetScreen, openBudget;
-export 'data/budget_models.dart';
-export 'data/budget_repository.dart' show BudgetException, BudgetFailure, BudgetRepository, FakeBudgetRepository;
-export 'state/budget_providers.dart'
-    show StoreView, basketProvider, budgetRepositoryProvider, expensesProvider, storeViewProvider;
-export 'widgets/home_cards.dart' show BudgetHomeCards, RunningLowCard, SpendingCard;
+export '../../services/budget/data/budget_models.dart';
+export '../../services/budget/data/budget_repository.dart'
+    show BudgetException, BudgetFailure, BudgetRepository, FakeBudgetRepository;
+export '../../services/budget/state/budget_providers.dart'
+    show
+        StoreView,
+        basketProvider,
+        budgetRepositoryProvider,
+        expensesProvider,
+        storeViewProvider;
+export 'widgets/home_cards.dart'
+    show BudgetHomeCards, RunningLowCard, SpendingCard;

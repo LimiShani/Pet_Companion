@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,11 +9,11 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// Opens the add / edit vet page over the whole app.
 ///
@@ -20,11 +21,25 @@ import '../widgets/health_widgets.dart';
 /// [prefill] starts a new vet with fields already typed in (Find a vet's
 /// Save); the owner sees and confirms every one before saving.
 /// Returns the saved vet, or `null` when the owner went back or deleted it.
-Future<Vet?> openVetForm(BuildContext context, {String? petId, VetRole? role, Vet? vet, Vet? prefill}) =>
-    pushHealthPage<Vet>(context, VetFormScreen(petId: petId, role: role, vet: vet, prefill: prefill));
+Future<Vet?> openVetForm(
+  BuildContext context, {
+  String? petId,
+  VetRole? role,
+  Vet? vet,
+  Vet? prefill,
+}) => pushHealthPage<Vet>(
+  context,
+  VetFormScreen(petId: petId, role: role, vet: vet, prefill: prefill),
+);
 
 class VetFormScreen extends ConsumerStatefulWidget {
-  const VetFormScreen({super.key, this.petId, this.role, this.vet, this.prefill});
+  const VetFormScreen({
+    super.key,
+    this.petId,
+    this.role,
+    this.vet,
+    this.prefill,
+  });
 
   final String? petId;
   final VetRole? role;
@@ -41,11 +56,21 @@ class VetFormScreen extends ConsumerStatefulWidget {
 
 class _VetFormScreenState extends ConsumerState<VetFormScreen> {
   final _form = GlobalKey<FormState>();
-  late final _name = TextEditingController(text: (widget.vet ?? widget.prefill)?.name ?? '');
-  late final _phone = TextEditingController(text: (widget.vet ?? widget.prefill)?.phone ?? '');
-  late final _address = TextEditingController(text: (widget.vet ?? widget.prefill)?.address ?? '');
-  late final _hours = TextEditingController(text: (widget.vet ?? widget.prefill)?.openingHours ?? '');
-  late final _notes = TextEditingController(text: (widget.vet ?? widget.prefill)?.notes ?? '');
+  late final _name = TextEditingController(
+    text: (widget.vet ?? widget.prefill)?.name ?? '',
+  );
+  late final _phone = TextEditingController(
+    text: (widget.vet ?? widget.prefill)?.phone ?? '',
+  );
+  late final _address = TextEditingController(
+    text: (widget.vet ?? widget.prefill)?.address ?? '',
+  );
+  late final _hours = TextEditingController(
+    text: (widget.vet ?? widget.prefill)?.openingHours ?? '',
+  );
+  late final _notes = TextEditingController(
+    text: (widget.vet ?? widget.prefill)?.notes ?? '',
+  );
   late bool _whatsApp = widget.vet?.onWhatsApp ?? false;
   bool _saving = false;
 
@@ -57,7 +82,10 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
 
   bool get _editing => widget.vet != null;
 
-  List<Object?> _fields() => [for (final c in [_name, _phone, _address, _hours, _notes]) c.text, _whatsApp];
+  List<Object?> _fields() => [
+    for (final c in [_name, _phone, _address, _hours, _notes]) c.text,
+    _whatsApp,
+  ];
 
   bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
@@ -83,9 +111,13 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return _whatsApp ? l10n.validWhatsAppNumber : null;
     final digits = v.replaceAll(RegExp('[^0-9]'), '');
-    if (digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v)) return l10n.validPhone;
+    if (digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v)) {
+      return l10n.validPhone;
+    }
     if (_whatsApp && !v.startsWith('+')) {
-      return l10n.validWhatsAppCountryCode(HealthFormat.of(context).ltrInLine(_countryCode));
+      return l10n.validWhatsAppCountryCode(
+        HealthFormat.of(context).ltrInLine(_countryCode),
+      );
     }
     return null;
   }
@@ -113,7 +145,9 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
       final petId = widget.petId;
       final role = widget.role;
       if (!_editing && petId != null && role != null) {
-        await ref.read(healthProfileProvider(petId).notifier).setVet(role, saved.id);
+        await ref
+            .read(healthProfileProvider(petId).notifier)
+            .setVet(role, saved.id);
       }
       if (mounted) Navigator.of(context).pop(saved);
     } catch (e) {
@@ -143,7 +177,14 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     // Keeps the owner's vets (and the pet's profile) alive while the form
     // is open, wherever it was opened from.
     ref.watch(vetsProvider);
@@ -154,7 +195,11 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
       title: _editing ? l10n.editVet : l10n.addVet,
       actions: [
         if (_editing)
-          CoralHeaderAction(icon: Icons.delete_outline_rounded, tooltip: l10n.deleteVet, onPressed: _delete),
+          CoralHeaderAction(
+            icon: Icons.delete_outline_rounded,
+            tooltip: l10n.deleteVet,
+            onPressed: _delete,
+          ),
       ],
       child: Form(
         key: _form,
@@ -197,7 +242,9 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
                 onChanged: (value) => setState(() => _whatsApp = value),
                 title: Text(l10n.onWhatsApp, style: AppText.cardTitle),
                 subtitle: Text(
-                  l10n.onWhatsAppNote(HealthFormat.of(context).ltrInLine(_countryCode)),
+                  l10n.onWhatsAppNote(
+                    HealthFormat.of(context).ltrInLine(_countryCode),
+                  ),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ),
@@ -231,11 +278,17 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
               const SizedBox(height: 12),
               Text(
                 healthErrorOf(context, _error),
-                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+                style: AppText.body.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
             const SizedBox(height: 22),
-            PrimaryButton(label: l10n.saveVet, loading: _saving, onPressed: _save),
+            PrimaryButton(
+              label: l10n.saveVet,
+              loading: _saving,
+              onPressed: _save,
+            ),
             const SizedBox(height: 12),
             FinePrint(l10n.vetFormFinePrint),
           ],
@@ -244,7 +297,8 @@ class _VetFormScreenState extends ConsumerState<VetFormScreen> {
     );
     return ListenableBuilder(
       listenable: Listenable.merge([_name, _phone, _address, _hours, _notes]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: page,
     );
   }

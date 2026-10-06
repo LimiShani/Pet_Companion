@@ -22,12 +22,19 @@ Future<void> showNotificationPermissionSheet(
     useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => NotificationPermissionSheet(platform: platform, startWithExact: notificationsAllowed),
+    builder: (context) => NotificationPermissionSheet(
+      platform: platform,
+      startWithExact: notificationsAllowed,
+    ),
   );
 }
 
 class NotificationPermissionSheet extends StatefulWidget {
-  const NotificationPermissionSheet({super.key, required this.platform, this.startWithExact = false});
+  const NotificationPermissionSheet({
+    super.key,
+    required this.platform,
+    this.startWithExact = false,
+  });
 
   static const sheetKey = Key('notification-permission-sheet');
   static const allowKey = Key('notification-permission-allow');
@@ -38,10 +45,12 @@ class NotificationPermissionSheet extends StatefulWidget {
   final bool startWithExact;
 
   @override
-  State<NotificationPermissionSheet> createState() => _NotificationPermissionSheetState();
+  State<NotificationPermissionSheet> createState() =>
+      _NotificationPermissionSheetState();
 }
 
-class _NotificationPermissionSheetState extends State<NotificationPermissionSheet> {
+class _NotificationPermissionSheetState
+    extends State<NotificationPermissionSheet> {
   late bool _exactStep = widget.startWithExact;
   bool _busy = false;
 
@@ -82,7 +91,12 @@ class _NotificationPermissionSheetState extends State<NotificationPermissionShee
     final l10n = context.notificationsL10n;
     return SingleChildScrollView(
       key: NotificationPermissionSheet.sheetKey,
-      padding: EdgeInsets.fromLTRB(AppSpacing.screen, 0, AppSpacing.screen, 20 + MediaQuery.paddingOf(context).bottom),
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        0,
+        AppSpacing.screen,
+        20 + MediaQuery.paddingOf(context).bottom,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -91,36 +105,71 @@ class _NotificationPermissionSheetState extends State<NotificationPermissionShee
             child: Container(
               width: 64,
               height: 64,
-              decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.yellow,
+                shape: BoxShape.circle,
+              ),
               child: Icon(
-                _exactStep ? Icons.alarm_rounded : Icons.notifications_active_rounded,
+                _exactStep
+                    ? Icons.alarm_rounded
+                    : Icons.notifications_active_rounded,
                 color: AppColors.ink,
                 size: 32,
               ),
             ),
           ),
           const SizedBox(height: 14),
-          Text(_exactStep ? l10n.askExactTitle : l10n.askTitle, style: AppText.petName, textAlign: TextAlign.center),
+          Text(
+            _exactStep ? l10n.askExactTitle : l10n.askTitle,
+            style: AppText.petName,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 14),
           if (_exactStep) ...[
-            Text(l10n.exactNote, style: AppText.body.copyWith(color: AppColors.ink)),
+            Text(
+              l10n.exactNote,
+              style: AppText.body.copyWith(color: AppColors.ink),
+            ),
             const SizedBox(height: 8),
-            Text(l10n.exactMissing, style: AppText.body.copyWith(color: AppColors.brown)),
+            Text(
+              l10n.exactMissing,
+              style: AppText.body.copyWith(color: AppColors.brown),
+            ),
           ] else ...[
-            Text(l10n.askIntro, style: AppText.body.copyWith(color: AppColors.ink)),
+            Text(
+              l10n.askIntro,
+              style: AppText.body.copyWith(color: AppColors.ink),
+            ),
             const SizedBox(height: 10),
-            _Point(icon: Icons.restaurant_rounded, color: AppColors.yellow, text: l10n.askMeals),
-            _Point(icon: Icons.medication_rounded, color: AppColors.sage, text: l10n.askMedicines),
-            _Point(icon: Icons.event_rounded, color: AppColors.peach, text: l10n.askAppointments),
+            _Point(
+              icon: Icons.restaurant_rounded,
+              color: AppColors.yellow,
+              text: l10n.askMeals,
+            ),
+            _Point(
+              icon: Icons.medication_rounded,
+              color: AppColors.sage,
+              text: l10n.askMedicines,
+            ),
+            _Point(
+              icon: Icons.event_rounded,
+              color: AppColors.peach,
+              text: l10n.askAppointments,
+            ),
             const SizedBox(height: 8),
             Text(
               l10n.askFoot,
-              style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+              style: AppText.label.copyWith(
+                color: AppColors.brown,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
           const SizedBox(height: 22),
           PrimaryButton(
-            key: _exactStep ? NotificationPermissionSheet.exactKey : NotificationPermissionSheet.allowKey,
+            key: _exactStep
+                ? NotificationPermissionSheet.exactKey
+                : NotificationPermissionSheet.allowKey,
             label: _exactStep ? l10n.askExactAllow : l10n.askAllow,
             loading: _busy,
             onPressed: _exactStep ? _allowExact : _allow,
@@ -159,7 +208,10 @@ class _Point extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(text, style: AppText.body.copyWith(color: AppColors.ink)),
+            child: Text(
+              text,
+              style: AppText.body.copyWith(color: AppColors.ink),
+            ),
           ),
         ],
       ),

@@ -21,11 +21,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
-import '../features/budget/state/budget_providers.dart' show basketProvider;
-import '../features/health/data/health_models.dart';
-import '../features/health/data/reminder_scheduler.dart';
-import '../features/health/state/health_providers.dart';
-import '../features/health/state/schedule_logic.dart';
+import '../services/budget/state/budget_providers.dart' show basketProvider;
+import '../services/pet_records/data/health_models.dart';
+import '../services/pet_records/data/reminder_scheduler.dart';
+import '../services/pet_records/state/health_providers.dart';
+import '../services/pet_records/state/schedule_logic.dart';
 import '../l10n/l10n.dart';
 import '../models/pet.dart';
 import '../state/pets_provider.dart';
@@ -45,7 +45,9 @@ export 'reminder_planner.dart';
 
 /// The phone's notifications; `null` when the app runs without them (the
 /// default: tests, the web).
-final notificationPlatformProvider = Provider<NotificationPlatform?>((ref) => null);
+final notificationPlatformProvider = Provider<NotificationPlatform?>(
+  (ref) => null,
+);
 
 /// Whether the signed-in account has anything that would ring (a routine,
 /// a medicine time, a planned record, a basket reminder). The permission
@@ -62,7 +64,9 @@ class SomethingToRemind extends Notifier<bool> {
   }
 }
 
-final somethingToRemindProvider = NotifierProvider<SomethingToRemind, bool>(SomethingToRemind.new);
+final somethingToRemindProvider = NotifierProvider<SomethingToRemind, bool>(
+  SomethingToRemind.new,
+);
 
 /// Whether the phone lets PetLoop show notifications and ring exactly;
 /// `null` without a [NotificationPlatform]. Checked again with [refresh]
@@ -70,7 +74,8 @@ final somethingToRemindProvider = NotifierProvider<SomethingToRemind, bool>(Some
 /// it in the phone's settings).
 class NotificationAccessController extends AsyncNotifier<NotificationAccess?> {
   @override
-  Future<NotificationAccess?> build() async => ref.watch(notificationPlatformProvider)?.access();
+  Future<NotificationAccess?> build() async =>
+      ref.watch(notificationPlatformProvider)?.access();
 
   Future<void> refresh() async {
     final platform = ref.read(notificationPlatformProvider);
@@ -105,9 +110,10 @@ class NotificationAccessController extends AsyncNotifier<NotificationAccess?> {
   }
 }
 
-final notificationAccessProvider = AsyncNotifierProvider<NotificationAccessController, NotificationAccess?>(
-  NotificationAccessController.new,
-);
+final notificationAccessProvider =
+    AsyncNotifierProvider<NotificationAccessController, NotificationAccess?>(
+      NotificationAccessController.new,
+    );
 
 /// A tapped reminder's target (e.g. `feeding:<petId>`) until the app has
 /// opened it; see `NotificationsHost`.
@@ -125,20 +131,23 @@ class NotificationTaps extends Notifier<String?> {
   }
 }
 
-final notificationTapsProvider = NotifierProvider<NotificationTaps, String?>(NotificationTaps.new);
+final notificationTapsProvider = NotifierProvider<NotificationTaps, String?>(
+  NotificationTaps.new,
+);
 
 /// The phone's names of the reminder kinds, and the snooze label, in the
 /// app's language.
-NotificationChrome notificationChromeOf(NotificationsL10n l10n) => NotificationChrome(
-  channelNames: {
-    NotificationKind.meal: l10n.meals,
-    NotificationKind.walk: l10n.walks,
-    NotificationKind.medicine: l10n.medicines,
-    NotificationKind.appointment: l10n.appointments,
-    NotificationKind.basket: l10n.basket,
-  },
-  snoozeLabel: l10n.snooze,
-);
+NotificationChrome notificationChromeOf(NotificationsL10n l10n) =>
+    NotificationChrome(
+      channelNames: {
+        NotificationKind.meal: l10n.meals,
+        NotificationKind.walk: l10n.walks,
+        NotificationKind.medicine: l10n.medicines,
+        NotificationKind.appointment: l10n.appointments,
+        NotificationKind.basket: l10n.basket,
+      },
+      snoozeLabel: l10n.snooze,
+    );
 
 /// Builds the real sink; `main.dart` overrides [notificationSinkProvider]
 /// with it. Without a platform it is the do-nothing sink.
@@ -157,7 +166,10 @@ NotificationSink localNotificationSink(Ref ref) {
     }),
   );
   _nameChannels(platform, chrome);
-  ref.listen(notificationSettingsProvider, (_, settings) => sink.settings = settings);
+  ref.listen(
+    notificationSettingsProvider,
+    (_, settings) => sink.settings = settings,
+  );
   ref.listen(notificationAccessProvider, (_, access) {
     if (access.hasValue) sink.exact = access.value?.exact ?? false;
   });
@@ -181,7 +193,8 @@ ReminderScheduler notificationReminderScheduler(Ref ref) {
     sink: ref.watch(notificationSinkProvider),
     strings: () => ref.read(notificationsL10nProvider),
     ringsFor: (petId) =>
-        ref.read(authControllerProvider).value != null && ref.read(petsProvider).any((pet) => pet.id == petId),
+        ref.read(authControllerProvider).value != null &&
+        ref.read(petsProvider).any((pet) => pet.id == petId),
   );
   ref.listen(notificationsL10nProvider, (_, _) => scheduler.replanAll());
   return scheduler;
@@ -201,7 +214,8 @@ ReminderScheduler notificationReminderScheduler(Ref ref) {
 /// A pet that is removed or archived stops ringing. Signing out cancels
 /// every reminder on the phone; reminders survive a restart of the app.
 class ReminderCoordinator {
-  ReminderCoordinator(this._container, {DateTime Function() now = DateTime.now}) : _now = now;
+  ReminderCoordinator(this._container, {DateTime Function() now = DateTime.now})
+    : _now = now;
 
   final ProviderContainer _container;
   final DateTime Function() _now;
@@ -244,7 +258,9 @@ class ReminderCoordinator {
     final at = _loadedAt;
     final now = _now();
     if (_userId == null || at == null) return;
-    if (now.difference(at) < const Duration(hours: 1) && isSameDay(at, now)) return;
+    if (now.difference(at) < const Duration(hours: 1) && isSameDay(at, now)) {
+      return;
+    }
     _loaded = {};
     _update();
   }
@@ -265,9 +281,12 @@ class ReminderCoordinator {
     }
     if (_container.read(petsGateProvider) != PetsGate.ready) return;
 
-    final pets = {for (final Pet pet in _container.read(petsProvider)) pet.id: pet.name};
+    final pets = {
+      for (final Pet pet in _container.read(petsProvider)) pet.id: pet.name,
+    };
     final scheduler = _scheduler;
-    for (final id in _loaded.keys.where((id) => !pets.containsKey(id)).toList()) {
+    for (final id
+        in _loaded.keys.where((id) => !pets.containsKey(id)).toList()) {
       _loaded.remove(id);
       scheduler?.forget(id);
     }
@@ -281,7 +300,9 @@ class ReminderCoordinator {
     if (firstLoad) {
       _loadedAt = _now();
       // Reminders of pets that are gone (scheduled before the app started).
-      sink?.retainGroups('health:', {for (final id in pets.keys) healthGroupOf(id)});
+      sink?.retainGroups('health:', {
+        for (final id in pets.keys) healthGroupOf(id),
+      });
     }
   }
 
@@ -315,12 +336,24 @@ class ReminderCoordinator {
 
   Future<void> _loadOnce(String petId, String petName) async {
     final userId = _userId;
-    final plan = _container.listen(carePlanProvider(petId), (_, _) {}, onError: (_, _) {});
-    final records = _container.listen(healthRecordsProvider(petId), (_, _) {}, onError: (_, _) {});
+    final plan = _container.listen(
+      carePlanProvider(petId),
+      (_, _) {},
+      onError: (_, _) {},
+    );
+    final records = _container.listen(
+      healthRecordsProvider(petId),
+      (_, _) {},
+      onError: (_, _) {},
+    );
     try {
       final results = await Future.wait([
-        _container.read(carePlanProvider(petId).future).then<Object?>((value) => value, onError: (_) => null),
-        _container.read(healthRecordsProvider(petId).future).then<Object?>((value) => value, onError: (_) => null),
+        _container
+            .read(carePlanProvider(petId).future)
+            .then<Object?>((value) => value, onError: (_) => null),
+        _container
+            .read(healthRecordsProvider(petId).future)
+            .then<Object?>((value) => value, onError: (_) => null),
       ]);
       if (_disposed || userId != _userId || !_loaded.containsKey(petId)) return;
       await _container

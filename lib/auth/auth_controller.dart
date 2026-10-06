@@ -1,13 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../l10n/l10n.dart';
+import '../platform/session.dart';
 import 'app_user.dart';
 import 'auth_repository.dart';
 import 'fake_auth_repository.dart';
 
 /// The auth backend. `main.dart` overrides this with Supabase when the app
 /// is built with Supabase configuration; otherwise the in-memory fake runs.
-final authRepositoryProvider = Provider<AuthRepository>((ref) => FakeAuthRepository());
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => FakeAuthRepository(),
+);
 
 /// The signed-in user (`null` when signed out). Loading while a session is
 /// being restored or an auth action is in flight; error after a failed one.
@@ -23,15 +26,26 @@ class AuthController extends AsyncNotifier<AppUser?> {
   }
 
   Future<bool> signIn({required String email, required String password}) =>
-      _run(() => ref.read(authRepositoryProvider).signIn(email: email, password: password));
+      _run(
+        () => ref
+            .read(authRepositoryProvider)
+            .signIn(email: email, password: password),
+      );
 
-  Future<bool> signUp({required String displayName, required String email, required String password}) =>
-      _run(() => ref.read(authRepositoryProvider).signUp(displayName: displayName, email: email, password: password));
+  Future<bool> signUp({
+    required String displayName,
+    required String email,
+    required String password,
+  }) => _run(
+    () => ref
+        .read(authRepositoryProvider)
+        .signUp(displayName: displayName, email: email, password: password),
+  );
 
   Future<bool> signOut() => _run(() async {
-        await ref.read(authRepositoryProvider).signOut();
-        return null;
-      });
+    await ref.read(authRepositoryProvider).signOut();
+    return null;
+  });
 
   Future<bool> sendPasswordReset({required String email}) async {
     try {
@@ -54,7 +68,9 @@ class AuthController extends AsyncNotifier<AppUser?> {
   }
 }
 
-final authControllerProvider = AsyncNotifierProvider<AuthController, AppUser?>(AuthController.new);
+final authControllerProvider = AsyncNotifierProvider<AuthController, AppUser?>(
+  AuthController.new,
+);
 
 /// User-facing text for an auth failure, in the language of [l10n].
 String authErrorText(AppL10n l10n, Object error) {
@@ -73,6 +89,31 @@ String authErrorText(AppL10n l10n, Object error) {
     AuthFailure.confirmEmailSent => l10n.authErrConfirmEmailSent,
     // The backend's own explanation is in English: shown as it is on an
     // English screen, replaced by a plain line on any other.
-    AuthFailure.unknown => l10n.localeName == 'en' ? error.message : l10n.errorGeneric,
+    AuthFailure.unknown =>
+      l10n.localeName == 'en' ? error.message : l10n.errorGeneric,
   };
 }
+
+class PasswordRecoveryController extends Notifier<bool> {
+  @override
+  bool build() {
+    final repository = ref.watch(authRepositoryProvider);
+    final subscription = repository.recoveryChanges.listen(
+      (recovering) => state = recovering,
+    );
+    ref.onDispose(subscription.cancel);
+    return repository.isRecovering;
+  }
+
+  Future<void> finish(String password) async {
+    final ticket = SessionTicket(ref);
+    await ref.read(authRepositoryProvider).updatePassword(password);
+    ticket.check();
+    if (ref.mounted) state = false;
+  }
+}
+
+final passwordRecoveryProvider =
+    NotifierProvider<PasswordRecoveryController, bool>(
+      PasswordRecoveryController.new,
+    );

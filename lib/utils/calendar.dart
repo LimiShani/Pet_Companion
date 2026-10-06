@@ -8,9 +8,13 @@ library;
 
 /// Midnight of the day [days] calendar days after [day] (before it, when
 /// negative), whatever the clock does in between.
-DateTime addDays(DateTime day, int days) => DateTime(day.year, day.month, day.day + days);
+DateTime addDays(DateTime day, int days) =>
+    DateTime(day.year, day.month, day.day + days);
 
 /// How many calendar days [to] is after [from]: 1 for the next day, -1 for
 /// the day before, 0 for the same day. The times of day do not count.
-int daysBetween(DateTime from, DateTime to) =>
-    DateTime.utc(to.year, to.month, to.day).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
+int daysBetween(DateTime from, DateTime to) => DateTime.utc(
+  to.year,
+  to.month,
+  to.day,
+).difference(DateTime.utc(from.year, from.month, from.day)).inDays;

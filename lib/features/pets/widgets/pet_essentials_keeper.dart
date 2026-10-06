@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../state/pet_completeness.dart';
+import '../../../services/pets/state/pet_completeness.dart';
 
 /// Keeps what is known about a pet's essentials up to date for as long as
 /// [child] is mounted, including while its page is covered by another one.
@@ -17,7 +17,11 @@ import '../state/pet_completeness.dart';
 /// Every pets widget that reads a pet's essentials, or Health's providers
 /// behind them, wraps what it builds in one of these.
 class PetEssentialsKeeper extends StatefulWidget {
-  const PetEssentialsKeeper({super.key, required this.petId, required this.child});
+  const PetEssentialsKeeper({
+    super.key,
+    required this.petId,
+    required this.child,
+  });
 
   final String petId;
   final Widget child;
@@ -32,7 +36,10 @@ class _PetEssentialsKeeperState extends State<PetEssentialsKeeper> {
 
   void _listen() {
     _subscription?.close();
-    _subscription = _container!.listen(petCompletenessProvider(widget.petId), (_, _) {});
+    _subscription = _container!.listen(
+      petCompletenessProvider(widget.petId),
+      (_, _) {},
+    );
   }
 
   @override

@@ -56,4 +56,6 @@ class NoopNotificationSink implements NotificationSink {
   Future<void> syncGroup(String group, List<PlannedNotification> items) async {}
 }
 
-final notificationSinkProvider = Provider<NotificationSink>((ref) => const NoopNotificationSink());
+final notificationSinkProvider = Provider<NotificationSink>(
+  (ref) => const NoopNotificationSink(),
+);

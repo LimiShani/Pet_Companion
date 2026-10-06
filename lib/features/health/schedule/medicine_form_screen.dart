@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,17 +11,23 @@ import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
-import 'schedule_form_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
+import '../../../presentation/schedule/schedule_form_widgets.dart';
 
 /// Opens the add / edit medicine page over the whole app. Returns the
 /// saved medicine, or `null` when the owner went back or deleted it.
-Future<Medication?> openMedicineForm(BuildContext context, Pet pet, {Medication? medication}) =>
-    pushHealthPage<Medication>(context, MedicineFormScreen(pet: pet, medication: medication));
+Future<Medication?> openMedicineForm(
+  BuildContext context,
+  Pet pet, {
+  Medication? medication,
+}) => pushHealthPage<Medication>(
+  context,
+  MedicineFormScreen(pet: pet, medication: medication),
+);
 
 /// A medicine with the vet's instructions, stored exactly as typed, and
 /// its reminder times. Only the name is required; without reminder times
@@ -41,10 +48,16 @@ class MedicineFormScreen extends ConsumerStatefulWidget {
 class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   final _form = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.medication?.name ?? '');
-  late final _strength = TextEditingController(text: widget.medication?.strength ?? '');
+  late final _strength = TextEditingController(
+    text: widget.medication?.strength ?? '',
+  );
   late final _dose = TextEditingController(text: widget.medication?.dose ?? '');
-  late final _frequency = TextEditingController(text: widget.medication?.frequency ?? '');
-  late final _prescribedBy = TextEditingController(text: widget.medication?.prescribedBy ?? '');
+  late final _frequency = TextEditingController(
+    text: widget.medication?.frequency ?? '',
+  );
+  late final _prescribedBy = TextEditingController(
+    text: widget.medication?.prescribedBy ?? '',
+  );
   late String _route = widget.medication?.route ?? '';
   DateTime? _start;
   DateTime? _end;
@@ -77,7 +90,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     } else {
       _start = medication.startsOn;
       _end = medication.endsOn;
-      final items = ref.read(carePlanProvider(_petId)).value?.itemsOf(medication.id) ?? const <CarePlanItem>[];
+      final items =
+          ref.read(carePlanProvider(_petId)).value?.itemsOf(medication.id) ??
+          const <CarePlanItem>[];
       _times = [for (final item in items) item.time];
       if (items.isNotEmpty) _days = items.first.days;
     }
@@ -85,7 +100,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 
   List<Object?> _fields() => [
-    for (final c in [_name, _strength, _dose, _frequency, _prescribedBy]) c.text,
+    for (final c in [_name, _strength, _dose, _frequency, _prescribedBy])
+      c.text,
     _route,
     _start,
     _end,
@@ -138,7 +154,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   Future<void> _addTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _times.isEmpty ? const TimeOfDay(hour: 8, minute: 0) : const TimeOfDay(hour: 20, minute: 0),
+      initialTime: _times.isEmpty
+          ? const TimeOfDay(hour: 8, minute: 0)
+          : const TimeOfDay(hour: 20, minute: 0),
       helpText: context.healthL10n.reminderTime,
     );
     if (picked == null || !mounted) return;
@@ -210,7 +228,9 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     if (!confirmed || !mounted) return;
     setState(() => _saving = true);
     try {
-      await ref.read(carePlanProvider(_petId).notifier).deleteMedication(medication.id);
+      await ref
+          .read(carePlanProvider(_petId).notifier)
+          .deleteMedication(medication.id);
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (mounted) {
@@ -223,18 +243,33 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final medication = widget.medication;
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final error = _error;
-    final routes = [...medicineRoutes, if (_route.isNotEmpty && !medicineRoutes.contains(_route)) _route];
+    final routes = [
+      ...medicineRoutes,
+      if (_route.isNotEmpty && !medicineRoutes.contains(_route)) _route,
+    ];
     final logs = medication == null
         ? const <CareLog>[]
         : ([
-            for (final log in ref.watch(carePlanProvider(_petId)).value?.logs ?? const <CareLog>[])
+            for (final log
+                in ref.watch(carePlanProvider(_petId)).value?.logs ??
+                    const <CareLog>[])
               if (log.medicationId == medication.id) log,
-          ]..sort((a, b) => (b.doneAt ?? b.loggedAt).compareTo(a.doneAt ?? a.loggedAt)));
+          ]..sort(
+            (a, b) =>
+                (b.doneAt ?? b.loggedAt).compareTo(a.doneAt ?? a.loggedAt),
+          ));
 
     final page = HealthPage(
       petId: _petId,
@@ -271,14 +306,20 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               key: const Key('medicine-strength'),
               controller: _strength,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: l10n.strengthOptional, hintText: l10n.strengthHint),
+              decoration: InputDecoration(
+                labelText: l10n.strengthOptional,
+                hintText: l10n.strengthHint,
+              ),
             ),
             const SizedBox(height: 10),
             TextFormField(
               key: const Key('medicine-dose'),
               controller: _dose,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: l10n.doseOptional, hintText: l10n.doseHint),
+              decoration: InputDecoration(
+                labelText: l10n.doseOptional,
+                hintText: l10n.doseHint,
+              ),
             ),
             FormLabel(l10n.howItIsGiven),
             Wrap(
@@ -290,7 +331,8 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                     key: ValueKey('route-$route'),
                     label: Text(l10n.medicineRoute(route)),
                     selected: route == _route,
-                    onSelected: (selected) => setState(() => _route = selected ? route : ''),
+                    onSelected: (selected) =>
+                        setState(() => _route = selected ? route : ''),
                   ),
               ],
             ),
@@ -300,7 +342,10 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               controller: _frequency,
               textCapitalization: TextCapitalization.sentences,
               textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: l10n.howOftenOptional, hintText: l10n.howOftenHint),
+              decoration: InputDecoration(
+                labelText: l10n.howOftenOptional,
+                hintText: l10n.howOftenHint,
+              ),
             ),
             const SizedBox(height: 10),
             PickerTile(
@@ -338,8 +383,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                   InputChip(
                     key: ValueKey('time-${format.timeOfDay(time)}'),
                     label: Text(format.timeOfDay(time)),
-                    onDeleted: () => setState(() => _times = [..._times]..remove(time)),
-                    deleteButtonTooltipMessage: l10n.removeNamed(format.timeOfDay(time)),
+                    onDeleted: () =>
+                        setState(() => _times = [..._times]..remove(time)),
+                    deleteButtonTooltipMessage: l10n.removeNamed(
+                      format.timeOfDay(time),
+                    ),
                   ),
                 ActionChip(
                   key: const Key('medicine-add-time'),
@@ -351,26 +399,46 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
             ),
             if (_times.isNotEmpty) ...[
               const SizedBox(height: 8),
-              DaysPicker(days: _days, onChanged: (days) => setState(() => _days = days)),
+              DaysPicker(
+                days: _days,
+                onChanged: (days) => setState(() => _days = days),
+              ),
             ],
             const SizedBox(height: 6),
-            FinePrint(_times.isEmpty ? l10n.medicineNoTimesNote : l10n.medicineReminderNote, center: false),
+            FinePrint(
+              _times.isEmpty
+                  ? l10n.medicineNoTimesNote
+                  : l10n.medicineReminderNote,
+              center: false,
+            ),
             if (error != null) ...[
               const SizedBox(height: 12),
               Text(
                 error is String ? error : format.error(error),
-                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+                style: AppText.body.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
             const SizedBox(height: 22),
-            PrimaryButton(label: l10n.saveMedicine, loading: _saving, onPressed: _save),
+            PrimaryButton(
+              label: l10n.saveMedicine,
+              loading: _saving,
+              onPressed: _save,
+            ),
             const SizedBox(height: 12),
             FinePrint(l10n.medicineFinePrint),
             if (medication != null) ...[
               const SizedBox(height: 12),
-              HealthSectionTitle(l10n.doseLog, count: logs.isEmpty ? null : logs.length),
+              HealthSectionTitle(
+                l10n.doseLog,
+                count: logs.isEmpty ? null : logs.length,
+              ),
               if (logs.isEmpty)
-                Text(l10n.noDoseRecordedYet, style: AppText.secondary.copyWith(color: AppColors.brown))
+                Text(
+                  l10n.noDoseRecordedYet,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                )
               else
                 for (final log in logs.take(30))
                   Padding(
@@ -383,8 +451,15 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       ),
     );
     return ListenableBuilder(
-      listenable: Listenable.merge([_name, _strength, _dose, _frequency, _prescribedBy]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      listenable: Listenable.merge([
+        _name,
+        _strength,
+        _dose,
+        _frequency,
+        _prescribedBy,
+      ]),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: page,
     );
   }
@@ -396,7 +471,14 @@ class _DoseLogRow extends StatelessWidget {
   final CareLog log;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final due = log.dueTime;
     final by = log.loggedByName.trim();
     final l10n = context.healthL10n;
@@ -423,14 +505,20 @@ class _DoseLogRow extends StatelessWidget {
                 Text(
                   format.dots([
                     format.date(log.dueOn),
-                    if (due != null) l10n.doseLogReminder(format.timeOfDay(due)) else l10n.doseLogWhenNeeded,
+                    if (due != null)
+                      l10n.doseLogReminder(format.timeOfDay(due))
+                    else
+                      l10n.doseLogWhenNeeded,
                     // No name was stored (or, by an older version, the word
                     // "You"): the owner's own entry.
-                    by.isEmpty || by == 'You' ? l10n.doseLoggedByYou : l10n.doseLoggedBy(by),
+                    by.isEmpty || by == 'You'
+                        ? l10n.doseLoggedByYou
+                        : l10n.doseLoggedBy(by),
                   ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
-                if (log.note.isNotEmpty) TypedText(log.note, style: AppText.secondary),
+                if (log.note.isNotEmpty)
+                  TypedText(log.note, style: AppText.secondary),
               ],
             ),
           ),

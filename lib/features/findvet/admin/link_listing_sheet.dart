@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,12 +6,13 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../health/widgets/health_widgets.dart' show HealthLoading, SheetTitle, kHealthTapTarget, showHealthSheet;
-import '../data/vet_admin_repository.dart';
-import '../data/vet_models.dart';
+import '../../../presentation/health_widgets.dart'
+    show HealthLoading, SheetTitle, kHealthTapTarget, showHealthSheet;
+import '../../../services/findvet/data/vet_admin_repository.dart';
+import '../../../services/findvet/data/vet_models.dart';
 import '../findvet_words.dart';
-import '../regions/region.dart' show normalizePlaceName;
-import '../state/find_vet_providers.dart';
+import '../../../services/findvet/regions/region.dart' show normalizePlaceName;
+import '../../../services/findvet/state/find_vet_providers.dart';
 
 /// Lets a directory reviewer attach a places-provider [listing] (a result
 /// that came only from Google) to one of our facilities: a second listing
@@ -19,10 +21,17 @@ import '../state/find_vet_providers.dart';
 ///
 /// Returns whether the listing was linked. Failures are shown in a snack
 /// bar and return false.
-Future<bool> linkListingToFacility(BuildContext context, WidgetRef ref, VetResult listing) async {
+Future<bool> linkListingToFacility(
+  BuildContext context,
+  WidgetRef ref,
+  VetResult listing,
+) async {
   final placeId = listing.placeId;
   if (placeId == null) return false;
-  final facility = await showHealthSheet<AdminFacility>(context, _ChooseFacility(listing: listing));
+  final facility = await showHealthSheet<AdminFacility>(
+    context,
+    _ChooseFacility(listing: listing),
+  );
   if (facility == null || !context.mounted) return false;
 
   final l10n = context.findVetL10n;
@@ -31,7 +40,10 @@ Future<bool> linkListingToFacility(BuildContext context, WidgetRef ref, VetResul
     builder: (context) => AlertDialog(
       content: Text(l10n.adminLinkConfirm(listing.name, facility.name)),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(context.l10n.commonCancel),
+        ),
         FilledButton(
           key: const Key('link-listing-confirm'),
           onPressed: () => Navigator.of(context).pop(true),
@@ -56,7 +68,8 @@ Future<bool> linkListingToFacility(BuildContext context, WidgetRef ref, VetResul
 /// How much two names share, for putting the likely facility first:
 /// the count of words (two letters or more) they have in common.
 int _sharedWords(String a, String b) {
-  Set<String> words(String s) => normalizePlaceName(s).split(' ').where((w) => w.length > 1).toSet();
+  Set<String> words(String s) =>
+      normalizePlaceName(s).split(' ').where((w) => w.length > 1).toSet();
   return words(a).intersection(words(b)).length;
 }
 
@@ -68,7 +81,14 @@ class _ChooseFacility extends ConsumerWidget {
   static Key facilityKey(String id) => Key('link-listing-facility-$id');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -76,22 +96,33 @@ class _ChooseFacility extends ConsumerWidget {
       children: [
         SheetTitle(l10n.adminLinkTitle, subtitle: listing.name),
         const SizedBox(height: 6),
-        Text(l10n.adminLinkNote, style: AppText.secondary.copyWith(color: AppColors.brown)),
+        Text(
+          l10n.adminLinkNote,
+          style: AppText.secondary.copyWith(color: AppColors.brown),
+        ),
         const SizedBox(height: 10),
         FutureBuilder<List<AdminFacility>>(
           future: ref.read(vetAdminRepositoryProvider).facilities(),
           builder: (context, snapshot) {
-            if (snapshot.hasError) return Text(l10n.adminLoadFailed, style: AppText.body);
+            if (snapshot.hasError) {
+              return Text(l10n.adminLoadFailed, style: AppText.body);
+            }
             if (!snapshot.hasData) return const HealthLoading();
-            int score(AdminFacility f) =>
-                [_sharedWords(listing.name, f.name), if (f.nameHe != null) _sharedWords(listing.name, f.nameHe!)]
-                    .reduce((a, b) => a > b ? a : b);
-            final facilities = snapshot.data!.where((f) => f.reviewStatus != 'withdrawn').toList()
-              ..sort((a, b) {
-                final byScore = score(b).compareTo(score(a));
-                return byScore != 0 ? byScore : a.name.compareTo(b.name);
-              });
-            if (facilities.isEmpty) return Text(l10n.adminLinkNoFacilities, style: AppText.body);
+            int score(AdminFacility f) => [
+              _sharedWords(listing.name, f.name),
+              if (f.nameHe != null) _sharedWords(listing.name, f.nameHe!),
+            ].reduce((a, b) => a > b ? a : b);
+            final facilities =
+                snapshot.data!
+                    .where((f) => f.reviewStatus != 'withdrawn')
+                    .toList()
+                  ..sort((a, b) {
+                    final byScore = score(b).compareTo(score(a));
+                    return byScore != 0 ? byScore : a.name.compareTo(b.name);
+                  });
+            if (facilities.isEmpty) {
+              return Text(l10n.adminLinkNoFacilities, style: AppText.body);
+            }
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -99,14 +130,21 @@ class _ChooseFacility extends ConsumerWidget {
                   ListTile(
                     key: facilityKey(f.id),
                     minTileHeight: kHealthTapTarget,
-                    leading: const AppIcon(Icons.apartment_rounded, color: AppColors.coralDark),
+                    leading: const AppIcon(
+                      Icons.apartment_rounded,
+                      color: AppColors.coralDark,
+                    ),
                     title: Text(
                       f.nameHe == null ? f.name : '${f.name} · ${f.nameHe}',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     subtitle: Text(
-                      [?f.address, ?f.city, l10n.reviewStatus(f.reviewStatus)].join(' · '),
+                      [
+                        ?f.address,
+                        ?f.city,
+                        l10n.reviewStatus(f.reviewStatus),
+                      ].join(' · '),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

@@ -18,21 +18,28 @@ class LanguageChoice extends ConsumerWidget {
   const LanguageChoice({super.key});
 
   /// The key of a choice's row.
-  static Key keyOf(AppLanguage language) => ValueKey('language-${language.name}');
+  static Key keyOf(AppLanguage language) =>
+      ValueKey('language-${language.name}');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final followsPhone = ref.watch(hebrewFollowsDeviceProvider);
     final chosen = ref.watch(appLanguageProvider);
-    final selected = chosen == AppLanguage.system && !followsPhone ? AppLanguage.english : chosen;
+    final selected = chosen == AppLanguage.system && !followsPhone
+        ? AppLanguage.english
+        : chosen;
     final phoneLanguage = resolveAppLocale(
       AppLanguage.system,
       ref.watch(deviceLocalesProvider),
       hebrewFollowsDevice: true,
     );
 
-    final options = [if (followsPhone) AppLanguage.system, AppLanguage.hebrew, AppLanguage.english];
+    final options = [
+      if (followsPhone) AppLanguage.system,
+      AppLanguage.hebrew,
+      AppLanguage.english,
+    ];
 
     return Material(
       color: AppColors.white,
@@ -42,7 +49,8 @@ class LanguageChoice extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (final option in options) ...[
-            if (option != options.first) const Divider(indent: 16, endIndent: 16),
+            if (option != options.first)
+              const Divider(indent: 16, endIndent: 16),
             ChoiceRow(
               key: keyOf(option),
               title: switch (option) {
@@ -51,11 +59,16 @@ class LanguageChoice extends ConsumerWidget {
                 AppLanguage.english => nativeLanguageName(englishLocale),
               },
               subtitle: option == AppLanguage.system
-                  ? l10n.languageFollowPhoneNow(nativeLanguageName(phoneLanguage))
+                  ? l10n.languageFollowPhoneNow(
+                      nativeLanguageName(phoneLanguage),
+                    )
                   : null,
-              tag: option == AppLanguage.hebrew && !followsPhone ? l10n.languagePreviewTag : null,
+              tag: option == AppLanguage.hebrew && !followsPhone
+                  ? l10n.languagePreviewTag
+                  : null,
               selected: option == selected,
-              onTap: () => ref.read(appLanguageProvider.notifier).choose(option),
+              onTap: () =>
+                  ref.read(appLanguageProvider.notifier).choose(option),
             ),
           ],
         ],

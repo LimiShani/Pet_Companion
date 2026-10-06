@@ -1,3 +1,5 @@
+import '../../../access/access_provider.dart';
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,13 +19,22 @@ class FeedSection extends ConsumerWidget {
   const FeedSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'community.feed.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final feed = ref.watch(feedControllerProvider);
     final posts = feed.value;
 
     if (posts == null) {
-      if (feed.isLoading) return const Center(child: CircularProgressIndicator());
+      if (feed.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
       return SectionState(
         icon: Icons.cloud_off_rounded,
         title: l10n.feedLoadFailed,
@@ -39,7 +50,9 @@ class FeedSection extends ConsumerWidget {
         title: l10n.noPostsTitle,
         message: l10n.noPostsMessage,
         actionLabel: l10n.writeAPost,
-        onAction: () => openPostComposer(context),
+        onAction: ref.watch(capabilityProvider('community.feed.post'))
+            ? () => openPostComposer(context)
+            : null,
       );
     }
 
@@ -62,7 +75,8 @@ class FeedSection extends ConsumerWidget {
           AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom,
         ),
         itemCount: posts.length,
-        separatorBuilder: (context, index) => const SizedBox(height: AppSpacing.cardGap),
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppSpacing.cardGap),
         itemBuilder: (context, index) {
           final post = posts[index];
           return PostCard(

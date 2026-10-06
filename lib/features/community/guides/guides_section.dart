@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,8 +10,8 @@ import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
-import '../data/audience.dart';
-import '../data/guides_repository.dart';
+import '../../../services/community/data/audience.dart';
+import '../../../services/community/data/guides_repository.dart';
 import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
 import '../widgets/section_state.dart';
@@ -43,14 +44,23 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.guides.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final library = ref.watch(guideLibraryProvider);
     final scope = ref.watch(communityScopeProvider);
     final data = library.value;
 
     if (data == null) {
-      if (library.isLoading) return const Center(child: CircularProgressIndicator());
+      if (library.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
       return SectionState(
         icon: Icons.cloud_off_rounded,
         title: l10n.guidesLoadFailed,
@@ -62,10 +72,17 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
 
     final categories = data.categoriesIn(scope);
     // A category chosen under another animal may not exist under this one.
-    final categoryId = categories.any((c) => c.id == _categoryId) ? _categoryId : null;
-    final results = data.search(query: _search.text, categoryId: categoryId, scope: scope);
-    final everywhere =
-        results.isEmpty && scope != CommunityScope.everything ? data.search(query: _search.text).length : 0;
+    final categoryId = categories.any((c) => c.id == _categoryId)
+        ? _categoryId
+        : null;
+    final results = data.search(
+      query: _search.text,
+      categoryId: categoryId,
+      scope: scope,
+    );
+    final everywhere = results.isEmpty && scope != CommunityScope.everything
+        ? data.search(query: _search.text).length
+        : 0;
 
     return ListView(
       padding: const EdgeInsets.only(top: 16, bottom: 24),
@@ -81,13 +98,19 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
             textDirection: contentDirection(context, _search.text),
             decoration: InputDecoration(
               hintText: l10n.searchGuides,
-              prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
+              prefixIcon: const AppIcon(
+                Icons.search_rounded,
+                color: AppColors.brown,
+              ),
               suffixIcon: _search.text.isEmpty
                   ? null
                   : IconButton(
                       onPressed: _search.clear,
                       tooltip: l10n.clearSearch,
-                      icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
+                      icon: const AppIcon(
+                        Icons.close_rounded,
+                        color: AppColors.brown,
+                      ),
                     ),
             ),
           ),
@@ -128,7 +151,9 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
                     actionLabel: l10n.searchEverything,
                     onAction: () {
                       setState(() => _categoryId = null);
-                      ref.read(communityScopeProvider.notifier).select(CommunityScope.everything);
+                      ref
+                          .read(communityScopeProvider.notifier)
+                          .select(CommunityScope.everything);
                     },
                   )
                 : EmptyState(
@@ -140,7 +165,12 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
         else
           for (final guide in results)
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 0, AppSpacing.screen, AppSpacing.cardGap),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                0,
+                AppSpacing.screen,
+                AppSpacing.cardGap,
+              ),
               child: _GuideCard(
                 guide: guide,
                 category: data.categoryOf(guide),
@@ -154,7 +184,12 @@ class _GuidesSectionState extends ConsumerState<GuidesSection> {
 }
 
 class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({required this.id, required this.label, required this.selected, required this.onSelected});
+  const _CategoryChip({
+    required this.id,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final String id;
   final String label;
@@ -162,7 +197,14 @@ class _CategoryChip extends StatelessWidget {
   final VoidCallback onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.guides.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return ChoiceChip(
       key: ValueKey('category-$id'),
       label: Text(label),
@@ -174,14 +216,25 @@ class _CategoryChip extends StatelessWidget {
 }
 
 class _GuideCard extends StatelessWidget {
-  const _GuideCard({required this.guide, required this.category, required this.showAudience});
+  const _GuideCard({
+    required this.guide,
+    required this.category,
+    required this.showAudience,
+  });
 
   final Guide guide;
   final GuideCategory? category;
   final bool showAudience;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.guides.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final format = AppFormat.of(context);
     final meta = dotted([
@@ -189,7 +242,9 @@ class _GuideCard extends StatelessWidget {
       if (category != null) l10n.categoryName(category!),
     ]);
     final small = AppText.label.copyWith(color: AppColors.brown);
-    final audienceTag = showAudience ? SmallTag.forAudience(l10n, guide.audience) : null;
+    final audienceTag = showAudience
+        ? SmallTag.forAudience(l10n, guide.audience)
+        : null;
     final tags = [
       ?audienceTag,
       if (guide.review != null) SmallTag.reviewed(l10n),
@@ -219,14 +274,30 @@ class _GuideCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Text(guide.title, style: AppText.cardTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w800)),
+                          Text(
+                            guide.title,
+                            style: AppText.cardTitle.copyWith(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                           const SizedBox(height: 2),
-                          Text(guide.summary, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                          Text(
+                            guide.summary,
+                            style: AppText.secondary.copyWith(
+                              color: AppColors.brown,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(meta, style: small, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      meta,
+                      style: small,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     if (tags.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Wrap(spacing: 6, runSpacing: 4, children: tags),

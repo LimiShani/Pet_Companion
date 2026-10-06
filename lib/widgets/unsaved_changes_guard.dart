@@ -13,7 +13,11 @@ import '../l10n/l10n.dart';
 /// so undoing an edit stops the question, and must be `false` while the
 /// page is saving.
 class UnsavedChangesGuard extends StatelessWidget {
-  const UnsavedChangesGuard({super.key, required this.dirty, required this.child});
+  const UnsavedChangesGuard({
+    super.key,
+    required this.dirty,
+    required this.child,
+  });
 
   final bool dirty;
   final Widget child;
@@ -24,7 +28,9 @@ class UnsavedChangesGuard extends StatelessWidget {
       canPop: !dirty,
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
-        if (await confirmDiscardChanges(context) && context.mounted) Navigator.of(context).pop();
+        if (await confirmDiscardChanges(context) && context.mounted) {
+          Navigator.of(context).pop();
+        }
       },
       child: child,
     );
@@ -40,8 +46,14 @@ Future<bool> confirmDiscardChanges(BuildContext context) async {
       title: Text(l10n.discardChangesTitle),
       content: Text(l10n.discardChangesBody),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(l10n.discardChangesKeepEditing)),
-        FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(l10n.discardChangesDiscard)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: Text(l10n.discardChangesKeepEditing),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: Text(l10n.discardChangesDiscard),
+        ),
       ],
     ),
   );

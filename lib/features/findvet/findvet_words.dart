@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import '../../l10n/l10n.dart';
-import 'data/vet_finder_repository.dart';
+import '../../services/findvet/data/vet_finder_repository.dart';
 
 /// Codes from the server and the directory, in the screen's language. An
 /// unknown code shows as it is rather than disappearing.
@@ -69,9 +69,11 @@ extension FindVetWords on FindVetL10n {
   /// Why a search failed, as one sentence.
   String failure(Object error) => switch (error) {
     VetFinderException(failure: VetFinderFailure.offline) => errorOffline,
-    VetFinderException(failure: VetFinderFailure.rateLimited) => errorRateLimited,
+    VetFinderException(failure: VetFinderFailure.rateLimited) =>
+      errorRateLimited,
     VetFinderException(failure: VetFinderFailure.invalid) => errorInvalid,
-    VetFinderException(failure: VetFinderFailure.unsupportedRegion) => problemOutsideRegion,
+    VetFinderException(failure: VetFinderFailure.unsupportedRegion) =>
+      problemOutsideRegion,
     _ => errorUnavailable,
   };
 }
@@ -82,7 +84,9 @@ String formatDistance(BuildContext context, int metres) {
   final format = AppFormat.of(context);
   if (metres < 1000) return l10n.distanceM((metres / 10).round() * 10);
   final km = metres / 1000;
-  return l10n.distanceKm(km < 10 ? format.decimal(km) : format.integer(km.round()));
+  return l10n.distanceKm(
+    km < 10 ? format.decimal(km) : format.integer(km.round()),
+  );
 }
 
 /// Whole kilometres of a radius.

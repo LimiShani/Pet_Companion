@@ -33,8 +33,16 @@ class WeekChoice extends ConsumerWidget {
       (DateTime.monday, l10n.settingsDayMonday),
     ];
     final weekdaySets = [
-      (sundayToThursdayKey, WeekSettings.israeli.weekdays, l10n.settingsWeekdaysSunThu),
-      (mondayToFridayKey, WeekSettings.mondayToFriday.weekdays, l10n.settingsWeekdaysMonFri),
+      (
+        sundayToThursdayKey,
+        WeekSettings.israeli.weekdays,
+        l10n.settingsWeekdaysSunThu,
+      ),
+      (
+        mondayToFridayKey,
+        WeekSettings.mondayToFriday.weekdays,
+        l10n.settingsWeekdaysMonFri,
+      ),
     ];
 
     return Material(
@@ -91,7 +99,10 @@ class _WeekPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final format = AppFormat.of(context);
-    final weekend = week.sorted(week.weekend).map(format.weekdayShort).join(', ');
+    final weekend = week
+        .sorted(week.weekend)
+        .map(format.weekdayShort)
+        .join(', ');
 
     return Semantics(
       label: context.l10n.settingsWeekendIs(weekend),
@@ -102,7 +113,10 @@ class _WeekPreview extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: _DayCell(letter: format.weekdayNarrow(day), weekend: !week.weekdays.contains(day)),
+                  child: _DayCell(
+                    letter: format.weekdayNarrow(day),
+                    weekend: !week.weekdays.contains(day),
+                  ),
                 ),
               ),
           ],
@@ -127,7 +141,9 @@ class _DayCell extends StatelessWidget {
       decoration: BoxDecoration(
         color: weekend ? Colors.transparent : AppColors.yellow,
         borderRadius: BorderRadius.circular(12),
-        border: weekend ? Border.all(color: Theme.of(context).colorScheme.outlineVariant) : null,
+        border: weekend
+            ? Border.all(color: Theme.of(context).colorScheme.outlineVariant)
+            : null,
       ),
       // Scaled down rather than cut when the text is very large.
       child: FittedBox(

@@ -1,0 +1,30 @@
+name: Quality checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  app-and-backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Feature boundaries
+        run: python3 tool/check_feature_boundaries.py
+      - run: flutter pub get
+      - run: flutter analyze --no-pub
+      - run: flutter test --no-pub
+      - name: Backend tests
+        run: node --test 'supabase/functions/_tests/*.test.ts'
+      - name: PostgreSQL migrations and authorization
+        shell: pwsh
+        run: ./tool/test_database.ps1

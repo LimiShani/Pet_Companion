@@ -20,14 +20,17 @@ class AccountSheet extends ConsumerWidget {
 
   static const settingsKey = Key('account-settings');
 
-  static Future<void> show(BuildContext context, AppUser user) => showModalBottomSheet<void>(
+  static Future<void> show(BuildContext context, AppUser user) =>
+      showModalBottomSheet<void>(
         context: context,
         // The sheet takes the height of its content and scrolls on a short
         // screen or with large text.
         isScrollControlled: true,
         backgroundColor: AppColors.cream,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.shellRadius)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.shellRadius),
+          ),
         ),
         builder: (_) => AccountSheet(user: user),
       );
@@ -38,7 +41,12 @@ class AccountSheet extends ConsumerWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 20),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          16,
+          AppSpacing.screen,
+          20,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -48,11 +56,18 @@ class AccountSheet extends ConsumerWidget {
                 Container(
                   width: 52,
                   height: 52,
-                  decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AppColors.yellow,
+                    shape: BoxShape.circle,
+                  ),
                   child: Center(
                     child: Text(
                       user.initial,
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
                     ),
                   ),
                 ),
@@ -71,7 +86,9 @@ class AccountSheet extends ConsumerWidget {
                         user.email,
                         // An address reads left to right on every screen.
                         textDirection: TextDirection.ltr,
-                        style: AppText.secondary.copyWith(color: AppColors.brown),
+                        style: AppText.secondary.copyWith(
+                          color: AppColors.brown,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

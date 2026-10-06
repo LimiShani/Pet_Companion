@@ -5,8 +5,7 @@
 # the iOS app compiles; to put it on an iPhone it still has to be signed
 # (see docs/IOS.md).
 #
-# Without the repository secrets SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY
-# the build runs on the demo data; with them it talks to Supabase.
+# Production builds require both Supabase secrets. Missing settings fail the build.
 name: iOS build
 
 on:
@@ -34,7 +33,7 @@ jobs:
       - name: Packages
         run: flutter pub get
 
-      - name: Backend settings (only when the secrets exist)
+      - name: Required backend settings
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
@@ -43,7 +42,8 @@ jobs:
             printf '{"SUPABASE_URL":"%s","SUPABASE_PUBLISHABLE_KEY":"%s"}' "$SUPABASE_URL" "$SUPABASE_PUBLISHABLE_KEY" > env.json
             echo "DEFINES=--dart-define-from-file=env.json" >> "$GITHUB_ENV"
           else
-            echo "No Supabase secrets: building the demo."
+            echo "Both SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY secrets are required." >&2
+            exit 1
           fi
 
       - name: Build (unsigned)

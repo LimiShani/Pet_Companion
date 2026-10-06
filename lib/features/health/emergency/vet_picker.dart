@@ -5,12 +5,12 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_keeper.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_keeper.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 import 'vet_form_screen.dart';
 
 /// Lets the owner choose the vet of [petId] for [role]: one of the vets
@@ -19,7 +19,11 @@ import 'vet_form_screen.dart';
 /// Returns the vet now linked to the pet, or `null` when the owner closed
 /// the sheet without choosing. With no saved vets it goes straight to the
 /// form.
-Future<Vet?> showVetPicker(BuildContext context, {required String petId, VetRole role = VetRole.regular}) async {
+Future<Vet?> showVetPicker(
+  BuildContext context, {
+  required String petId,
+  VetRole role = VetRole.regular,
+}) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final sub = container.listen(vetsProvider.future, (_, _) {});
   List<Vet> saved;
@@ -32,7 +36,10 @@ Future<Vet?> showVetPicker(BuildContext context, {required String petId, VetRole
   }
   if (!context.mounted) return null;
   if (saved.isEmpty) return openVetForm(context, petId: petId, role: role);
-  return showHealthSheet<Vet>(context, VetPickerSheet(petId: petId, role: role));
+  return showHealthSheet<Vet>(
+    context,
+    VetPickerSheet(petId: petId, role: role),
+  );
 }
 
 class VetPickerSheet extends ConsumerStatefulWidget {
@@ -57,7 +64,9 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
       _error = null;
     });
     try {
-      await ref.read(healthProfileProvider(widget.petId).notifier).setVet(widget.role, vet.id);
+      await ref
+          .read(healthProfileProvider(widget.petId).notifier)
+          .setVet(widget.role, vet.id);
       if (mounted) Navigator.of(context).pop(vet);
     } catch (e) {
       if (mounted) {
@@ -70,13 +79,19 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
   }
 
   Future<void> _addNew() async {
-    final vet = await openVetForm(context, petId: widget.petId, role: widget.role);
+    final vet = await openVetForm(
+      context,
+      petId: widget.petId,
+      role: widget.role,
+    );
     if (vet != null && mounted) Navigator.of(context).pop(vet);
   }
 
   Future<void> _remove() async {
     try {
-      await ref.read(healthProfileProvider(widget.petId).notifier).setVet(widget.role, null);
+      await ref
+          .read(healthProfileProvider(widget.petId).notifier)
+          .setVet(widget.role, null);
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) setState(() => _error = e);
@@ -95,7 +110,9 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
       mainAxisSize: MainAxisSize.min,
       children: [
         SheetTitle(
-          widget.role == VetRole.regular ? l10n.chooseRegularVet : l10n.chooseEmergencyVet,
+          widget.role == VetRole.regular
+              ? l10n.chooseRegularVet
+              : l10n.chooseEmergencyVet,
           subtitle: l10n.vetPickerNote,
         ),
         const SizedBox(height: 12),
@@ -115,17 +132,27 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
             padding: const EdgeInsetsDirectional.only(bottom: 8),
             child: Text(
               healthErrorOf(context, _error),
-              style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+              style: AppText.body.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ),
         const SizedBox(height: 6),
         FilledButton.icon(
           onPressed: _addNew,
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(kHealthTapTarget),
+          ),
           icon: const AppIcon(Icons.add_rounded),
           label: Text(l10n.addNewVet),
         ),
-        if (current != null) Center(child: HealthLink(l10n.removeVetFromPet(current.name), onPressed: _remove)),
+        if (current != null)
+          Center(
+            child: HealthLink(
+              l10n.removeVetFromPet(current.name),
+              onPressed: _remove,
+            ),
+          ),
       ],
     );
   }
@@ -133,7 +160,13 @@ class _VetPickerSheetState extends ConsumerState<VetPickerSheet> {
 
 /// One of the owner's saved vets with a "Use" button.
 class SavedVetRow extends StatelessWidget {
-  const SavedVetRow({super.key, required this.vet, required this.onUse, this.selected = false, this.busy = false});
+  const SavedVetRow({
+    super.key,
+    required this.vet,
+    required this.onUse,
+    this.selected = false,
+    this.busy = false,
+  });
 
   final Vet vet;
   final VoidCallback? onUse;
@@ -151,7 +184,12 @@ class SavedVetRow extends StatelessWidget {
         ? vet.address
         : l10n.noPhoneYet;
     return HealthCard(
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 10, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 10,
+        bottom: 10,
+      ),
       child: Row(
         children: [
           const IconDisc(Icons.medical_services_rounded),
@@ -161,7 +199,10 @@ class SavedVetRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TypedText(vet.name, style: AppText.cardTitle),
-                TypedText(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                TypedText(
+                  detail,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
               ],
             ),
           ),
@@ -177,7 +218,11 @@ class SavedVetRow extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               child: busy
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : Text(l10n.useVet),
             ),
         ],
@@ -190,13 +235,18 @@ class SavedVetRow extends StatelessWidget {
 /// phone, "Change") or a prompt to add one. Tapping opens [showVetPicker].
 /// Handles loading and load errors itself.
 class PetVetTile extends ConsumerWidget {
-  const PetVetTile({super.key, required this.petId, this.role = VetRole.regular});
+  const PetVetTile({
+    super.key,
+    required this.petId,
+    this.role = VetRole.regular,
+  });
 
   final String petId;
   final VetRole role;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => HealthKeeper(petId: petId, child: _tile(context, ref));
+  Widget build(BuildContext context, WidgetRef ref) =>
+      HealthKeeper(petId: petId, child: _tile(context, ref));
 
   Widget _tile(BuildContext context, WidgetRef ref) {
     final vets = ref.watch(petVetsProvider(petId));
@@ -224,14 +274,22 @@ class PetVetTile extends ConsumerWidget {
         ),
       );
     }
-    if (!vets.hasValue) return const HealthCard(child: Center(child: CircularProgressIndicator()));
+    if (!vets.hasValue) {
+      return const HealthCard(
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     final vet = vets.value!.of(role);
     if (vet == null) {
       return HealthPromptCard(
-        icon: role == VetRole.regular ? Icons.add_call : Icons.local_hospital_rounded,
+        icon: role == VetRole.regular
+            ? Icons.add_call
+            : Icons.local_hospital_rounded,
         title: role == VetRole.regular ? l10n.addVet : l10n.addEmergencyVet,
-        message: role == VetRole.regular ? l10n.vetPromptNote : l10n.emergencyVetPromptNote,
+        message: role == VetRole.regular
+            ? l10n.vetPromptNote
+            : l10n.emergencyVetPromptNote,
         onTap: pick,
       );
     }
@@ -245,10 +303,15 @@ class PetVetTile extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(l10n.vetRole(role), style: AppText.label.copyWith(color: AppColors.brown)),
+                Text(
+                  l10n.vetRole(role),
+                  style: AppText.label.copyWith(color: AppColors.brown),
+                ),
                 TypedText(vet.name, style: AppText.cardTitle),
                 Text(
-                  vet.hasPhone ? HealthFormat.of(context).ltrInLine(vet.phone) : l10n.noPhoneYet,
+                  vet.hasPhone
+                      ? HealthFormat.of(context).ltrInLine(vet.phone)
+                      : l10n.noPhoneYet,
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -257,7 +320,10 @@ class PetVetTile extends ConsumerWidget {
           const SizedBox(width: 8),
           Text(
             l10n.change,
-            style: AppText.secondary.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
+            style: AppText.secondary.copyWith(
+              color: AppColors.coralDark,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),

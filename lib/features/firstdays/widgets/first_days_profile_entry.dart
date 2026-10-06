@@ -5,13 +5,13 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../health/health_strings.dart';
-import '../../health/state/health_providers.dart';
-import '../../pets/widgets/pets_widgets.dart';
-import '../data/first_days_models.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/pets_widgets.dart';
+import '../../../services/firstdays/data/first_days_models.dart';
 import '../first_days_screen.dart';
-import '../state/first_days_logic.dart';
-import '../state/first_days_providers.dart';
+import '../../../services/firstdays/state/first_days_logic.dart';
+import '../../../services/firstdays/state/first_days_providers.dart';
 import 'arrival_question.dart';
 import 'first_days_keeper.dart';
 
@@ -64,7 +64,10 @@ class _StartState extends ConsumerState<_Start> {
   bool _busy = false;
 
   Future<void> _start() async {
-    final day = await pickArrivalDay(context, now: ref.read(healthClockProvider)());
+    final day = await pickArrivalDay(
+      context,
+      now: ref.read(healthClockProvider)(),
+    );
     if (day == null || !mounted) return;
     setState(() => _busy = true);
     try {
@@ -108,7 +111,10 @@ class _Summary extends StatelessWidget {
     if (view == null) {
       return const PetsCard(
         child: Center(
-          child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator()),
+          child: Padding(
+            padding: EdgeInsets.all(8),
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }
@@ -118,7 +124,10 @@ class _Summary extends StatelessWidget {
     final title = switch (view.stage) {
       FirstDaysStage.closed => l10n.closedOn(format.date(closedAt!)),
       FirstDaysStage.over => l10n.overLine,
-      _ => l10n.dayOfTotal(format.integer(view.shownDay), format.integer(firstDaysLength)),
+      _ => l10n.dayOfTotal(
+        format.integer(view.shownDay),
+        format.integer(firstDaysLength),
+      ),
     };
     void open() => openFirstDays(context, view.pet.id);
 
@@ -135,14 +144,20 @@ class _Summary extends StatelessWidget {
               children: [
                 Text(title, style: AppText.cardTitle),
                 Text(
-                  l10n.doneCount('${format.integer(view.doneCount)}/${format.integer(view.total)}'),
+                  l10n.doneCount(
+                    '${format.integer(view.doneCount)}/${format.integer(view.total)}',
+                  ),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          PillButton(view.hasEnded ? l10n.viewSummary : l10n.open, key: FirstDaysProfileEntry.openKey, onPressed: open),
+          PillButton(
+            view.hasEnded ? l10n.viewSummary : l10n.open,
+            key: FirstDaysProfileEntry.openKey,
+            onPressed: open,
+          ),
         ],
       ),
     );

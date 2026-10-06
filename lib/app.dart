@@ -1,3 +1,6 @@
+import 'config/app_config.dart';
+import 'platform/storage_cleanup.dart';
+import 'platform/session_navigation_host.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,7 +28,19 @@ class PetLoopApp extends ConsumerWidget {
       routerConfig: ref.watch(routerProvider),
       // Reminders: every pet's are kept scheduled, and a tapped one opens
       // its page (inert in tests, which have no phone notifications).
-      builder: (context, child) => NotificationsHost(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) => StorageMaintenanceHost(
+        child: SessionNavigationHost(
+          child: NotificationsHost(
+            child: AppConfig.isDemo
+                ? Banner(
+                    message: 'DEMO',
+                    location: BannerLocation.topEnd,
+                    child: child ?? const SizedBox.shrink(),
+                  )
+                : child ?? const SizedBox.shrink(),
+          ),
+        ),
+      ),
     );
   }
 }

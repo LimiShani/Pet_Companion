@@ -1,10 +1,11 @@
+import '../../../platform/feature_ui.dart';
+import '../../../presentation/pet_avatar.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../pets/pets.dart';
 
 /// Large circular photo with the pet's name and Breed / Age / Weight pills.
 ///
@@ -41,7 +42,9 @@ class PetHero extends StatelessWidget {
           child: const DecoratedBox(
             decoration: BoxDecoration(
               color: AppColors.coral,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppSpacing.headerRadius)),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(AppSpacing.headerRadius),
+              ),
             ),
           ),
         ),
@@ -61,16 +64,29 @@ class PetHero extends StatelessWidget {
                     children: [
                       Padding(
                         padding: const EdgeInsetsDirectional.only(start: 4),
-                        child: Text(pet.name, style: AppText.petName, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        child: Text(
+                          pet.name,
+                          style: AppText.petName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const SizedBox(height: 8),
-                      _InfoPill(label: l10n.homeBreed, value: pet.breed ?? _unknown),
+                      _InfoPill(
+                        label: l10n.homeBreed,
+                        value: pet.breed ?? _unknown,
+                      ),
                       const SizedBox(height: 6),
-                      _InfoPill(label: l10n.homeAge, value: age == null ? _unknown : format.decimal(age)),
+                      _InfoPill(
+                        label: l10n.homeAge,
+                        value: age == null ? _unknown : format.decimal(age),
+                      ),
                       const SizedBox(height: 6),
                       _InfoPill(
                         label: l10n.homeWeight,
-                        value: weight == null ? _unknown : l10n.homeWeightKg(format.decimal(weight)),
+                        value: weight == null
+                            ? _unknown
+                            : l10n.homeWeightKg(format.decimal(weight)),
                       ),
                     ],
                   ),
@@ -104,10 +120,20 @@ class _Photo extends StatelessWidget {
         color: AppColors.white,
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.coral, width: 4),
-        boxShadow: const [BoxShadow(color: Color(0x2E5B4636), blurRadius: 18, offset: Offset(0, 6))],
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x2E5B4636),
+            blurRadius: 18,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       // The ring takes 9 px on each side (4 border + 5 white).
-      child: PetAvatar(pet: pet, size: PetHero.photoSize - 18, onTap: () => openPetProfile(context, pet.id)),
+      child: PetAvatar(
+        pet: pet,
+        size: PetHero.photoSize - 18,
+        onTap: () => openFeature<Object>(context, 'pet-profile', pet.id),
+      ),
     );
   }
 }
@@ -124,7 +150,10 @@ class _InfoPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: const BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.all(Radius.circular(999))),
+      decoration: const BoxDecoration(
+        color: AppColors.yellow,
+        borderRadius: BorderRadius.all(Radius.circular(999)),
+      ),
       child: LayoutBuilder(
         builder: (context, constraints) {
           // The labels line up in a 56 px column. A longer word (another
@@ -136,7 +165,10 @@ class _InfoPill extends StatelessWidget {
             textBaseline: TextBaseline.alphabetic,
             children: [
               ConstrainedBox(
-                constraints: BoxConstraints(minWidth: most < _labelColumn ? most : _labelColumn, maxWidth: most),
+                constraints: BoxConstraints(
+                  minWidth: most < _labelColumn ? most : _labelColumn,
+                  maxWidth: most,
+                ),
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(end: 8),
                   child: Text(
@@ -148,7 +180,12 @@ class _InfoPill extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: Text(value, style: AppText.pillValue, maxLines: 1, overflow: TextOverflow.ellipsis),
+                child: Text(
+                  value,
+                  style: AppText.pillValue,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           );

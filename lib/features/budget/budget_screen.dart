@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,17 +10,19 @@ import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
-import '../care/widgets/care_widgets.dart';
-import 'budget_words.dart';
-import 'data/budget_models.dart';
+import '../../presentation/care_widgets.dart';
+import '../../presentation/budget_words.dart';
+import '../../services/budget/data/budget_models.dart';
 import 'expense_form_screen.dart';
-import 'state/budget_logic.dart';
-import 'state/budget_providers.dart';
-import 'widgets/budget_widgets.dart';
+import '../../services/budget/state/budget_logic.dart';
+import '../../services/budget/state/budget_providers.dart';
+import '../../presentation/budget_widgets.dart';
 
 /// Opens the budget page over the whole app.
-Future<void> openBudget(BuildContext context) =>
-    Navigator.of(context, rootNavigator: true).push<void>(MaterialPageRoute(builder: (_) => const BudgetScreen()));
+Future<void> openBudget(BuildContext context) => Navigator.of(
+  context,
+  rootNavigator: true,
+).push<void>(MaterialPageRoute(builder: (_) => const BudgetScreen()));
 
 /// What the pets cost: one month at a time, for one pet or the whole home,
 /// with the month before, the monthly average, the categories and every
@@ -34,7 +37,14 @@ class BudgetScreen extends ConsumerWidget {
   static const totalKey = Key('budget-total');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'budget.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.budgetL10n;
     final filter = ref.watch(budgetFilterProvider);
     final scope = ref.watch(budgetScopeProvider);
@@ -70,7 +80,10 @@ class BudgetScreen extends ConsumerWidget {
             CoralHeader(
               title: l10n.budgetTitle,
               showBack: true,
-              bottom: BudgetPetScope(allHome: filter.allHome, onChanged: filters.setAllHome),
+              bottom: BudgetPetScope(
+                allHome: filter.allHome,
+                onChanged: filters.setAllHome,
+              ),
             ),
             Expanded(
               child: ListView(
@@ -83,8 +96,11 @@ class BudgetScreen extends ConsumerWidget {
                 children: [
                   MonthSwitcher(
                     month: scope.month,
-                    onPrevious: () => filters.showMonth(addMonths(scope.month, -1)),
-                    onNext: scope.month.isBefore(current) ? () => filters.showMonth(addMonths(scope.month, 1)) : null,
+                    onPrevious: () =>
+                        filters.showMonth(addMonths(scope.month, -1)),
+                    onNext: scope.month.isBefore(current)
+                        ? () => filters.showMonth(addMonths(scope.month, 1))
+                        : null,
                   ),
                   const SizedBox(height: 4),
                   body,
@@ -105,7 +121,14 @@ class _MonthBody extends ConsumerWidget {
   final String? petId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'budget.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.budgetL10n;
     final format = AppFormat.of(context);
     final pets = ref.watch(petsProvider);
@@ -121,10 +144,23 @@ class _MonthBody extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.spentLabel, style: AppText.label.copyWith(color: AppColors.brown)),
-              Text(money(month.total), key: BudgetScreen.totalKey, style: AppText.metric),
+              Text(
+                l10n.spentLabel,
+                style: AppText.label.copyWith(color: AppColors.brown),
+              ),
+              Text(
+                money(month.total),
+                key: BudgetScreen.totalKey,
+                style: AppText.metric,
+              ),
               const SizedBox(height: 6),
-              Text(l10n.previousMonthLine(previousName, money(month.previousTotal)), style: AppText.body),
+              Text(
+                l10n.previousMonthLine(
+                  previousName,
+                  money(month.previousTotal),
+                ),
+                style: AppText.body,
+              ),
               if (change != null)
                 Text(
                   change > 0
@@ -135,7 +171,10 @@ class _MonthBody extends ConsumerWidget {
                   style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                 ),
               const SizedBox(height: 10),
-              Text(l10n.averageLine(money(month.average.roundToDouble())), style: AppText.body),
+              Text(
+                l10n.averageLine(money(month.average.roundToDouble())),
+                style: AppText.body,
+              ),
               Text(l10n.averageNote, style: AppText.secondary),
             ],
           ),
@@ -159,7 +198,8 @@ class _MonthBody extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(6, 4, 6, 8),
             child: Text(l10n.noExpenses, style: AppText.secondary),
           ),
-        for (final entry in month.entries) BudgetEntryTile(entry: entry, pets: pets),
+        for (final entry in month.entries)
+          BudgetEntryTile(entry: entry, pets: pets),
       ],
     );
   }
@@ -172,18 +212,33 @@ class _CategoryBars extends StatelessWidget {
   final BudgetMonth month;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'budget.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.budgetL10n;
     final format = AppFormat.of(context);
-    final top = month.byCategory.values.fold<double>(0, (a, b) => a > b ? a : b);
+    final top = month.byCategory.values.fold<double>(
+      0,
+      (a, b) => a > b ? a : b,
+    );
     return Column(
       children: [
-        for (final MapEntry(key: category, value: amount) in month.byCategory.entries)
+        for (final MapEntry(key: category, value: amount)
+            in month.byCategory.entries)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 5),
             child: Row(
               children: [
-                AppIcon(categoryIcon(category), size: 20, color: AppColors.brown),
+                AppIcon(
+                  categoryIcon(category),
+                  size: 20,
+                  color: AppColors.brown,
+                ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
@@ -202,12 +257,17 @@ class _CategoryBars extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             format.money(amount, month.currency),
-                            style: AppText.body.copyWith(fontWeight: FontWeight.w800),
+                            style: AppText.body.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
-                      CareProgress(value: top <= 0 ? 0 : amount / top, color: categoryColor(category)),
+                      CareProgress(
+                        value: top <= 0 ? 0 : amount / top,
+                        color: categoryColor(category),
+                      ),
                     ],
                   ),
                 ),
@@ -229,17 +289,28 @@ class BudgetEntryTile extends StatelessWidget {
   final List<Pet> pets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'budget.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.budgetL10n;
     final format = AppFormat.of(context);
     final expense = entry.expense;
-    final title = entry.title.trim().isEmpty ? l10n.category(entry.category) : entry.title;
+    final title = entry.title.trim().isEmpty
+        ? l10n.category(entry.category)
+        : entry.title;
     final petName = entry.petId == null
         ? l10n.wholeHome
         : pets.where((p) => p.id == entry.petId).map((p) => p.name).firstOrNull;
 
     return CareBox(
-      onTap: expense == null ? null : () => openExpenseForm(context, expense: expense),
+      onTap: expense == null
+          ? null
+          : () => openExpenseForm(context, expense: expense),
       padding: const EdgeInsetsDirectional.fromSTEB(12, 10, 14, 10),
       child: Row(
         children: [
@@ -250,7 +321,11 @@ class BudgetEntryTile extends StatelessWidget {
               color: categoryColor(entry.category).withValues(alpha: 0.35),
               shape: BoxShape.circle,
             ),
-            child: AppIcon(categoryIcon(entry.category), size: 20, color: AppColors.ink),
+            child: AppIcon(
+              categoryIcon(entry.category),
+              size: 20,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -262,7 +337,10 @@ class BudgetEntryTile extends StatelessWidget {
                   style: AppText.cardTitle.copyWith(fontSize: 16),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textDirection: directionOfText(title, fallback: Directionality.of(context)),
+                  textDirection: directionOfText(
+                    title,
+                    fallback: Directionality.of(context),
+                  ),
                 ),
                 Text(
                   [format.date(entry.date), ?petName].join(' · '),
@@ -278,7 +356,9 @@ class BudgetEntryTile extends StatelessWidget {
                     BudgetTag(l10n.source(entry.source)),
                     if (expense != null && expense.isRecurring)
                       BudgetTag(
-                        expense.frequency == ExpenseFrequency.monthly ? l10n.tagEveryMonth : l10n.tagEveryYear,
+                        expense.frequency == ExpenseFrequency.monthly
+                            ? l10n.tagEveryMonth
+                            : l10n.tagEveryYear,
                         color: AppColors.yellow.withValues(alpha: 0.55),
                       ),
                   ],
@@ -287,7 +367,10 @@ class BudgetEntryTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(format.money(entry.amount, entry.currency), style: AppText.cardTitle.copyWith(fontSize: 16)),
+          Text(
+            format.money(entry.amount, entry.currency),
+            style: AppText.cardTitle.copyWith(fontSize: 16),
+          ),
         ],
       ),
     );

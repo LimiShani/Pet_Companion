@@ -1,3 +1,6 @@
+import '../../platform/feature_ui.dart';
+import '../../access/feature_gate.dart';
+import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -9,8 +12,7 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_selector.dart';
-import '../pets/pets.dart';
-import 'data/health_models.dart';
+import '../../services/pet_records/data/health_models.dart';
 import 'emergency/emergency_button.dart';
 import 'insights/quick_log_sheet.dart';
 import 'records/record_detail_screen.dart';
@@ -22,17 +24,14 @@ import 'sections/insights_section.dart';
 import 'sections/overview_section.dart';
 import 'sections/schedule_section.dart';
 import 'share/share_actions.dart';
-import 'state/health_keeper.dart';
-import 'state/health_providers.dart';
-import 'widgets/health_widgets.dart';
+import '../../services/pet_records/state/health_keeper.dart';
+import '../../services/pet_records/state/health_providers.dart';
+import '../../presentation/health_widgets.dart';
 
 /// The Pets feature's full-size reminder card, shown on the Overview right
 /// under the pet summary while an essential is missing. It draws nothing,
 /// and takes no space, for a pet whose essentials are all answered.
-Widget? petReminderSlot(Pet pet) => PetReminderCard(
-  petId: pet.id,
-  margin: const EdgeInsets.only(top: AppSpacing.cardGap),
-);
+Widget? petReminderSlot(Pet pet) => featureSlot('pet-reminder', pet.id);
 
 /// The Health tab: a personal health organiser for the selected pet, in
 /// four sections (Overview, Schedule, History, Insights). The Emergency
@@ -41,13 +40,34 @@ class HealthScreen extends ConsumerWidget {
   const HealthScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pet = ref.watch(selectedPetProvider);
-    final section = ref.watch(healthSectionProvider);
+    final visible = [
+      HealthSection.overview,
+      if (ref.watch(capabilityProvider('health.schedule.view')))
+        HealthSection.schedule,
+      if (ref.watch(capabilityProvider('health.records.view'))) ...[
+        HealthSection.history,
+        HealthSection.insights,
+      ],
+    ];
+    final requested = ref.watch(healthSectionProvider);
+    final section = visible.contains(requested) ? requested : visible.first;
     final data = ref.watch(petHealthDataProvider(pet.id));
     final value = data.value;
     // On the Overview the Quick log is the first quick action instead.
-    final quickLogButton = value != null && section != HealthSection.overview;
+    final quickLogButton =
+        value != null &&
+        section != HealthSection.overview &&
+        ref.watch(capabilityProvider('health.records.edit'));
     final l10n = context.healthL10n;
 
     return HealthKeeper(
@@ -75,7 +95,7 @@ class HealthScreen extends ConsumerWidget {
                   const SizedBox(height: 12),
                   CoralSegmentedControl(
                     labels: [
-                      for (final s in HealthSection.values)
+                      for (final s in visible)
                         switch (s) {
                           HealthSection.overview => l10n.sectionOverview,
                           HealthSection.schedule => l10n.sectionSchedule,
@@ -83,8 +103,10 @@ class HealthScreen extends ConsumerWidget {
                           HealthSection.insights => l10n.sectionInsights,
                         },
                     ],
-                    selectedIndex: section.index,
-                    onChanged: (index) => ref.read(healthSectionProvider.notifier).show(HealthSection.values[index]),
+                    selectedIndex: visible.indexOf(section),
+                    onChanged: (index) => ref
+                        .read(healthSectionProvider.notifier)
+                        .show(visible[index]),
                   ),
                 ],
               ),
@@ -107,9 +129,12 @@ class HealthScreen extends ConsumerWidget {
                         AppSpacing.screen,
                         16,
                         AppSpacing.screen,
-                        quickLogButton ? AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom : 24,
+                        quickLogButton
+                            ? AppSpacing.fabClearance +
+                                  MediaQuery.paddingOf(context).bottom
+                            : 24,
                       ),
-                      child: _section(context, pet, section, value),
+                      child: _section(context, ref, pet, section, value),
                     ),
             ),
           ],
@@ -118,22 +143,47 @@ class HealthScreen extends ConsumerWidget {
     );
   }
 
-  Widget _section(BuildContext context, Pet pet, HealthSection section, PetHealthData data) {
+  Widget _section(
+    BuildContext context,
+    WidgetRef ref,
+    Pet pet,
+    HealthSection section,
+    PetHealthData data,
+  ) {
     return switch (section) {
       HealthSection.overview => OverviewSection(
         pet: pet,
         data: data,
         reminder: petReminderSlot(pet),
         actions: OverviewActions(
-          onQuickLog: () => showQuickLog(context, pet),
-          onAddRecord: () => openRecordForm(context, pet),
-          onShare: () => shareHealthSummary(context, pet),
-          onAddDocument: () => openRecordForm(context, pet, kind: RecordKind.document),
-          onAddAppointment: () => openRecordForm(context, pet, kind: RecordKind.checkup, planned: true),
-          onAddMedicine: () => openMedicineForm(context, pet),
-          onRecordDose: (entry) => showRecordDoseSheet(context, pet, entry: entry),
+          onQuickLog: ref.watch(capabilityProvider('health.records.edit'))
+              ? () => showQuickLog(context, pet)
+              : null,
+          onAddRecord: ref.watch(capabilityProvider('health.records.edit'))
+              ? () => openRecordForm(context, pet)
+              : null,
+          onShare: ref.watch(capabilityProvider('health.records.export'))
+              ? () => shareHealthSummary(context, pet)
+              : null,
+          onAddDocument: ref.watch(capabilityProvider('health.records.edit'))
+              ? () => openRecordForm(context, pet, kind: RecordKind.document)
+              : null,
+          onAddAppointment: ref.watch(capabilityProvider('health.records.edit'))
+              ? () => openRecordForm(
+                  context,
+                  pet,
+                  kind: RecordKind.checkup,
+                  planned: true,
+                )
+              : null,
+          onAddMedicine: ref.watch(capabilityProvider('health.schedule.edit'))
+              ? () => openMedicineForm(context, pet)
+              : null,
+          onRecordDose: (entry) =>
+              showRecordDoseSheet(context, pet, entry: entry),
           onOpenRecord: (record) => openRecordDetail(context, pet, record),
-          onOpenMedicine: (medication) => openMedicineForm(context, pet, medication: medication),
+          onOpenMedicine: (medication) =>
+              openMedicineForm(context, pet, medication: medication),
         ),
       ),
       HealthSection.schedule => ScheduleSection(pet: pet, data: data),

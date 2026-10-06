@@ -15,7 +15,13 @@ import 'language_pill.dart';
 /// [showBack]) and the language pill (at the end), so the language can be
 /// changed before signing in.
 class AuthScaffold extends StatelessWidget {
-  const AuthScaffold({super.key, required this.title, required this.subtitle, required this.child, this.showBack = false});
+  const AuthScaffold({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.child,
+    this.showBack = false,
+  });
 
   final String title;
   final String subtitle;
@@ -39,7 +45,9 @@ class AuthScaffold extends StatelessWidget {
                 Semantics(
                   label: l10n.appName,
                   header: true,
-                  child: ExcludeSemantics(child: AuthBanner(showBird: !showBack)),
+                  child: ExcludeSemantics(
+                    child: AuthBanner(showBird: !showBack),
+                  ),
                 ),
                 Positioned(
                   top: 0,
@@ -48,14 +56,20 @@ class AuthScaffold extends StatelessWidget {
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 8, AppSpacing.screen, 0),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.screen,
+                        8,
+                        AppSpacing.screen,
+                        0,
+                      ),
                       child: ConstrainedBox(
                         constraints: const BoxConstraints(minHeight: 44),
                         child: Row(
                           children: [
                             if (showBack)
                               IconButton(
-                                onPressed: () => Navigator.of(context).maybePop(),
+                                onPressed: () =>
+                                    Navigator.of(context).maybePop(),
                                 tooltip: l10n.commonBack,
                                 // Mirrors by itself on a right-to-left screen.
                                 icon: const AppIcon(Icons.arrow_back_rounded),
@@ -64,10 +78,16 @@ class AuthScaffold extends StatelessWidget {
                                 // arrow reads over the leaves.
                                 style: IconButton.styleFrom(
                                   backgroundColor: AppColors.onCoralPill,
-                                  side: const BorderSide(color: AppColors.onCoralOutline, width: 2),
+                                  side: const BorderSide(
+                                    color: AppColors.onCoralOutline,
+                                    width: 2,
+                                  ),
                                 ),
                                 padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints.tightFor(width: 44, height: 44),
+                                constraints: const BoxConstraints.tightFor(
+                                  width: 44,
+                                  height: 44,
+                                ),
                               ),
                             const Spacer(),
                             const LanguagePill(),
@@ -80,13 +100,21 @@ class AuthScaffold extends StatelessWidget {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 28, AppSpacing.screen, 24),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                28,
+                AppSpacing.screen,
+                24,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(title, style: AppText.petName),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: AppText.body.copyWith(color: AppColors.brown)),
+                  Text(
+                    subtitle,
+                    style: AppText.body.copyWith(color: AppColors.brown),
+                  ),
                   const SizedBox(height: 22),
                   child,
                 ],

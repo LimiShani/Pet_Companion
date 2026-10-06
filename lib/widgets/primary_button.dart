@@ -5,7 +5,12 @@ import '../theme/app_theme.dart';
 
 /// Full-width pill button. [loading] disables it and shows a spinner.
 class PrimaryButton extends StatelessWidget {
-  const PrimaryButton({super.key, required this.label, required this.onPressed, this.loading = false});
+  const PrimaryButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+    this.loading = false,
+  });
 
   final String label;
   final VoidCallback? onPressed;
@@ -28,7 +33,10 @@ class PrimaryButton extends StatelessWidget {
           ? const SizedBox(
               width: 22,
               height: 22,
-              child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.white),
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                color: AppColors.white,
+              ),
             )
           : Text(label),
     );

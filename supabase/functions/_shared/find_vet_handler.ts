@@ -20,6 +20,7 @@ import type { DirectoryStore } from './store.ts';
 import { parseRequest } from './validation.ts';
 
 export interface FindVetDeps {
+  authorize: (request: Request) => Promise<boolean>;
   provider: PlacesProvider;
   store: DirectoryStore;
   regions: RegionLookup;
@@ -49,6 +50,10 @@ export function createFindVetHandler(deps: FindVetDeps): (req: Request) => Promi
   return async (req: Request): Promise<Response> => {
     if (req.method === 'OPTIONS') return preflight();
     if (req.method !== 'POST') return errorResponse('method_not_allowed');
+
+    try {
+      if (!await deps.authorize(req)) return json(403, { error: 'feature_denied' });
+    } catch (_) { return json(503, { error: 'unavailable' }); }
 
     const body = await readJson(req);
     if (body === undefined) return errorResponse('invalid_request', 'body must be JSON');

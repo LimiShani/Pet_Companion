@@ -1,12 +1,17 @@
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
 
 /// One line of a report's record table.
 class HealthReportRow {
-  const HealthReportRow({required this.date, required this.kind, required this.title, this.details = ''});
+  const HealthReportRow({
+    required this.date,
+    required this.kind,
+    required this.title,
+    this.details = '',
+  });
 
   final String date;
   final String kind;
@@ -89,7 +94,10 @@ String _vetLine(HealthFormat format, Vet vet) => format.dots([
 ]);
 
 String _slug(String text) {
-  final slug = text.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
+  final slug = text
+      .toLowerCase()
+      .replaceAll(RegExp('[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
   return slug.isEmpty ? 'pet' : slug;
 }
 
@@ -130,7 +138,8 @@ HealthReport buildHealthReport({
   final chip = profile.microchip.trim();
   final contact = format.dots([
     profile.contactName.trim(),
-    if (profile.contactPhone.trim().isNotEmpty) format.ltrInLine(profile.contactPhone.trim()),
+    if (profile.contactPhone.trim().isNotEmpty)
+      format.ltrInLine(profile.contactPhone.trim()),
   ]);
 
   final facts = <(String, String)>[
@@ -139,9 +148,19 @@ HealthReport buildHealthReport({
     else if (profile.notChipped)
       (l10n.microchip, l10n.notChipped),
     if (profile.allergiesAnswered)
-      (l10n.allergies, profile.allergies.isEmpty ? l10n.noneKnown : format.semicolons(profile.allergies)),
+      (
+        l10n.allergies,
+        profile.allergies.isEmpty
+            ? l10n.noneKnown
+            : format.semicolons(profile.allergies),
+      ),
     if (profile.conditionsAnswered)
-      (l10n.conditions, profile.conditions.isEmpty ? l10n.noneKnown : format.semicolons(profile.conditions)),
+      (
+        l10n.conditions,
+        profile.conditions.isEmpty
+            ? l10n.noneKnown
+            : format.semicolons(profile.conditions),
+      ),
     if (summary.medications.isNotEmpty)
       (
         l10n.activeMedicines,
@@ -149,22 +168,37 @@ HealthReport buildHealthReport({
           for (final m in summary.medications)
             format.instructions(m).isEmpty
                 ? format.typed(m.displayName)
-                : l10n.reportMedicineLine(m.displayName, format.instructions(m)),
+                : l10n.reportMedicineLine(
+                    m.displayName,
+                    format.instructions(m),
+                  ),
         ].join('\n'),
       ),
-    if (summary.regularVet != null) (l10n.vetRoleRegular, _vetLine(format, summary.regularVet!)),
-    if (summary.emergencyVet != null) (l10n.reportEmergencyVet, _vetLine(format, summary.emergencyVet!)),
+    if (summary.regularVet != null)
+      (l10n.vetRoleRegular, _vetLine(format, summary.regularVet!)),
+    if (summary.emergencyVet != null)
+      (l10n.reportEmergencyVet, _vetLine(format, summary.emergencyVet!)),
     if (contact.isNotEmpty) (l10n.emergencyContact, contact),
-    if (profile.notes.trim().isNotEmpty) (l10n.notes, format.typed(profile.notes.trim())),
+    if (profile.notes.trim().isNotEmpty)
+      (l10n.notes, format.typed(profile.notes.trim())),
   ];
 
   final owner = summary.ownerName.trim();
   final one = single && records.length == 1 ? records.first : null;
   return HealthReport(
-    title: one == null ? l10n.reportSummaryTitle(pet.name) : l10n.reportRecordTitle(pet.name, one.title),
-    subtitle: format.dots([format.petLine(pet, now: now), if (weight != null) format.weight(weight, grams: grams)]),
-    prepared: owner.isEmpty ? l10n.reportPrepared(format.date(now)) : l10n.reportPreparedBy(format.date(now), owner),
-    fileName: one == null ? '${_slug(pet.name)}-health-summary.pdf' : '${_slug(pet.name)}-${_slug(one.title)}.pdf',
+    title: one == null
+        ? l10n.reportSummaryTitle(pet.name)
+        : l10n.reportRecordTitle(pet.name, one.title),
+    subtitle: format.dots([
+      format.petLine(pet, now: now),
+      if (weight != null) format.weight(weight, grams: grams),
+    ]),
+    prepared: owner.isEmpty
+        ? l10n.reportPrepared(format.date(now))
+        : l10n.reportPreparedBy(format.date(now), owner),
+    fileName: one == null
+        ? '${_slug(pet.name)}-health-summary.pdf'
+        : '${_slug(pet.name)}-${_slug(one.title)}.pdf',
     facts: facts,
     recordsTitle: records.isEmpty
         ? ''

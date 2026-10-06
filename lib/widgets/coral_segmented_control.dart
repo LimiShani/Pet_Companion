@@ -6,7 +6,12 @@ import '../theme/app_theme.dart';
 /// Pill-shaped section switcher for a coral background, e.g. the `bottom`
 /// of a [CoralHeader] ("Feed | Chat | Guides").
 class CoralSegmentedControl extends StatelessWidget {
-  const CoralSegmentedControl({super.key, required this.labels, required this.selectedIndex, required this.onChanged});
+  const CoralSegmentedControl({
+    super.key,
+    required this.labels,
+    required this.selectedIndex,
+    required this.onChanged,
+  });
 
   final List<String> labels;
   final int selectedIndex;
@@ -28,13 +33,18 @@ class CoralSegmentedControl extends StatelessWidget {
                 button: true,
                 selected: i == selectedIndex,
                 child: Material(
-                  color: i == selectedIndex ? AppColors.yellow : Colors.transparent,
+                  color: i == selectedIndex
+                      ? AppColors.yellow
+                      : Colors.transparent,
                   shape: const StadiumBorder(),
                   child: InkWell(
                     customBorder: const StadiumBorder(),
                     onTap: () => onChanged(i),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 9),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 9,
+                      ),
                       child: Text(
                         labels[i],
                         textAlign: TextAlign.center,
@@ -42,7 +52,9 @@ class CoralSegmentedControl extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: AppText.body.copyWith(
                           fontWeight: FontWeight.w800,
-                          color: i == selectedIndex ? AppColors.ink : AppColors.white,
+                          color: i == selectedIndex
+                              ? AppColors.ink
+                              : AppColors.white,
                         ),
                       ),
                     ),

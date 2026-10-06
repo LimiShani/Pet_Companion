@@ -76,7 +76,8 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get appointments => 'Appointments and vaccinations';
 
   @override
-  String get appointmentsNote => 'The evening before (18:00) and 2 hours before';
+  String get appointmentsNote =>
+      'The evening before (18:00) and 2 hours before';
 
   @override
   String get basket => 'Basket: running low';
@@ -97,13 +98,15 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get exactTitle => 'Exact time';
 
   @override
-  String get exactNote => 'For a medicine reminder to arrive on the minute, Android asks for “Alarms & reminders”.';
+  String get exactNote =>
+      'For a medicine reminder to arrive on the minute, Android asks for “Alarms & reminders”.';
 
   @override
   String get exactAllowed => 'Allowed';
 
   @override
-  String get exactMissing => 'Not allowed yet: a reminder can come late, by up to an hour.';
+  String get exactMissing =>
+      'Not allowed yet: a reminder can come late, by up to an hour.';
 
   @override
   String get exactAllow => 'Allow';
@@ -112,7 +115,8 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get blockedTitle => 'PetLoop may not show notifications';
 
   @override
-  String get blockedNote => 'Notifications are off for PetLoop in the phone\'s settings, so no reminder can ring.';
+  String get blockedNote =>
+      'Notifications are off for PetLoop in the phone\'s settings, so no reminder can ring.';
 
   @override
   String get openPhoneSettings => 'Open phone settings';
@@ -130,10 +134,12 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get askMedicines => 'Medicine doses';
 
   @override
-  String get askAppointments => 'Vet appointments and vaccinations, the evening before and 2 hours before';
+  String get askAppointments =>
+      'Vet appointments and vaccinations, the evening before and 2 hours before';
 
   @override
-  String get askFoot => 'In Settings you choose what rings, and you can add quiet hours.';
+  String get askFoot =>
+      'In Settings you choose what rings, and you can add quiet hours.';
 
   @override
   String get askAllow => 'Turn on reminders';

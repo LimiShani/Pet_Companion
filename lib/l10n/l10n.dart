@@ -8,15 +8,15 @@
 /// | Folder                        | Class           | In a widget             |
 /// |-------------------------------|-----------------|-------------------------|
 /// | `lib/l10n/`                   | `AppL10n`       | `context.l10n`          |
-/// | `lib/features/health/l10n/`   | `HealthL10n`    | `context.healthL10n`    |
-/// | `lib/features/community/l10n/`| `CommunityL10n` | `context.communityL10n` |
-/// | `lib/features/store/l10n/`    | `StoreL10n`     | `context.storeL10n`     |
-/// | `lib/features/pets/l10n/`     | `PetsL10n`      | `context.petsL10n`      |
-/// | `lib/features/care/l10n/`     | `CareL10n`      | `context.careL10n`      |
-/// | `lib/features/budget/l10n/`   | `BudgetL10n`    | `context.budgetL10n`    |
-/// | `lib/features/firstdays/l10n/`| `FirstDaysL10n` | `context.firstDaysL10n` |
+/// | `lib/l10n/features/health/`   | `HealthL10n`    | `context.healthL10n`    |
+/// | `lib/l10n/features/community/`| `CommunityL10n` | `context.communityL10n` |
+/// | `lib/l10n/features/store/`    | `StoreL10n`     | `context.storeL10n`     |
+/// | `lib/l10n/features/pets/`     | `PetsL10n`      | `context.petsL10n`      |
+/// | `lib/l10n/features/care/`     | `CareL10n`      | `context.careL10n`      |
+/// | `lib/l10n/features/budget/`   | `BudgetL10n`    | `context.budgetL10n`    |
+/// | `lib/l10n/features/firstdays/`| `FirstDaysL10n` | `context.firstDaysL10n` |
 /// | `lib/notifications/l10n/`     | `NotificationsL10n` | `context.notificationsL10n` |
-/// | `lib/features/findvet/l10n/`  | `FindVetL10n`   | `context.findVetL10n`   |
+/// | `lib/l10n/features/findvet/`  | `FindVetL10n`   | `context.findVetL10n`   |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -29,27 +29,31 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/budget/l10n/gen/budget_l10n.dart';
-import '../features/care/l10n/gen/care_l10n.dart';
-import '../features/community/l10n/gen/community_l10n.dart';
-import '../features/findvet/l10n/gen/findvet_l10n.dart';
-import '../features/firstdays/l10n/gen/firstdays_l10n.dart';
-import '../features/health/l10n/gen/health_l10n.dart';
-import '../features/pets/l10n/gen/pets_l10n.dart';
-import '../features/store/l10n/gen/store_l10n.dart';
+import 'features/budget/gen/budget_l10n.dart';
+import 'features/care/gen/care_l10n.dart';
+import 'features/community/gen/community_l10n.dart';
+import 'features/findvet/gen/findvet_l10n.dart';
+import 'features/firstdays/gen/firstdays_l10n.dart';
+import 'features/health/gen/health_l10n.dart';
+import 'features/pets/gen/pets_l10n.dart';
+import 'features/store/gen/store_l10n.dart';
 import '../notifications/l10n/gen/notifications_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
 
-export '../features/budget/l10n/gen/budget_l10n.dart' show BudgetL10n, lookupBudgetL10n;
-export '../features/care/l10n/gen/care_l10n.dart' show CareL10n, lookupCareL10n;
-export '../features/community/l10n/gen/community_l10n.dart' show CommunityL10n, lookupCommunityL10n;
-export '../features/findvet/l10n/gen/findvet_l10n.dart' show FindVetL10n, lookupFindVetL10n;
-export '../features/firstdays/l10n/gen/firstdays_l10n.dart' show FirstDaysL10n, lookupFirstDaysL10n;
-export '../features/health/l10n/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
-export '../features/pets/l10n/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
-export '../features/store/l10n/gen/store_l10n.dart' show StoreL10n, lookupStoreL10n;
-export '../notifications/l10n/gen/notifications_l10n.dart' show NotificationsL10n, lookupNotificationsL10n;
+export 'features/budget/gen/budget_l10n.dart' show BudgetL10n, lookupBudgetL10n;
+export 'features/care/gen/care_l10n.dart' show CareL10n, lookupCareL10n;
+export 'features/community/gen/community_l10n.dart'
+    show CommunityL10n, lookupCommunityL10n;
+export 'features/findvet/gen/findvet_l10n.dart'
+    show FindVetL10n, lookupFindVetL10n;
+export 'features/firstdays/gen/firstdays_l10n.dart'
+    show FirstDaysL10n, lookupFirstDaysL10n;
+export 'features/health/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
+export 'features/pets/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
+export 'features/store/gen/store_l10n.dart' show StoreL10n, lookupStoreL10n;
+export '../notifications/l10n/gen/notifications_l10n.dart'
+    show NotificationsL10n, lookupNotificationsL10n;
 export 'app_format.dart';
 export 'app_language.dart';
 export 'bidi.dart';
@@ -96,12 +100,15 @@ extension L10nContext on BuildContext {
 
   /// The budget and the Store's basket.
   BudgetL10n get budgetL10n => _strings(this, lookupBudgetL10n);
+
   /// The first 30 days of a pet that just arrived home.
   FirstDaysL10n get firstDaysL10n => _strings(this, lookupFirstDaysL10n);
 
   /// The phone's reminders: their texts, the Notifications settings and
   /// the sheet that asks for permission.
-  NotificationsL10n get notificationsL10n => _strings(this, lookupNotificationsL10n);
+  NotificationsL10n get notificationsL10n =>
+      _strings(this, lookupNotificationsL10n);
+
   /// Find a vet: emergency and long term care nearby, and the directory review.
   FindVetL10n get findVetL10n => _strings(this, lookupFindVetL10n);
 
@@ -109,21 +116,38 @@ extension L10nContext on BuildContext {
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 }
 
-T _strings<T extends Object>(BuildContext context, T Function(Locale locale) lookup) {
+T _strings<T extends Object>(
+  BuildContext context,
+  T Function(Locale locale) lookup,
+) {
   final registered = Localizations.of<T>(context, T);
   if (registered != null) return registered;
   final locale = Localizations.maybeLocaleOf(context);
-  return lookup(locale != null && isHebrew(locale) ? hebrewLocale : englishLocale);
+  return lookup(
+    locale != null && isHebrew(locale) ? hebrewLocale : englishLocale,
+  );
 }
 
 // The same strings for code that has no BuildContext (a repository, a PDF,
 // a message composed for another app). They follow the language switch.
-final appL10nProvider = Provider<AppL10n>((ref) => lookupAppL10n(ref.watch(appLocaleProvider)));
-final healthL10nProvider = Provider<HealthL10n>((ref) => lookupHealthL10n(ref.watch(appLocaleProvider)));
-final communityL10nProvider = Provider<CommunityL10n>((ref) => lookupCommunityL10n(ref.watch(appLocaleProvider)));
-final storeL10nProvider = Provider<StoreL10n>((ref) => lookupStoreL10n(ref.watch(appLocaleProvider)));
-final petsL10nProvider = Provider<PetsL10n>((ref) => lookupPetsL10n(ref.watch(appLocaleProvider)));
-final budgetL10nProvider = Provider<BudgetL10n>((ref) => lookupBudgetL10n(ref.watch(appLocaleProvider)));
+final appL10nProvider = Provider<AppL10n>(
+  (ref) => lookupAppL10n(ref.watch(appLocaleProvider)),
+);
+final healthL10nProvider = Provider<HealthL10n>(
+  (ref) => lookupHealthL10n(ref.watch(appLocaleProvider)),
+);
+final communityL10nProvider = Provider<CommunityL10n>(
+  (ref) => lookupCommunityL10n(ref.watch(appLocaleProvider)),
+);
+final storeL10nProvider = Provider<StoreL10n>(
+  (ref) => lookupStoreL10n(ref.watch(appLocaleProvider)),
+);
+final petsL10nProvider = Provider<PetsL10n>(
+  (ref) => lookupPetsL10n(ref.watch(appLocaleProvider)),
+);
+final budgetL10nProvider = Provider<BudgetL10n>(
+  (ref) => lookupBudgetL10n(ref.watch(appLocaleProvider)),
+);
 
 /// The texts of the phone's reminders, which are built outside any widget.
 final notificationsL10nProvider = Provider<NotificationsL10n>(

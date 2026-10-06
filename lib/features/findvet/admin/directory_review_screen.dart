@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,10 +6,11 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../health/widgets/health_widgets.dart' show HealthPage, HealthLoading, kHealthTapTarget;
-import '../data/vet_admin_repository.dart';
+import '../../../presentation/health_widgets.dart'
+    show HealthPage, HealthLoading, kHealthTapTarget;
+import '../../../services/findvet/data/vet_admin_repository.dart';
 import '../findvet_words.dart';
-import '../state/find_vet_providers.dart';
+import '../../../services/findvet/state/find_vet_providers.dart';
 
 /// Opens the directory review page (admins only; the side menu shows the
 /// entry only to them, and the server refuses everyone else anyway).
@@ -28,7 +30,15 @@ final _facilitiesProvider = FutureProvider.autoDispose<List<AdminFacility>>(
 );
 
 /// The keys a reviewer can correct, in the order the form offers them.
-const _factKeys = ['emergency', 'phone', 'address', 'website', 'species', 'services', 'schedule'];
+const _factKeys = [
+  'emergency',
+  'phone',
+  'address',
+  'website',
+  'species',
+  'services',
+  'schedule',
+];
 
 /// "Directory review": what the weekly check flagged (most severe first)
 /// and every facility, with Approve, Mark for review, Withdraw, Withdraw
@@ -42,15 +52,31 @@ class DirectoryReviewScreen extends ConsumerWidget {
   static Key facilityKey(String id) => Key('review-facility-$id');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     final admin = ref.watch(vetIsAdminProvider);
-    if (!admin.hasValue) return HealthPage(key: screenKey, title: l10n.adminTitle, child: const HealthLoading());
+    if (!admin.hasValue) {
+      return HealthPage(
+        key: screenKey,
+        title: l10n.adminTitle,
+        child: const HealthLoading(),
+      );
+    }
     if (admin.value != true) {
       return HealthPage(
         key: screenKey,
         title: l10n.adminTitle,
-        child: Padding(padding: const EdgeInsets.only(top: 24), child: Text(l10n.adminNotAllowed, style: AppText.body)),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 24),
+          child: Text(l10n.adminNotAllowed, style: AppText.body),
+        ),
       );
     }
 
@@ -66,9 +92,13 @@ class DirectoryReviewScreen extends ConsumerWidget {
           _Heading(l10n.adminNeedsAttention),
           items.when(
             loading: () => const HealthLoading(),
-            error: (_, _) => _Failed(onRetry: () => ref.invalidate(_reviewItemsProvider)),
+            error: (_, _) =>
+                _Failed(onRetry: () => ref.invalidate(_reviewItemsProvider)),
             data: (list) => list.isEmpty
-                ? Text(l10n.adminNoItems, style: AppText.body.copyWith(color: AppColors.brown))
+                ? Text(
+                    l10n.adminNoItems,
+                    style: AppText.body.copyWith(color: AppColors.brown),
+                  )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [for (final item in list) _ItemCard(item: item)],
@@ -78,7 +108,8 @@ class DirectoryReviewScreen extends ConsumerWidget {
           _Heading(l10n.adminFacilities),
           facilities.when(
             loading: () => const HealthLoading(),
-            error: (_, _) => _Failed(onRetry: () => ref.invalidate(_facilitiesProvider)),
+            error: (_, _) =>
+                _Failed(onRetry: () => ref.invalidate(_facilitiesProvider)),
             data: (list) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [for (final f in list) _FacilityCard(facility: f)],
@@ -91,7 +122,11 @@ class DirectoryReviewScreen extends ConsumerWidget {
 }
 
 /// Runs an admin action, refreshes both lists and says how it went.
-Future<void> _act(BuildContext context, WidgetRef ref, Future<void> Function(VetAdminRepository repo) action) async {
+Future<void> _act(
+  BuildContext context,
+  WidgetRef ref,
+  Future<void> Function(VetAdminRepository repo) action,
+) async {
   final l10n = context.findVetL10n;
   final messenger = ScaffoldMessenger.of(context);
   try {
@@ -107,7 +142,10 @@ Future<void> _act(BuildContext context, WidgetRef ref, Future<void> Function(Vet
 
 /// Asks what was checked before an action; `null` when cancelled.
 Future<String?> _askNote(BuildContext context, String title) =>
-    showDialog<String>(context: context, builder: (_) => _NoteDialog(title: title));
+    showDialog<String>(
+      context: context,
+      builder: (_) => _NoteDialog(title: title),
+    );
 
 class _NoteDialog extends StatefulWidget {
   const _NoteDialog({required this.title});
@@ -129,7 +167,14 @@ class _NoteDialogState extends State<_NoteDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return AlertDialog(
       title: Text(widget.title),
       content: TextField(
@@ -137,10 +182,15 @@ class _NoteDialogState extends State<_NoteDialog> {
         controller: _note,
         autofocus: true,
         maxLines: 3,
-        decoration: InputDecoration(labelText: context.findVetL10n.adminNoteHint),
+        decoration: InputDecoration(
+          labelText: context.findVetL10n.adminNoteHint,
+        ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.l10n.commonCancel),
+        ),
         FilledButton(
           key: const Key('review-note-ok'),
           onPressed: () => Navigator.of(context).pop(_note.text.trim()),
@@ -157,7 +207,14 @@ class _ItemCard extends ConsumerWidget {
   final ReviewItem item;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     final severe = item.severity == 'high';
     Future<void> close(String action, String label) async {
@@ -169,13 +226,19 @@ class _ItemCard extends ConsumerWidget {
     // A heuristic match the search found: the listing's place id and the
     // facility it looked like. Linking closes the item on the server.
     final candidatePlace = item.details['placeId'];
-    final canLink = item.kind == 'link_candidate' && item.facilityId != null && candidatePlace is String;
+    final canLink =
+        item.kind == 'link_candidate' &&
+        item.facilityId != null &&
+        candidatePlace is String;
 
     return _Box(
       key: DirectoryReviewScreen.itemKey(item.id),
       border: severe ? AppColors.coralDark : null,
       children: [
-        Text(l10n.reviewKind(item.kind), style: AppText.cardTitle.copyWith(fontSize: 16)),
+        Text(
+          l10n.reviewKind(item.kind),
+          style: AppText.cardTitle.copyWith(fontSize: 16),
+        ),
         Text(
           '${l10n.severity(item.severity)} · ${item.facilityName ?? ''} · ${AppFormat.of(context).date(item.createdAt.toLocal())}',
           style: AppText.secondary.copyWith(color: AppColors.brown),
@@ -184,7 +247,9 @@ class _ItemCard extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              item.details.entries.map((e) => '${e.key}: ${e.value}').join('\n'),
+              item.details.entries
+                  .map((e) => '${e.key}: ${e.value}')
+                  .join('\n'),
               textDirection: TextDirection.ltr,
               style: AppText.secondary.copyWith(color: AppColors.ink),
             ),
@@ -195,7 +260,11 @@ class _ItemCard extends ConsumerWidget {
             if (canLink)
               FilledButton.icon(
                 key: Key('review-link-${item.id}'),
-                onPressed: () => _act(context, ref, (repo) => repo.linkPlace(item.facilityId!, candidatePlace)),
+                onPressed: () => _act(
+                  context,
+                  ref,
+                  (repo) => repo.linkPlace(item.facilityId!, candidatePlace),
+                ),
                 icon: const AppIcon(Icons.link_rounded, size: 18),
                 label: Text(l10n.adminLink),
               ),
@@ -222,7 +291,14 @@ class _FacilityCard extends ConsumerWidget {
   final AdminFacility facility;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     final f = facility;
     final format = AppFormat.of(context);
@@ -237,11 +313,18 @@ class _FacilityCard extends ConsumerWidget {
     Future<void> withdrawEmergency() async {
       final note = await _askNote(context, l10n.adminWithdrawEmergency);
       if (note == null || !context.mounted) return;
-      await _act(context, ref, (repo) => repo.withdrawClaim(f.id, 'emergency', note));
+      await _act(
+        context,
+        ref,
+        (repo) => repo.withdrawClaim(f.id, 'emergency', note),
+      );
     }
 
     Future<void> correct() async {
-      final fact = await showDialog<_Correction>(context: context, builder: (_) => const _CorrectDialog());
+      final fact = await showDialog<_Correction>(
+        context: context,
+        builder: (_) => const _CorrectDialog(),
+      );
       if (fact == null || !context.mounted) return;
       await _act(
         context,
@@ -260,13 +343,23 @@ class _FacilityCard extends ConsumerWidget {
     return _Box(
       key: DirectoryReviewScreen.facilityKey(f.id),
       children: [
-        Text(f.nameHe == null ? f.name : '${f.name} · ${f.nameHe}', style: AppText.cardTitle.copyWith(fontSize: 16)),
+        Text(
+          f.nameHe == null ? f.name : '${f.name} · ${f.nameHe}',
+          style: AppText.cardTitle.copyWith(fontSize: 16),
+        ),
         Text(
           [
             l10n.reviewStatus(f.reviewStatus),
-            f.lastCheckedAt == null ? l10n.adminNeverChecked : l10n.adminLastChecked(format.date(f.lastCheckedAt!.toLocal())),
+            f.lastCheckedAt == null
+                ? l10n.adminNeverChecked
+                : l10n.adminLastChecked(
+                    format.date(f.lastCheckedAt!.toLocal()),
+                  ),
           ].join(' · '),
-          style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
+          style: AppText.secondary.copyWith(
+            color: AppColors.brown,
+            fontWeight: FontWeight.w700,
+          ),
         ),
         if (f.address != null || f.phone != null)
           Text(
@@ -314,7 +407,9 @@ class _FacilityCard extends ConsumerWidget {
               TextButton(
                 key: Key('review-withdraw-${f.id}'),
                 onPressed: () => status('withdrawn', l10n.adminWithdraw),
-                style: TextButton.styleFrom(foregroundColor: AppColors.coralDark),
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.coralDark,
+                ),
                 child: Text(l10n.adminWithdraw),
               ),
           ],
@@ -369,7 +464,14 @@ class _CorrectDialogState extends State<_CorrectDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.admin',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.findVetL10n;
     return AlertDialog(
       title: Text(l10n.adminCorrect),
@@ -384,18 +486,29 @@ class _CorrectDialogState extends State<_CorrectDialog> {
                 initialValue: _key,
                 isExpanded: true,
                 decoration: InputDecoration(labelText: l10n.adminFact),
-                items: [for (final key in _factKeys) DropdownMenuItem(
-                    value: key,
-                    child: Text(l10n.factKey(key), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  ),],
+                items: [
+                  for (final key in _factKeys)
+                    DropdownMenuItem(
+                      value: key,
+                      child: Text(
+                        l10n.factKey(key),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
                 onChanged: (key) => setState(() => _key = key ?? _key),
               ),
               const SizedBox(height: 8),
               TextFormField(
                 key: const Key('review-fact-value'),
                 controller: _value,
-                decoration: InputDecoration(labelText: l10n.adminValue, helperText: l10n.adminValueHint),
-                validator: (v) => (v ?? '').trim().isEmpty ? l10n.adminValueRequired : null,
+                decoration: InputDecoration(
+                  labelText: l10n.adminValue,
+                  helperText: l10n.adminValueHint,
+                ),
+                validator: (v) =>
+                    (v ?? '').trim().isEmpty ? l10n.adminValueRequired : null,
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -406,7 +519,11 @@ class _CorrectDialogState extends State<_CorrectDialog> {
                 decoration: InputDecoration(labelText: l10n.adminSourceUrl),
                 validator: (v) {
                   final uri = Uri.tryParse((v ?? '').trim());
-                  return uri != null && uri.isScheme('https') && uri.host.isNotEmpty ? null : l10n.adminSourceRequired;
+                  return uri != null &&
+                          uri.isScheme('https') &&
+                          uri.host.isNotEmpty
+                      ? null
+                      : l10n.adminSourceRequired;
                 },
               ),
               const SizedBox(height: 8),
@@ -420,12 +537,22 @@ class _CorrectDialogState extends State<_CorrectDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(context.l10n.commonCancel)),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(context.l10n.commonCancel),
+        ),
         FilledButton(
           key: const Key('review-fact-save'),
           onPressed: () {
             if (!_form.currentState!.validate()) return;
-            Navigator.of(context).pop(_Correction(_key, _parsedValue(), _source.text.trim(), _note.text.trim()));
+            Navigator.of(context).pop(
+              _Correction(
+                _key,
+                _parsedValue(),
+                _source.text.trim(),
+                _note.text.trim(),
+              ),
+            );
           },
           child: Text(context.l10n.commonSave),
         ),
@@ -442,7 +569,10 @@ class _Heading extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.only(top: 8, bottom: 8),
-    child: Semantics(header: true, child: Text(text, style: AppText.cardTitle.copyWith(fontSize: 18))),
+    child: Semantics(
+      header: true,
+      child: Text(text, style: AppText.cardTitle.copyWith(fontSize: 18)),
+    ),
   );
 }
 
@@ -461,7 +591,10 @@ class _Box extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
       border: border == null ? null : Border.all(color: border!, width: 2),
     ),
-    child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
+    ),
   );
 }
 
@@ -473,10 +606,15 @@ class _Failed extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Row(
     children: [
-      Expanded(child: Text(context.findVetL10n.adminLoadFailed, style: AppText.body)),
+      Expanded(
+        child: Text(context.findVetL10n.adminLoadFailed, style: AppText.body),
+      ),
       IconButton(
         onPressed: onRetry,
-        constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
+        constraints: const BoxConstraints(
+          minWidth: kHealthTapTarget,
+          minHeight: kHealthTapTarget,
+        ),
         icon: const AppIcon(Icons.refresh_rounded),
         tooltip: context.findVetL10n.tryAgain,
       ),

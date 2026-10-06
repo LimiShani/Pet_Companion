@@ -3,6 +3,15 @@
 Read this before changing anything. It is the contract between the lead and
 the feature agents (Health, Community, Store), and it applies to humans too.
 
+Architecture update (5 October 2026): canonical repositories and feature state
+are under `lib/services/`; shared presentation is under `lib/presentation/`;
+feature translations are under `lib/l10n/features/`. Old data/state/translation
+paths under feature folders are compatibility exports. Edit the canonical
+implementation, not an export shim. Shared services and composition are LEAD
+owned. Each product section registers its UI in `features/<name>/module.dart`;
+`tool/configure_features.py` generates the selected composition and
+`tool/check_feature_boundaries.py` verifies omissions and platform boundaries.
+
 ## The app in one paragraph
 
 PetLoop is a Flutter app (Android + iOS; web only for previews) for

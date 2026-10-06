@@ -1,6 +1,10 @@
 /// The signed-in account. Pets belong to a user.
 class AppUser {
-  const AppUser({required this.id, required this.email, required this.displayName});
+  const AppUser({
+    required this.id,
+    required this.email,
+    required this.displayName,
+  });
 
   final String id;
   final String email;

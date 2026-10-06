@@ -16,16 +16,19 @@ library;
 
 import 'package:flutter/material.dart';
 
-import 'emergency_contacts.dart';
+import '../../../services/pet_records/state/emergency_contacts.dart';
 import 'health_profile_form.dart';
 import 'vet_picker.dart';
 
-export '../data/health_models.dart' show HealthException, HealthFailure, HealthProfile, KitItem, Vet, VetRole;
-export '../health_strings.dart' show healthErrorOf, healthErrorText;
+export '../../../services/pet_records/data/health_models.dart'
+    show HealthException, HealthFailure, HealthProfile, KitItem, Vet, VetRole;
+export '../../../presentation/health_strings.dart'
+    show healthErrorOf, healthErrorText;
 // The emergency kit: `ref.watch(emergencyKitProvider(petId))` gives how many
 // items are ready (`ready`) out of how many apply to the pet (`total`).
-export '../state/emergency_kit.dart' show EmergencyKit, KitEntry, emergencyKitProvider;
-export '../state/health_providers.dart'
+export '../../../services/pet_records/state/emergency_kit.dart'
+    show EmergencyKit, KitEntry, emergencyKitProvider;
+export '../../../services/pet_records/state/health_providers.dart'
     show
         PetVets,
         PrepareHealthFilesRemoval,
@@ -33,12 +36,13 @@ export '../state/health_providers.dart'
         healthProfileProvider,
         petVetsProvider,
         prepareHealthFilesRemovalProvider;
-export 'contact_launcher.dart';
+export '../../../platform/contact_launcher.dart';
 export 'emergency_button.dart';
 export 'emergency_card_screen.dart' show openEmergencyCard;
-export 'emergency_contacts.dart';
+export '../../../services/pet_records/state/emergency_contacts.dart';
 export 'emergency_kit_screen.dart' show openEmergencyKit;
-export 'emergency_sheet.dart' show callPrimaryEmergencyContact, showEmergencySheet;
+export 'emergency_sheet.dart'
+    show callPrimaryEmergencyContact, showEmergencySheet;
 export 'health_profile_form.dart' show HealthBasicsSection, HealthProfileScreen;
 // The "my pet is lost" page: builds a card to share; posts nothing itself.
 export 'lost_pet_card_screen.dart' show openLostPetCard;
@@ -63,4 +67,5 @@ Future<void> openHealthCriticalItem(
 
 /// Opens Health's profile page (allergies, conditions, microchip, emergency
 /// contact, notes) for [petId]. Nothing opens for an unknown pet id.
-Future<void> openHealthProfile(BuildContext context, String petId) => openHealthProfileById(context, petId);
+Future<void> openHealthProfile(BuildContext context, String petId) =>
+    openHealthProfileById(context, petId);

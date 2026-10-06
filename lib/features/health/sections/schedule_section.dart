@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,18 +8,18 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
 import '../records/record_detail_screen.dart';
 import '../records/record_form_screen.dart';
 import '../schedule/medicine_form_screen.dart';
 import '../schedule/record_dose_sheet.dart';
-import '../schedule/routine_form_screen.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../presentation/schedule/routine_form_screen.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// Opens the "what do you want to add?" sheet of the Schedule: an
 /// appointment or due date, a medicine, or a routine.
@@ -27,7 +28,12 @@ Future<void> showScheduleAddSheet(BuildContext context, Pet pet) async {
   if (choice == null || !context.mounted) return;
   switch (choice) {
     case 0:
-      await openRecordForm(context, pet, kind: RecordKind.checkup, planned: true);
+      await openRecordForm(
+        context,
+        pet,
+        kind: RecordKind.checkup,
+        planned: true,
+      );
     case 1:
       await openMedicineForm(context, pet);
     case 2:
@@ -39,9 +45,22 @@ class _AddSheet extends StatelessWidget {
   const _AddSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
-    Widget option(int value, String key, IconData icon, String title, String detail) => Padding(
+    Widget option(
+      int value,
+      String key,
+      IconData icon,
+      String title,
+      String detail,
+    ) => Padding(
       padding: const EdgeInsetsDirectional.only(bottom: 8),
       child: HealthCard(
         key: ValueKey('add-$key'),
@@ -56,7 +75,10 @@ class _AddSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppText.cardTitle),
-                  Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  Text(
+                    detail,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
                 ],
               ),
             ),
@@ -71,9 +93,27 @@ class _AddSheet extends StatelessWidget {
       children: [
         SheetTitle(l10n.addToSchedule),
         const SizedBox(height: 12),
-        option(0, 'appointment', Icons.event_rounded, l10n.addAppointment, l10n.addAppointmentNote),
-        option(1, 'medicine', Icons.medication_rounded, l10n.medicine, l10n.addMedicineNote),
-        option(2, 'routine', Icons.restaurant_rounded, l10n.routine, l10n.addRoutineNote),
+        option(
+          0,
+          'appointment',
+          Icons.event_rounded,
+          l10n.addAppointment,
+          l10n.addAppointmentNote,
+        ),
+        option(
+          1,
+          'medicine',
+          Icons.medication_rounded,
+          l10n.medicine,
+          l10n.addMedicineNote,
+        ),
+        option(
+          2,
+          'routine',
+          Icons.restaurant_rounded,
+          l10n.routine,
+          l10n.addRoutineNote,
+        ),
       ],
     );
   }
@@ -89,7 +129,14 @@ class ScheduleSection extends ConsumerWidget {
   final PetHealthData data;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final now = ref.watch(healthClockProvider)();
     final plan = data.plan;
     final planned = upcomingRecords(data.records, now);
@@ -134,10 +181,21 @@ class ScheduleSection extends ConsumerWidget {
           e.due,
           e.item.isMedication
               ? _MedicineRow(pet: pet, entry: e)
-              : _RoutineRow(pet: pet, entry: e, onTick: () => _tick(context, ref, e)),
+              : _RoutineRow(
+                  pet: pet,
+                  entry: e,
+                  onTick: () => _tick(context, ref, e),
+                ),
         ),
       for (final r in todayRecords)
-        (r.scheduledAt, _PlannedRow(record: r, now: now, onTap: () => openRecordDetail(context, pet, r))),
+        (
+          r.scheduledAt,
+          _PlannedRow(
+            record: r,
+            now: now,
+            onTap: () => openRecordDetail(context, pet, r),
+          ),
+        ),
     ]..sort((a, b) => a.$1.compareTo(b.$1));
 
     return Column(
@@ -164,20 +222,36 @@ class ScheduleSection extends ConsumerWidget {
         for (final (_, row) in today) ...[row, const SizedBox(height: 8)],
         if (answered.isNotEmpty) _DoneToday(pet: pet, entries: answered),
         const SizedBox(height: 8),
-        HealthSectionTitle(l10n.upcoming, count: upcoming.isEmpty ? null : upcoming.length),
+        HealthSectionTitle(
+          l10n.upcoming,
+          count: upcoming.isEmpty ? null : upcoming.length,
+        ),
         if (upcoming.isEmpty)
           Padding(
             padding: const EdgeInsetsDirectional.only(bottom: 8),
-            child: Text(l10n.noUpcoming, style: AppText.body.copyWith(color: AppColors.brown)),
+            child: Text(
+              l10n.noUpcoming,
+              style: AppText.body.copyWith(color: AppColors.brown),
+            ),
           ),
         for (final record in upcoming) ...[
-          _PlannedRow(record: record, now: now, onTap: () => openRecordDetail(context, pet, record)),
+          _PlannedRow(
+            record: record,
+            now: now,
+            onTap: () => openRecordDetail(context, pet, record),
+          ),
           const SizedBox(height: 8),
         ],
         if (reviewEntries.isNotEmpty || reviewRecords.isNotEmpty) ...[
           const SizedBox(height: 8),
-          HealthSectionTitle(l10n.needsReview, count: reviewEntries.length + reviewRecords.length),
-          for (final entry in reviewEntries) ...[_ReviewEntryRow(pet: pet, entry: entry), const SizedBox(height: 8)],
+          HealthSectionTitle(
+            l10n.needsReview,
+            count: reviewEntries.length + reviewRecords.length,
+          ),
+          for (final entry in reviewEntries) ...[
+            _ReviewEntryRow(pet: pet, entry: entry),
+            const SizedBox(height: 8),
+          ],
           for (final record in reviewRecords) ...[
             _ReviewRecordRow(pet: pet, record: record),
             const SizedBox(height: 8),
@@ -188,7 +262,12 @@ class ScheduleSection extends ConsumerWidget {
           const SizedBox(height: 16),
           HealthSectionTitle(l10n.medicinesAndRoutines),
           for (final medication in plan.medications) ...[
-            _MedicineCard(pet: pet, medication: medication, plan: plan, now: now),
+            _MedicineCard(
+              pet: pet,
+              medication: medication,
+              plan: plan,
+              now: now,
+            ),
             const SizedBox(height: 8),
           ],
           for (final item in _routines(plan)) ...[
@@ -210,13 +289,23 @@ class ScheduleSection extends ConsumerWidget {
       if (!item.isMedication) item,
   ]..sort((a, b) => minutesOf(a.time).compareTo(minutesOf(b.time)));
 
-  Future<void> _tick(BuildContext context, WidgetRef ref, ScheduleEntry entry) async {
+  Future<void> _tick(
+    BuildContext context,
+    WidgetRef ref,
+    ScheduleEntry entry,
+  ) async {
     try {
       await ref
           .read(carePlanProvider(pet.id).notifier)
-          .record(item: entry.item, dueOn: entry.due, status: CareLogStatus.done);
+          .record(
+            item: entry.item,
+            dueOn: entry.due,
+            status: CareLogStatus.done,
+          );
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 }
@@ -224,19 +313,33 @@ class ScheduleSection extends ConsumerWidget {
 /// Whether a routine's title already says its kind (in the language of the
 /// screen, or in English for one that was created in English): the kind is
 /// then not said twice.
-bool _namedAfterKind(String title, String kindLabel, String kindLabelInEnglish) =>
-    title.trim() == kindLabel || title.trim() == kindLabelInEnglish;
+bool _namedAfterKind(
+  String title,
+  String kindLabel,
+  String kindLabelInEnglish,
+) => title.trim() == kindLabel || title.trim() == kindLabelInEnglish;
 
 /// A routine due today: ticked with one tap.
 class _RoutineRow extends StatelessWidget {
-  const _RoutineRow({required this.pet, required this.entry, required this.onTick});
+  const _RoutineRow({
+    required this.pet,
+    required this.entry,
+    required this.onTick,
+  });
 
   final Pet pet;
   final ScheduleEntry entry;
   final VoidCallback onTick;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final item = entry.item;
     final l10n = context.healthL10n;
     final settings = SpeciesSettings.of(pet.species);
@@ -244,7 +347,12 @@ class _RoutineRow extends StatelessWidget {
     return HealthCard(
       key: ValueKey('today-${item.id}'),
       onTap: () => openRoutineForm(context, pet, item: item),
-      padding: const EdgeInsetsDirectional.only(start: 4, end: 14, top: 6, bottom: 6),
+      padding: const EdgeInsetsDirectional.only(
+        start: 4,
+        end: 14,
+        top: 6,
+        bottom: 6,
+      ),
       child: Row(
         children: [
           Semantics(
@@ -262,13 +370,23 @@ class _RoutineRow extends StatelessWidget {
               children: [
                 TypedText(item.title, style: AppText.cardTitle),
                 // A routine named after its kind does not say it twice.
-                if (!_namedAfterKind(item.title, kindLabel, settings.routineLabel(item.kind)))
-                  Text(kindLabel, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                if (!_namedAfterKind(
+                  item.title,
+                  kindLabel,
+                  settings.routineLabel(item.kind),
+                ))
+                  Text(
+                    kindLabel,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          Text(HealthFormat.of(context).timeOfDay(item.time), style: AppText.cardTitle),
+          Text(
+            HealthFormat.of(context).timeOfDay(item.time),
+            style: AppText.cardTitle,
+          ),
         ],
       ),
     );
@@ -283,7 +401,14 @@ class _MedicineRow extends StatelessWidget {
   final ScheduleEntry entry;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final item = entry.item;
     final medication = entry.medication;
     final dose = medication?.dose.trim() ?? '';
@@ -291,8 +416,15 @@ class _MedicineRow extends StatelessWidget {
     final format = HealthFormat.of(context);
     return HealthCard(
       key: ValueKey('today-${item.id}'),
-      onTap: medication == null ? null : () => openMedicineForm(context, pet, medication: medication),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 10, bottom: 10),
+      onTap: medication == null
+          ? null
+          : () => openMedicineForm(context, pet, medication: medication),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 10,
+        bottom: 10,
+      ),
       child: Row(
         children: [
           const IconDisc(Icons.medication_rounded),
@@ -348,7 +480,9 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
     if (entry.item.isMedication) {
       return switch (log.status) {
         CareLogStatus.done =>
-          log.doneAt == null ? l10n.doneLineGiven(title) : l10n.doneLineGivenAt(title, format.time(log.doneAt!)),
+          log.doneAt == null
+              ? l10n.doneLineGiven(title)
+              : l10n.doneLineGivenAt(title, format.time(log.doneAt!)),
         CareLogStatus.skipped => l10n.doneLineNotGiven(title),
         CareLogStatus.unknown => l10n.doneLineNotSure(title),
       };
@@ -360,14 +494,23 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
 
   Future<void> _undo(ScheduleEntry entry) async {
     try {
-      await ref.read(carePlanProvider(widget.pet.id).notifier).removeLog(entry.log!);
+      await ref
+          .read(carePlanProvider(widget.pet.id).notifier)
+          .removeLog(entry.log!);
     } catch (error) {
       if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final entries = widget.entries;
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
@@ -375,7 +518,12 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
       key: const Key('done-today'),
       color: AppColors.sage,
       onTap: () => setState(() => _open = !_open),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 10, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 10,
+        bottom: 10,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -387,10 +535,15 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(l10n.doneTodayCount(entries.length), style: AppText.cardTitle),
+                    Text(
+                      l10n.doneTodayCount(entries.length),
+                      style: AppText.cardTitle,
+                    ),
                     if (!_open)
                       Text(
-                        format.dots([for (final entry in entries) _line(format, entry)]),
+                        format.dots([
+                          for (final entry in entries) _line(format, entry),
+                        ]),
                         style: AppText.secondary,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -398,14 +551,19 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
                   ],
                 ),
               ),
-              AppIcon(_open ? Icons.expand_less_rounded : Icons.expand_more_rounded, color: AppColors.ink),
+              AppIcon(
+                _open ? Icons.expand_less_rounded : Icons.expand_more_rounded,
+                color: AppColors.ink,
+              ),
             ],
           ),
           if (_open)
             for (final entry in entries)
               Row(
                 children: [
-                  Expanded(child: Text(_line(format, entry), style: AppText.secondary)),
+                  Expanded(
+                    child: Text(_line(format, entry), style: AppText.secondary),
+                  ),
                   HealthLink(
                     l10n.undo,
                     key: ValueKey('undo-${entry.item.id}'),
@@ -422,14 +580,25 @@ class _DoneTodayState extends ConsumerState<_DoneToday> {
 
 /// A planned appointment or due date, with a date badge.
 class _PlannedRow extends StatelessWidget {
-  const _PlannedRow({required this.record, required this.now, required this.onTap});
+  const _PlannedRow({
+    required this.record,
+    required this.now,
+    required this.onTap,
+  });
 
   final HealthRecord record;
   final DateTime now;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final at = record.scheduledAt;
     // The day of a follow-up comes from the vet; its time means nothing.
     final followUp = record.followUpOf != null;
@@ -437,12 +606,21 @@ class _PlannedRow extends StatelessWidget {
     final format = HealthFormat.of(context);
     final detail = followUp
         ? format.dots([l10n.recordKind(record.kind), l10n.dateGivenByVet])
-        : format.dots([l10n.recordKind(record.kind), format.weekdayTime(at), record.clinic]);
+        : format.dots([
+            l10n.recordKind(record.kind),
+            format.weekdayTime(at),
+            record.clinic,
+          ]);
 
     return HealthCard(
       key: ValueKey('planned-${record.id}'),
       onTap: onTap,
-      padding: const EdgeInsetsDirectional.only(start: 10, end: 8, top: 10, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(
+        start: 10,
+        end: 8,
+        top: 10,
+        bottom: 10,
+      ),
       child: Row(
         children: [
           Semantics(
@@ -451,7 +629,10 @@ class _PlannedRow extends StatelessWidget {
             child: Container(
               constraints: const BoxConstraints(minWidth: 52),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.peach, borderRadius: BorderRadius.circular(16)),
+              decoration: BoxDecoration(
+                color: AppColors.peach,
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -466,8 +647,14 @@ class _PlannedRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TypedText(followUp ? l10n.followUpDue(record.title) : record.title, style: AppText.cardTitle),
-                Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                TypedText(
+                  followUp ? l10n.followUpDue(record.title) : record.title,
+                  style: AppText.cardTitle,
+                ),
+                Text(
+                  detail,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
               ],
             ),
           ),
@@ -497,7 +684,11 @@ class _ReviewEntryRow extends ConsumerWidget {
   final Pet pet;
   final ScheduleEntry entry;
 
-  Future<void> _answer(BuildContext context, WidgetRef ref, CareLogStatus status) async {
+  Future<void> _answer(
+    BuildContext context,
+    WidgetRef ref,
+    CareLogStatus status,
+  ) async {
     try {
       await ref
           .read(carePlanProvider(pet.id).notifier)
@@ -509,12 +700,21 @@ class _ReviewEntryRow extends ConsumerWidget {
             doneAt: status == CareLogStatus.done ? entry.due : null,
           );
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     // Part of the keys below: the same in every language.
@@ -537,7 +737,11 @@ class _ReviewEntryRow extends ConsumerWidget {
                   children: [
                     TypedText(entry.item.title, style: AppText.cardTitle),
                     Text(
-                      format.dots([format.weekdayDate(entry.due), format.time(entry.due), l10n.noAnswerRecorded]),
+                      format.dots([
+                        format.weekdayDate(entry.due),
+                        format.time(entry.due),
+                        l10n.noAnswerRecorded,
+                      ]),
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                     ),
                   ],
@@ -585,15 +789,28 @@ class _ReviewRecordRow extends ConsumerWidget {
 
   Future<void> _done(BuildContext context, WidgetRef ref) async {
     try {
-      await ref.read(healthRecordsProvider(pet.id).notifier).setDone(record, record.scheduledAt);
-      if (context.mounted) showHealthSnack(context, context.healthL10n.movedToHistory);
+      await ref
+          .read(healthRecordsProvider(pet.id).notifier)
+          .setDone(record, record.scheduledAt);
+      if (context.mounted) {
+        showHealthSnack(context, context.healthL10n.movedToHistory);
+      }
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final at = record.scheduledAt;
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
@@ -615,7 +832,11 @@ class _ReviewRecordRow extends ConsumerWidget {
                   children: [
                     TypedText(record.title, style: AppText.cardTitle),
                     Text(
-                      format.dots([format.weekdayDate(at), format.time(at), l10n.notMarkedAsDone]),
+                      format.dots([
+                        format.weekdayDate(at),
+                        format.time(at),
+                        l10n.notMarkedAsDone,
+                      ]),
                       style: AppText.secondary.copyWith(color: AppColors.brown),
                     ),
                   ],
@@ -651,7 +872,12 @@ class _ReviewRecordRow extends ConsumerWidget {
 /// A medicine in the care plan: its instructions and reminder times. The
 /// days of its reminders are said in the owner's week.
 class _MedicineCard extends ConsumerWidget {
-  const _MedicineCard({required this.pet, required this.medication, required this.plan, required this.now});
+  const _MedicineCard({
+    required this.pet,
+    required this.medication,
+    required this.plan,
+    required this.now,
+  });
 
   final Pet pet;
   final Medication medication;
@@ -659,7 +885,14 @@ class _MedicineCard extends ConsumerWidget {
   final DateTime now;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final week = ref.watch(weekSettingsProvider);
@@ -670,7 +903,9 @@ class _MedicineCard extends ConsumerWidget {
     final reminders = asNeeded
         ? l10n.onlyWhenNeeded
         : format.dots([
-            format.commas([for (final item in items) format.timeOfDay(item.time)]),
+            format.commas([
+              for (final item in items) format.timeOfDay(item.time),
+            ]),
             format.days(items.first.days, week),
           ]);
     final ends = medication.endsOn;
@@ -679,7 +914,12 @@ class _MedicineCard extends ConsumerWidget {
     return HealthCard(
       key: ValueKey('medicine-${medication.id}'),
       onTap: () => openMedicineForm(context, pet, medication: medication),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 12, bottom: 12),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 12,
+        bottom: 12,
+      ),
       child: Row(
         children: [
           const IconDisc(Icons.medication_rounded),
@@ -690,8 +930,14 @@ class _MedicineCard extends ConsumerWidget {
               children: [
                 TypedText(medication.displayName, style: AppText.cardTitle),
                 if (instructions.isNotEmpty)
-                  Text(instructions, style: AppText.secondary.copyWith(color: AppColors.brown)),
-                Text(reminders, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  Text(
+                    instructions,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
+                Text(
+                  reminders,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
                 if (!active)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(top: 4),
@@ -711,7 +957,8 @@ class _MedicineCard extends ConsumerWidget {
             OutlinedButton(
               key: ValueKey('record-as-needed-${medication.id}'),
               style: _smallOutlined(),
-              onPressed: () => showRecordDoseSheet(context, pet, medication: medication),
+              onPressed: () =>
+                  showRecordDoseSheet(context, pet, medication: medication),
               child: Text(l10n.recordDose),
             )
           else
@@ -739,13 +986,25 @@ class _RoutineCard extends ConsumerWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final format = HealthFormat.of(context);
     final week = ref.watch(weekSettingsProvider);
     return HealthCard(
       key: ValueKey('routine-${item.id}'),
       onTap: onTap,
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 12, bottom: 12),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 12,
+        bottom: 12,
+      ),
       child: Row(
         children: [
           IconDisc(careKindIcon(item.kind)),
@@ -758,14 +1017,22 @@ class _RoutineCard extends ConsumerWidget {
                 Text(
                   format.dots([
                     // A routine named after its kind does not say it twice.
-                    if (!_namedAfterKind(item.title, kindLabel, kindLabelInEnglish)) kindLabel,
+                    if (!_namedAfterKind(
+                      item.title,
+                      kindLabel,
+                      kindLabelInEnglish,
+                    ))
+                      kindLabel,
                     format.timeOfDay(item.time),
                     format.days(item.days, week),
                   ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
                 if (!item.active)
-                  Padding(padding: const EdgeInsetsDirectional.only(top: 4), child: HealthTag(format.l10n.paused)),
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(top: 4),
+                    child: HealthTag(format.l10n.paused),
+                  ),
               ],
             ),
           ),

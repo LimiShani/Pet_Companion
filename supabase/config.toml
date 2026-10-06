@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.vet-directory-weekly]
 verify_jwt = false
+
+[functions.storage-cleanup]
+verify_jwt = false

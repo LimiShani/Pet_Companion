@@ -1,0 +1,233 @@
+{
+  "@@locale": "en",
+  "pageTitle": "The first 30 days · {name}",
+  "@pageTitle": {
+    "description": "Header of the first 30 days page.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "arrivedOn": "Arrived home {date}",
+  "@arrivedOn": {
+    "description": "Under the header; the date is like 01.06.25.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dayOfTotal": "Day {day} of {total}",
+  "@dayOfTotal": {
+    "description": "Day 1 is the arrival day.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "doneCount": "{count} done",
+  "@doneCount": {
+    "description": "count is like \"5/12\".",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "firstWeek": "First week",
+  "@firstWeek": {
+    "description": "Heading of the tasks of days 1 to 7."
+  },
+  "laterWeeks": "Weeks 2–4",
+  "@laterWeeks": {
+    "description": "Heading of the tasks of days 8 to 30."
+  },
+  "tickedForYou": "Done in the app",
+  "@tickedForYou": {
+    "description": "Under a task the app ticked by itself (a vet visit was added, meal times set...)."
+  },
+  "markDone": "Mark as done",
+  "@markDone": {
+    "description": "Screen reader label of an empty tick."
+  },
+  "markNotDone": "Mark as not done",
+  "@markNotDone": {
+    "description": "Screen reader label of a ticked tick."
+  },
+  "closePath": "Close the first 30 days",
+  "@closePath": {
+    "description": "Button at the end of the page: ends the path early."
+  },
+  "closeQuestion": "Close the first 30 days?",
+  "@closeQuestion": {
+    "description": "Title of the confirmation."
+  },
+  "closeMessage": "The card leaves Home. This list stays on {name}'s profile as a summary.",
+  "@closeMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "closeConfirm": "Close",
+  "@closeConfirm": {
+    "description": "Confirm button of the confirmation."
+  },
+  "closedOn": "Closed on {date}",
+  "@closedOn": {
+    "description": "Summary line of a path the owner closed early.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "overLine": "The 30 days are over",
+  "@overLine": {
+    "description": "Summary line after day 30."
+  },
+  "allDoneLine": "Everything is done. Nice work.",
+  "@allDoneLine": {
+    "description": "Shown when every task is done before day 30."
+  },
+  "summaryNote": "A look back at the first 30 days.",
+  "@summaryNote": {
+    "description": "Under the summary line of a path that ended."
+  },
+  "loadFailed": "Could not load the first 30 days",
+  "notStarted": "The first 30 days have not started for {name}.",
+  "@notStarted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardTitle": "The first 30 days of {name}",
+  "@cardTitle": {
+    "description": "Title of the Home card.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cardDay": "Day {day}",
+  "@cardDay": {
+    "description": "On the Home card.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "cardNext": "Next: {task}",
+  "@cardNext": {
+    "description": "On the Home card; task is the text of the next task.",
+    "placeholders": {
+      "task": {
+        "type": "String"
+      }
+    }
+  },
+  "open": "Open",
+  "@open": {
+    "description": "Pill on the Home card and the pet profile."
+  },
+  "openTapLabel": "Open the first 30 days",
+  "@openTapLabel": {
+    "description": "Screen reader hint of the Home card."
+  },
+  "arrivedQuestion": "Just arrived home?",
+  "@arrivedQuestion": {
+    "description": "Question on step 2 of add-a-pet."
+  },
+  "answerYes": "Yes",
+  "answerNo": "No",
+  "arrivalDay": "Arrival day",
+  "@arrivalDay": {
+    "description": "Label of the date field, and the date picker title."
+  },
+  "arrivalNote": "We'll make a short checklist for the first 30 days.",
+  "sectionTitle": "The first 30 days",
+  "@sectionTitle": {
+    "description": "Label of the block on the pet profile."
+  },
+  "startPath": "Start the first 30 days",
+  "@startPath": {
+    "description": "Button on the pet profile."
+  },
+  "startNote": "A short checklist for a pet that just arrived home.",
+  "viewSummary": "View",
+  "@viewSummary": {
+    "description": "Pill on the pet profile once the path ended."
+  },
+  "taskDogBasics": "Get the basics: a bed, bowls, a lead and food",
+  "taskDogRestSpot": "Set up a quiet spot to rest",
+  "taskFood": "Keep to the food they know for now, and add it here",
+  "taskMealTimes": "Set regular meal times",
+  "taskWalkTimes": "Plan regular walk times",
+  "taskDogNameTag": "A collar with a name tag and your phone number",
+  "taskFirstVet": "Book a first check-up with a vet",
+  "taskDogGuide": "Read the guide on the first week at home",
+  "taskMicrochip": "Check the microchip and register your details",
+  "taskVaccines": "Plan vaccinations with your vet",
+  "taskDogFirstWalks": "Short first walks and calm hellos with people and dogs",
+  "taskDogHouseRules": "Agree on house rules with everyone at home",
+  "taskCatBasics": "Get the basics: a litter box, bowls and food",
+  "taskCatSafeRoom": "A quiet room to settle in, with everything close by",
+  "taskCatGuide": "Read the guide on a cat's first week at home",
+  "taskCatScratching": "A scratching post near a favourite spot",
+  "taskCatExplore": "Open up the rest of the home, one room at a time",
+  "taskCatPlay": "A short play session every day",
+  "taskOtherHome": "Set up their home: a cage, tank or corner, with food and water",
+  "taskOtherQuiet": "Give them a few quiet days to settle in",
+  "taskCleaning": "Plan a cleaning routine for their home",
+  "taskGuides": "Have a look at the guides in Community",
+  "actionDeals": "Deals",
+  "@actionDeals": {
+    "description": "Opens the Store on deals that suit the pet."
+  },
+  "actionFood": "Food",
+  "@actionFood": {
+    "description": "Opens the food and portion page."
+  },
+  "actionFeeding": "Feeding",
+  "@actionFeeding": {
+    "description": "Opens the feeding page."
+  },
+  "actionActivity": "Activity",
+  "@actionActivity": {
+    "description": "Opens the activity page."
+  },
+  "actionAddVisit": "Add visit",
+  "@actionAddVisit": {
+    "description": "Opens a new vet visit record in Health."
+  },
+  "actionMicrochip": "Microchip",
+  "@actionMicrochip": {
+    "description": "Opens the pet's health profile."
+  },
+  "actionSchedule": "Schedule",
+  "@actionSchedule": {
+    "description": "Opens the Health schedule."
+  },
+  "actionRoutine": "Routine",
+  "@actionRoutine": {
+    "description": "Opens a new cleaning routine."
+  },
+  "actionRead": "Read",
+  "@actionRead": {
+    "description": "Opens a guide."
+  },
+  "actionGuides": "Guides",
+  "@actionGuides": {
+    "description": "Opens the guides library."
+  }
+}

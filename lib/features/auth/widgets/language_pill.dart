@@ -26,7 +26,9 @@ class LanguagePill extends ConsumerWidget {
       child: InkWell(
         key: pillKey,
         customBorder: const StadiumBorder(),
-        onTap: () => ref.read(appLanguageProvider.notifier).choose(toHebrew ? AppLanguage.hebrew : AppLanguage.english),
+        onTap: () => ref
+            .read(appLanguageProvider.notifier)
+            .choose(toHebrew ? AppLanguage.hebrew : AppLanguage.english),
         // The pill is 36 px tall inside a 44 px tap target.
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: 44),
@@ -37,17 +39,27 @@ class LanguagePill extends ConsumerWidget {
               padding: const EdgeInsetsDirectional.only(start: 10, end: 14),
               decoration: const ShapeDecoration(
                 color: AppColors.onCoralPill,
-                shape: StadiumBorder(side: BorderSide(color: AppColors.onCoralOutline, width: 2)),
+                shape: StadiumBorder(
+                  side: BorderSide(color: AppColors.onCoralOutline, width: 2),
+                ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AppIcon(Icons.language_rounded, size: 18, color: AppColors.white),
+                  const AppIcon(
+                    Icons.language_rounded,
+                    size: 18,
+                    color: AppColors.white,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     name,
                     maxLines: 1,
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: AppColors.white),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.white,
+                    ),
                   ),
                 ],
               ),

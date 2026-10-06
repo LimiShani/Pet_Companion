@@ -2,8 +2,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/auth_controller.dart';
-import '../features/pets/data/pets_repository.dart';
-import '../features/pets/data/pets_repository_provider.dart';
+import '../access/access_provider.dart';
+import '../platform/session.dart';
+import '../services/pets/data/pets_repository.dart';
+import '../services/pets/data/pets_repository_provider.dart';
 import '../models/pet.dart';
 import 'ordered_writes.dart';
 
@@ -13,14 +15,14 @@ enum PetsStatus { loading, ready, failed }
 /// Every pet of the signed-in owner, archived ones included.
 class PetsState {
   PetsState({required this.status, this.all = const [], this.error, this.cause})
-      : visible = [
-          for (final pet in all)
-            if (!pet.isArchived) pet,
-        ],
-        archived = [
-          for (final pet in all)
-            if (pet.isArchived) pet,
-        ];
+    : visible = [
+        for (final pet in all)
+          if (!pet.isArchived) pet,
+      ],
+      archived = [
+        for (final pet in all)
+          if (pet.isArchived) pet,
+      ];
 
   final PetsStatus status;
 
@@ -62,28 +64,48 @@ class PetsStore extends Notifier<PetsState> {
   /// still on its way cannot bring back a pet that was deleted after it.
   final _writes = OrderedWrites();
 
-  Future<T> _inOrder<T>(String petId, Future<T> Function() write) => _writes.run(petId, write);
+  Future<T> _inOrder<T>(String petId, Future<T> Function() write) =>
+      _writes.run(petId, () {
+        checkSession();
+        return write();
+      });
 
   @override
   PetsState build() {
-    final ownerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
+    ref.watch(accessProvider.select((access) => !access.hasError && access.value?.can('pets.view') == true));
+    final ownerId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
     final repository = ref.watch(petsRepositoryProvider);
     _ownerId = ownerId;
     final load = ++_load;
 
     final cached = repository.cachedPets(ownerId);
-    if (cached != null || ownerId == null) return PetsState(status: PetsStatus.ready, all: cached ?? const []);
+    if (cached != null || ownerId == null) {
+      return PetsState(status: PetsStatus.ready, all: cached ?? const []);
+    }
 
     _fetch(repository, ownerId, load);
     return PetsState(status: PetsStatus.loading);
   }
 
-  Future<void> _fetch(PetsRepository repository, String ownerId, int load) async {
+  Future<void> _fetch(
+    PetsRepository repository,
+    String ownerId,
+    int load,
+  ) async {
     PetsState next;
     try {
-      next = PetsState(status: PetsStatus.ready, all: await repository.fetchPets(ownerId));
+      next = PetsState(
+        status: PetsStatus.ready,
+        all: await repository.fetchPets(ownerId),
+      );
     } catch (e) {
-      next = PetsState(status: PetsStatus.failed, error: petsErrorMessage(e), cause: e);
+      next = PetsState(
+        status: PetsStatus.failed,
+        error: petsErrorMessage(e),
+        cause: e,
+      );
     }
     // Another owner signed in, or the app closed, while this was on its way.
     if (!ref.mounted || load != _load) return;
@@ -97,37 +119,50 @@ class PetsStore extends Notifier<PetsState> {
   /// Returns the pet as stored. Throws a [PetsException] when saving fails;
   /// nothing changes then.
   Future<Pet> save(Pet pet) async {
-    final ownerId = _ownerId;
-    final repository = ref.read(petsRepositoryProvider);
-    final stored = ownerId == null ? pet : await _inOrder(pet.id, () => repository.savePet(ownerId, pet));
-    if (ref.mounted && ownerId == _ownerId) _put(stored);
-    return stored;
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'pets.edit');
+      final ownerId = _ownerId;
+      final repository = ref.read(petsRepositoryProvider);
+      final stored = ownerId == null
+          ? pet
+          : await _inOrder(pet.id, () => repository.savePet(ownerId, pet));
+      checkSession();
+      if (ref.mounted && ownerId == _ownerId) _put(stored);
+      return stored;
+    });
   }
 
   /// Removes [pet] and its photos for good. Throws a [PetsException] when
   /// that fails; the pet stays then.
   Future<void> delete(Pet pet) async {
-    final ownerId = _ownerId;
-    if (ownerId != null) {
-      final repository = ref.read(petsRepositoryProvider);
-      await _inOrder(pet.id, () => repository.deletePet(ownerId, pet));
-    }
-    if (!ref.mounted || ownerId != _ownerId) return;
-    state = PetsState(
-      status: state.status,
-      all: [
-        for (final p in state.all)
-          if (p.id != pet.id) p,
-      ],
-    );
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'pets.edit');
+      final ownerId = _ownerId;
+      if (ownerId != null) {
+        final repository = ref.read(petsRepositoryProvider);
+        await _inOrder(pet.id, () => repository.deletePet(ownerId, pet));
+      }
+      checkSession();
+      if (!ref.mounted || ownerId != _ownerId) return;
+      state = PetsState(
+        status: state.status,
+        all: [
+          for (final p in state.all)
+            if (p.id != pet.id) p,
+        ],
+      );
+    });
   }
 
   /// Stores a cropped profile photo for the pet with [petId] and returns its
   /// storage path. Throws a [PetsException] when that fails.
   Future<String> uploadPhoto(String petId, Uint8List jpeg) async {
-    final ownerId = _ownerId;
-    if (ownerId == null) throw PetsException.of(PetsFailure.signInAgain);
-    return ref.read(petsRepositoryProvider).uploadPhoto(ownerId, petId, jpeg);
+    return sessionOperation(ref, () async {
+      requireCapability(ref, 'pets.edit');
+      final ownerId = _ownerId;
+      if (ownerId == null) throw PetsException.of(PetsFailure.signInAgain);
+      return ref.read(petsRepositoryProvider).uploadPhoto(ownerId, petId, jpeg);
+    });
   }
 
   /// Removes a stored photo. A failure is ignored: a leftover file does no
@@ -146,28 +181,40 @@ class PetsStore extends Notifier<PetsState> {
   /// something the backend does not have (the essentials reminder then asks
   /// for it again, and that path reports the failure to the owner).
   void putAndSave(Pet pet, {bool add = false}) {
+    requireCapability(ref, 'pets.edit');
+    final ticket = SessionTicket(ref);
     final before = state.byId(pet.id);
     if (!add && before == null) return;
     _put(pet);
     final ownerId = _ownerId;
     if (ownerId == null) return;
     final repository = ref.read(petsRepositoryProvider);
-    _inOrder(pet.id, () => repository.savePet(ownerId, pet)).then((_) {}, onError: (Object e) {
-      debugPrint('PetLoop: could not save ${pet.name}: $e');
-      // Only if nothing newer replaced it meanwhile.
-      if (!ref.mounted || ownerId != _ownerId || !identical(state.byId(pet.id), pet)) return;
-      if (before != null) {
-        _put(before);
-      } else {
-        state = PetsState(
-          status: state.status,
-          all: [
-            for (final p in state.all)
-              if (p.id != pet.id) p,
-          ],
-        );
-      }
-    });
+    _inOrder(pet.id, () {
+      ticket.check();
+      return repository.savePet(ownerId, pet);
+    }).then(
+      (_) {},
+      onError: (Object e) {
+        debugPrint('PetLoop: could not save ${pet.name}: $e');
+        // Only if nothing newer replaced it meanwhile.
+        if (!ticket.current ||
+            ownerId != _ownerId ||
+            !identical(state.byId(pet.id), pet)) {
+          return;
+        }
+        if (before != null) {
+          _put(before);
+        } else {
+          state = PetsState(
+            status: state.status,
+            all: [
+              for (final p in state.all)
+                if (p.id != pet.id) p,
+            ],
+          );
+        }
+      },
+    );
   }
 
   void _put(Pet pet) {
@@ -189,16 +236,19 @@ final petsStoreProvider = NotifierProvider<PetsStore, PetsState>(PetsStore.new);
 /// ones. Empty only while the first-pet welcome is on screen.
 class PetsNotifier extends Notifier<List<Pet>> {
   @override
-  List<Pet> build() => ref.watch(petsStoreProvider.select((pets) => pets.visible));
+  List<Pet> build() =>
+      ref.watch(petsStoreProvider.select((pets) => pets.visible));
 
   /// Adds [pet] and saves it.
   void add(Pet pet) {
+    requireCapability(ref, 'pets.edit');
     state = [...state, pet];
     ref.read(petsStoreProvider.notifier).putAndSave(pet, add: true);
   }
 
   /// Replaces the pet with the same id and saves it.
   void update(Pet pet) {
+    requireCapability(ref, 'pets.edit');
     state = [
       for (final p in state)
         if (p.id == pet.id) pet else p,
@@ -207,10 +257,14 @@ class PetsNotifier extends Notifier<List<Pet>> {
   }
 }
 
-final petsProvider = NotifierProvider<PetsNotifier, List<Pet>>(PetsNotifier.new);
+final petsProvider = NotifierProvider<PetsNotifier, List<Pet>>(
+  PetsNotifier.new,
+);
 
 /// The owner's archived pets: hidden from the app, shown only on "My pets".
-final archivedPetsProvider = Provider<List<Pet>>((ref) => ref.watch(petsStoreProvider.select((pets) => pets.archived)));
+final archivedPetsProvider = Provider<List<Pet>>(
+  (ref) => ref.watch(petsStoreProvider.select((pets) => pets.archived)),
+);
 
 /// What the router shows a signed-in owner.
 enum PetsGate {
@@ -232,7 +286,10 @@ final petsGateProvider = Provider<PetsGate>((ref) {
   return switch (status) {
     PetsStatus.loading => PetsGate.loading,
     PetsStatus.failed => PetsGate.failed,
-    PetsStatus.ready => ref.watch(petsProvider.select((pets) => pets.isEmpty)) ? PetsGate.empty : PetsGate.ready,
+    PetsStatus.ready =>
+      ref.watch(petsProvider.select((pets) => pets.isEmpty))
+          ? PetsGate.empty
+          : PetsGate.ready,
   };
 });
 
@@ -249,7 +306,9 @@ class SelectedPetNotifier extends Notifier<String> {
   void select(String id) => state = id;
 }
 
-final selectedPetIdProvider = NotifierProvider<SelectedPetNotifier, String>(SelectedPetNotifier.new);
+final selectedPetIdProvider = NotifierProvider<SelectedPetNotifier, String>(
+  SelectedPetNotifier.new,
+);
 
 /// The selected [Pet], falling back to the first one if the id is stale.
 /// [Pet.none] only while the owner has no pet at all, when the first-pet
@@ -257,5 +316,8 @@ final selectedPetIdProvider = NotifierProvider<SelectedPetNotifier, String>(Sele
 final selectedPetProvider = Provider<Pet>((ref) {
   final pets = ref.watch(petsProvider);
   final id = ref.watch(selectedPetIdProvider);
-  return pets.firstWhere((p) => p.id == id, orElse: () => pets.isEmpty ? Pet.none : pets.first);
+  return pets.firstWhere(
+    (p) => p.id == id,
+    orElse: () => pets.isEmpty ? Pet.none : pets.first,
+  );
 });

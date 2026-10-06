@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,18 +7,21 @@ import '../../models/pet.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
-import '../health/data/health_models.dart';
-import '../health/health_strings.dart';
-import '../health/state/health_providers.dart';
-import '../health/widgets/health_widgets.dart';
-import 'data/care_models.dart';
-import 'state/care_logic.dart';
-import 'state/care_providers.dart';
+import '../../services/pet_records/data/health_models.dart';
+import '../../presentation/health_strings.dart';
+import '../../services/pet_records/state/health_providers.dart';
+import '../../presentation/health_widgets.dart';
+import '../../services/care/data/care_models.dart';
+import '../../services/care/state/care_logic.dart';
+import '../../services/care/state/care_providers.dart';
 
 /// Opens the "Log a meal" sheet. [entry] is the meal to start on; without
 /// one the sheet picks the open meal closest to now, or an extra meal.
-Future<void> showLogMealSheet(BuildContext context, Pet pet, {CareEntry? entry}) =>
-    showHealthSheet<void>(context, LogMealSheet(pet: pet, entry: entry));
+Future<void> showLogMealSheet(
+  BuildContext context,
+  Pet pet, {
+  CareEntry? entry,
+}) => showHealthSheet<void>(context, LogMealSheet(pet: pet, entry: entry));
 
 enum _Amount { whole, half, notEaten, custom }
 
@@ -75,7 +79,10 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time ?? TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time ?? TimeOfDay.now(),
+    );
     if (picked != null && mounted) setState(() => _time = picked);
   }
 
@@ -114,7 +121,14 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.careL10n;
     final value = ref.watch(feedingDayProvider(_petId));
     final day = value.value;
@@ -150,8 +164,15 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
               ChoiceChip(
                 // A meal already logged shows a tick; choosing it again
                 // replaces what was logged.
-                avatar: m.isAnswered ? const Icon(Icons.check_circle_rounded, color: AppColors.sage) : null,
-                label: Text('${isolate(m.title)} · ${isolate(format.time(m.time))}'),
+                avatar: m.isAnswered
+                    ? const Icon(
+                        Icons.check_circle_rounded,
+                        color: AppColors.sage,
+                      )
+                    : null,
+                label: Text(
+                  '${isolate(m.title)} · ${isolate(format.time(m.time))}',
+                ),
                 selected: _meal?.item?.id == m.item!.id,
                 onSelected: (_) => setState(() => _meal = m),
               ),
@@ -207,7 +228,9 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
                 ),
                 Expanded(
                   child: Text(
-                    grams == null ? '–' : l10n.gramsValue(format.decimal(grams)),
+                    grams == null
+                        ? '–'
+                        : l10n.gramsValue(format.decimal(grams)),
                     textAlign: TextAlign.center,
                     style: AppText.metricSmall,
                   ),
@@ -236,18 +259,31 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
           child: ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+            ),
             title: Text(l10n.time, style: AppText.body),
-            trailing: Text(format.timeOfDay(_time!), style: AppText.cardTitle.copyWith(fontSize: 16)),
+            trailing: Text(
+              format.timeOfDay(_time!),
+              style: AppText.cardTitle.copyWith(fontSize: 16),
+            ),
             onTap: _pickTime,
           ),
         ),
         if (error != null) ...[
           const SizedBox(height: 10),
-          Text(healthErrorOf(context, error), style: AppText.body.copyWith(color: AppColors.coralDark)),
+          Text(
+            healthErrorOf(context, error),
+            style: AppText.body.copyWith(color: AppColors.coralDark),
+          ),
         ],
         const SizedBox(height: 16),
-        PrimaryButton(key: LogMealSheet.saveKey, label: l10n.save, loading: _saving, onPressed: () => _save(day)),
+        PrimaryButton(
+          key: LogMealSheet.saveKey,
+          label: l10n.save,
+          loading: _saving,
+          onPressed: () => _save(day),
+        ),
       ],
     );
   }

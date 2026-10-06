@@ -20,7 +20,8 @@ class NotificationSettingsCard extends ConsumerWidget {
   static const exactKey = Key('notifications-exact');
   static const exactAllowKey = Key('notifications-exact-allow');
 
-  static Key kindKey(NotificationKind kind) => ValueKey('notifications-${kind.name}');
+  static Key kindKey(NotificationKind kind) =>
+      ValueKey('notifications-${kind.name}');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -49,7 +50,11 @@ class NotificationSettingsCard extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (access != null && !access.allowed) ...[
-              _Blocked(onOpen: () => ref.read(notificationAccessProvider.notifier).openSettings()),
+              _Blocked(
+                onOpen: () => ref
+                    .read(notificationAccessProvider.notifier)
+                    .openSettings(),
+              ),
               const Divider(height: 17, indent: 16, endIndent: 16),
             ],
             _Switch(
@@ -67,7 +72,9 @@ class NotificationSettingsCard extends ConsumerWidget {
                 title: title,
                 subtitle: [?note],
                 value: settings.kindOn(kind),
-                onChanged: on ? (value) => controller.setKind(kind, value) : null,
+                onChanged: on
+                    ? (value) => controller.setKind(kind, value)
+                    : null,
               ),
             const Divider(height: 9, indent: 16, endIndent: 16),
             _Switch(
@@ -82,7 +89,8 @@ class NotificationSettingsCard extends ConsumerWidget {
               _Exact(
                 key: exactKey,
                 allowed: access!.exact!,
-                onAllow: () => ref.read(notificationAccessProvider.notifier).allowExact(),
+                onAllow: () =>
+                    ref.read(notificationAccessProvider.notifier).allowExact(),
               ),
             ],
           ],
@@ -92,7 +100,8 @@ class NotificationSettingsCard extends ConsumerWidget {
   }
 }
 
-TextStyle get _noteStyle => AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600);
+TextStyle get _noteStyle =>
+    AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600);
 
 class _Switch extends StatelessWidget {
   const _Switch({
@@ -118,12 +127,19 @@ class _Switch extends StatelessWidget {
       value: value,
       onChanged: onChanged,
       contentPadding: const EdgeInsetsDirectional.only(start: 16, end: 10),
-      title: Text(title, style: strong ? AppText.cardTitle : AppText.body.copyWith(color: AppColors.ink)),
+      title: Text(
+        title,
+        style: strong
+            ? AppText.cardTitle
+            : AppText.body.copyWith(color: AppColors.ink),
+      ),
       subtitle: subtitle.isEmpty
           ? null
           : Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [for (final line in subtitle) Text(line, style: _noteStyle)],
+              children: [
+                for (final line in subtitle) Text(line, style: _noteStyle),
+              ],
             ),
     );
   }
@@ -149,9 +165,15 @@ class _Blocked extends StatelessWidget {
             children: [
               const Padding(
                 padding: EdgeInsetsDirectional.only(end: 10, top: 2),
-                child: Icon(Icons.notifications_off_rounded, color: AppColors.coralDark, size: 22),
+                child: Icon(
+                  Icons.notifications_off_rounded,
+                  color: AppColors.coralDark,
+                  size: 22,
+                ),
               ),
-              Expanded(child: Text(l10n.blockedTitle, style: AppText.cardTitle)),
+              Expanded(
+                child: Text(l10n.blockedTitle, style: AppText.cardTitle),
+              ),
             ],
           ),
           const SizedBox(height: 4),
@@ -189,15 +211,27 @@ class _Exact extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(l10n.exactTitle, style: AppText.body.copyWith(color: AppColors.ink)),
+                child: Text(
+                  l10n.exactTitle,
+                  style: AppText.body.copyWith(color: AppColors.ink),
+                ),
               ),
               if (allowed) ...[
-                const Icon(Icons.check_circle_rounded, color: AppColors.sage, size: 20),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: AppColors.sage,
+                  size: 20,
+                ),
                 const SizedBox(width: 6),
                 // Only as wide as it needs, so it sits at the end of the row.
                 ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 140),
-                  child: Text(l10n.exactAllowed, style: _noteStyle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    l10n.exactAllowed,
+                    style: _noteStyle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ],

@@ -1,7 +1,8 @@
+import '../platform/feature_ui.dart';
+import '../presentation/pet_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../features/pets/pets.dart';
 import '../l10n/l10n.dart';
 import '../models/pet.dart';
 import '../state/pets_provider.dart';
@@ -18,7 +19,12 @@ import 'app_icon.dart';
 /// Each pill shows the pet's picture and, while an essential is missing, a
 /// small dot. A long press on a pill opens that pet's profile.
 class PetSelector extends ConsumerWidget {
-  const PetSelector({super.key, this.onAdd, this.trailing, this.highlightSelected = true});
+  const PetSelector({
+    super.key,
+    this.onAdd,
+    this.trailing,
+    this.highlightSelected = true,
+  });
 
   /// When set, a dashed "+" button is shown after the pills.
   final VoidCallback? onAdd;
@@ -48,17 +54,21 @@ class PetSelector extends ConsumerWidget {
                 _PetPill(
                   pet: pet,
                   selected: highlightSelected && pet.id == selectedId,
-                  onTap: () => ref.read(selectedPetIdProvider.notifier).select(pet.id),
+                  onTap: () =>
+                      ref.read(selectedPetIdProvider.notifier).select(pet.id),
                   // A long press opens the pet's profile, where a missing
                   // essential (the dot) is answered.
-                  onLongPress: () => openPetProfile(context, pet.id),
+                  onLongPress: () =>
+                      openFeature<Object>(context, 'pet-profile', pet.id),
                 ),
                 // Essentials still missing for this pet. Takes no space and
                 // no taps; shows nothing for a complete pet.
                 PositionedDirectional(
                   top: 0,
                   end: 0,
-                  child: IgnorePointer(child: PetAttentionDot(petId: pet.id)),
+                  child: IgnorePointer(
+                    child: featureSlot('pet-attention', pet.id),
+                  ),
                 ),
               ],
             ),
@@ -73,7 +83,12 @@ class PetSelector extends ConsumerWidget {
 }
 
 class _PetPill extends StatelessWidget {
-  const _PetPill({required this.pet, required this.selected, required this.onTap, required this.onLongPress});
+  const _PetPill({
+    required this.pet,
+    required this.selected,
+    required this.onTap,
+    required this.onLongPress,
+  });
 
   final Pet pet;
   final bool selected;
@@ -89,7 +104,10 @@ class _PetPill extends StatelessWidget {
       child: Material(
         color: selected ? AppColors.yellow : AppColors.onCoralPill,
         shape: StadiumBorder(
-          side: BorderSide(color: selected ? AppColors.yellow : AppColors.onCoralOutline, width: 2),
+          side: BorderSide(
+            color: selected ? AppColors.yellow : AppColors.onCoralOutline,
+            width: 2,
+          ),
         ),
         child: InkWell(
           customBorder: const StadiumBorder(),
@@ -125,7 +143,12 @@ class _AddPetButton extends StatelessWidget {
       label: context.l10n.petSelectorAdd,
       child: Material(
         color: Colors.transparent,
-        shape: CircleBorder(side: BorderSide(color: AppColors.white.withValues(alpha: 0.75), width: 2)),
+        shape: CircleBorder(
+          side: BorderSide(
+            color: AppColors.white.withValues(alpha: 0.75),
+            width: 2,
+          ),
+        ),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,

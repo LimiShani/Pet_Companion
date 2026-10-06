@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,12 +10,12 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/unsaved_changes_guard.dart';
-import '../health/health_strings.dart';
-import '../health/state/health_providers.dart';
-import '../health/widgets/health_widgets.dart';
-import 'data/care_models.dart';
-import 'state/care_providers.dart';
-import 'widgets/care_widgets.dart';
+import '../../presentation/health_strings.dart';
+import '../../services/pet_records/state/health_providers.dart';
+import '../../presentation/health_widgets.dart';
+import '../../services/care/data/care_models.dart';
+import '../../services/care/state/care_providers.dart';
+import '../../presentation/care_widgets.dart';
 
 /// Opens the "Food and portion" page of [pet].
 Future<void> openFoodSettings(BuildContext context, Pet pet) =>
@@ -28,7 +29,14 @@ class FoodSettingsScreen extends ConsumerWidget {
   final Pet pet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return CarePage(
       petId: pet.id,
       title: context.careL10n.foodAndPortion,
@@ -56,10 +64,18 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
 
   final _form = GlobalKey<FormState>();
   late final _name = TextEditingController(text: widget.settings.foodName);
-  late final _kcal = TextEditingController(text: _text(widget.settings.kcalPer100g));
-  late final _cup = TextEditingController(text: _text(widget.settings.gramsPerCup));
-  late final _portion = TextEditingController(text: _text(widget.settings.portionGrams));
-  late final _goal = TextEditingController(text: widget.settings.calorieGoal?.toString() ?? '');
+  late final _kcal = TextEditingController(
+    text: _text(widget.settings.kcalPer100g),
+  );
+  late final _cup = TextEditingController(
+    text: _text(widget.settings.gramsPerCup),
+  );
+  late final _portion = TextEditingController(
+    text: _text(widget.settings.portionGrams),
+  );
+  late final _goal = TextEditingController(
+    text: widget.settings.calorieGoal?.toString() ?? '',
+  );
   late bool _ownGoal = widget.settings.calorieGoal != null;
   bool _saving = false;
   Object? _error;
@@ -69,7 +85,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
 
   static String _text(double? value) {
     if (value == null) return '';
-    return value == value.roundToDouble() ? value.toInt().toString() : value.toString();
+    return value == value.roundToDouble()
+        ? value.toInt().toString()
+        : value.toString();
   }
 
   @override
@@ -81,7 +99,10 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
     }
   }
 
-  List<Object?> _fields() => [for (final c in [_name, _kcal, _cup, _portion, _goal]) c.text, _ownGoal];
+  List<Object?> _fields() => [
+    for (final c in [_name, _kcal, _cup, _portion, _goal]) c.text,
+    _ownGoal,
+  ];
 
   bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
@@ -93,16 +114,24 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
     super.dispose();
   }
 
-  static double? _number(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
+  static double? _number(String text) =>
+      double.tryParse(text.trim().replaceAll(',', '.'));
 
   /// A validator for an optional number between [min] and [max].
-  FormFieldValidator<String> _range(num min, num max, {bool required = false}) => (text) {
+  FormFieldValidator<String> _range(
+    num min,
+    num max, {
+    bool required = false,
+  }) => (text) {
     final value = text ?? '';
     if (value.trim().isEmpty && !required) return null;
     final number = _number(value);
     if (number == null || number < min || number > max) {
       final format = AppFormat.of(context);
-      return context.careL10n.numberRange(format.integer(min.toInt()), format.integer(max.toInt()));
+      return context.careL10n.numberRange(
+        format.integer(min.toInt()),
+        format.integer(max.toInt()),
+      );
     }
     return null;
   };
@@ -114,7 +143,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
       _error = null;
     });
     // Without an estimate the goal field is the only goal there is.
-    final canEstimate = estimatedCalorieGoal(widget.pet, ref.read(healthClockProvider)()) is CalorieEstimate;
+    final canEstimate =
+        estimatedCalorieGoal(widget.pet, ref.read(healthClockProvider)())
+            is CalorieEstimate;
     final ownGoal = _ownGoal || !canEstimate;
     final settings = CareSettings(
       petId: widget.pet.id,
@@ -126,7 +157,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
       activityGoalMinutes: widget.settings.activityGoalMinutes,
     );
     try {
-      await ref.read(careSettingsProvider(widget.pet.id).notifier).save(settings);
+      await ref
+          .read(careSettingsProvider(widget.pet.id).notifier)
+          .save(settings);
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (mounted) {
@@ -139,10 +172,20 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.careL10n;
     final format = AppFormat.of(context);
-    final estimate = estimatedCalorieGoal(widget.pet, ref.watch(healthClockProvider)());
+    final estimate = estimatedCalorieGoal(
+      widget.pet,
+      ref.watch(healthClockProvider)(),
+    );
     final portion = _number(_portion.text);
     final cup = _number(_cup.text);
     final error = _error;
@@ -168,7 +211,11 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
           TextFormField(
             controller: _name,
             maxLength: 80,
-            decoration: InputDecoration(labelText: l10n.foodName, hintText: l10n.foodNameHint, counterText: ''),
+            decoration: InputDecoration(
+              labelText: l10n.foodName,
+              hintText: l10n.foodNameHint,
+              counterText: '',
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -178,7 +225,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
                 child: TextFormField(
                   key: const Key('food-kcal'),
                   controller: _kcal,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: numbers,
                   validator: _range(1, 2000),
                   decoration: InputDecoration(labelText: l10n.kcalPer100g),
@@ -188,7 +237,9 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
               Expanded(
                 child: TextFormField(
                   controller: _cup,
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: numbers,
                   validator: _range(1, 2000),
                   decoration: InputDecoration(labelText: l10n.gramsPerCup),
@@ -221,9 +272,17 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
               children: [
                 Row(
                   children: [
-                    Expanded(child: Text(l10n.dailyGoal, style: AppText.cardTitle.copyWith(fontSize: 17))),
+                    Expanded(
+                      child: Text(
+                        l10n.dailyGoal,
+                        style: AppText.cardTitle.copyWith(fontSize: 17),
+                      ),
+                    ),
                     if (canEstimate && !ownGoal)
-                      Text(format.integer(estimate.calories), style: AppText.metricSmall.copyWith(fontSize: 22)),
+                      Text(
+                        format.integer(estimate.calories),
+                        style: AppText.metricSmall.copyWith(fontSize: 22),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -263,16 +322,25 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
           ),
           if (error != null) ...[
             const SizedBox(height: 10),
-            Text(healthErrorOf(context, error), style: AppText.body.copyWith(color: AppColors.coralDark)),
+            Text(
+              healthErrorOf(context, error),
+              style: AppText.body.copyWith(color: AppColors.coralDark),
+            ),
           ],
           const SizedBox(height: 16),
-          PrimaryButton(key: saveKey, label: l10n.save, loading: _saving, onPressed: _save),
+          PrimaryButton(
+            key: saveKey,
+            label: l10n.save,
+            loading: _saving,
+            onPressed: _save,
+          ),
         ],
       ),
     );
     return ListenableBuilder(
       listenable: Listenable.merge([_name, _kcal, _cup, _portion, _goal]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: form,
     );
   }

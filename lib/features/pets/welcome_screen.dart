@@ -1,3 +1,6 @@
+import '../../access/feature_gate.dart';
+import '../../access/access_provider.dart';
+import '../../access/access_admin_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,11 +13,11 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/brand.dart';
 import '../../widgets/primary_button.dart';
-import 'icons/pet_icon_bank.dart';
-import 'pet_words.dart';
+import '../../presentation/pet_icon_bank.dart';
+import '../../presentation/pet_words.dart';
 import 'pets_routes.dart';
-import 'widgets/pet_avatar.dart';
-import 'widgets/pets_widgets.dart';
+import '../../presentation/pet_avatar.dart';
+import '../../presentation/pets_widgets.dart';
 
 /// What a signed-in owner without any pet sees instead of the tabs: a
 /// welcome that leads into the add-a-pet flow. The same page reports a
@@ -23,10 +26,18 @@ class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pets = ref.watch(petsStoreProvider);
     final failed = pets.status == PetsStatus.failed;
-    final name = ref.watch(authControllerProvider).value?.displayName.trim() ?? '';
+    final name =
+        ref.watch(authControllerProvider).value?.displayName.trim() ?? '';
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -34,6 +45,20 @@ class WelcomeScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             const _Hello(),
+            if (ref.watch(capabilityProvider('access.admin')))
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.screen,
+                  vertical: 12,
+                ),
+                child: OutlinedButton.icon(
+                  onPressed: () => openAccessAdministration(context),
+                  icon: const Icon(Icons.admin_panel_settings_outlined),
+                  label: Text(
+                    context.isRtl ? 'הרשאות לתכונות' : 'Feature access',
+                  ),
+                ),
+              ),
             Padding(
               padding: EdgeInsets.fromLTRB(
                 AppSpacing.screen,
@@ -64,8 +89,16 @@ class _Hello extends StatelessWidget {
   static const _drop = 56.0;
 
   @override
-  Widget build(BuildContext context) {
-    Widget friend(PetIcon icon, PetIconBackground background, double size) => PetPictureCircle(
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    Widget friend(PetIcon icon, PetIconBackground background, double size) =>
+        PetPictureCircle(
           size: size,
           icon: PetIconChoice(icon, background),
           borderColor: AppColors.cream,
@@ -81,12 +114,19 @@ class _Hello extends StatelessWidget {
             width: double.infinity,
             decoration: const BoxDecoration(
               color: AppColors.coral,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppSpacing.headerRadius)),
+              borderRadius: BorderRadius.vertical(
+                bottom: Radius.circular(AppSpacing.headerRadius),
+              ),
             ),
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 18, AppSpacing.screen, _middle - _drop + 14),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  18,
+                  AppSpacing.screen,
+                  _middle - _drop + 14,
+                ),
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   // The logo, announced by its name.
@@ -115,17 +155,29 @@ class _Hello extends StatelessWidget {
                 Positioned(
                   left: 0,
                   bottom: 0,
-                  child: friend(PetIcon.catTabby, PetIconBackground.peach, _side),
+                  child: friend(
+                    PetIcon.catTabby,
+                    PetIconBackground.peach,
+                    _side,
+                  ),
                 ),
                 Positioned(
                   right: 0,
                   bottom: 0,
-                  child: friend(PetIcon.rabbitUpright, PetIconBackground.sage, _side),
+                  child: friend(
+                    PetIcon.rabbitUpright,
+                    PetIconBackground.sage,
+                    _side,
+                  ),
                 ),
                 Positioned(
                   left: _side - _overlap,
                   top: 0,
-                  child: friend(PetIcon.dogFloppy, PetIconBackground.yellow, _middle),
+                  child: friend(
+                    PetIcon.dogFloppy,
+                    PetIconBackground.yellow,
+                    _middle,
+                  ),
                 ),
               ],
             ),
@@ -143,12 +195,23 @@ class _FirstPet extends ConsumerWidget {
   final List<Pet> archived;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.petsL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        PetsHeading(name.isEmpty ? l10n.welcomeTitle : l10n.welcomeTitleNamed(name), center: true, size: 24),
+        PetsHeading(
+          name.isEmpty ? l10n.welcomeTitle : l10n.welcomeTitleNamed(name),
+          center: true,
+          size: 24,
+        ),
         const SizedBox(height: 6),
         Text(
           l10n.welcomeIntro,
@@ -169,7 +232,10 @@ class _FirstPet extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 20),
-        PrimaryButton(label: l10n.welcomeAddFirst, onPressed: () => context.go(PetsRoutes.addPet)),
+        PrimaryButton(
+          label: l10n.welcomeAddFirst,
+          onPressed: () => context.go(PetsRoutes.addPet),
+        ),
         if (archived.isNotEmpty) ...[
           PetsLabel(l10n.welcomeArchivedPets, topGap: 22),
           for (final pet in archived)
@@ -192,12 +258,24 @@ class _Why extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
         PetsDisc(icon),
         const SizedBox(width: 12),
-        Expanded(child: Text(text, style: AppText.body.copyWith(fontWeight: FontWeight.w700))),
+        Expanded(
+          child: Text(
+            text,
+            style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+          ),
+        ),
       ],
     );
   }
@@ -220,7 +298,9 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
   Future<void> _restore() async {
     setState(() => _busy = true);
     try {
-      await ref.read(petsStoreProvider.notifier).save(widget.pet.withArchivedAt(null));
+      await ref
+          .read(petsStoreProvider.notifier)
+          .save(widget.pet.withArchivedAt(null));
     } catch (e) {
       if (!mounted) return;
       setState(() => _busy = false);
@@ -229,12 +309,23 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return PetsRow(
       leading: PetAvatar(pet: widget.pet, size: 44, dimmed: true),
       title: widget.pet.name,
       subtitle: petSpeciesText(context.petsL10n, widget.pet.species),
-      trailing: PillButton(context.petsL10n.restore, outlined: true, onPressed: _busy ? null : _restore),
+      trailing: PillButton(
+        context.petsL10n.restore,
+        outlined: true,
+        onPressed: _busy ? null : _restore,
+      ),
     );
   }
 }
@@ -245,15 +336,29 @@ class _LoadFailed extends ConsumerWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         PetsHeading(context.petsL10n.welcomeLoadFailed, center: true, size: 22),
         const SizedBox(height: 6),
-        Text(message, textAlign: TextAlign.center, style: AppText.body.copyWith(color: AppColors.brown)),
+        Text(
+          message,
+          textAlign: TextAlign.center,
+          style: AppText.body.copyWith(color: AppColors.brown),
+        ),
         const SizedBox(height: 20),
-        PrimaryButton(label: context.l10n.commonTryAgain, onPressed: () => ref.read(petsStoreProvider.notifier).retry()),
+        PrimaryButton(
+          label: context.l10n.commonTryAgain,
+          onPressed: () => ref.read(petsStoreProvider.notifier).retry(),
+        ),
         const SizedBox(height: 6),
         const _SignOut(),
       ],
@@ -265,7 +370,17 @@ class _SignOut extends ConsumerWidget {
   const _SignOut();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return PetsTextButton(context.l10n.accountSignOut, onPressed: () => ref.read(authControllerProvider.notifier).signOut());
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    return PetsTextButton(
+      context.l10n.accountSignOut,
+      onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+    );
   }
 }

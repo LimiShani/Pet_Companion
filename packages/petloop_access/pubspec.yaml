@@ -1,0 +1,6 @@
+name: petloop_access
+description: PetLoop feature capabilities, user overrides and group policy.
+publish_to: none
+version: 1.0.0
+environment:
+  sdk: ^3.9.2

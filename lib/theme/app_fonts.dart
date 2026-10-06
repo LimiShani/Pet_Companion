@@ -18,5 +18,6 @@ abstract final class AppFonts {
   static const hebrew = 'Fredoka';
 
   /// [base] in the app's fonts.
-  static TextTheme textTheme(TextTheme base) => base.apply(fontFamily: latin, fontFamilyFallback: const [hebrew]);
+  static TextTheme textTheme(TextTheme base) =>
+      base.apply(fontFamily: latin, fontFamilyFallback: const [hebrew]);
 }

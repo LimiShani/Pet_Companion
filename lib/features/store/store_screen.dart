@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,13 +14,16 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/empty_state.dart';
 import '../../widgets/pet_selector.dart';
-import '../budget/budget.dart';
-import 'data/deal.dart';
-import 'data/deal_filters.dart';
+import '../../services/budget/state/budget_providers.dart'
+    show StoreView, storeViewProvider;
+import '../../platform/feature_ui.dart';
+import '../../access/access_provider.dart';
+import '../../services/store/data/deal.dart';
+import '../../services/store/data/deal_filters.dart';
 import 'share_deal_screen.dart';
-import 'state/store_providers.dart';
+import '../../services/store/state/store_providers.dart';
 import 'store_routes.dart';
-import 'store_strings.dart';
+import '../../presentation/store_strings.dart';
 import 'widgets/deal_grid.dart';
 import 'widgets/store_messages.dart';
 
@@ -55,14 +59,21 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
 
   Future<void> _refresh() async {
     final ok = await ref.read(dealsProvider.notifier).refresh();
-    if (!ok && mounted) showStoreMessage(context, context.storeL10n.couldNotRefresh);
+    if (!ok && mounted) {
+      showStoreMessage(context, context.storeL10n.couldNotRefresh);
+    }
   }
 
   Future<void> _shareDeal() async {
     final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
-      MaterialPageRoute(fullscreenDialog: true, builder: (context) => const ShareDealScreen()),
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (context) => const ShareDealScreen(),
+      ),
     );
-    if (deal != null && mounted) showStoreMessage(context, context.storeL10n.dealIsLive);
+    if (deal != null && mounted) {
+      showStoreMessage(context, context.storeL10n.dealIsLive);
+    }
   }
 
   void _clearFilters() {
@@ -71,12 +82,21 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
     final species = ref.watch(storePetSpeciesProvider);
-    final basket = ref.watch(storeViewProvider) == StoreView.basket;
+    final basket =
+        ref.watch(capabilityProvider('basket.view')) &&
+        ref.watch(storeViewProvider) == StoreView.basket;
     // Load the user's saved and reported deals together with the catalogue,
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
@@ -84,10 +104,15 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // Picking another pet, here or on any other tab, is a choice to shop
     // for that pet: "All animals" gives way to it.
     ref.listen(selectedPetProvider.select((pet) => pet.id), (previous, next) {
-      if (previous != next) ref.read(storeFilterProvider.notifier).setAllAnimals(false);
+      if (previous != next) {
+        ref.read(storeFilterProvider.notifier).setAllAnimals(false);
+      }
     });
     // The basket's "deals on dog food" link sets the search too.
-    ref.listen(storeFilterProvider.select((filter) => filter.query), (_, query) {
+    ref.listen(storeFilterProvider.select((filter) => filter.query), (
+      _,
+      query,
+    ) {
       if (_search.text != query) _search.text = query;
     });
 
@@ -97,11 +122,13 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final filters = ref.read(storeFilterProvider.notifier);
     // Room for the floating button: below the last row of the grid, and
     // under a message that fills the page, so neither sits beneath it.
-    final clearance = AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom;
+    final clearance =
+        AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       key: const Key('store-screen'),
-      floatingActionButton: basket
+      floatingActionButton:
+          basket || !ref.watch(capabilityProvider('store.deals.share'))
           ? null
           : FloatingActionButton.extended(
               onPressed: _shareDeal,
@@ -123,88 +150,116 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
             bottom: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CoralSegmentedControl(
-                  labels: [context.budgetL10n.deals, context.budgetL10n.myBasket],
-                  selectedIndex: basket ? 1 : 0,
-                  onChanged: (index) => ref.read(storeViewProvider.notifier).show(StoreView.values[index]),
-                ),
+                if (ref.watch(capabilityProvider('basket.view')))
+                  CoralSegmentedControl(
+                    labels: [
+                      context.budgetL10n.deals,
+                      context.budgetL10n.myBasket,
+                    ],
+                    selectedIndex: basket ? 1 : 0,
+                    onChanged: (index) => ref
+                        .read(storeViewProvider.notifier)
+                        .show(StoreView.values[index]),
+                  ),
                 if (!basket) ...[
                   const SizedBox(height: 10),
-                  _PetScope(allAnimals: filter.allAnimals, onChanged: filters.setAllAnimals),
+                  _PetScope(
+                    allAnimals: filter.allAnimals,
+                    onChanged: filters.setAllAnimals,
+                  ),
                   const SizedBox(height: 10),
-                  _SearchField(controller: _search, onChanged: filters.setQuery),
+                  _SearchField(
+                    controller: _search,
+                    onChanged: filters.setQuery,
+                  ),
                 ],
               ],
             ),
           ),
           if (basket)
-            const Expanded(child: BasketView())
+            Expanded(
+              child: featureSlot(
+                'basket-view',
+                ref.watch(selectedPetProvider).id,
+              ),
+            )
           else
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _refresh,
-              color: AppColors.coralDark,
-              child: CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                slivers: [
-                  if (loading)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: clearance),
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                    )
-                  else if (failed)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Padding(
-                        padding: EdgeInsets.only(bottom: clearance),
-                        child: EmptyState(
-                          icon: Icons.cloud_off_rounded,
-                          title: l10n.couldNotLoadDeals,
-                          message: storeErrorText(context, deals.error!),
-                          actionLabel: context.l10n.commonTryAgain,
-                          onAction: () => ref.read(dealsProvider.notifier).refresh(),
-                        ),
-                      ),
-                    )
-                  else ...[
-                    SliverToBoxAdapter(
-                      child: _CategoryChips(selected: filter.category, onSelected: filters.setCategory),
-                    ),
-                    SliverToBoxAdapter(
-                      child: _SortRow(
-                        countText: filter.allAnimals
-                            ? l10n.dealCount(shown.length)
-                            : l10n.dealsFor(shown.length, species),
-                        sort: filter.sort,
-                        onSort: filters.setSort,
-                      ),
-                    ),
-                    if (shown.isEmpty)
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refresh,
+                color: AppColors.coralDark,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  slivers: [
+                    if (loading)
                       SliverFillRemaining(
                         hasScrollBody: false,
                         child: Padding(
                           padding: EdgeInsets.only(bottom: clearance),
-                          child: _NoDeals(
-                            filter: filter,
-                            species: species,
-                            onClear: _clearFilters,
-                            onShowAllAnimals: () => filters.setAllAnimals(true),
+                          child: const Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        ),
+                      )
+                    else if (failed)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Padding(
+                          padding: EdgeInsets.only(bottom: clearance),
+                          child: EmptyState(
+                            icon: Icons.cloud_off_rounded,
+                            title: l10n.couldNotLoadDeals,
+                            message: storeErrorText(context, deals.error!),
+                            actionLabel: context.l10n.commonTryAgain,
+                            onAction: () =>
+                                ref.read(dealsProvider.notifier).refresh(),
                           ),
                         ),
                       )
                     else ...[
-                      SliverDealGrid(deals: shown, showAnimals: filter.allAnimals),
-                      SliverToBoxAdapter(child: SizedBox(height: clearance)),
+                      SliverToBoxAdapter(
+                        child: _CategoryChips(
+                          selected: filter.category,
+                          onSelected: filters.setCategory,
+                        ),
+                      ),
+                      SliverToBoxAdapter(
+                        child: _SortRow(
+                          countText: filter.allAnimals
+                              ? l10n.dealCount(shown.length)
+                              : l10n.dealsFor(shown.length, species),
+                          sort: filter.sort,
+                          onSort: filters.setSort,
+                        ),
+                      ),
+                      if (shown.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Padding(
+                            padding: EdgeInsets.only(bottom: clearance),
+                            child: _NoDeals(
+                              filter: filter,
+                              species: species,
+                              onClear: _clearFilters,
+                              onShowAllAnimals: () =>
+                                  filters.setAllAnimals(true),
+                            ),
+                          ),
+                        )
+                      else ...[
+                        SliverDealGrid(
+                          deals: shown,
+                          showAnimals: filter.allAnimals,
+                        ),
+                        SliverToBoxAdapter(child: SizedBox(height: clearance)),
+                      ],
                     ],
                   ],
-                ],
+                ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -236,7 +291,14 @@ class _PetScopeState extends State<_PetScope> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     // The selector handles taps on its pet pills itself and only reports a
     // change of pet, so tapping the pet that is already selected would not
     // be noticed. Watching for a tap on the row (not a scroll, not on "All
@@ -266,20 +328,34 @@ class _PetScopeState extends State<_PetScope> {
 
 /// Drawn to match the pet pills of [PetSelector], with a paw for a picture.
 class _AllAnimalsPill extends StatelessWidget {
-  const _AllAnimalsPill({super.key, required this.selected, required this.onTap});
+  const _AllAnimalsPill({
+    super.key,
+    required this.selected,
+    required this.onTap,
+  });
 
   final bool selected;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Semantics(
       button: true,
       selected: selected,
       child: Material(
         color: selected ? AppColors.yellow : AppColors.onCoralPill,
         shape: StadiumBorder(
-          side: BorderSide(color: selected ? AppColors.yellow : AppColors.onCoralOutline, width: 2),
+          side: BorderSide(
+            color: selected ? AppColors.yellow : AppColors.onCoralOutline,
+            width: 2,
+          ),
         ),
         child: InkWell(
           customBorder: const StadiumBorder(),
@@ -294,7 +370,9 @@ class _AllAnimalsPill extends StatelessWidget {
                   height: 22,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: selected ? AppColors.coral : AppColors.white.withValues(alpha: 0.55),
+                    color: selected
+                        ? AppColors.coral
+                        : AppColors.white.withValues(alpha: 0.55),
                   ),
                   child: AppIcon(
                     Icons.pets_rounded,
@@ -305,7 +383,9 @@ class _AllAnimalsPill extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   context.storeL10n.allAnimals,
-                  style: AppText.cardTitle.copyWith(color: selected ? AppColors.ink : AppColors.white),
+                  style: AppText.cardTitle.copyWith(
+                    color: selected ? AppColors.ink : AppColors.white,
+                  ),
                 ),
               ],
             ),
@@ -323,7 +403,14 @@ class _SearchField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return ListenableBuilder(
       listenable: controller,
       builder: (context, _) => TextField(
@@ -333,13 +420,22 @@ class _SearchField extends StatelessWidget {
         style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
         decoration: InputDecoration(
           hintText: context.storeL10n.searchHint,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 14,
+          ),
+          prefixIcon: const AppIcon(
+            Icons.search_rounded,
+            color: AppColors.brown,
+          ),
           suffixIcon: controller.text.isEmpty
               ? null
               : IconButton(
                   tooltip: context.storeL10n.clearSearch,
-                  icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
+                  icon: const AppIcon(
+                    Icons.close_rounded,
+                    color: AppColors.brown,
+                  ),
                   onPressed: () {
                     controller.clear();
                     onChanged('');
@@ -358,7 +454,14 @@ class _CategoryChips extends StatelessWidget {
   final ValueChanged<DealCategory?> onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
 
     Widget chip(String label, DealCategory? category) {
@@ -378,11 +481,17 @@ class _CategoryChips extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 12, AppSpacing.screen - 8, 0),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.screen,
+        12,
+        AppSpacing.screen - 8,
+        0,
+      ),
       child: Row(
         children: [
           chip(l10n.allCategories, null),
-          for (final category in DealCategory.values) chip(l10n.category(category), category),
+          for (final category in DealCategory.values)
+            chip(l10n.category(category), category),
         ],
       ),
     );
@@ -390,7 +499,11 @@ class _CategoryChips extends StatelessWidget {
 }
 
 class _SortRow extends StatelessWidget {
-  const _SortRow({required this.countText, required this.sort, required this.onSort});
+  const _SortRow({
+    required this.countText,
+    required this.sort,
+    required this.onSort,
+  });
 
   /// "23 deals for dogs", or "36 deals" when every animal is shown.
   final String countText;
@@ -398,10 +511,22 @@ class _SortRow extends StatelessWidget {
   final ValueChanged<DealSort> onSort;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 6, AppSpacing.screen, 10),
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.screen,
+        6,
+        AppSpacing.screen,
+        10,
+      ),
       child: SizedBox(
         width: double.infinity,
         child: Wrap(
@@ -413,14 +538,19 @@ class _SortRow extends StatelessWidget {
             Text(
               countText,
               key: const Key('store-deal-count'),
-              style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
+              style: AppText.secondary.copyWith(
+                color: AppColors.brown,
+                fontWeight: FontWeight.w700,
+              ),
             ),
             PopupMenuButton<DealSort>(
               tooltip: l10n.sortTooltip,
               initialValue: sort,
               onSelected: onSort,
               color: AppColors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+              ),
               itemBuilder: (context) => [
                 for (final option in DealSort.values)
                   PopupMenuItem(
@@ -429,7 +559,9 @@ class _SortRow extends StatelessWidget {
                       l10n.sort(option),
                       style: AppText.body.copyWith(
                         color: AppColors.ink,
-                        fontWeight: option == sort ? FontWeight.w800 : FontWeight.w600,
+                        fontWeight: option == sort
+                            ? FontWeight.w800
+                            : FontWeight.w600,
                       ),
                     ),
                   ),
@@ -440,7 +572,9 @@ class _SortRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -448,13 +582,20 @@ class _SortRow extends StatelessWidget {
                     Flexible(
                       child: Text(
                         l10n.sort(sort),
-                        style: AppText.secondary.copyWith(color: AppColors.ink, fontWeight: FontWeight.w800),
+                        style: AppText.secondary.copyWith(
+                          color: AppColors.ink,
+                          fontWeight: FontWeight.w800,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 4),
-                    const AppIcon(Icons.expand_more_rounded, size: 20, color: AppColors.brown),
+                    const AppIcon(
+                      Icons.expand_more_rounded,
+                      size: 20,
+                      color: AppColors.brown,
+                    ),
                   ],
                 ),
               ),
@@ -481,7 +622,14 @@ class _NoDeals extends ConsumerWidget {
   final VoidCallback onShowAllAnimals;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final query = filter.query.trim();
     final picked = filter.category;
@@ -489,7 +637,9 @@ class _NoDeals extends ConsumerWidget {
 
     // Nothing for this pet, but other animals have deals here: the way out
     // is "All animals", not clearing the search.
-    final others = filter.allAnimals ? 0 : ref.watch(allAnimalsDealCountProvider);
+    final others = filter.allAnimals
+        ? 0
+        : ref.watch(allAnimalsDealCountProvider);
     if (others > 0) {
       return EmptyState(
         icon: Icons.pets_rounded,

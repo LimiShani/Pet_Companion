@@ -6,7 +6,7 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../community_words.dart';
-import '../data/audience.dart';
+import '../../../services/community/data/audience.dart';
 
 /// What a section with a [ScopeBar] lists.
 enum ScopeBarSubject { rooms, guides }
@@ -28,11 +28,16 @@ class ScopeBar extends ConsumerWidget {
     final scope = ref.watch(communityScopeProvider);
     final pet = ref.watch(selectedPetProvider);
     final matched =
-        scope != CommunityScope.everything && scope == CommunityScope.forSpecies(pet.species) && pet.name.isNotEmpty;
+        scope != CommunityScope.everything &&
+        scope == CommunityScope.forSpecies(pet.species) &&
+        pet.name.isNotEmpty;
     final matchedPet = matched ? l10n.inLine(pet.name) : null;
     final caption = switch (what) {
       ScopeBarSubject.rooms => l10n.roomsCaption(scope, matchedPet: matchedPet),
-      ScopeBarSubject.guides => l10n.guidesCaption(scope, matchedPet: matchedPet),
+      ScopeBarSubject.guides => l10n.guidesCaption(
+        scope,
+        matchedPet: matchedPet,
+      ),
     };
 
     return Column(
@@ -44,21 +49,31 @@ class ScopeBar extends ConsumerWidget {
           child: Row(
             children: [
               for (final option in CommunityScope.values) ...[
-                if (option != CommunityScope.values.first) const SizedBox(width: 8),
+                if (option != CommunityScope.values.first)
+                  const SizedBox(width: 8),
                 ChoiceChip(
                   key: ValueKey('scope-${option.name}'),
                   label: Text(l10n.scope(option)),
                   selected: option == scope,
                   showCheckmark: false,
-                  onSelected: (_) => ref.read(communityScopeProvider.notifier).select(option),
+                  onSelected: (_) =>
+                      ref.read(communityScopeProvider.notifier).select(option),
                 ),
               ],
             ],
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.screen + 4, 4, AppSpacing.screen + 4, 0),
-          child: Text(caption, style: AppText.label.copyWith(color: AppColors.brown)),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screen + 4,
+            4,
+            AppSpacing.screen + 4,
+            0,
+          ),
+          child: Text(
+            caption,
+            style: AppText.label.copyWith(color: AppColors.brown),
+          ),
         ),
       ],
     );

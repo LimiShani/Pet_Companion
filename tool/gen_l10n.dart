@@ -24,15 +24,15 @@ class L10nModule {
 
 const modules = [
   L10nModule('app', 'lib/l10n', 'AppL10n'),
-  L10nModule('health', 'lib/features/health/l10n', 'HealthL10n'),
-  L10nModule('community', 'lib/features/community/l10n', 'CommunityL10n'),
-  L10nModule('store', 'lib/features/store/l10n', 'StoreL10n'),
-  L10nModule('pets', 'lib/features/pets/l10n', 'PetsL10n'),
-  L10nModule('care', 'lib/features/care/l10n', 'CareL10n'),
-  L10nModule('budget', 'lib/features/budget/l10n', 'BudgetL10n'),
-  L10nModule('firstdays', 'lib/features/firstdays/l10n', 'FirstDaysL10n'),
+  L10nModule('health', 'lib/l10n/features/health', 'HealthL10n'),
+  L10nModule('community', 'lib/l10n/features/community', 'CommunityL10n'),
+  L10nModule('store', 'lib/l10n/features/store', 'StoreL10n'),
+  L10nModule('pets', 'lib/l10n/features/pets', 'PetsL10n'),
+  L10nModule('care', 'lib/l10n/features/care', 'CareL10n'),
+  L10nModule('budget', 'lib/l10n/features/budget', 'BudgetL10n'),
+  L10nModule('firstdays', 'lib/l10n/features/firstdays', 'FirstDaysL10n'),
   L10nModule('notifications', 'lib/notifications/l10n', 'NotificationsL10n'),
-  L10nModule('findvet', 'lib/features/findvet/l10n', 'FindVetL10n'),
+  L10nModule('findvet', 'lib/l10n/features/findvet', 'FindVetL10n'),
 ];
 
 Future<void> main(List<String> args) async {

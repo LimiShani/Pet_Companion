@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../theme/app_theme.dart';
-import '../data/deal.dart';
-import '../state/store_providers.dart';
+import '../../../services/store/data/deal.dart';
+import '../../../services/store/state/store_providers.dart';
 import '../store_routes.dart';
 import 'deal_card.dart';
 import 'save_deal_button.dart';
@@ -13,7 +13,11 @@ import 'save_deal_button.dart';
 /// more on wider screens. Cards in a row share the height of the tallest,
 /// and no card has a fixed height, so long titles and wrapped prices fit.
 class SliverDealGrid extends StatelessWidget {
-  const SliverDealGrid({super.key, required this.deals, this.showAnimals = false});
+  const SliverDealGrid({
+    super.key,
+    required this.deals,
+    this.showAnimals = false,
+  });
 
   final List<Deal> deals;
 
@@ -54,7 +58,9 @@ class SliverDealGrid extends StatelessWidget {
                         Expanded(
                           child: start + i < deals.length
                               ? _GridCard(
-                                  key: ValueKey('deal-card-${deals[start + i].id}'),
+                                  key: ValueKey(
+                                    'deal-card-${deals[start + i].id}',
+                                  ),
                                   deal: deals[start + i],
                                   showAnimals: showAnimals,
                                 )

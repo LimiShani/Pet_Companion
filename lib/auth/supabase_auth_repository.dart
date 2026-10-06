@@ -8,25 +8,64 @@ import 'auth_repository.dart';
 /// Sessions are persisted by supabase_flutter, so [restoreSession] is
 /// answered from local storage after `Supabase.initialize`.
 class SupabaseAuthRepository implements AuthRepository {
-  SupabaseAuthRepository(this._client);
+  SupabaseAuthRepository(this._client) {
+    _auth.onAuthStateChange.listen((event) {
+      if (event.event == sb.AuthChangeEvent.passwordRecovery) {
+        _recovering = true;
+      }
+      if (event.event == sb.AuthChangeEvent.signedOut) _recovering = false;
+    });
+  }
+  bool _recovering = false;
+  @override
+  bool get isRecovering => _recovering;
+  @override
+  Stream<bool> get recoveryChanges => _auth.onAuthStateChange
+      .where(
+        (event) =>
+            event.event == sb.AuthChangeEvent.passwordRecovery ||
+            event.event == sb.AuthChangeEvent.signedOut,
+      )
+      .map((event) => event.event == sb.AuthChangeEvent.passwordRecovery);
+  @override
+  Future<void> updatePassword(String password) async {
+    try {
+      final userId = _auth.currentUser?.id;
+      await _auth.updateUser(sb.UserAttributes(password: password));
+      if (_auth.currentUser?.id == userId) _recovering = false;
+    } on sb.AuthException catch (error) {
+      throw _friendly(error);
+    }
+  }
 
   final sb.SupabaseClient _client;
 
   sb.GoTrueClient get _auth => _client.auth;
 
   @override
-  Stream<AppUser?> get userChanges => _auth.onAuthStateChange.map((state) => _toUser(state.session?.user));
+  Stream<AppUser?> get userChanges =>
+      _auth.onAuthStateChange.map((state) => _toUser(state.session?.user));
 
   @override
-  Future<AppUser?> restoreSession() async => _toUser(_auth.currentSession?.user);
+  Future<AppUser?> restoreSession() async =>
+      _toUser(_auth.currentSession?.user);
 
   @override
-  Future<AppUser> signIn({required String email, required String password}) async {
+  Future<AppUser> signIn({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final res = await _auth.signInWithPassword(email: email.trim(), password: password);
+      final res = await _auth.signInWithPassword(
+        email: email.trim(),
+        password: password,
+      );
       final user = _toUser(res.user);
       if (user == null) {
-        throw const AuthException('Sign in did not return a user. Please try again.', AuthFailure.signInIncomplete);
+        throw const AuthException(
+          'Sign in did not return a user. Please try again.',
+          AuthFailure.signInIncomplete,
+        );
       }
       return user;
     } on sb.AuthException catch (e) {
@@ -35,7 +74,11 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AppUser> signUp({required String displayName, required String email, required String password}) async {
+  Future<AppUser> signUp({
+    required String displayName,
+    required String email,
+    required String password,
+  }) async {
     try {
       final res = await _auth.signUp(
         email: email.trim(),
@@ -52,7 +95,10 @@ class SupabaseAuthRepository implements AuthRepository {
       }
       final user = _toUser(res.user);
       if (user == null) {
-        throw const AuthException('Sign up did not return a user. Please try again.', AuthFailure.signUpIncomplete);
+        throw const AuthException(
+          'Sign up did not return a user. Please try again.',
+          AuthFailure.signUpIncomplete,
+        );
       }
       return user;
     } on sb.AuthException catch (e) {
@@ -72,7 +118,10 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> sendPasswordReset({required String email}) async {
     try {
-      await _auth.resetPasswordForEmail(email.trim());
+      await _auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: 'petloop://auth/reset-password',
+      );
     } on sb.AuthException catch (e) {
       throw _friendly(e);
     }
@@ -94,7 +143,10 @@ class SupabaseAuthRepository implements AuthRepository {
   static AuthException _friendly(sb.AuthException e) {
     final m = e.message.toLowerCase();
     if (m.contains('invalid login credentials')) {
-      return const AuthException('Incorrect email or password. Please try again.', AuthFailure.invalidCredentials);
+      return const AuthException(
+        'Incorrect email or password. Please try again.',
+        AuthFailure.invalidCredentials,
+      );
     }
     if (m.contains('email not confirmed')) {
       return const AuthException(
@@ -103,16 +155,30 @@ class SupabaseAuthRepository implements AuthRepository {
       );
     }
     if (m.contains('already registered') || m.contains('already exists')) {
-      return const AuthException('An account with that email already exists.', AuthFailure.emailTaken);
+      return const AuthException(
+        'An account with that email already exists.',
+        AuthFailure.emailTaken,
+      );
     }
     if (m.contains('rate limit') || m.contains('too many')) {
-      return const AuthException('Too many attempts. Please wait a moment and try again.', AuthFailure.rateLimited);
+      return const AuthException(
+        'Too many attempts. Please wait a moment and try again.',
+        AuthFailure.rateLimited,
+      );
     }
     if (m.contains('password') && m.contains('least')) {
-      return const AuthException('Please choose a longer password.', AuthFailure.weakPassword);
+      return const AuthException(
+        'Please choose a longer password.',
+        AuthFailure.weakPassword,
+      );
     }
-    if (m.contains('network') || m.contains('socket') || m.contains('failed host lookup')) {
-      return const AuthException('Cannot reach the server. Check your connection and try again.', AuthFailure.network);
+    if (m.contains('network') ||
+        m.contains('socket') ||
+        m.contains('failed host lookup')) {
+      return const AuthException(
+        'Cannot reach the server. Check your connection and try again.',
+        AuthFailure.network,
+      );
     }
     return AuthException(e.message);
   }

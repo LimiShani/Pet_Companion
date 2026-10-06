@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +7,10 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/empty_state.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 import 'attachments.dart';
 
 /// Every photo and PDF attached to a pet's records, newest record first,
@@ -24,7 +25,14 @@ class PetDocumentsScreen extends ConsumerWidget {
       pushHealthPage<void>(context, PetDocumentsScreen(pet: pet));
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final data = ref.watch(petHealthDataProvider(pet.id));
     final value = data.value;
     final l10n = context.healthL10n;
@@ -44,7 +52,11 @@ class PetDocumentsScreen extends ConsumerWidget {
           if (value.documentsOf(record.id).isNotEmpty) record,
       ]..sort((a, b) => b.when.compareTo(a.when));
       body = records.isEmpty
-          ? EmptyState(icon: Icons.description_rounded, title: l10n.noDocumentsYet, message: l10n.noDocumentsNote)
+          ? EmptyState(
+              icon: Icons.description_rounded,
+              title: l10n.noDocumentsYet,
+              message: l10n.noDocumentsNote,
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -62,7 +74,11 @@ class PetDocumentsScreen extends ConsumerWidget {
             );
     }
 
-    return HealthPage(petId: pet.id, title: l10n.petsDocuments(pet.name), child: body);
+    return HealthPage(
+      petId: pet.id,
+      title: l10n.petsDocuments(pet.name),
+      child: body,
+    );
   }
 }
 
@@ -72,11 +88,20 @@ class _RecordHeading extends StatelessWidget {
   final HealthRecord record;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(top: 10, bottom: 6, start: 2),
       child: Text(
-        HealthFormat.of(context).dots([record.title, HealthFormat.of(context).date(record.when)]),
+        HealthFormat.of(
+          context,
+        ).dots([record.title, HealthFormat.of(context).date(record.when)]),
         style: AppText.label.copyWith(color: AppColors.brown),
       ),
     );

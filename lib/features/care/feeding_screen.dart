@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,19 +7,20 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
-import '../health/data/health_models.dart';
-import '../health/health_strings.dart';
-import '../health/schedule/routine_form_screen.dart';
-import '../health/state/health_providers.dart';
-import '../health/widgets/health_widgets.dart';
+import '../../services/pet_records/data/health_models.dart';
+import '../../presentation/health_strings.dart';
+import '../../presentation/schedule/routine_form_screen.dart';
+import '../../services/pet_records/state/health_providers.dart';
+import '../../presentation/health_widgets.dart';
 import 'food_settings_screen.dart';
 import 'log_meal_sheet.dart';
-import 'state/care_logic.dart';
-import 'state/care_providers.dart';
-import 'widgets/care_widgets.dart';
+import '../../services/care/state/care_logic.dart';
+import '../../services/care/state/care_providers.dart';
+import '../../presentation/care_widgets.dart';
 
 /// Opens the feeding page of [pet] over the whole app.
-Future<void> openFeeding(BuildContext context, Pet pet) => pushHealthPage<void>(context, FeedingScreen(petId: pet.id));
+Future<void> openFeeding(BuildContext context, Pet pet) =>
+    pushHealthPage<void>(context, FeedingScreen(petId: pet.id));
 
 /// Today's meals, the week's calories, the food and the meal times.
 class FeedingScreen extends ConsumerWidget {
@@ -29,9 +31,20 @@ class FeedingScreen extends ConsumerWidget {
   final String petId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.careL10n;
-    final pet = ref.watch(petsProvider.select((pets) => pets.firstWhere((p) => p.id == petId, orElse: () => Pet.none)));
+    final pet = ref.watch(
+      petsProvider.select(
+        (pets) => pets.firstWhere((p) => p.id == petId, orElse: () => Pet.none),
+      ),
+    );
     return CarePage(
       key: screenKey,
       petId: petId,
@@ -51,7 +64,11 @@ class _Body extends ConsumerWidget {
   final Pet pet;
   final FeedingDay day;
 
-  Future<void> _remove(BuildContext context, WidgetRef ref, CareEntry entry) async {
+  Future<void> _remove(
+    BuildContext context,
+    WidgetRef ref,
+    CareEntry entry,
+  ) async {
     final l10n = context.careL10n;
     final confirmed = await confirmDelete(
       context,
@@ -63,23 +80,35 @@ class _Body extends ConsumerWidget {
     try {
       await ref.read(carePlanProvider(pet.id).notifier).removeLog(entry.log!);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.careL10n;
     final format = AppFormat.of(context);
     final goal = day.goal;
     final settings = day.settings;
     final plannedTimes = [
-      for (final item in ref.watch(carePlanProvider(pet.id)).value?.items ?? const <CarePlanItem>[])
+      for (final item
+          in ref.watch(carePlanProvider(pet.id)).value?.items ??
+              const <CarePlanItem>[])
         if (item.kind == CareKind.feeding && item.active) item,
     ]..sort((a, b) => minutesOf(a.time).compareTo(minutesOf(b.time)));
     // Today is not over yet: the average is of the six days before it.
     final before = day.week.take(day.week.length - 1);
-    final average = (before.fold(0, (sum, d) => sum + d.value) / before.length).round();
+    final average = (before.fold(0, (sum, d) => sum + d.value) / before.length)
+        .round();
 
     String? detail(CareEntry e) {
       final log = e.log;
@@ -104,18 +133,29 @@ class _Body extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(l10n.today, style: AppText.cardTitle.copyWith(fontSize: 17))),
+                  Expanded(
+                    child: Text(
+                      l10n.today,
+                      style: AppText.cardTitle.copyWith(fontSize: 17),
+                    ),
+                  ),
                   Text(
                     goal == null
                         ? l10n.caloriesOnly(format.integer(day.calories))
-                        : l10n.caloriesOfGoal(format.integer(day.calories), format.integer(goal)),
+                        : l10n.caloriesOfGoal(
+                            format.integer(day.calories),
+                            format.integer(goal),
+                          ),
                     style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               CareProgress(value: day.progress ?? 0),
-              if (!day.hasFood) ...[const SizedBox(height: 8), Text(l10n.addFoodToCount, style: AppText.secondary)],
+              if (!day.hasFood) ...[
+                const SizedBox(height: 8),
+                Text(l10n.addFoodToCount, style: AppText.secondary),
+              ],
             ],
           ),
         ),
@@ -132,7 +172,10 @@ class _Body extends ConsumerWidget {
             onAction: () => showLogMealSheet(context, pet, entry: meal),
             onRemove: () => _remove(context, ref, meal),
           ),
-        CareAddLine(label: l10n.extraMeal, onTap: () => showLogMealSheet(context, pet, entry: null)),
+        CareAddLine(
+          label: l10n.extraMeal,
+          onTap: () => showLogMealSheet(context, pet, entry: null),
+        ),
         CareSectionLabel(l10n.thisWeek),
         CareBox(
           child: Column(
@@ -143,7 +186,10 @@ class _Body extends ConsumerWidget {
               Text(
                 goal == null
                     ? l10n.weekAverageLine(format.integer(average))
-                    : l10n.weekGoalLine(format.integer(goal), format.integer(average)),
+                    : l10n.weekGoalLine(
+                        format.integer(goal),
+                        format.integer(average),
+                      ),
                 style: AppText.secondary,
               ),
             ],
@@ -151,11 +197,14 @@ class _Body extends ConsumerWidget {
         ),
         CareSectionLabel(l10n.foodAndPortion),
         CareLinkRow(
-          title: settings.foodName.isEmpty ? l10n.foodAndPortion : settings.foodName,
+          title: settings.foodName.isEmpty
+              ? l10n.foodAndPortion
+              : settings.foodName,
           summary: settings.hasFood
               ? [
                   l10n.foodSummary(format.decimal(settings.kcalPer100g!)),
-                  if (settings.portionGrams != null) l10n.portionSummary(format.decimal(settings.portionGrams!)),
+                  if (settings.portionGrams != null)
+                    l10n.portionSummary(format.decimal(settings.portionGrams!)),
                 ].join(' · ')
               : l10n.addFoodToCount,
           onTap: () => openFoodSettings(context, pet),

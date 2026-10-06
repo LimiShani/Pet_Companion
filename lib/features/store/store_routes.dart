@@ -23,10 +23,14 @@ final List<RouteBase> storeRoutes = [
     path: StoreRoutes.root,
     builder: (context, state) => const StoreScreen(),
     routes: [
-      GoRoute(path: 'saved', builder: (context, state) => const SavedDealsScreen()),
+      GoRoute(
+        path: 'saved',
+        builder: (context, state) => const SavedDealsScreen(),
+      ),
       GoRoute(
         path: 'deal/:id',
-        builder: (context, state) => DealDetailScreen(dealId: state.pathParameters['id']!),
+        builder: (context, state) =>
+            DealDetailScreen(dealId: state.pathParameters['id']!),
       ),
     ],
   ),

@@ -1,17 +1,12 @@
+import '../../platform/feature_module.dart';
+import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/pets_provider.dart';
 import '../../theme/app_theme.dart';
-import 'widgets/activity_card.dart';
-import 'widgets/feeding_card.dart';
-import 'widgets/health_card.dart';
 import 'widgets/home_header.dart';
 import 'widgets/pet_hero.dart';
-import '../budget/budget.dart';
-import '../care/care.dart';
-import '../firstdays/firstdays.dart';
-import '../pets/pets.dart';
 
 /// The dashboard: a pinned top bar with the Emergency pill, then the pet
 /// selector, the profile hero and the feeding / activity / health cards,
@@ -64,43 +59,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 HomePetRow(topInset: barHeight),
-                PetHero(pet: pet),
+                if (pet.id.isNotEmpty &&
+                    ref.watch(capabilityProvider('pets.view')))
+                  PetHero(pet: pet),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 18, AppSpacing.screen, 16),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.screen,
+                    18,
+                    AppSpacing.screen,
+                    16,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Shown only while an essential is missing for this pet.
-                      PetReminderCard(
-                        petId: pet.id,
-                        compact: true,
-                        margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
-                      ),
-                      // The cards read the pet's care and health data,
-                      // kept loaded while Home is below another page.
-                      CareKeeper(
-                        petId: pet.id,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            FeedingCard(pet: pet),
-                            const SizedBox(height: AppSpacing.cardGap),
-                            ActivityCard(pet: pet),
-                            const SizedBox(height: AppSpacing.cardGap),
-                            HealthCard(pet: pet),
-                          ],
-                        ),
-                      ),
-                      // ---- Budget and basket (feature/budget) ----
-                      // "This month's spending" and "Running low": each
-                      // shows only while it has something, with its own gap.
-                      const BudgetHomeCards(),
-                      // ---- end of budget and basket ----
-                      // --- The first 30 days (lib/features/firstdays) ---
-                      // Only while the pet's path runs: day 1 to 30, not
-                      // closed, not finished. Keeps its own data loaded.
-                      FirstDaysHomeCard(pet: pet),
-                      // --- End of the first 30 days ---
+                      if (pet.id.isNotEmpty)
+                        FeatureContributions(petId: pet.id),
                     ],
                   ),
                 ),

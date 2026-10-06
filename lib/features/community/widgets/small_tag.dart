@@ -5,7 +5,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
-import '../data/audience.dart';
+import '../../../services/community/data/audience.dart';
 
 /// A small rounded label on a card: "Cats", "English only", "Reviewed".
 class SmallTag extends StatelessWidget {
@@ -28,12 +28,18 @@ class SmallTag extends StatelessWidget {
 
   /// Marks a guide shown in English because it has no text in the reader's
   /// language yet.
-  static Widget englishOnly(CommunityL10n l10n) =>
-      SmallTag(l10n.tagEnglishOnly, color: const Color(0xFFFBE9BD), icon: Icons.translate_rounded);
+  static Widget englishOnly(CommunityL10n l10n) => SmallTag(
+    l10n.tagEnglishOnly,
+    color: const Color(0xFFFBE9BD),
+    icon: Icons.translate_rounded,
+  );
 
   /// Marks a guide with a professional review that still applies.
-  static Widget reviewed(CommunityL10n l10n) =>
-      SmallTag(l10n.tagReviewed, color: AppColors.sage, icon: Icons.verified_user_rounded);
+  static Widget reviewed(CommunityL10n l10n) => SmallTag(
+    l10n.tagReviewed,
+    color: AppColors.sage,
+    icon: Icons.verified_user_rounded,
+  );
 
   final String label;
   final Color color;
@@ -54,7 +60,10 @@ class SmallTag extends StatelessWidget {
           Flexible(
             child: Text(
               label,
-              style: AppText.navLabel.copyWith(fontWeight: FontWeight.w800, color: AppColors.ink),
+              style: AppText.navLabel.copyWith(
+                fontWeight: FontWeight.w800,
+                color: AppColors.ink,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

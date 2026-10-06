@@ -89,7 +89,8 @@ class AppL10nHe extends AppL10n {
   String get authWelcomeBack => 'טוב לראות אותך שוב';
 
   @override
-  String get authSignInSubtitle => 'כניסה קצרה, ואפשר לראות מה שלום החיות שלך היום.';
+  String get authSignInSubtitle =>
+      'כניסה קצרה, ואפשר לראות מה שלום החיות שלך היום.';
 
   @override
   String get authEmail => 'אימייל';
@@ -113,7 +114,8 @@ class AppL10nHe extends AppL10n {
   String get authCreateAnAccount => 'יצירת חשבון';
 
   @override
-  String get authForgotNeedsEmail => 'קודם צריך להזין למעלה את כתובת האימייל, ואז ללחוץ על ״שכחתי סיסמה״.';
+  String get authForgotNeedsEmail =>
+      'קודם צריך להזין למעלה את כתובת האימייל, ואז ללחוץ על ״שכחתי סיסמה״.';
 
   @override
   String authResetSent(String email) {
@@ -150,7 +152,8 @@ class AppL10nHe extends AppL10n {
   String get authCreateAccount => 'יצירת חשבון';
 
   @override
-  String get authTerms => 'יצירת חשבון היא הסכמה לתנאי השימוש ולמדיניות הפרטיות.';
+  String get authTerms =>
+      'יצירת חשבון היא הסכמה לתנאי השימוש ולמדיניות הפרטיות.';
 
   @override
   String get authShowPassword => 'הצגת הסיסמה';
@@ -191,19 +194,23 @@ class AppL10nHe extends AppL10n {
   String get authErrEmailTaken => 'כבר יש חשבון עם כתובת האימייל הזאת.';
 
   @override
-  String get authErrInvalidCredentials => 'האימייל או הסיסמה לא נכונים. אפשר לנסות שוב.';
+  String get authErrInvalidCredentials =>
+      'האימייל או הסיסמה לא נכונים. אפשר לנסות שוב.';
 
   @override
-  String get authErrEmailNotConfirmed => 'קודם צריך לאשר את כתובת האימייל. הקישור מחכה בתיבת הדואר שלך.';
+  String get authErrEmailNotConfirmed =>
+      'קודם צריך לאשר את כתובת האימייל. הקישור מחכה בתיבת הדואר שלך.';
 
   @override
-  String get authErrRateLimited => 'יותר מדי ניסיונות. כדאי לחכות רגע ולנסות שוב.';
+  String get authErrRateLimited =>
+      'יותר מדי ניסיונות. כדאי לחכות רגע ולנסות שוב.';
 
   @override
   String get authErrWeakPassword => 'צריך סיסמה ארוכה יותר.';
 
   @override
-  String get authErrNetwork => 'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
+  String get authErrNetwork =>
+      'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
 
   @override
   String get authErrSignInIncomplete => 'הכניסה לא הושלמה. אפשר לנסות שוב.';
@@ -212,7 +219,8 @@ class AppL10nHe extends AppL10n {
   String get authErrSignUpIncomplete => 'ההרשמה לא הושלמה. אפשר לנסות שוב.';
 
   @override
-  String get authErrConfirmEmailSent => 'כמעט שם: צריך לפתוח את אימייל האישור ששלחנו עכשיו, ואז להיכנס.';
+  String get authErrConfirmEmailSent =>
+      'כמעט שם: צריך לפתוח את אימייל האישור ששלחנו עכשיו, ואז להיכנס.';
 
   @override
   String get accountSignOut => 'יציאה מהחשבון';
@@ -232,7 +240,8 @@ class AppL10nHe extends AppL10n {
   String get languagePreviewTag => 'בהרצה';
 
   @override
-  String get languageNote => 'אפשר לשנות בכל רגע. מה שכתבו חברי הקהילה נשאר בשפה שבה נכתב.';
+  String get languageNote =>
+      'אפשר לשנות בכל רגע. מה שכתבו חברי הקהילה נשאר בשפה שבה נכתב.';
 
   @override
   String languageSwitchTo(String language) {
@@ -278,7 +287,8 @@ class AppL10nHe extends AppL10n {
   }
 
   @override
-  String get settingsWeekNote => 'השבוע שלך: איזה יום ראשון בסדר, ואילו ימים הם ימי חול. הימים המעומעמים הם סוף השבוע. לוח הזמנים בבריאות מתאים את עצמו לבחירה הזו: סדר הימים, ומה נחשב שם ״ימי חול״ ו״סוף שבוע״.';
+  String get settingsWeekNote =>
+      'השבוע שלך: איזה יום ראשון בסדר, ואילו ימים הם ימי חול. הימים המעומעמים הם סוף השבוע. לוח הזמנים בבריאות מתאים את עצמו לבחירה הזו: סדר הימים, ומה נחשב שם ״ימי חול״ ו״סוף שבוע״.';
 
   @override
   String get settingsSavedNote => 'ההגדרות נשמרות בטלפון הזה.';

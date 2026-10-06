@@ -4,13 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../widgets/app_icon.dart';
-import '../../health/emergency/emergency.dart';
-import '../data/pets_repository_provider.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/emergency_contacts.dart';
+import '../../../services/pets/data/pets_repository_provider.dart';
 import '../pet_actions.dart';
-import '../state/pet_completeness.dart';
-import '../pet_words.dart';
+import '../../../services/pets/state/pet_completeness.dart';
+import '../../../presentation/pet_words.dart';
 import 'pet_essentials_keeper.dart';
-import 'pets_widgets.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// The answer to an essential in a few words ("About 3 years", "None
 /// known"), or `null` while it is not at hand. The age is counted at [now].
@@ -22,13 +24,16 @@ String? essentialAnswer(
   HealthProfile? profile,
   PetVets? vets,
 }) {
-  String list(List<String> entries) =>
-      entries.isEmpty ? l10n.noneKnown : [for (final entry in entries) typedInLine(l10n, entry)].join(', ');
+  String list(List<String> entries) => entries.isEmpty
+      ? l10n.noneKnown
+      : [for (final entry in entries) typedInLine(l10n, entry)].join(', ');
   switch (item) {
     case PetInfoItem.age:
       return petAgeText(l10n, pet, now: now);
     case PetInfoItem.weight:
-      return pet.weightKg == null ? null : petWeightText(l10n, pet.weightKg!, pet.species);
+      return pet.weightKg == null
+          ? null
+          : petWeightText(l10n, pet.weightKg!, pet.species);
     case PetInfoItem.allergies:
       return profile == null ? null : list(profile.allergies);
     case PetInfoItem.conditions:
@@ -49,7 +54,12 @@ String? essentialAnswer(
 /// with a one-tap button to its own editor. Used by the "All set" page and
 /// the checklist.
 class EssentialsList extends ConsumerWidget {
-  const EssentialsList({super.key, required this.pet, this.addLabel, this.editable = true});
+  const EssentialsList({
+    super.key,
+    required this.pet,
+    this.addLabel,
+    this.editable = true,
+  });
 
   final Pet pet;
 
@@ -68,7 +78,8 @@ class EssentialsList extends ConsumerWidget {
     final now = ref.watch(petsClockProvider)();
     final l10n = context.petsL10n;
     final addLabel = this.addLabel ?? context.l10n.commonAdd;
-    void open(PetInfoItem item) => openPetInfoItem(context, petId: pet.id, item: item);
+    void open(PetInfoItem item) =>
+        openPetInfoItem(context, petId: pet.id, item: item);
 
     Widget row(PetInfoItem item) {
       final fromHealth = item.index <= PetInfoItem.conditions.index;
@@ -85,14 +96,25 @@ class EssentialsList extends ConsumerWidget {
           leading: const AnswerMark(answered: false),
           title: item.labelIn(l10n),
           subtitle: item.hintIn(l10n),
-          trailing: PillButton(addLabel, key: Key('add-${item.name}'), onPressed: () => open(item)),
+          trailing: PillButton(
+            addLabel,
+            key: Key('add-${item.name}'),
+            onPressed: () => open(item),
+          ),
         );
       }
       return PetsRow(
         key: Key('answered-${item.name}'),
         leading: const AnswerMark(answered: true),
         title: item.labelIn(l10n),
-        subtitle: essentialAnswer(l10n, item, pet, now: now, profile: profile, vets: vets),
+        subtitle: essentialAnswer(
+          l10n,
+          item,
+          pet,
+          now: now,
+          profile: profile,
+          vets: vets,
+        ),
         trailing: editable ? const AppIcon(Icons.chevron_right_rounded) : null,
         onTap: editable ? () => open(item) : null,
       );
@@ -104,7 +126,10 @@ class EssentialsList extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           for (final item in PetInfoItem.essentials)
-            Padding(padding: const EdgeInsets.only(bottom: 8), child: row(item)),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: row(item),
+            ),
         ],
       ),
     );

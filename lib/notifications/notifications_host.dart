@@ -1,13 +1,11 @@
+import '../platform/feature_ui.dart';
+import '../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../auth/auth_controller.dart';
-import '../features/care/care.dart';
-import '../features/health/health_routes.dart';
-import '../features/health/state/health_providers.dart';
-import '../features/pets/pets_routes.dart';
-import '../features/store/store_routes.dart';
+import '../services/pet_records/state/health_providers.dart';
 import '../l10n/l10n.dart';
 import '../models/pet.dart';
 import '../navigation/app_router.dart';
@@ -25,6 +23,7 @@ Future<void> openNotificationTarget(
   required List<Pet> pets,
   required void Function(String petId) selectPet,
   required void Function() showHealthSchedule,
+  bool storeAvailable = true,
 }) async {
   final colon = target.indexOf(':');
   final where = colon < 0 ? target : target.substring(0, colon);
@@ -33,7 +32,9 @@ Future<void> openNotificationTarget(
   if (pet != null) selectPet(pet.id);
 
   // Close what is open over the pages (a sheet, a dialog, a pushed page).
-  router.routerDelegate.navigatorKey.currentState?.popUntil((route) => route.settings is Page);
+  router.routerDelegate.navigatorKey.currentState?.popUntil(
+    (route) => route.settings is Page,
+  );
 
   switch (where) {
     case 'feeding' || 'activity':
@@ -42,12 +43,19 @@ Future<void> openNotificationTarget(
       await WidgetsBinding.instance.endOfFrame;
       final context = router.routerDelegate.navigatorKey.currentContext;
       if (context == null || !context.mounted) return;
-      await (where == 'feeding' ? openFeeding(context, pet) : openActivity(context, pet));
+      await openFeature<Object>(context, where, pet.id);
     case 'health':
       showHealthSchedule();
-      router.go(HealthRoutes.root);
+      router.go(AppRoutes.health);
     case 'basket':
-      router.go(StoreRoutes.root);
+      router.go(storeAvailable ? AppRoutes.store : AppRoutes.home);
+      if (!storeAvailable && pet != null) {
+        await WidgetsBinding.instance.endOfFrame;
+        final context = router.routerDelegate.navigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          await openFeature<Object>(context, 'basket', pet.id);
+        }
+      }
     default:
       router.go(AppRoutes.home);
   }
@@ -69,7 +77,8 @@ class NotificationsHost extends ConsumerStatefulWidget {
   ConsumerState<NotificationsHost> createState() => _NotificationsHostState();
 }
 
-class _NotificationsHostState extends ConsumerState<NotificationsHost> with WidgetsBindingObserver {
+class _NotificationsHostState extends ConsumerState<NotificationsHost>
+    with WidgetsBindingObserver {
   NotificationPlatform? _platform;
   ReminderCoordinator? _coordinator;
   GoRouter? _router;
@@ -85,8 +94,11 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
     // router has started.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _coordinator = ReminderCoordinator(ProviderScope.containerOf(context, listen: false))..start();
-      platform.onTap = (target) => ref.read(notificationTapsProvider.notifier).tapped(target);
+      _coordinator = ReminderCoordinator(
+        ProviderScope.containerOf(context, listen: false),
+      )..start();
+      platform.onTap = (target) =>
+          ref.read(notificationTapsProvider.notifier).tapped(target);
       // A sheet or a page opened on top of the sign-in screen would go
       // with it: both wait until the tabs are on screen.
       final router = ref.read(routerProvider);
@@ -109,6 +121,7 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
+    ref.read(accessProvider.notifier).refresh();
     _coordinator?.resumed();
     ref.read(notificationAccessProvider.notifier).refresh();
   }
@@ -116,9 +129,15 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
   /// Signed in, with the pets loaded and the tabs (or a page above them)
   /// on screen.
   bool get _ready {
-    if (ref.read(authControllerProvider).value == null || ref.read(petsGateProvider) != PetsGate.ready) return false;
+    if (ref.read(authControllerProvider).value == null ||
+        ref.read(petsGateProvider) != PetsGate.ready) {
+      return false;
+    }
     final path = _router?.routerDelegate.currentConfiguration.uri.path ?? '';
-    return path.isNotEmpty && path != AppRoutes.splash && !AppRoutes.isPublic(path) && path != PetsRoutes.welcome;
+    return path.isNotEmpty &&
+        path != AppRoutes.splash &&
+        !AppRoutes.isPublic(path) &&
+        path != '/welcome';
   }
 
   void _onRoute() {
@@ -132,12 +151,26 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
     if (target == null) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      final kind = target.split(':').first;
+      final capability = switch (kind) {
+        'feeding' || 'activity' => 'care.view',
+        'health' => 'health.schedule.view',
+        'basket' => 'basket.view',
+        _ => null,
+      };
+      if (capability != null && !ref.read(capabilityProvider(capability))) {
+        ref.read(routerProvider).go(AppRoutes.home);
+        return;
+      }
       openNotificationTarget(
         target,
         router: ref.read(routerProvider),
         pets: ref.read(petsProvider),
         selectPet: ref.read(selectedPetIdProvider.notifier).select,
-        showHealthSchedule: () => ref.read(healthSectionProvider.notifier).show(HealthSection.schedule),
+        showHealthSchedule: () => ref
+            .read(healthSectionProvider.notifier)
+            .show(HealthSection.schedule),
+        storeAvailable: ref.read(capabilityProvider('store.deals.view')),
       );
     });
   }
@@ -147,7 +180,12 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
   /// the phone allows, with a button.
   Future<void> _maybeAsk() async {
     final platform = _platform;
-    if (platform == null || _asking || !_ready || !ref.read(somethingToRemindProvider)) return;
+    if (platform == null ||
+        _asking ||
+        !_ready ||
+        !ref.read(somethingToRemindProvider)) {
+      return;
+    }
     final store = ref.read(settingsStoreProvider);
     if (store.read(notificationsAskedSettingKey) == '1') return;
     _asking = true;
@@ -159,12 +197,22 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost> with Widg
       await WidgetsBinding.instance.endOfFrame;
       if (!mounted || !_ready) return;
       final complete = access.allowed && access.exact != false;
-      final context = ref.read(routerProvider).routerDelegate.navigatorKey.currentContext;
+      final context = ref
+          .read(routerProvider)
+          .routerDelegate
+          .navigatorKey
+          .currentContext;
       if (!complete && (context == null || !context.mounted)) return;
       await store.write(notificationsAskedSettingKey, '1');
       if (complete || context == null || !context.mounted) return;
-      await showNotificationPermissionSheet(context, platform: platform, notificationsAllowed: access.allowed);
-      if (mounted) await ref.read(notificationAccessProvider.notifier).refresh();
+      await showNotificationPermissionSheet(
+        context,
+        platform: platform,
+        notificationsAllowed: access.allowed,
+      );
+      if (mounted) {
+        await ref.read(notificationAccessProvider.notifier).refresh();
+      }
     } catch (error) {
       debugPrint('PetLoop: could not ask for notifications: $error');
     } finally {

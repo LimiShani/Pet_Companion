@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,17 +8,20 @@ import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../widgets/app_icon.dart';
 import 'pet_actions.dart';
-import 'state/pet_completeness.dart';
+import '../../services/pets/state/pet_completeness.dart';
 import 'widgets/essentials_list.dart';
-import 'widgets/pet_avatar.dart';
+import '../../presentation/pet_avatar.dart';
 import 'widgets/pet_reminder_card.dart';
-import 'widgets/pets_widgets.dart';
+import '../../presentation/pets_widgets.dart';
 
 /// The "what is missing" checklist as a bottom sheet: the five essentials,
 /// each one tap from its own editor, the "good to have" items, and "Remind
 /// me in a week". Nothing opens for an unknown [petId].
 Future<void> showPetChecklist(BuildContext context, String petId) {
-  final pet = ProviderScope.containerOf(context, listen: false).read(petsStoreProvider).byId(petId);
+  final pet = ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(petsStoreProvider).byId(petId);
   assert(pet != null, 'showPetChecklist: no pet with id "$petId"');
   if (pet == null) return Future.value();
   return showPetsSheet<void>(context, PetChecklist(petId: petId));
@@ -37,12 +41,22 @@ class PetChecklist extends ConsumerWidget {
     PetInfoItem.sexAndNeutering,
   ];
 
-  static bool _fromHealth(PetInfoItem item) => item == PetInfoItem.microchip || item == PetInfoItem.emergencyVet;
+  static bool _fromHealth(PetInfoItem item) =>
+      item == PetInfoItem.microchip || item == PetInfoItem.emergencyVet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     announcePetCompletion(ref, context, petId);
-    final Pet? pet = ref.watch(petsStoreProvider.select((pets) => pets.byId(petId)));
+    final Pet? pet = ref.watch(
+      petsStoreProvider.select((pets) => pets.byId(petId)),
+    );
     if (pet == null) return const SizedBox.shrink();
     final info = ref.watch(petCompletenessProvider(petId));
 
@@ -50,8 +64,8 @@ class PetChecklist extends ConsumerWidget {
     final summary = !info.isKnown
         ? l10n.checklistChecking
         : info.isComplete
-            ? l10n.checklistAllAnswered(info.total)
-            : l10n.checklistSomeAnswered(info.answered, info.total);
+        ? l10n.checklistAllAnswered(info.total)
+        : l10n.checklistSomeAnswered(info.answered, info.total);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +78,10 @@ class PetChecklist extends ConsumerWidget {
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [PetsHeading(l10n.checklistTitle(pet.name)), PetsNote(summary)],
+                children: [
+                  PetsHeading(l10n.checklistTitle(pet.name)),
+                  PetsNote(summary),
+                ],
               ),
             ),
           ],
@@ -82,7 +99,8 @@ class PetChecklist extends ConsumerWidget {
                 _GoodToHaveChip(
                   item: item,
                   answered: !info.goodToHave.contains(item),
-                  onPressed: () => openPetInfoItem(context, petId: petId, item: item),
+                  onPressed: () =>
+                      openPetInfoItem(context, petId: petId, item: item),
                 ),
           ],
         ),
@@ -101,7 +119,10 @@ class PetChecklist extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: PetsFinePrint(
-              l10n.reminderHiddenUntil(AppFormat.of(context).date(info.snoozedUntil!), pet.name),
+              l10n.reminderHiddenUntil(
+                AppFormat.of(context).date(info.snoozedUntil!),
+                pet.name,
+              ),
               center: true,
             ),
           ),
@@ -111,19 +132,34 @@ class PetChecklist extends ConsumerWidget {
 }
 
 class _GoodToHaveChip extends StatelessWidget {
-  const _GoodToHaveChip({required this.item, required this.answered, required this.onPressed});
+  const _GoodToHaveChip({
+    required this.item,
+    required this.answered,
+    required this.onPressed,
+  });
 
   final PetInfoItem item;
   final bool answered;
   final VoidCallback onPressed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.petsL10n;
     final label = item.labelIn(l10n);
     return ActionChip(
       key: Key('good-${item.name}'),
-      avatar: AppIcon(answered ? Icons.check_rounded : Icons.add_rounded, size: 16, color: AppColors.ink),
+      avatar: AppIcon(
+        answered ? Icons.check_rounded : Icons.add_rounded,
+        size: 16,
+        color: AppColors.ink,
+      ),
       label: Text(label),
       backgroundColor: answered ? AppColors.yellow : AppColors.white,
       side: BorderSide(color: answered ? AppColors.yellow : kPetsLine),

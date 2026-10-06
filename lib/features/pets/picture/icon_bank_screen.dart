@@ -1,12 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/primary_button.dart';
-import '../icons/pet_icon_bank.dart';
-import '../widgets/pet_avatar.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pet_icon_bank.dart';
+import '../../../presentation/pet_avatar.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// The icon bank: the animals that suit the pet's kind first, then all the
 /// others, and four backgrounds. Pops with the chosen [PetIconChoice].
@@ -23,10 +25,13 @@ class IconBankScreen extends StatefulWidget {
 }
 
 class _IconBankScreenState extends State<IconBankScreen> {
-  late PetIcon _icon = widget.initial?.icon ?? PetIcon.defaultFor(widget.species);
-  late PetIconBackground _background = widget.initial?.background ?? PetIconBackground.yellow;
+  late PetIcon _icon =
+      widget.initial?.icon ?? PetIcon.defaultFor(widget.species);
+  late PetIconBackground _background =
+      widget.initial?.background ?? PetIconBackground.yellow;
 
-  static String _forKind(PetsL10n l10n, PetSpecies species) => switch (species) {
+  static String _forKind(PetsL10n l10n, PetSpecies species) =>
+      switch (species) {
         PetSpecies.dog => l10n.iconsForDog,
         PetSpecies.cat => l10n.iconsForCat,
         PetSpecies.bird => l10n.iconsForBird,
@@ -35,7 +40,8 @@ class _IconBankScreenState extends State<IconBankScreen> {
         PetSpecies.other => l10n.iconsSuggested,
       };
 
-  static String _backgroundLabel(PetsL10n l10n, PetIconBackground background) => switch (background) {
+  static String _backgroundLabel(PetsL10n l10n, PetIconBackground background) =>
+      switch (background) {
         PetIconBackground.yellow => l10n.iconsBackgroundYellow,
         PetIconBackground.sage => l10n.iconsBackgroundGreen,
         PetIconBackground.peach => l10n.iconsBackgroundPeach,
@@ -43,7 +49,14 @@ class _IconBankScreenState extends State<IconBankScreen> {
       };
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.petsL10n;
     final own = PetIcon.forSpecies(widget.species);
     final others = [
@@ -52,22 +65,25 @@ class _IconBankScreenState extends State<IconBankScreen> {
     ];
 
     Widget bank(List<PetIcon> icons) => Wrap(
-          spacing: 12,
-          runSpacing: 14,
-          children: [
-            for (final icon in icons)
-              _Selectable(
-                key: Key('icon-${icon.key}'),
-                label: icon.label,
-                selected: icon == _icon,
-                onTap: () => setState(() => _icon = icon),
-                child: PetPictureCircle(
-                  size: 72,
-                  icon: PetIconChoice(icon, icon == _icon ? _background : PetIconBackground.yellow),
-                ),
+      spacing: 12,
+      runSpacing: 14,
+      children: [
+        for (final icon in icons)
+          _Selectable(
+            key: Key('icon-${icon.key}'),
+            label: icon.label,
+            selected: icon == _icon,
+            onTap: () => setState(() => _icon = icon),
+            child: PetPictureCircle(
+              size: 72,
+              icon: PetIconChoice(
+                icon,
+                icon == _icon ? _background : PetIconBackground.yellow,
               ),
-          ],
-        );
+            ),
+          ),
+      ],
+    );
 
     return PetsPage(
       title: l10n.pickAnIcon,
@@ -112,7 +128,8 @@ class _IconBankScreenState extends State<IconBankScreen> {
           const SizedBox(height: 24),
           PrimaryButton(
             label: l10n.iconsUse,
-            onPressed: () => Navigator.of(context).pop(PetIconChoice(_icon, _background)),
+            onPressed: () =>
+                Navigator.of(context).pop(PetIconChoice(_icon, _background)),
           ),
         ],
       ),
@@ -136,7 +153,14 @@ class _Selectable extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Semantics(
       button: true,
       selected: selected,
@@ -148,7 +172,10 @@ class _Selectable extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: selected ? AppColors.coralDark : Colors.transparent, width: 3),
+            border: Border.all(
+              color: selected ? AppColors.coralDark : Colors.transparent,
+              width: 3,
+            ),
           ),
           child: ExcludeSemantics(child: child),
         ),

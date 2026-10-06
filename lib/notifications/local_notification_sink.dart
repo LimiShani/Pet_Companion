@@ -16,17 +16,25 @@ const _margin = Duration(seconds: 10);
 /// kind's channel and the label of the snooze button.
 @immutable
 class NotificationChrome {
-  const NotificationChrome({this.channelNames = const {}, this.snoozeLabel = ''});
+  const NotificationChrome({
+    this.channelNames = const {},
+    this.snoozeLabel = '',
+  });
 
   final Map<NotificationKind, String> channelNames;
   final String snoozeLabel;
 
   @override
   bool operator ==(Object other) =>
-      other is NotificationChrome && other.snoozeLabel == snoozeLabel && mapEquals(other.channelNames, channelNames);
+      other is NotificationChrome &&
+      other.snoozeLabel == snoozeLabel &&
+      mapEquals(other.channelNames, channelNames);
 
   @override
-  int get hashCode => Object.hash(snoozeLabel, Object.hashAllUnordered(channelNames.entries.map((e) => e.toString())));
+  int get hashCode => Object.hash(
+    snoozeLabel,
+    Object.hashAllUnordered(channelNames.entries.map((e) => e.toString())),
+  );
 }
 
 /// The reminders of [items] (one group) that the owner's [settings] let
@@ -41,7 +49,10 @@ class NotificationChrome {
 ///
 /// Reminders in the past are kept (the sink drops them), so a quiet-hours
 /// reminder that was due at 05:00 still rings at 07:00.
-List<PlannedNotification> applySettings(List<PlannedNotification> items, NotificationSettings settings) {
+List<PlannedNotification> applySettings(
+  List<PlannedNotification> items,
+  NotificationSettings settings,
+) {
   final allowed = [
     for (final item in items)
       if (settings.allows(item.kind)) item,
@@ -49,14 +60,18 @@ List<PlannedNotification> applySettings(List<PlannedNotification> items, Notific
   if (!settings.quietHours) return allowed;
   final result = <PlannedNotification>[];
   for (final item in allowed) {
-    if (!NotificationSettings.waitsInQuietHours(item.kind) || !NotificationSettings.isQuiet(item.at)) {
+    if (!NotificationSettings.waitsInQuietHours(item.kind) ||
+        !NotificationSettings.isQuiet(item.at)) {
       result.add(item);
       continue;
     }
     final moved = NotificationSettings.quietEndAfter(item.at);
     final covered = allowed.any(
       (other) =>
-          !identical(other, item) && other.kind == item.kind && other.at.isAfter(item.at) && !other.at.isAfter(moved),
+          !identical(other, item) &&
+          other.kind == item.kind &&
+          other.at.isAfter(item.at) &&
+          !other.at.isAfter(moved),
     );
     if (covered) continue;
     result.add(
@@ -180,7 +195,8 @@ class LocalNotificationSink implements NotificationSink {
   }
 
   /// The groups synced since the app started, with their last items.
-  Map<String, List<PlannedNotification>> get groups => Map.unmodifiable(_groups);
+  Map<String, List<PlannedNotification>> get groups =>
+      Map.unmodifiable(_groups);
 
   @override
   Future<void> syncGroup(String group, List<PlannedNotification> items) {
@@ -197,10 +213,14 @@ class LocalNotificationSink implements NotificationSink {
       final pending = await _platform.pending();
       for (final (_, notification) in pending) {
         final group = notification?.group;
-        if (group != null && group.startsWith(prefix) && !keep.contains(group)) _groups[group] = const [];
+        if (group != null && group.startsWith(prefix) && !keep.contains(group)) {
+          _groups[group] = const [];
+        }
       }
       for (final group in [..._groups.keys]) {
-        if (group.startsWith(prefix) && !keep.contains(group)) _groups[group] = const [];
+        if (group.startsWith(prefix) && !keep.contains(group)) {
+          _groups[group] = const [];
+        }
       }
       await _reconcile();
     });

@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 
 import '../../l10n/l10n.dart';
-import 'data/deal.dart';
-import 'store_strings.dart';
+import '../../services/store/data/deal.dart';
+import '../../presentation/store_strings.dart';
 
 /// Money, amounts and times as the Store shows them, in the language on
 /// screen: the numbers from [AppFormat], the words around them from the
@@ -18,10 +18,12 @@ import 'store_strings.dart';
 class StoreFormat {
   const StoreFormat(this.l10n, this.app);
 
-  factory StoreFormat.of(BuildContext context) => StoreFormat(context.storeL10n, AppFormat.of(context));
+  factory StoreFormat.of(BuildContext context) =>
+      StoreFormat(context.storeL10n, AppFormat.of(context));
 
   /// For code and tests without a screen.
-  factory StoreFormat.forLocale(Locale locale) => StoreFormat(lookupStoreL10n(locale), AppFormat.forLocale(locale));
+  factory StoreFormat.forLocale(Locale locale) =>
+      StoreFormat(lookupStoreL10n(locale), AppFormat.forLocale(locale));
 
   final StoreL10n l10n;
   final AppFormat app;
@@ -39,7 +41,8 @@ class StoreFormat {
   }
 
   /// The sign of [currency], e.g. `₪`.
-  String currencySymbol(String currency) => NumberFormat.simpleCurrency(name: currency).currencySymbol;
+  String currencySymbol(String currency) =>
+      NumberFormat.simpleCurrency(name: currency).currencySymbol;
 
   /// "12.06.25", the same in every language.
   String date(DateTime when) => app.date(when);
@@ -48,13 +51,19 @@ class StoreFormat {
   String discount(int percent) => _tidy(app.percent(-percent));
 
   /// "10 kg", "500 ml", "300 units".
-  String package(PackageSize size) =>
-      l10n.packageSize(app.decimal(size.amount, decimals: 3), size.unit, one: size.amount == 1);
+  String package(PackageSize size) => l10n.packageSize(
+    app.decimal(size.amount, decimals: 3),
+    size.unit,
+    one: size.amount == 1,
+  );
 
   /// "₪18.90 per kg", "₪5.98 per litre", "₪0.07 each".
   String unitPrice(UnitPrice price, String currency) =>
       // Never "₪0 each": the smallest amount shown is one hundredth.
-      l10n.unitPriceOf(money(price.amount < 0.01 ? 0.01 : price.amount, currency), price.kind);
+      l10n.unitPriceOf(
+        money(price.amount < 0.01 ? 0.01 : price.amount, currency),
+        price.kind,
+      );
 
   /// "3 hours ago", "Yesterday", or the date once it is over a month old.
   String timeAgo(DateTime then, DateTime now) {
@@ -90,7 +99,11 @@ class StoreFormat {
   // Whole calendar days from one day to another; hours keep this right
   // across a clock change.
   static int _calendarDays(DateTime from, DateTime to) {
-    final hours = DateTime(to.year, to.month, to.day).difference(DateTime(from.year, from.month, from.day)).inHours;
+    final hours = DateTime(
+      to.year,
+      to.month,
+      to.day,
+    ).difference(DateTime(from.year, from.month, from.day)).inHours;
     return (hours / 24).round();
   }
 }

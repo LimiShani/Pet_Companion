@@ -69,4 +69,6 @@ class SharedPrefsSettingsStore implements SettingsStore {
   }
 }
 
-final settingsStoreProvider = Provider<SettingsStore>((ref) => MemorySettingsStore());
+final settingsStoreProvider = Provider<SettingsStore>(
+  (ref) => MemorySettingsStore(),
+);

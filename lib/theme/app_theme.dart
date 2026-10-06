@@ -146,20 +146,27 @@ abstract final class AppTheme {
     );
 
     final base = ThemeData(useMaterial3: true, colorScheme: scheme);
-    final textTheme = AppFonts.textTheme(base.textTheme).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
+    final textTheme = AppFonts.textTheme(
+      base.textTheme,
+    ).apply(bodyColor: AppColors.ink, displayColor: AppColors.ink);
     final pillLabel = AppText.button();
 
-    OutlineInputBorder fieldBorder(Color color, [double width = 1]) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-      borderSide: BorderSide(color: color, width: width),
-    );
+    OutlineInputBorder fieldBorder(Color color, [double width = 1]) =>
+        OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+          borderSide: BorderSide(color: color, width: width),
+        );
 
     return base.copyWith(
       scaffoldBackgroundColor: AppColors.cream,
       textTheme: textTheme,
       iconTheme: const IconThemeData(color: AppColors.ink),
       dividerColor: scheme.outlineVariant,
-      dividerTheme: DividerThemeData(color: scheme.outlineVariant, thickness: 1, space: 1),
+      dividerTheme: DividerThemeData(
+        color: scheme.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
       splashFactory: InkSparkle.splashFactory,
       progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: AppColors.coral,
@@ -169,7 +176,9 @@ abstract final class AppTheme {
         backgroundColor: AppColors.coral,
         foregroundColor: AppColors.white,
         centerTitle: true,
-        titleTextStyle: textTheme.titleLarge?.merge(AppText.appTitle).copyWith(color: AppColors.white),
+        titleTextStyle: textTheme.titleLarge
+            ?.merge(AppText.appTitle)
+            .copyWith(color: AppColors.white),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -190,7 +199,10 @@ abstract final class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: AppColors.coralDark, textStyle: AppText.button(14)),
+        style: TextButton.styleFrom(
+          foregroundColor: AppColors.coralDark,
+          textStyle: AppText.button(14),
+        ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.coralDark,
@@ -202,8 +214,14 @@ abstract final class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        hintStyle: AppText.body.copyWith(fontSize: 16, color: AppColors.brown.withValues(alpha: 0.55)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 16,
+        ),
+        hintStyle: AppText.body.copyWith(
+          fontSize: 16,
+          color: AppColors.brown.withValues(alpha: 0.55),
+        ),
         labelStyle: AppText.body.copyWith(color: AppColors.brown),
         border: fieldBorder(Colors.transparent),
         enabledBorder: fieldBorder(Colors.transparent),
@@ -216,7 +234,9 @@ abstract final class AppTheme {
         color: AppColors.white,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
+        ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.white,
@@ -224,8 +244,14 @@ abstract final class AppTheme {
         disabledColor: scheme.surfaceContainer,
         side: BorderSide(color: scheme.outlineVariant),
         shape: const StadiumBorder(),
-        labelStyle: AppText.secondary.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
-        secondaryLabelStyle: AppText.secondary.copyWith(color: AppColors.ink, fontWeight: FontWeight.w800),
+        labelStyle: AppText.secondary.copyWith(
+          color: AppColors.ink,
+          fontWeight: FontWeight.w700,
+        ),
+        secondaryLabelStyle: AppText.secondary.copyWith(
+          color: AppColors.ink,
+          fontWeight: FontWeight.w800,
+        ),
         checkmarkColor: AppColors.ink,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       ),
@@ -233,7 +259,9 @@ abstract final class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.ink,
         contentTextStyle: AppText.body.copyWith(color: AppColors.white),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+        ),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: AppColors.cream,
@@ -241,15 +269,24 @@ abstract final class AppTheme {
         showDragHandle: true,
         dragHandleColor: Color(0xFFE7D9B5),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.shellRadius)),
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppSpacing.shellRadius),
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.cream,
         surfaceTintColor: Colors.transparent,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius)),
-        titleTextStyle: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, color: AppColors.ink),
-        contentTextStyle: textTheme.bodyMedium?.merge(AppText.body).copyWith(color: AppColors.ink),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
+        ),
+        titleTextStyle: textTheme.titleLarge?.copyWith(
+          fontWeight: FontWeight.w800,
+          color: AppColors.ink,
+        ),
+        contentTextStyle: textTheme.bodyMedium
+            ?.merge(AppText.body)
+            .copyWith(color: AppColors.ink),
       ),
       listTileTheme: const ListTileThemeData(
         iconColor: AppColors.brown,

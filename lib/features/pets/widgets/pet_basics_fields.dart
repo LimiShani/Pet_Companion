@@ -7,8 +7,8 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../pet_words.dart';
-import 'pets_widgets.dart';
+import '../../../presentation/pet_words.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// The unit of an approximate age: "about 3 years", "about 4 months".
 enum AgeUnit { years, months }
@@ -25,7 +25,8 @@ enum BasicsSection { age, weight, sex, neutered, breed }
 /// while the form is open (a weight added from the checklist, say) is never
 /// overwritten by a form that still shows the old value.
 class PetBasicsController extends ChangeNotifier {
-  PetBasicsController({required Pet pet, required DateTime now}) : _species = pet.species {
+  PetBasicsController({required Pet pet, required DateTime now})
+    : _species = pet.species {
     for (final section in BasicsSection.values) {
       _load(section, pet, now);
     }
@@ -55,7 +56,9 @@ class PetBasicsController extends ChangeNotifier {
   bool get weightInGrams => petWeighsInGrams(_species);
 
   static String _weightText(double kg, PetSpecies species) =>
-      petWeighsInGrams(species) ? trimmedNumber(kg * 1000, 0) : trimmedNumber(kg, 3);
+      petWeighsInGrams(species)
+      ? trimmedNumber(kg * 1000, 0)
+      : trimmedNumber(kg, 3);
 
   static void _show(TextEditingController field, String text) {
     if (field.text != text) field.text = text;
@@ -126,7 +129,9 @@ class PetBasicsController extends ChangeNotifier {
     final before = petWeighsInGrams(_species);
     final kg = weightKg;
     _species = value;
-    if (before != petWeighsInGrams(value) && kg != null) weight.text = _weightText(kg, value);
+    if (before != petWeighsInGrams(value) && kg != null) {
+      weight.text = _weightText(kg, value);
+    }
     notifyListeners();
   }
 
@@ -188,7 +193,9 @@ class PetBasicsController extends ChangeNotifier {
   String? validateWeight(PetsL10n l10n, String? text) {
     if ((text ?? '').trim().isEmpty) return null;
     final value = _number(text!);
-    if (value == null || value <= 0) return l10n.enterANumberLike(weightInGrams ? 35 : 18);
+    if (value == null || value <= 0) {
+      return l10n.enterANumberLike(weightInGrams ? 35 : 18);
+    }
     final kg = weightInGrams ? value / 1000 : value;
     if (kg > 2000) return l10n.tooHeavy;
     return null;
@@ -227,7 +234,13 @@ class PetBasicsController extends ChangeNotifier {
   /// [pet] with what the owner changed in the form; with [only], just those
   /// parts. A changed field left empty is stored as "not answered". What
   /// the owner did not touch stays exactly as [pet] has it.
-  Pet applyTo(Pet pet, {required DateTime now, String? name, PetSpecies? species, Set<BasicsSection>? only}) {
+  Pet applyTo(
+    Pet pet, {
+    required DateTime now,
+    String? name,
+    PetSpecies? species,
+    Set<BasicsSection>? only,
+  }) {
     bool changed(BasicsSection section) =>
         _touched.contains(section) && (only == null || only.contains(section));
     final age = ageAnswer(now);
@@ -235,7 +248,9 @@ class PetBasicsController extends ChangeNotifier {
     return pet.withBasics(
       name: name ?? pet.name,
       species: species ?? pet.species,
-      breed: changed(BasicsSection.breed) ? (breedText.isEmpty ? null : breedText) : pet.breed,
+      breed: changed(BasicsSection.breed)
+          ? (breedText.isEmpty ? null : breedText)
+          : pet.breed,
       weightKg: changed(BasicsSection.weight) ? weightKg : pet.weightKg,
       sex: changed(BasicsSection.sex) ? _sex : pet.sex,
       neutered: changed(BasicsSection.neutered) ? _neutered : pet.neutered,
@@ -278,7 +293,9 @@ class PetBasicsFields extends StatelessWidget {
   /// Off for a one-field sheet, whose title already names the field.
   final bool showLabels;
 
-  static final _numberInput = FilteringTextInputFormatter.allow(RegExp('[0-9.,]'));
+  static final _numberInput = FilteringTextInputFormatter.allow(
+    RegExp('[0-9.,]'),
+  );
   static final _date = DateFormat('dd.MM.yyyy');
 
   Future<void> _pickDate(BuildContext context) async {
@@ -304,7 +321,8 @@ class PetBasicsFields extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (sections.contains(BasicsSection.age)) ...[
-              if (showLabels) PetsLabel(l10n.birthdayOrAge, level: FieldLevel.essential),
+              if (showLabels)
+                PetsLabel(l10n.birthdayOrAge, level: FieldLevel.essential),
               TwoWaySwitch(
                 first: l10n.iKnowTheDate,
                 second: l10n.aboutEllipsis,
@@ -321,9 +339,14 @@ class PetBasicsFields extends StatelessWidget {
                       child: TextFormField(
                         key: const Key('pet-age-amount'),
                         controller: c.ageAmount,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
                         inputFormatters: [_numberInput],
-                        decoration: InputDecoration(labelText: l10n.aboutField, errorMaxLines: 3),
+                        decoration: InputDecoration(
+                          labelText: l10n.aboutField,
+                          errorMaxLines: 3,
+                        ),
                         validator: (text) => c.validateAgeAmount(l10n, text),
                         onChanged: (_) => c.touch(BasicsSection.age),
                       ),
@@ -334,7 +357,9 @@ class PetBasicsFields extends StatelessWidget {
                         padding: const EdgeInsets.only(top: 6),
                         child: ChoiceChips<AgeUnit>(
                           options: AgeUnit.values,
-                          labelOf: (unit) => unit == AgeUnit.years ? l10n.unitYears : l10n.unitMonths,
+                          labelOf: (unit) => unit == AgeUnit.years
+                              ? l10n.unitYears
+                              : l10n.unitMonths,
                           selected: c.ageUnit,
                           allowClear: false,
                           onSelected: (unit) => c.ageUnit = unit!,
@@ -353,11 +378,14 @@ class PetBasicsFields extends StatelessWidget {
                 ),
             ],
             if (sections.contains(BasicsSection.weight)) ...[
-              if (showLabels) PetsLabel(l10n.itemWeight, level: FieldLevel.essential),
+              if (showLabels)
+                PetsLabel(l10n.itemWeight, level: FieldLevel.essential),
               TextFormField(
                 key: const Key('pet-weight'),
                 controller: c.weight,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 inputFormatters: [_numberInput],
                 decoration: InputDecoration(
                   labelText: l10n.hintWeight,
@@ -394,11 +422,15 @@ class PetBasicsFields extends StatelessWidget {
                 enabled: !c.mixedBreed,
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
-                  labelText: c.mixedBreed ? l10n.mixedOrNotSure : l10n.breedOptional,
+                  labelText: c.mixedBreed
+                      ? l10n.mixedOrNotSure
+                      : l10n.breedOptional,
                   hintText: l10n.breedExample,
                   errorMaxLines: 3,
                 ),
-                validator: (text) => (text?.trim().length ?? 0) > 60 ? l10n.breedTooLong(60) : null,
+                validator: (text) => (text?.trim().length ?? 0) > 60
+                    ? l10n.breedTooLong(60)
+                    : null,
                 onChanged: (_) => c.touch(BasicsSection.breed),
               ),
               const SizedBox(height: 8),
@@ -436,13 +468,18 @@ class _DateField extends StatelessWidget {
         child: InputDecorator(
           decoration: InputDecoration(
             labelText: context.petsL10n.birthday,
-            suffixIcon: const AppIcon(Icons.calendar_month_rounded, color: AppColors.brown),
+            suffixIcon: const AppIcon(
+              Icons.calendar_month_rounded,
+              color: AppColors.brown,
+            ),
           ),
           child: Text(
             text ?? context.petsL10n.chooseTheDate,
             style: AppText.body.copyWith(
               fontSize: 16,
-              color: text == null ? AppColors.brown.withValues(alpha: 0.7) : AppColors.ink,
+              color: text == null
+                  ? AppColors.brown.withValues(alpha: 0.7)
+                  : AppColors.ink,
             ),
           ),
         ),

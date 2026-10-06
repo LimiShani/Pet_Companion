@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,13 +7,13 @@ import '../../models/pet.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/primary_button.dart';
-import '../health/data/health_models.dart';
-import '../health/health_strings.dart';
-import '../health/state/health_providers.dart';
-import '../health/widgets/health_widgets.dart';
-import 'data/care_models.dart';
-import 'state/care_logic.dart';
-import 'state/care_providers.dart';
+import '../../services/pet_records/data/health_models.dart';
+import '../../presentation/health_strings.dart';
+import '../../services/pet_records/state/health_providers.dart';
+import '../../presentation/health_widgets.dart';
+import '../../services/care/data/care_models.dart';
+import '../../services/care/state/care_logic.dart';
+import '../../services/care/state/care_providers.dart';
 
 /// Opens the walk (or play) sheet: start one now, or log one that
 /// happened. [entry] is the planned walk to start on.
@@ -40,7 +41,9 @@ Future<void> finishWalk(BuildContext context, WidgetRef ref, Pet pet) async {
         .record(
           item: item,
           kind: item == null ? CareKind.walk : null,
-          title: item == null ? (walksPet(pet.species) ? l10n.typeWalk : l10n.typePlay) : null,
+          title: item == null
+              ? (walksPet(pet.species) ? l10n.typeWalk : l10n.typePlay)
+              : null,
           dueOn: item == null ? now : walk.startedAt,
           status: CareLogStatus.done,
           doneAt: walk.startedAt,
@@ -107,7 +110,9 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
   }
 
   Future<void> _startNow() async {
-    await ref.read(runningWalkProvider(_petId).notifier).start(planItemId: _walk?.item?.id);
+    await ref
+        .read(runningWalkProvider(_petId).notifier)
+        .start(planItemId: _walk?.item?.id);
     if (mounted) Navigator.of(context).pop();
   }
 
@@ -122,12 +127,17 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.number,
-          onSubmitted: (text) => Navigator.of(context).pop(int.tryParse(text.trim())),
+          onSubmitted: (text) =>
+              Navigator.of(context).pop(int.tryParse(text.trim())),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.cancel)),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(int.tryParse(controller.text.trim())),
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.of(context).pop(int.tryParse(controller.text.trim())),
             child: Text(l10n.save),
           ),
         ],
@@ -142,7 +152,10 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time ?? TimeOfDay.now());
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time ?? TimeOfDay.now(),
+    );
     if (picked != null && mounted) setState(() => _time = picked);
   }
 
@@ -177,7 +190,14 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'care.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.careL10n;
     final day = ref.watch(activityDayProvider(_petId)).value;
     if (day == null) {
@@ -199,7 +219,10 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SheetTitle(_walks ? l10n.walkTitle : l10n.playTitle, subtitle: widget.pet.name),
+        SheetTitle(
+          _walks ? l10n.walkTitle : l10n.playTitle,
+          subtitle: widget.pet.name,
+        ),
         const SizedBox(height: 14),
         if (open.isNotEmpty) ...[
           _Label(l10n.whichWalk),
@@ -209,7 +232,9 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
             children: [
               for (final w in open)
                 ChoiceChip(
-                  label: Text('${isolate(w.title)} · ${isolate(format.time(w.time))}'),
+                  label: Text(
+                    '${isolate(w.title)} · ${isolate(format.time(w.time))}',
+                  ),
                   selected: _walk?.item?.id == w.item!.id,
                   onSelected: (_) => setState(() => _walk = w),
                 ),
@@ -235,11 +260,22 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
                 padding: const EdgeInsets.all(14),
                 child: Column(
                   children: [
-                    const Icon(Icons.play_circle_outline_rounded, size: 34, color: AppColors.coralDark),
+                    const Icon(
+                      Icons.play_circle_outline_rounded,
+                      size: 34,
+                      color: AppColors.coralDark,
+                    ),
                     const SizedBox(height: 4),
-                    Text(_walks ? l10n.startNow : l10n.startPlayNow, style: AppText.cardTitle.copyWith(fontSize: 17)),
+                    Text(
+                      _walks ? l10n.startNow : l10n.startPlayNow,
+                      style: AppText.cardTitle.copyWith(fontSize: 17),
+                    ),
                     const SizedBox(height: 2),
-                    Text(l10n.startNowNote, textAlign: TextAlign.center, style: AppText.secondary),
+                    Text(
+                      l10n.startNowNote,
+                      textAlign: TextAlign.center,
+                      style: AppText.secondary,
+                    ),
                   ],
                 ),
               ),
@@ -263,7 +299,11 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
                 }),
               ),
             ChoiceChip(
-              label: Text(_otherMinutes ? l10n.minutesValue(format.integer(_minutes)) : l10n.otherMinutes),
+              label: Text(
+                _otherMinutes
+                    ? l10n.minutesValue(format.integer(_minutes))
+                    : l10n.otherMinutes,
+              ),
               selected: _otherMinutes,
               onSelected: (_) => _askMinutes(),
             ),
@@ -276,7 +316,8 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
             spacing: 8,
             runSpacing: 6,
             children: [
-              for (final type in _walks ? _Type.values : const [_Type.play, _Type.run])
+              for (final type
+                  in _walks ? _Type.values : const [_Type.play, _Type.run])
                 ChoiceChip(
                   label: Text(_typeLabel(type)),
                   selected: _type == type,
@@ -290,18 +331,31 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
           color: AppColors.white,
           borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
           child: ListTile(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+            ),
             title: Text(l10n.when, style: AppText.body),
-            trailing: Text(l10n.todayAt(format.timeOfDay(_time!)), style: AppText.cardTitle.copyWith(fontSize: 16)),
+            trailing: Text(
+              l10n.todayAt(format.timeOfDay(_time!)),
+              style: AppText.cardTitle.copyWith(fontSize: 16),
+            ),
             onTap: _pickTime,
           ),
         ),
         if (error != null) ...[
           const SizedBox(height: 10),
-          Text(healthErrorOf(context, error), style: AppText.body.copyWith(color: AppColors.coralDark)),
+          Text(
+            healthErrorOf(context, error),
+            style: AppText.body.copyWith(color: AppColors.coralDark),
+          ),
         ],
         const SizedBox(height: 16),
-        PrimaryButton(key: WalkSheet.saveKey, label: l10n.save, loading: _saving, onPressed: _save),
+        PrimaryButton(
+          key: WalkSheet.saveKey,
+          label: l10n.save,
+          loading: _saving,
+          onPressed: _save,
+        ),
       ],
     );
   }

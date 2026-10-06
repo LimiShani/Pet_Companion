@@ -6,14 +6,15 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../health/emergency/emergency.dart';
+import '../../../platform/feature_ui.dart';
+import '../../../access/access_provider.dart';
 
 /// Opens the selected pet's emergency and vet sheet (the Health tab's): the
 /// regular vet, the emergency vet and the emergency contact.
 Future<void> contactProfessional(BuildContext context, WidgetRef ref) async {
   final petId = ref.read(selectedPetProvider).id;
   if (petId.isEmpty) return;
-  await showEmergencySheet(context, petId);
+  await openFeature<Object>(context, 'emergency', petId);
 }
 
 /// One slim line saying that members' answers are personal experience and
@@ -35,14 +36,20 @@ class AdviceNotice extends ConsumerWidget {
         borderRadius: radius,
         child: InkWell(
           borderRadius: radius,
-          onTap: () => contactProfessional(context, ref),
+          onTap: ref.watch(capabilityProvider('health.emergency.view'))
+              ? () => contactProfessional(context, ref)
+              : null,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
-                  const AppIcon(Icons.info_outline_rounded, size: 18, color: AppColors.brown),
+                  const AppIcon(
+                    Icons.info_outline_rounded,
+                    size: 18,
+                    color: AppColors.brown,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     // Two whole messages side by side: the notice, then the
@@ -53,7 +60,10 @@ class AdviceNotice extends ConsumerWidget {
                           TextSpan(text: '${l10n.adviceNotice} '),
                           TextSpan(
                             text: l10n.contactProfessional,
-                            style: style.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
+                            style: style.copyWith(
+                              color: AppColors.coralDark,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                         ],
                       ),

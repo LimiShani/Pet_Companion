@@ -35,12 +35,19 @@ class CoralHeader extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.coral,
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppSpacing.shellRadius)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(AppSpacing.shellRadius),
+        ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 8, AppSpacing.screen, 16),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screen,
+            8,
+            AppSpacing.screen,
+            16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -59,7 +66,9 @@ class CoralHeader extends StatelessWidget {
                     Expanded(
                       child: Text(
                         title,
-                        style: AppText.appTitle.copyWith(color: AppColors.white),
+                        style: AppText.appTitle.copyWith(
+                          color: AppColors.white,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -79,7 +88,12 @@ class CoralHeader extends StatelessWidget {
 
 /// White icon button sized for [CoralHeader.actions].
 class CoralHeaderAction extends StatelessWidget {
-  const CoralHeaderAction({super.key, required this.icon, required this.tooltip, required this.onPressed});
+  const CoralHeaderAction({
+    super.key,
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
 
   final IconData icon;
   final String tooltip;

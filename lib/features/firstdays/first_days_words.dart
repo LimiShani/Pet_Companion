@@ -1,5 +1,5 @@
 import '../../l10n/l10n.dart';
-import 'data/first_days_tasks.dart';
+import '../../services/firstdays/data/first_days_tasks.dart';
 
 /// The words of the task with [id], in the language of [l10n]. An unknown
 /// id (a task of another kind of animal, stored before the pet's kind was
@@ -31,15 +31,16 @@ String firstDaysTaskText(FirstDaysL10n l10n, String id) => switch (id) {
 };
 
 /// The label of the pill that opens the screen of [kind].
-String firstDaysActionLabel(FirstDaysL10n l10n, FirstDaysActionKind kind) => switch (kind) {
-  FirstDaysActionKind.store => l10n.actionDeals,
-  FirstDaysActionKind.foodSettings => l10n.actionFood,
-  FirstDaysActionKind.feeding => l10n.actionFeeding,
-  FirstDaysActionKind.activity => l10n.actionActivity,
-  FirstDaysActionKind.addCheckup => l10n.actionAddVisit,
-  FirstDaysActionKind.healthProfile => l10n.actionMicrochip,
-  FirstDaysActionKind.schedule => l10n.actionSchedule,
-  FirstDaysActionKind.routine => l10n.actionRoutine,
-  FirstDaysActionKind.guide => l10n.actionRead,
-  FirstDaysActionKind.guides => l10n.actionGuides,
-};
+String firstDaysActionLabel(FirstDaysL10n l10n, FirstDaysActionKind kind) =>
+    switch (kind) {
+      FirstDaysActionKind.store => l10n.actionDeals,
+      FirstDaysActionKind.foodSettings => l10n.actionFood,
+      FirstDaysActionKind.feeding => l10n.actionFeeding,
+      FirstDaysActionKind.activity => l10n.actionActivity,
+      FirstDaysActionKind.addCheckup => l10n.actionAddVisit,
+      FirstDaysActionKind.healthProfile => l10n.actionMicrochip,
+      FirstDaysActionKind.schedule => l10n.actionSchedule,
+      FirstDaysActionKind.routine => l10n.actionRoutine,
+      FirstDaysActionKind.guide => l10n.actionRead,
+      FirstDaysActionKind.guides => l10n.actionGuides,
+    };

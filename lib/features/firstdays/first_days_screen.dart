@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,16 +7,16 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
-import '../care/widgets/care_widgets.dart';
-import '../health/health_strings.dart';
-import '../health/widgets/health_widgets.dart';
-import '../pets/widgets/pets_widgets.dart';
-import 'data/first_days_models.dart';
-import 'data/first_days_tasks.dart';
+import '../../presentation/care_widgets.dart';
+import '../../presentation/health_strings.dart';
+import '../../presentation/health_widgets.dart';
+import '../../presentation/pets_widgets.dart';
+import '../../services/firstdays/data/first_days_models.dart';
+import '../../services/firstdays/data/first_days_tasks.dart';
 import 'first_days_actions.dart';
 import 'first_days_words.dart';
-import 'state/first_days_logic.dart';
-import 'state/first_days_providers.dart';
+import '../../services/firstdays/state/first_days_logic.dart';
+import '../../services/firstdays/state/first_days_providers.dart';
 import 'widgets/first_days_keeper.dart';
 
 /// Opens the first 30 days of the pet with [petId] over the whole app.
@@ -44,8 +45,19 @@ class FirstDaysScreen extends ConsumerWidget {
   final String petId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final pet = ref.watch(petsProvider.select((pets) => pets.firstWhere((p) => p.id == petId, orElse: () => Pet.none)));
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'firstdays.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    final pet = ref.watch(
+      petsProvider.select(
+        (pets) => pets.firstWhere((p) => p.id == petId, orElse: () => Pet.none),
+      ),
+    );
     final value = ref.watch(firstDaysViewProvider(petId));
     final l10n = context.firstDaysL10n;
 
@@ -59,14 +71,22 @@ class FirstDaysScreen extends ConsumerWidget {
     } else if (!value.hasValue) {
       body = const HealthLoading();
     } else if (value.value == null) {
-      body = Padding(padding: const EdgeInsets.only(top: 16), child: PetsNote(l10n.notStarted(pet.name)));
+      body = Padding(
+        padding: const EdgeInsets.only(top: 16),
+        child: PetsNote(l10n.notStarted(pet.name)),
+      );
     } else {
       body = _Body(view: value.value!);
     }
 
     return FirstDaysKeeper(
       petId: petId,
-      child: CarePage(key: screenKey, petId: petId, title: l10n.pageTitle(pet.name), child: body),
+      child: CarePage(
+        key: screenKey,
+        petId: petId,
+        title: l10n.pageTitle(pet.name),
+        child: body,
+      ),
     );
   }
 }
@@ -88,12 +108,21 @@ class _Body extends ConsumerWidget {
     try {
       await ref.read(firstDaysProvider(view.pet.id).notifier).close();
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'firstdays.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.firstDaysL10n;
     final format = AppFormat.of(context);
     final stage = view.stage;
@@ -107,21 +136,31 @@ class _Body extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l10n.arrivedOn(format.date(view.path.arrivedOn)), style: AppText.secondary),
+              Text(
+                l10n.arrivedOn(format.date(view.path.arrivedOn)),
+                style: AppText.secondary,
+              ),
               const SizedBox(height: 4),
               Row(
                 children: [
                   Expanded(
                     child: Text(
                       view.hasEnded
-                          ? (closedAt != null ? l10n.closedOn(format.date(closedAt)) : l10n.overLine)
-                          : l10n.dayOfTotal(format.integer(view.shownDay), format.integer(firstDaysLength)),
+                          ? (closedAt != null
+                                ? l10n.closedOn(format.date(closedAt))
+                                : l10n.overLine)
+                          : l10n.dayOfTotal(
+                              format.integer(view.shownDay),
+                              format.integer(firstDaysLength),
+                            ),
                       style: AppText.cardTitle.copyWith(fontSize: 17),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    l10n.doneCount('${format.integer(view.doneCount)}/${format.integer(view.total)}'),
+                    l10n.doneCount(
+                      '${format.integer(view.doneCount)}/${format.integer(view.total)}',
+                    ),
                     style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                 ],
@@ -132,18 +171,28 @@ class _Body extends ConsumerWidget {
                 const SizedBox(height: 8),
                 Text(l10n.allDoneLine, style: AppText.secondary),
               ],
-              if (view.hasEnded) ...[const SizedBox(height: 8), Text(l10n.summaryNote, style: AppText.secondary)],
+              if (view.hasEnded) ...[
+                const SizedBox(height: 8),
+                Text(l10n.summaryNote, style: AppText.secondary),
+              ],
             ],
           ),
         ),
         for (final week in FirstDaysWeek.values)
           if (view.itemsOf(week).isNotEmpty) ...[
-            CareSectionLabel(week == FirstDaysWeek.first ? l10n.firstWeek : l10n.laterWeeks),
-            for (final item in view.itemsOf(week)) _TaskRow(view: view, item: item),
+            CareSectionLabel(
+              week == FirstDaysWeek.first ? l10n.firstWeek : l10n.laterWeeks,
+            ),
+            for (final item in view.itemsOf(week))
+              _TaskRow(view: view, item: item),
           ],
         if (!view.hasEnded) ...[
           const SizedBox(height: 12),
-          PetsTextButton(l10n.closePath, key: FirstDaysScreen.closeKey, onPressed: () => _close(context, ref)),
+          PetsTextButton(
+            l10n.closePath,
+            key: FirstDaysScreen.closeKey,
+            onPressed: () => _close(context, ref),
+          ),
         ],
       ],
     );
@@ -158,14 +207,25 @@ class _TaskRow extends ConsumerWidget {
 
   Future<void> _toggle(BuildContext context, WidgetRef ref) async {
     try {
-      await ref.read(firstDaysProvider(view.pet.id).notifier).setDone(item.task.id, done: !item.ticked);
+      await ref
+          .read(firstDaysProvider(view.pet.id).notifier)
+          .setDone(item.task.id, done: !item.ticked);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'firstdays.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.firstDaysL10n;
     final task = item.task;
     final action = task.action;
@@ -185,9 +245,13 @@ class _TaskRow extends ConsumerWidget {
           width: 44,
           height: 44,
           child: Icon(
-            item.isDone ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded,
+            item.isDone
+                ? Icons.check_circle_rounded
+                : Icons.radio_button_unchecked_rounded,
             size: 24,
-            color: item.isDone ? AppColors.sage : AppColors.brown.withValues(alpha: 0.6),
+            color: item.isDone
+                ? AppColors.sage
+                : AppColors.brown.withValues(alpha: 0.6),
           ),
         ),
       ),
@@ -197,12 +261,20 @@ class _TaskRow extends ConsumerWidget {
       children: [
         Text(
           firstDaysTaskText(l10n, task.id),
-          style: AppText.body.copyWith(color: item.isDone ? AppColors.brown : AppColors.ink),
+          style: AppText.body.copyWith(
+            color: item.isDone ? AppColors.brown : AppColors.ink,
+          ),
         ),
-        if (item.autoDone) Text(l10n.tickedForYou, style: AppText.secondary.copyWith(fontSize: 12)),
+        if (item.autoDone)
+          Text(
+            l10n.tickedForYou,
+            style: AppText.secondary.copyWith(fontSize: 12),
+          ),
       ],
     );
-    final label = action == null || readOnly ? null : firstDaysActionLabel(l10n, action.kind);
+    final label = action == null || readOnly
+        ? null
+        : firstDaysActionLabel(l10n, action.kind);
     final pill = label == null
         ? null
         : CarePillButton(
@@ -225,11 +297,14 @@ class _TaskRow extends ConsumerWidget {
               textScaler: MediaQuery.textScalerOf(context),
               maxLines: 1,
             )..layout();
-            pillBeside = constraints.maxWidth - 48 - 8 - (painter.width + 31) >= 120;
+            pillBeside =
+                constraints.maxWidth - 48 - 8 - (painter.width + 31) >= 120;
             painter.dispose();
           }
           return Row(
-            crossAxisAlignment: pillBeside ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+            crossAxisAlignment: pillBeside
+                ? CrossAxisAlignment.center
+                : CrossAxisAlignment.start,
             children: [
               tick,
               const SizedBox(width: 4),
@@ -243,12 +318,18 @@ class _TaskRow extends ConsumerWidget {
                           children: [
                             words,
                             const SizedBox(height: 6),
-                            Align(alignment: AlignmentDirectional.centerEnd, child: pill),
+                            Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: pill,
+                            ),
                           ],
                         ),
                 ),
               ),
-              if (pillBeside && pill != null) ...[const SizedBox(width: 8), pill],
+              if (pillBeside && pill != null) ...[
+                const SizedBox(width: 8),
+                pill,
+              ],
             ],
           );
         },

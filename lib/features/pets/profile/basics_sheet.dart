@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +7,10 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
-import '../data/pets_repository_provider.dart';
-import '../pet_words.dart';
+import '../../../services/pets/data/pets_repository_provider.dart';
+import '../../../presentation/pet_words.dart';
 import '../widgets/pet_basics_fields.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// A bottom sheet with one part of the "about the pet" form: where a tap on
 /// "Add Soya's weight" lands. Saves on "Save" and closes.
@@ -19,11 +20,18 @@ Future<void> showPetBasicsSheet(
   required String title,
   required Set<BasicsSection> sections,
   String? note,
-}) =>
-    showPetsSheet<void>(context, _BasicsSheet(pet: pet, title: title, sections: sections, note: note));
+}) => showPetsSheet<void>(
+  context,
+  _BasicsSheet(pet: pet, title: title, sections: sections, note: note),
+);
 
 class _BasicsSheet extends ConsumerStatefulWidget {
-  const _BasicsSheet({required this.pet, required this.title, required this.sections, this.note});
+  const _BasicsSheet({
+    required this.pet,
+    required this.title,
+    required this.sections,
+    this.note,
+  });
 
   final Pet pet;
   final String title;
@@ -63,7 +71,9 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
     try {
       // The pet as it is now: something else may have changed meanwhile.
       final pet = ref.read(petsStoreProvider).byId(widget.pet.id) ?? widget.pet;
-      await ref.read(petsStoreProvider.notifier).save(_basics.applyTo(pet, now: _now, only: widget.sections));
+      await ref
+          .read(petsStoreProvider.notifier)
+          .save(_basics.applyTo(pet, now: _now, only: widget.sections));
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) return;
@@ -75,7 +85,14 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Form(
       key: _form,
       child: Column(
@@ -83,7 +100,10 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
         mainAxisSize: MainAxisSize.min,
         children: [
           PetsHeading(widget.title),
-          if (widget.note != null) ...[const SizedBox(height: 4), PetsNote(widget.note!)],
+          if (widget.note != null) ...[
+            const SizedBox(height: 4),
+            PetsNote(widget.note!),
+          ],
           const SizedBox(height: 14),
           PetBasicsFields(
             controller: _basics,
@@ -93,10 +113,19 @@ class _BasicsSheetState extends ConsumerState<_BasicsSheet> {
           ),
           if (_error != null) ...[
             const SizedBox(height: 12),
-            Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+            Text(
+              _error!,
+              style: AppText.body.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
           ],
           const SizedBox(height: 18),
-          PrimaryButton(label: context.l10n.commonSave, loading: _saving, onPressed: _save),
+          PrimaryButton(
+            label: context.l10n.commonSave,
+            loading: _saving,
+            onPressed: _save,
+          ),
         ],
       ),
     );

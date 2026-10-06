@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
-import '../features/health/data/health_models.dart';
-import '../features/health/data/reminder_scheduler.dart';
+import '../services/pet_records/data/health_models.dart';
+import '../services/pet_records/data/reminder_scheduler.dart';
 import '../l10n/l10n.dart';
 import 'notification_sink.dart';
 
@@ -71,7 +71,9 @@ List<PlannedNotification> planReminders(
 
   bool answered(CarePlanItem item, DateTime planDay) {
     for (final log in plan.logs) {
-      if (log.planItemId == item.id && isSameDay(log.dueOn, planDay)) return true;
+      if (log.planItemId == item.id && isSameDay(log.dueOn, planDay)) {
+        return true;
+      }
     }
     return false;
   }
@@ -115,7 +117,12 @@ List<PlannedNotification> planReminders(
     if (record.isDone) continue;
     final s = record.scheduledAt;
     final at = DateTime(s.year, s.month, s.day + shift, s.hour, s.minute);
-    final evening = DateTime(at.year, at.month, at.day - 1, appointmentEveningHour);
+    final evening = DateTime(
+      at.year,
+      at.month,
+      at.day - 1,
+      appointmentEveningHour,
+    );
     final before = at.subtract(appointmentLeadTime);
     String body(DateTime ringsAt) {
       final when = time.format(at);
@@ -147,13 +154,20 @@ List<PlannedNotification> planReminders(
   return result;
 }
 
-String _medicineBody(NotificationsL10n l10n, CarePlanItem item, Medication? medication) {
+String _medicineBody(
+  NotificationsL10n l10n,
+  CarePlanItem item,
+  Medication? medication,
+) {
   final name = _or(medication?.name ?? item.title, l10n.medicines);
   final dose = medication?.dose.trim() ?? '';
-  return dose.isEmpty ? l10n.medicineNoDose(name) : l10n.medicineBody(name, dose);
+  return dose.isEmpty
+      ? l10n.medicineNoDose(name)
+      : l10n.medicineBody(name, dose);
 }
 
-String _or(String text, String fallback) => text.trim().isEmpty ? fallback : text.trim();
+String _or(String text, String fallback) =>
+    text.trim().isEmpty ? fallback : text.trim();
 
 String _day(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

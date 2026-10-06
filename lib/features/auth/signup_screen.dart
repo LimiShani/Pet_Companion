@@ -36,7 +36,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   Future<void> _submit() async {
     if (!(_form.currentState?.validate() ?? false)) return;
     FocusScope.of(context).unfocus();
-    final ok = await ref.read(authControllerProvider.notifier).signUp(
+    final ok = await ref
+        .read(authControllerProvider.notifier)
+        .signUp(
           displayName: _name.text.trim(),
           email: _email.text.trim(),
           password: _password.text,
@@ -45,7 +47,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       final error = ref.read(authControllerProvider).error;
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(SnackBar(content: Text(authErrorText(context.l10n, error ?? Object()))));
+        ..showSnackBar(
+          SnackBar(
+            content: Text(authErrorText(context.l10n, error ?? Object())),
+          ),
+        );
     }
   }
 
@@ -113,12 +119,19 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 leftToRight: true,
               ),
               const SizedBox(height: 22),
-              PrimaryButton(label: l10n.authCreateAccount, onPressed: _submit, loading: loading),
+              PrimaryButton(
+                label: l10n.authCreateAccount,
+                onPressed: _submit,
+                loading: loading,
+              ),
               const SizedBox(height: 14),
               Text(
                 l10n.authTerms,
                 textAlign: TextAlign.center,
-                style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+                style: AppText.label.copyWith(
+                  color: AppColors.brown,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

@@ -9,9 +9,12 @@ import 'guides/guide_reader_screen.dart';
 abstract final class CommunityRoutes {
   static const root = '/community';
 
-  static String post(String postId) => '$root/post/${Uri.encodeComponent(postId)}';
-  static String chat(String channelId) => '$root/chat/${Uri.encodeComponent(channelId)}';
-  static String guide(String guideId) => '$root/guide/${Uri.encodeComponent(guideId)}';
+  static String post(String postId) =>
+      '$root/post/${Uri.encodeComponent(postId)}';
+  static String chat(String channelId) =>
+      '$root/chat/${Uri.encodeComponent(channelId)}';
+  static String guide(String guideId) =>
+      '$root/guide/${Uri.encodeComponent(guideId)}';
 }
 
 /// Routes of the Community tab's navigation branch. The first entry is the
@@ -25,15 +28,18 @@ final List<RouteBase> communityRoutes = [
     routes: [
       GoRoute(
         path: 'post/:postId',
-        builder: (context, state) => PostDetailScreen(postId: state.pathParameters['postId']!),
+        builder: (context, state) =>
+            PostDetailScreen(postId: state.pathParameters['postId']!),
       ),
       GoRoute(
         path: 'chat/:channelId',
-        builder: (context, state) => ChatScreen(channelId: state.pathParameters['channelId']!),
+        builder: (context, state) =>
+            ChatScreen(channelId: state.pathParameters['channelId']!),
       ),
       GoRoute(
         path: 'guide/:guideId',
-        builder: (context, state) => GuideReaderScreen(guideId: state.pathParameters['guideId']!),
+        builder: (context, state) =>
+            GuideReaderScreen(guideId: state.pathParameters['guideId']!),
       ),
     ],
   ),

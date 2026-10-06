@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,9 +7,9 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
-import 'data/deal.dart';
-import 'state/store_providers.dart';
-import 'store_strings.dart';
+import '../../services/store/data/deal.dart';
+import '../../services/store/state/store_providers.dart';
+import '../../presentation/store_strings.dart';
 import 'widgets/deal_grid.dart';
 
 /// The deals the signed-in user saved with the heart. Never narrowed to
@@ -18,13 +19,25 @@ class SavedDealsScreen extends ConsumerWidget {
   const SavedDealsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final saved = ref.watch(savedDealsProvider);
     final savedIds = ref.watch(savedDealIdsProvider);
 
-    final loading = (saved.isLoading && !saved.hasValue) || (savedIds.isLoading && !savedIds.hasValue);
-    final failed = !loading && ((saved.hasError && !saved.hasValue) || (savedIds.hasError && !savedIds.hasValue));
+    final loading =
+        (saved.isLoading && !saved.hasValue) ||
+        (savedIds.isLoading && !savedIds.hasValue);
+    final failed =
+        !loading &&
+        ((saved.hasError && !saved.hasValue) ||
+            (savedIds.hasError && !savedIds.hasValue));
     final deals = saved.value ?? const <Deal>[];
 
     final Widget body;
@@ -54,10 +67,18 @@ class SavedDealsScreen extends ConsumerWidget {
         slivers: [
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 12),
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.screen,
+                16,
+                AppSpacing.screen,
+                12,
+              ),
               child: Text(
                 l10n.savedCount(deals.length),
-                style: AppText.secondary.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
+                style: AppText.secondary.copyWith(
+                  color: AppColors.brown,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),

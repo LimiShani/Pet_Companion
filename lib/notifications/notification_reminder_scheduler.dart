@@ -1,4 +1,4 @@
-import '../features/health/data/reminder_scheduler.dart';
+import '../services/pet_records/data/reminder_scheduler.dart';
 import '../l10n/l10n.dart';
 import 'notification_sink.dart';
 import 'reminder_planner.dart';
@@ -46,7 +46,8 @@ class NotificationReminderScheduler implements ReminderScheduler {
   }
 
   /// Plans every known pet again (the language changed, or the day did).
-  Future<void> replanAll() => Future.wait([for (final plan in _plans.values) _send(plan)]);
+  Future<void> replanAll() =>
+      Future.wait([for (final plan in _plans.values) _send(plan)]);
 
   /// Forgets a pet and cancels its reminders.
   Future<void> forget(String petId) {
@@ -58,8 +59,10 @@ class NotificationReminderScheduler implements ReminderScheduler {
   /// everything through the sink).
   void clear() => _plans.clear();
 
-  Future<void> _send(ReminderPlan plan) =>
-      _sink.syncGroup(healthGroupOf(plan.petId), planReminders(plan, now: _now(), l10n: _strings()));
+  Future<void> _send(ReminderPlan plan) => _sink.syncGroup(
+    healthGroupOf(plan.petId),
+    planReminders(plan, now: _now(), l10n: _strings()),
+  );
 
   /// [next], with the half it did not load taken from [known].
   static ReminderPlan _merge(ReminderPlan known, ReminderPlan next) {

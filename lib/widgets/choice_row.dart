@@ -46,11 +46,18 @@ class ChoiceRow extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      Text(
+                        title,
+                        style: AppText.cardTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       if (subtitle != null)
                         Text(
                           subtitle!,
-                          style: AppText.secondary.copyWith(color: AppColors.brown),
+                          style: AppText.secondary.copyWith(
+                            color: AppColors.brown,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -60,9 +67,20 @@ class ChoiceRow extends StatelessWidget {
                 if (tag != null) ...[
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
-                    decoration: const ShapeDecoration(color: AppColors.yellow, shape: StadiumBorder()),
-                    child: Text(tag!, style: AppText.label.copyWith(fontWeight: FontWeight.w800)),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 9,
+                      vertical: 2,
+                    ),
+                    decoration: const ShapeDecoration(
+                      color: AppColors.yellow,
+                      shape: StadiumBorder(),
+                    ),
+                    child: Text(
+                      tag!,
+                      style: AppText.label.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ],
               ],

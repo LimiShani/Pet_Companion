@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,27 +8,33 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
 import '../records/pet_documents_screen.dart';
-import '../state/emergency_kit.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/state/emergency_kit.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 import 'health_profile_form.dart';
 
 /// Opens the emergency kit checklist of [petId] over the whole app. Nothing
 /// opens for an unknown pet id.
 Future<void> openEmergencyKit(BuildContext context, String petId) {
-  for (final pet in ProviderScope.containerOf(context, listen: false).read(petsProvider)) {
-    if (pet.id == petId) return pushHealthPage<void>(context, EmergencyKitScreen(pet: pet));
+  for (final pet in ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(petsProvider)) {
+    if (pet.id == petId) {
+      return pushHealthPage<void>(context, EmergencyKitScreen(pet: pet));
+    }
   }
   assert(false, 'openEmergencyKit: no pet with id "$petId" in petsProvider');
   return Future.value();
 }
 
 /// "3 of 6 ready", or "All 6 ready".
-String kitCountLabel(HealthL10n l10n, EmergencyKit kit) => l10n.kitCount(ready: kit.ready, total: kit.total);
+String kitCountLabel(HealthL10n l10n, EmergencyKit kit) =>
+    l10n.kitCount(ready: kit.ready, total: kit.total);
 
 /// The row that leads to the kit from the emergency sheet and the
 /// Emergency card: its name and how much of it is ready.
@@ -37,13 +44,25 @@ class EmergencyKitRow extends ConsumerWidget {
   final Pet pet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final kit = ref.watch(emergencyKitProvider(pet.id)).value;
     final l10n = context.healthL10n;
     return HealthCard(
       key: const Key('open-emergency-kit'),
       onTap: () => openEmergencyKit(context, pet.id),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 10, top: 12, bottom: 12),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 10,
+        top: 12,
+        bottom: 12,
+      ),
       child: Row(
         children: [
           const IconDisc(Icons.backpack_rounded),
@@ -54,7 +73,9 @@ class EmergencyKitRow extends ConsumerWidget {
               children: [
                 Text(l10n.emergencyKit, style: AppText.cardTitle),
                 Text(
-                  kit == null ? l10n.kitWhatToHaveReady : kitCountLabel(l10n, kit),
+                  kit == null
+                      ? l10n.kitWhatToHaveReady
+                      : kitCountLabel(l10n, kit),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -74,7 +95,13 @@ class _KitText {
   final String title;
   final String detail;
 
-  static _KitText of(HealthFormat format, KitItem item, Pet pet, EmergencyKit kit, HealthProfile? profile) {
+  static _KitText of(
+    HealthFormat format,
+    KitItem item,
+    Pet pet,
+    EmergencyKit kit,
+    HealthProfile? profile,
+  ) {
     final l10n = format.l10n;
     switch (item) {
       case KitItem.carrier:
@@ -90,7 +117,9 @@ class _KitText {
       case KitItem.documents:
         return _KitText(
           l10n.kitDocuments,
-          pet.species == PetSpecies.dog ? l10n.kitDocumentsNoteDog : l10n.kitDocumentsNote,
+          pet.species == PetSpecies.dog
+              ? l10n.kitDocumentsNoteDog
+              : l10n.kitDocumentsNote,
         );
       case KitItem.microchip:
         final number = profile?.microchip.trim() ?? '';
@@ -105,7 +134,9 @@ class _KitText {
       case KitItem.medicines:
         return _KitText(
           l10n.kitMedicines,
-          l10n.kitMedicinesNote(format.commas([for (final m in kit.medicines) m.displayName])),
+          l10n.kitMedicinesNote(
+            format.commas([for (final m in kit.medicines) m.displayName]),
+          ),
         );
       case KitItem.shelterPlan:
         return _KitText(l10n.kitShelterPlan, l10n.kitShelterPlanNote(pet.name));
@@ -121,16 +152,31 @@ class EmergencyKitScreen extends ConsumerWidget {
 
   final Pet pet;
 
-  Future<void> _toggle(BuildContext context, WidgetRef ref, KitEntry entry) async {
+  Future<void> _toggle(
+    BuildContext context,
+    WidgetRef ref,
+    KitEntry entry,
+  ) async {
     try {
-      await ref.read(kitChecksProvider(pet.id).notifier).setReady(entry.item, !entry.isReady);
+      await ref
+          .read(kitChecksProvider(pet.id).notifier)
+          .setReady(entry.item, !entry.isReady);
     } catch (error) {
-      if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+      if (context.mounted) {
+        showHealthSnack(context, healthErrorOf(context, error));
+      }
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final kit = ref.watch(emergencyKitProvider(pet.id));
     final profile = ref.watch(healthProfileProvider(pet.id)).value;
     final data = ref.watch(petHealthDataProvider(pet.id)).value;
@@ -181,7 +227,9 @@ class EmergencyKitScreen extends ConsumerWidget {
                       ),
                       _ => null,
                     },
-                    note: entry.item == KitItem.shelterPlan ? _PlanNote(petId: pet.id, note: entry.note) : null,
+                    note: entry.item == KitItem.shelterPlan
+                        ? _PlanNote(petId: pet.id, note: entry.note)
+                        : null,
                   ),
                 ],
                 const SizedBox(height: 12),
@@ -198,7 +246,14 @@ class _Summary extends StatelessWidget {
   final EmergencyKit kit;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final label = kitCountLabel(l10n, kit);
     return HealthCard(
@@ -208,7 +263,13 @@ class _Summary extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(label, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
+          Text(
+            label,
+            style: AppText.cardTitle.copyWith(
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           const SizedBox(height: 2),
           Text(l10n.kitSummaryNote, style: AppText.secondary),
           const SizedBox(height: 10),
@@ -230,7 +291,13 @@ class _Summary extends StatelessWidget {
 }
 
 class _KitItemCard extends StatelessWidget {
-  const _KitItemCard({required this.entry, required this.text, required this.onToggle, this.link, this.note});
+  const _KitItemCard({
+    required this.entry,
+    required this.text,
+    required this.onToggle,
+    this.link,
+    this.note,
+  });
 
   final KitEntry entry;
   final _KitText text;
@@ -243,12 +310,24 @@ class _KitItemCard extends StatelessWidget {
   final Widget? note;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final checkedAt = entry.checkedAt;
     return HealthCard(
       key: ValueKey('kit-card-${entry.item.name}'),
       onTap: onToggle,
-      padding: const EdgeInsetsDirectional.only(start: 4, end: 14, top: 8, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(
+        start: 4,
+        end: 14,
+        top: 8,
+        bottom: 10,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -268,14 +347,30 @@ class _KitItemCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(text.title, style: AppText.cardTitle),
-                  Text(text.detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  Text(
+                    text.detail,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
                   if (checkedAt != null)
                     Text(
-                      context.healthL10n.kitTicked(HealthFormat.of(context).date(checkedAt)),
-                      style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+                      context.healthL10n.kitTicked(
+                        HealthFormat.of(context).date(checkedAt),
+                      ),
+                      style: AppText.label.copyWith(
+                        color: AppColors.brown,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  if (link != null) Align(alignment: AlignmentDirectional.centerStart, child: link),
-                  if (note != null) Padding(padding: const EdgeInsetsDirectional.only(top: 8), child: note),
+                  if (link != null)
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: link,
+                    ),
+                  if (note != null)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(top: 8),
+                      child: note,
+                    ),
                 ],
               ),
             ),
@@ -320,14 +415,23 @@ class _PlanNoteState extends ConsumerState<_PlanNote> {
   Future<void> _save() async {
     if (_text.text.trim() == widget.note) return;
     try {
-      await ref.read(kitChecksProvider(widget.petId).notifier).setNote(KitItem.shelterPlan, _text.text);
+      await ref
+          .read(kitChecksProvider(widget.petId).notifier)
+          .setNote(KitItem.shelterPlan, _text.text);
     } catch (error) {
       if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return TextField(
       key: const Key('kit-plan-note'),
       controller: _text,

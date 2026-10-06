@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,16 +11,18 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
-import '../../firstdays/firstdays.dart';
-import '../../health/emergency/emergency.dart';
-import '../data/pets_repository_provider.dart';
-import '../icons/pet_icon_bank.dart';
-import '../pet_words.dart';
+import '../../../services/firstdays/state/arrival_controller.dart';
+import '../../../platform/feature_ui.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pets/data/pets_repository_provider.dart';
+import '../../../presentation/pet_icon_bank.dart';
+import '../../../presentation/pet_words.dart';
 import '../pets_routes.dart';
 import '../picture/pet_picture.dart';
-import '../widgets/pet_avatar.dart';
+import '../../../presentation/pet_avatar.dart';
 import '../widgets/pet_basics_fields.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pets_widgets.dart';
 import 'all_set_view.dart';
 
 /// The add-a-pet flow, full screen.
@@ -82,7 +85,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
   /// Leaves the flow. The pet, once created, stays.
   void _close({bool toDashboard = false}) {
     final previous = _previousId;
-    final pet = _pet ?? (previous == null ? null : ref.read(petsStoreProvider).byId(previous));
+    final pet =
+        _pet ??
+        (previous == null ? null : ref.read(petsStoreProvider).byId(previous));
     final router = GoRouter.maybeOf(context);
     final navigator = Navigator.of(context);
     if (navigator.canPop()) {
@@ -146,8 +151,8 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       currentIcon: draft is IconPicture
           ? draft.choice
           : pet?.iconKey == null
-              ? null
-              : PetIconChoice.parse(pet!.iconKey, species: _species),
+          ? null
+          : PetIconChoice.parse(pet!.iconKey, species: _species),
     );
     if (picture != null && mounted) setState(() => _picture = picture);
   }
@@ -222,7 +227,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       _error = null;
     });
     try {
-      await ref.read(petsStoreProvider.notifier).save(basics.applyTo(pet, now: _now));
+      await ref
+          .read(petsStoreProvider.notifier)
+          .save(basics.applyTo(pet, now: _now));
       basics.markSaved();
       await _arrival?.apply(ref, pet.id);
       if (mounted) _goTo(3);
@@ -230,29 +237,55 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = e is HealthException ? healthErrorOf(context, e) : petsErrorOf(context, e);
+        _error = e is HealthException
+            ? healthErrorOf(context, e)
+            : petsErrorOf(context, e);
       });
     }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     // Rebuilds when the pet changes (a picture saved, an answer given).
     final pet = ref.watch(petsStoreProvider.select((pets) => pets.byId(_id)));
 
     final Widget page;
     if (_step == 1 || pet == null) {
-      page = _page(title: context.petsL10n.addPetTitle, step: 1, finishLater: false, child: _nameAndKind(pet));
+      page = _page(
+        title: context.petsL10n.addPetTitle,
+        step: 1,
+        finishLater: false,
+        child: _nameAndKind(pet),
+      );
     } else {
       page = switch (_step) {
-        2 => _page(title: context.petsL10n.aboutPetTitle(pet.name), step: 2, child: _about(pet)),
-        3 => _page(title: context.petsL10n.petVetTitle(pet.name), step: 3, child: _vet(pet)),
-        4 => _page(title: context.petsL10n.healthBasics, step: 4, child: _healthBasics(pet)),
+        2 => _page(
+          title: context.petsL10n.aboutPetTitle(pet.name),
+          step: 2,
+          child: _about(pet),
+        ),
+        3 => _page(
+          title: context.petsL10n.petVetTitle(pet.name),
+          step: 3,
+          child: _vet(pet),
+        ),
+        4 => _page(
+          title: context.petsL10n.healthBasics,
+          step: 4,
+          child: _healthBasics(pet),
+        ),
         _ => AllSetView(
-            pet: pet,
-            onDashboard: () => _close(toDashboard: true),
-            onAddAnother: _startAnother,
-          ),
+          pet: pet,
+          onDashboard: () => _close(toDashboard: true),
+          onAddAnother: _startAnother,
+        ),
       };
     }
 
@@ -265,22 +298,36 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     );
   }
 
-  Widget _page({required String title, required int step, required Widget child, bool finishLater = true}) {
+  Widget _page({
+    required String title,
+    required int step,
+    required Widget child,
+    bool finishLater = true,
+  }) {
     return PetsPage(
       // A new page per step, so each one starts scrolled to its top.
       key: ValueKey('add-pet-step-$step-$_id'),
       title: title,
       onBack: _back,
-      actions: [if (finishLater) HeaderTextAction(context.petsL10n.finishLater, onPressed: _busy ? null : _close)],
+      actions: [
+        if (finishLater)
+          HeaderTextAction(
+            context.petsL10n.finishLater,
+            onPressed: _busy ? null : _close,
+          ),
+      ],
       headerBottom: StepProgress(step: step, total: _steps),
       child: child,
     );
   }
 
   Widget _errorText() => Padding(
-        padding: const EdgeInsets.only(top: 12),
-        child: Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
-      );
+    padding: const EdgeInsets.only(top: 12),
+    child: Text(
+      _error!,
+      style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+    ),
+  );
 
   // ------------------------------------------------------------ step 1
 
@@ -290,7 +337,9 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
     if (draft != null || pet == null) {
       picture = PetPictureCircle(
         size: 132,
-        icon: draft is IconPicture ? draft.choice : PetIconChoice(PetIcon.defaultFor(_species)),
+        icon: draft is IconPicture
+            ? draft.choice
+            : PetIconChoice(PetIcon.defaultFor(_species)),
         bytes: draft is PhotoPicture ? draft.jpeg : null,
       );
     } else {
@@ -318,7 +367,11 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                 child: Stack(
                   children: [
                     ExcludeSemantics(child: picture),
-                    const PositionedDirectional(end: 0, bottom: 0, child: _CameraBadge()),
+                    const PositionedDirectional(
+                      end: 0,
+                      bottom: 0,
+                      child: _CameraBadge(),
+                    ),
                   ],
                 ),
               ),
@@ -326,7 +379,10 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
           ),
           const SizedBox(height: 4),
           ExcludeSemantics(
-            child: PetsTextButton(context.petsL10n.addPhotoOrIcon, onPressed: _busy ? null : _choosePicture),
+            child: PetsTextButton(
+              context.petsL10n.addPhotoOrIcon,
+              onPressed: _busy ? null : _choosePicture,
+            ),
           ),
           const SizedBox(height: 4),
           TextFormField(
@@ -334,7 +390,10 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             controller: _name,
             textCapitalization: TextCapitalization.words,
             textInputAction: TextInputAction.done,
-            decoration: InputDecoration(labelText: context.petsL10n.fieldName, errorMaxLines: 3),
+            decoration: InputDecoration(
+              labelText: context.petsL10n.fieldName,
+              errorMaxLines: 3,
+            ),
             onChanged: (_) => setState(() {}),
             validator: (text) {
               final value = text?.trim() ?? '';
@@ -346,14 +405,22 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
           PetsLabel(context.petsL10n.kindOfAnimal),
           _KindPicker(
             selected: _species,
-            onSelected: _busy ? null : (species) => setState(() => _species = species),
+            onSelected: _busy
+                ? null
+                : (species) => setState(() => _species = species),
           ),
           if (_error != null) _errorText(),
           const SizedBox(height: 20),
-          PrimaryButton(label: context.l10n.commonContinue, loading: _busy, onPressed: _saveNameAndKind),
+          PrimaryButton(
+            label: context.l10n.commonContinue,
+            loading: _busy,
+            onPressed: _saveNameAndKind,
+          ),
           const SizedBox(height: 12),
           PetsFinePrint(
-            name.isEmpty ? context.petsL10n.savedOnContinueNoName : context.petsL10n.savedOnContinue(name),
+            name.isEmpty
+                ? context.petsL10n.savedOnContinueNoName
+                : context.petsL10n.savedOnContinue(name),
             center: true,
           ),
         ],
@@ -377,7 +444,10 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(context.petsL10n.petIsSaved(pet.name), style: AppText.cardTitle),
+                    Text(
+                      context.petsL10n.petIsSaved(pet.name),
+                      style: AppText.cardTitle,
+                    ),
                     Text(
                       context.petsL10n.aboutNote,
                       style: AppText.secondary.copyWith(color: AppColors.brown),
@@ -388,12 +458,20 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             ],
           ),
           PetBasicsFields(controller: _basics!, now: _now),
-          if (_arrival != null) ArrivalQuestion(controller: _arrival!),
+          if (_arrival != null)
+            featureSlot('arrival-question', pet.id, {'controller': _arrival!}),
           if (_error != null) _errorText(),
           const SizedBox(height: 20),
-          PrimaryButton(label: context.l10n.commonContinue, loading: _busy, onPressed: _saveAbout),
+          PrimaryButton(
+            label: context.l10n.commonContinue,
+            loading: _busy,
+            onPressed: _saveAbout,
+          ),
           const SizedBox(height: 6),
-          PetsTextButton(context.petsL10n.skipForNow, onPressed: _busy ? null : () => _goTo(3)),
+          PetsTextButton(
+            context.petsL10n.skipForNow,
+            onPressed: _busy ? null : () => _goTo(3),
+          ),
         ],
       ),
     );
@@ -411,17 +489,17 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
         const SizedBox(height: 4),
         PetsNote(context.petsL10n.vetStepNote),
         PetsLabel(context.petsL10n.regularVet, level: FieldLevel.essential),
-        PetVetTile(petId: pet.id),
+        featureSlot('vet-tile', pet.id),
         PetsLabel(context.petsL10n.emergencyVet, level: FieldLevel.optional),
-        PetVetTile(petId: pet.id, role: VetRole.emergency),
+        featureSlot('vet-tile', pet.id, {'role': VetRole.emergency}),
         const SizedBox(height: 20),
-        PrimaryButton(label: context.l10n.commonContinue, onPressed: () => _goTo(4)),
+        PrimaryButton(
+          label: context.l10n.commonContinue,
+          onPressed: () => _goTo(4),
+        ),
         const SizedBox(height: 6),
         PetsTextButton(context.petsL10n.noVetYet, onPressed: () => _goTo(4)),
-        PetsFinePrint(
-          context.petsL10n.noVetYetNote(pet.name),
-          center: true,
-        ),
+        PetsFinePrint(context.petsL10n.noVetYetNote(pet.name), center: true),
       ],
     );
   }
@@ -438,14 +516,15 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
         const SizedBox(height: 4),
         PetsNote(context.petsL10n.healthStepNote),
         const SizedBox(height: 6),
-        HealthBasicsSection(
-          key: ValueKey('health-basics-${pet.id}'),
-          petId: pet.id,
-          saveLabel: context.petsL10n.finish,
-          onSaved: (_) => _goTo(_allSet),
-        ),
+        featureSlot('health-basics', pet.id, {
+          'saveLabel': context.petsL10n.finish,
+          'onSaved': (HealthProfile _) => _goTo(_allSet),
+        }),
         const SizedBox(height: 6),
-        PetsTextButton(context.petsL10n.skipForNow, onPressed: () => _goTo(_allSet)),
+        PetsTextButton(
+          context.petsL10n.skipForNow,
+          onPressed: () => _goTo(_allSet),
+        ),
       ],
     );
   }
@@ -455,7 +534,14 @@ class _CameraBadge extends StatelessWidget {
   const _CameraBadge();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Container(
       width: 42,
       height: 42,
@@ -464,7 +550,11 @@ class _CameraBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.cream, width: 3),
       ),
-      child: const AppIcon(Icons.photo_camera_rounded, size: 20, color: AppColors.white),
+      child: const AppIcon(
+        Icons.photo_camera_rounded,
+        size: 20,
+        color: AppColors.white,
+      ),
     );
   }
 }
@@ -477,7 +567,14 @@ class _KindPicker extends StatelessWidget {
   final ValueChanged<PetSpecies>? onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     const gap = 8.0;
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -493,25 +590,36 @@ class _KindPicker extends StatelessWidget {
                   button: true,
                   selected: species == selected,
                   child: Material(
-                    color: species == selected ? AppColors.yellow : AppColors.white,
+                    color: species == selected
+                        ? AppColors.yellow
+                        : AppColors.white,
                     borderRadius: BorderRadius.circular(22),
                     clipBehavior: Clip.antiAlias,
                     child: InkWell(
                       key: Key('kind-${species.name}'),
-                      onTap: onSelected == null ? null : () => onSelected!(species),
+                      onTap: onSelected == null
+                          ? null
+                          : () => onSelected!(species),
                       child: Padding(
                         padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            ExcludeSemantics(child: PetIconImage(PetIcon.defaultFor(species), size: 44)),
+                            ExcludeSemantics(
+                              child: PetIconImage(
+                                PetIcon.defaultFor(species),
+                                size: 44,
+                              ),
+                            ),
                             const SizedBox(height: 2),
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
                                 petSpeciesText(context.petsL10n, species),
                                 style: AppText.secondary.copyWith(
-                                  fontWeight: species == selected ? FontWeight.w800 : FontWeight.w700,
+                                  fontWeight: species == selected
+                                      ? FontWeight.w800
+                                      : FontWeight.w700,
                                 ),
                               ),
                             ),

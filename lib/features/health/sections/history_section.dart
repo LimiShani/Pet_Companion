@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,15 +8,15 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
 import '../records/record_detail_screen.dart';
 import '../records/record_form_screen.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// One timeline of everything that happened: visits, vaccinations,
 /// preventive treatments, procedures, medicine, documents and notes, newest
@@ -46,7 +47,14 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pet = widget.pet;
     final data = widget.data;
     final filter = ref.watch(historyFilterProvider);
@@ -66,7 +74,12 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
     final shown = [
       for (final r in history)
         // The search also finds a record by what the screen calls its kind.
-        if (filter.matches(r, hasFiles: files.containsKey(r.id), kindName: l10n.recordKind(r.kind))) r,
+        if (filter.matches(
+          r,
+          hasFiles: files.containsKey(r.id),
+          kindName: l10n.recordKind(r.kind),
+        ))
+          r,
     ];
 
     if (history.isEmpty) {
@@ -82,7 +95,9 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
     // Only kinds that exist in the history get a chip, in the species' order.
     final kinds = [
       for (final kind in SpeciesSettings.of(pet.species).recordKinds)
-        if (kind != RecordKind.document && (history.any((r) => r.kind == kind) || filter.kind == kind)) kind,
+        if (kind != RecordKind.document &&
+            (history.any((r) => r.kind == kind) || filter.kind == kind))
+          kind,
     ];
 
     return Column(
@@ -95,7 +110,10 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
           textInputAction: TextInputAction.search,
           decoration: InputDecoration(
             hintText: l10n.searchRecords(pet.name),
-            prefixIcon: const AppIcon(Icons.search_rounded, color: AppColors.brown),
+            prefixIcon: const AppIcon(
+              Icons.search_rounded,
+              color: AppColors.brown,
+            ),
             suffixIcon: filter.query.isEmpty
                 ? null
                 : IconButton(
@@ -140,12 +158,18 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
           children: [
             Expanded(
               child: Text(
-                filter.isEmpty ? l10n.recordsCount(history.length) : l10n.recordsShown(shown.length, history.length),
+                filter.isEmpty
+                    ? l10n.recordsCount(history.length)
+                    : l10n.recordsShown(shown.length, history.length),
                 key: const Key('history-count'),
                 style: AppText.secondary.copyWith(color: AppColors.brown),
               ),
             ),
-            HealthLink(l10n.addRecord, icon: Icons.add_rounded, onPressed: () => openRecordForm(context, pet)),
+            HealthLink(
+              l10n.addRecord,
+              icon: Icons.add_rounded,
+              onPressed: () => openRecordForm(context, pet),
+            ),
           ],
         ),
         if (shown.isEmpty)
@@ -165,17 +189,30 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
     );
   }
 
-  List<Widget> _timeline(BuildContext context, List<HealthRecord> records, Map<String, int> files) {
+  List<Widget> _timeline(
+    BuildContext context,
+    List<HealthRecord> records,
+    Map<String, int> files,
+  ) {
     final widgets = <Widget>[];
     DateTime? month;
     for (final record in records) {
       final when = record.when;
-      if (month == null || month.year != when.year || month.month != when.month) {
+      if (month == null ||
+          month.year != when.year ||
+          month.month != when.month) {
         month = DateTime(when.year, when.month);
         widgets.add(
           Padding(
-            padding: EdgeInsetsDirectional.only(top: widgets.isEmpty ? 0 : 10, bottom: 8, start: 2),
-            child: Text(HealthFormat.of(context).month(month), style: AppText.label.copyWith(color: AppColors.brown)),
+            padding: EdgeInsetsDirectional.only(
+              top: widgets.isEmpty ? 0 : 10,
+              bottom: 8,
+              start: 2,
+            ),
+            child: Text(
+              HealthFormat.of(context).month(month),
+              style: AppText.label.copyWith(color: AppColors.brown),
+            ),
           ),
         );
       }
@@ -194,7 +231,12 @@ class _HistorySectionState extends ConsumerState<HistorySection> {
 }
 
 class _FilterChip extends StatelessWidget {
-  const _FilterChip({required this.chipKey, required this.label, required this.selected, required this.onSelected});
+  const _FilterChip({
+    required this.chipKey,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final Key chipKey;
   final String label;
@@ -202,7 +244,14 @@ class _FilterChip extends StatelessWidget {
   final VoidCallback onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: 8),
       child: ChoiceChip(
@@ -218,17 +267,32 @@ class _FilterChip extends StatelessWidget {
 
 /// One record in the timeline.
 class _RecordCard extends StatelessWidget {
-  const _RecordCard({required this.record, required this.files, required this.onTap});
+  const _RecordCard({
+    required this.record,
+    required this.files,
+    required this.onTap,
+  });
 
   final HealthRecord record;
   final int files;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
-    final line = format.dots([l10n.recordKind(record.kind), format.date(record.when), record.clinic]);
+    final line = format.dots([
+      l10n.recordKind(record.kind),
+      format.date(record.when),
+      record.clinic,
+    ]);
     final note = record.notes.trim().split('\n').first;
     final due = record.nextDueOn;
     final cost = record.costAmount;
@@ -247,11 +311,19 @@ class _RecordCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TypedText(record.title, style: AppText.cardTitle),
-                Text(line, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                Text(
+                  line,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
                 if (note.isNotEmpty)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(top: 2),
-                    child: TypedText(note, style: AppText.secondary, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    child: TypedText(
+                      note,
+                      style: AppText.secondary,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 if (due != null || files > 0 || cost != null)
                   Padding(
@@ -260,10 +332,16 @@ class _RecordCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 4,
                       children: [
-                        if (due != null) HealthTag(l10n.nextDue(format.date(due)), icon: Icons.event_repeat_rounded),
+                        if (due != null)
+                          HealthTag(
+                            l10n.nextDue(format.date(due)),
+                            icon: Icons.event_repeat_rounded,
+                          ),
                         if (cost != null)
                           Semantics(
-                            label: l10n.costSemantics(format.money(cost, record.costCurrency)),
+                            label: l10n.costSemantics(
+                              format.money(cost, record.costCurrency),
+                            ),
                             excludeSemantics: true,
                             child: HealthTag(
                               format.money(cost, record.costCurrency),
@@ -274,7 +352,10 @@ class _RecordCard extends StatelessWidget {
                           Semantics(
                             label: l10n.attachmentsCount(files),
                             excludeSemantics: true,
-                            child: HealthTag('$files', icon: Icons.attach_file_rounded),
+                            child: HealthTag(
+                              '$files',
+                              icon: Icons.attach_file_rounded,
+                            ),
                           ),
                       ],
                     ),

@@ -54,19 +54,20 @@ class ScheduledNotification {
   /// snoozed copy has an id of its own and does not replace the planned one.
   int get id => notificationIdOf(group, key, snoozed: snoozed);
 
-  ScheduledNotification copyWith({DateTime? at, bool? exact, bool? snoozed}) => ScheduledNotification(
-    group: group,
-    key: key,
-    kind: kind,
-    at: at ?? this.at,
-    title: title,
-    body: body,
-    target: target,
-    exact: exact ?? this.exact,
-    snoozed: snoozed ?? this.snoozed,
-    channelName: channelName,
-    snoozeLabel: snoozeLabel,
-  );
+  ScheduledNotification copyWith({DateTime? at, bool? exact, bool? snoozed}) =>
+      ScheduledNotification(
+        group: group,
+        key: key,
+        kind: kind,
+        at: at ?? this.at,
+        title: title,
+        body: body,
+        target: target,
+        exact: exact ?? this.exact,
+        snoozed: snoozed ?? this.snoozed,
+        channelName: channelName,
+        snoozeLabel: snoozeLabel,
+      );
 
   /// The plugin's payload: everything above as JSON.
   String encode() => jsonEncode({
@@ -90,11 +91,15 @@ class ScheduledNotification {
     try {
       final map = jsonDecode(payload);
       if (map is! Map<String, dynamic>) return null;
-      final kind = NotificationKind.values.where((k) => k.name == map['n']).firstOrNull;
+      final kind = NotificationKind.values
+          .where((k) => k.name == map['n'])
+          .firstOrNull;
       final group = map['g'];
       final key = map['k'];
       final at = map['a'];
-      if (kind == null || group is! String || key is! String || at is! int) return null;
+      if (kind == null || group is! String || key is! String || at is! int) {
+        return null;
+      }
       return ScheduledNotification(
         group: group,
         key: key,
@@ -118,7 +123,9 @@ class ScheduledNotification {
 /// 0, the same on every run of the app.
 int notificationIdOf(String group, String key, {bool snoozed = false}) {
   var hash = 0x811c9dc5;
-  for (final unit in utf8.encode('$group\u0000$key${snoozed ? '\u0000snoozed' : ''}')) {
+  for (final unit in utf8.encode(
+    '$group\u0000$key${snoozed ? '\u0000snoozed' : ''}',
+  )) {
     hash ^= unit;
     hash = (hash * 0x01000193) & 0xffffffff;
   }
@@ -139,7 +146,10 @@ class NotificationAccess {
   final bool? exact;
 
   @override
-  bool operator ==(Object other) => other is NotificationAccess && other.allowed == allowed && other.exact == exact;
+  bool operator ==(Object other) =>
+      other is NotificationAccess &&
+      other.allowed == allowed &&
+      other.exact == exact;
 
   @override
   int get hashCode => Object.hash(allowed, exact);
@@ -203,18 +213,28 @@ NotificationDetails _details(ScheduledNotification n) => NotificationDetails(
     category: AndroidNotificationCategory.reminder,
     styleInformation: BigTextStyleInformation(n.body),
     actions: [
-      if (n.snoozeLabel.isNotEmpty) AndroidNotificationAction(snoozeActionId, n.snoozeLabel, cancelNotification: true),
+      if (n.snoozeLabel.isNotEmpty)
+        AndroidNotificationAction(
+          snoozeActionId,
+          n.snoozeLabel,
+          cancelNotification: true,
+        ),
     ],
   ),
   iOS: const DarwinNotificationDetails(categoryIdentifier: _iosCategory),
 );
 
-Future<void> _schedule(FlutterLocalNotificationsPlugin plugin, ScheduledNotification n) async {
+Future<void> _schedule(
+  FlutterLocalNotificationsPlugin plugin,
+  ScheduledNotification n,
+) async {
   Future<void> go(bool exact) => plugin.zonedSchedule(
     id: n.id,
     scheduledDate: tz.TZDateTime.from(n.at.toUtc(), tz.UTC),
     notificationDetails: _details(n),
-    androidScheduleMode: exact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+    androidScheduleMode: exact
+        ? AndroidScheduleMode.exactAllowWhileIdle
+        : AndroidScheduleMode.inexactAllowWhileIdle,
     title: n.title,
     body: n.body,
     payload: n.copyWith(exact: exact).encode(),
@@ -230,21 +250,36 @@ Future<void> _schedule(FlutterLocalNotificationsPlugin plugin, ScheduledNotifica
 }
 
 /// Schedules [payload]'s notification again [snoozeDelay] from now.
-Future<void> _snooze(FlutterLocalNotificationsPlugin plugin, String? payload) async {
+Future<void> _snooze(
+  FlutterLocalNotificationsPlugin plugin,
+  String? payload,
+) async {
   final original = ScheduledNotification.decode(payload);
   if (original == null) return;
   var exact = false;
   if (!kIsWeb && Platform.isAndroid) {
-    final android = plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    final android = plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
     exact = await android?.canScheduleExactNotifications() ?? false;
   }
-  await _schedule(plugin, original.copyWith(at: DateTime.now().add(snoozeDelay), exact: exact, snoozed: true));
+  await _schedule(
+    plugin,
+    original.copyWith(
+      at: DateTime.now().add(snoozeDelay),
+      exact: exact,
+      snoozed: true,
+    ),
+  );
 }
 
 /// "In 15 min" tapped while the app's screen is not running: Android and
 /// iOS start a separate background isolate for it.
 @pragma('vm:entry-point')
-Future<void> notificationResponseInBackground(NotificationResponse response) async {
+Future<void> notificationResponseInBackground(
+  NotificationResponse response,
+) async {
   if (response.actionId != snoozeActionId) return;
   try {
     await _snooze(FlutterLocalNotificationsPlugin(), response.payload);
@@ -266,15 +301,21 @@ class FlutterNotificationPlatform implements NotificationPlatform {
   void Function(String target)? _onTap;
   final _waitingTaps = <String>[];
 
-  AndroidFlutterLocalNotificationsPlugin? get _android =>
-      _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-  IOSFlutterLocalNotificationsPlugin? get _ios =>
-      _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+  AndroidFlutterLocalNotificationsPlugin? get _android => _plugin
+      .resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin
+      >();
+  IOSFlutterLocalNotificationsPlugin? get _ios => _plugin
+      .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin
+      >();
 
   /// Sets up the plugin, or returns `null` where the app has no phone
   /// notifications (web, desktop) or they cannot be set up. [snoozeLabel]
   /// names the snooze button on iOS, where it is fixed at start-up.
-  static Future<FlutterNotificationPlatform?> start({required String snoozeLabel}) async {
+  static Future<FlutterNotificationPlatform?> start({
+    required String snoozeLabel,
+  }) async {
     if (kIsWeb || !(Platform.isAndroid || Platform.isIOS)) return null;
     final plugin = FlutterLocalNotificationsPlugin();
     final platform = FlutterNotificationPlatform._(plugin);
@@ -291,17 +332,22 @@ class FlutterNotificationPlatform implements NotificationPlatform {
             notificationCategories: [
               DarwinNotificationCategory(
                 _iosCategory,
-                actions: [DarwinNotificationAction.plain(snoozeActionId, snoozeLabel)],
+                actions: [
+                  DarwinNotificationAction.plain(snoozeActionId, snoozeLabel),
+                ],
               ),
             ],
           ),
         ),
         onDidReceiveNotificationResponse: platform._onResponse,
-        onDidReceiveBackgroundNotificationResponse: notificationResponseInBackground,
+        onDidReceiveBackgroundNotificationResponse:
+            notificationResponseInBackground,
       );
       final launch = await plugin.getNotificationAppLaunchDetails();
       final response = launch?.notificationResponse;
-      if ((launch?.didNotificationLaunchApp ?? false) && response != null) platform._onResponse(response);
+      if ((launch?.didNotificationLaunchApp ?? false) && response != null) {
+        platform._onResponse(response);
+      }
     } catch (error) {
       debugPrint('PetLoop: notifications are not available: $error');
       return null;
@@ -345,7 +391,8 @@ class FlutterNotificationPlatform implements NotificationPlatform {
   ];
 
   @override
-  Future<void> schedule(ScheduledNotification notification) => _schedule(_plugin, notification);
+  Future<void> schedule(ScheduledNotification notification) =>
+      _schedule(_plugin, notification);
 
   @override
   Future<void> cancel(int id) => _plugin.cancel(id: id);
@@ -359,7 +406,11 @@ class FlutterNotificationPlatform implements NotificationPlatform {
     if (android == null) return;
     for (final MapEntry(key: kind, value: name) in names.entries) {
       await android.createNotificationChannel(
-        AndroidNotificationChannel(_channelId(kind), name, importance: Importance.high),
+        AndroidNotificationChannel(
+          _channelId(kind),
+          name,
+          importance: Importance.high,
+        ),
       );
     }
   }
@@ -379,8 +430,15 @@ class FlutterNotificationPlatform implements NotificationPlatform {
   @override
   Future<bool> requestPermission() async {
     final android = _android;
-    if (android != null) return await android.requestNotificationsPermission() ?? false;
-    return await _ios?.requestPermissions(alert: true, badge: true, sound: true) ?? false;
+    if (android != null) {
+      return await android.requestNotificationsPermission() ?? false;
+    }
+    return await _ios?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        ) ??
+        false;
   }
 
   @override

@@ -19,10 +19,12 @@ import 'bidi.dart';
 class AppFormat {
   const AppFormat(this.localeName);
 
-  factory AppFormat.forLocale(Locale locale) => AppFormat(isHebrew(locale) ? 'he' : 'en');
+  factory AppFormat.forLocale(Locale locale) =>
+      AppFormat(isHebrew(locale) ? 'he' : 'en');
 
-  static AppFormat of(BuildContext context) =>
-      AppFormat.forLocale(Localizations.maybeLocaleOf(context) ?? englishLocale);
+  static AppFormat of(BuildContext context) => AppFormat.forLocale(
+    Localizations.maybeLocaleOf(context) ?? englishLocale,
+  );
 
   /// `en` or `he`.
   final String localeName;
@@ -54,7 +56,8 @@ class AppFormat {
   String dateTime(DateTime d) => '${date(d)} · ${time(d)}';
 
   /// "01:32": hours and minutes of a length of time.
-  String hoursMinutes(Duration d) => '${_two(d.inHours)}:${_two(d.inMinutes.remainder(60))}';
+  String hoursMinutes(Duration d) =>
+      '${_two(d.inHours)}:${_two(d.inMinutes.remainder(60))}';
 
   /// "June 2025" / "יוני 2025".
   String monthYear(DateTime d) => DateFormat.yMMMM(_dateLocale).format(d);
@@ -73,15 +76,18 @@ class AppFormat {
 
   /// The short name of an ISO weekday (1 = Monday ... 7 = Sunday): "Mon" /
   /// "יום ב׳".
-  String weekdayShort(int weekday) => _symbols.STANDALONESHORTWEEKDAYS[weekday % 7];
+  String weekdayShort(int weekday) =>
+      _symbols.STANDALONESHORTWEEKDAYS[weekday % 7];
 
   /// The one-letter name of an ISO weekday, for day chips: "M" / "ב׳".
-  String weekdayNarrow(int weekday) => _symbols.STANDALONENARROWWEEKDAYS[weekday % 7];
+  String weekdayNarrow(int weekday) =>
+      _symbols.STANDALONENARROWWEEKDAYS[weekday % 7];
 
   DateSymbols get _symbols => _pattern('E').dateSymbols;
 
   /// "2,569".
-  String integer(int value) => NumberFormat.decimalPattern(localeName).format(value);
+  String integer(int value) =>
+      NumberFormat.decimalPattern(localeName).format(value);
 
   /// "23", "23.4": at most [decimals] decimals, none when whole.
   String decimal(double value, {int decimals = 1}) {
@@ -96,7 +102,11 @@ class AppFormat {
   /// unit, so it cannot be reordered by the line it sits in.
   String money(double amount, String currency) {
     final whole = amount == amount.roundToDouble();
-    final format = NumberFormat.simpleCurrency(locale: localeName, name: currency, decimalDigits: whole ? 0 : null);
+    final format = NumberFormat.simpleCurrency(
+      locale: localeName,
+      name: currency,
+      decimalDigits: whole ? 0 : null,
+    );
     return isolate(format.format(amount));
   }
 
@@ -107,7 +117,8 @@ class AppFormat {
   static String _two(int n) => n.toString().padLeft(2, '0');
 
   @override
-  bool operator ==(Object other) => other is AppFormat && other.localeName == localeName;
+  bool operator ==(Object other) =>
+      other is AppFormat && other.localeName == localeName;
 
   @override
   int get hashCode => localeName.hashCode;
@@ -115,4 +126,6 @@ class AppFormat {
 
 /// [AppFormat] in the language the app is showing, for code without a
 /// `BuildContext`.
-final appFormatProvider = Provider<AppFormat>((ref) => AppFormat.forLocale(ref.watch(appLocaleProvider)));
+final appFormatProvider = Provider<AppFormat>(
+  (ref) => AppFormat.forLocale(ref.watch(appLocaleProvider)),
+);

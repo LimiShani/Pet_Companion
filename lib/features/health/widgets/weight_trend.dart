@@ -45,7 +45,11 @@ class WeightTrendChart extends StatelessWidget {
         height: height,
         width: double.infinity,
         child: CustomPaint(
-          painter: WeightTrendPainter(points: points, events: events, showGuides: showGuides),
+          painter: WeightTrendPainter(
+            points: points,
+            events: events,
+            showGuides: showGuides,
+          ),
         ),
       ),
     );
@@ -53,7 +57,11 @@ class WeightTrendChart extends StatelessWidget {
 }
 
 class WeightTrendPainter extends CustomPainter {
-  WeightTrendPainter({required this.points, this.events = const [], this.showGuides = true});
+  WeightTrendPainter({
+    required this.points,
+    this.events = const [],
+    this.showGuides = true,
+  });
 
   final List<TrendPoint> points;
   final List<DateTime> events;
@@ -136,8 +144,16 @@ class WeightTrendPainter extends CustomPainter {
     }
 
     // The latest measurement.
-    canvas.drawCircle(spots.last, _markerRadius, Paint()..color = AppColors.white);
-    canvas.drawCircle(spots.last, _markerRadius - 1.5, Paint()..color = AppColors.coralDark);
+    canvas.drawCircle(
+      spots.last,
+      _markerRadius,
+      Paint()..color = AppColors.white,
+    );
+    canvas.drawCircle(
+      spots.last,
+      _markerRadius - 1.5,
+      Paint()..color = AppColors.coralDark,
+    );
 
     if (events.isNotEmpty && points.length > 1) {
       final start = points.first.at.millisecondsSinceEpoch;
@@ -163,5 +179,7 @@ class WeightTrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(WeightTrendPainter oldDelegate) =>
-      oldDelegate.points != points || oldDelegate.events != events || oldDelegate.showGuides != showGuides;
+      oldDelegate.points != points ||
+      oldDelegate.events != events ||
+      oldDelegate.showGuides != showGuides;
 }

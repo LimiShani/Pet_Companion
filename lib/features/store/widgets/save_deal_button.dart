@@ -5,12 +5,16 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
-import '../state/store_providers.dart';
+import '../../../services/store/state/store_providers.dart';
 import 'store_messages.dart';
 
 /// The heart that saves a deal for the signed-in user, or unsaves it.
 class SaveDealButton extends ConsumerWidget {
-  const SaveDealButton({super.key, required this.dealId, this.inHeader = false});
+  const SaveDealButton({
+    super.key,
+    required this.dealId,
+    this.inHeader = false,
+  });
 
   final String dealId;
 
@@ -21,24 +25,32 @@ class SaveDealButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
-    final saved = ref.watch(savedDealIdsProvider.select((ids) => ids.value?.contains(dealId) ?? false));
+    final saved = ref.watch(
+      savedDealIdsProvider.select(
+        (ids) => ids.value?.contains(dealId) ?? false,
+      ),
+    );
     final icon = saved ? Icons.favorite_rounded : Icons.favorite_border_rounded;
     final tooltip = saved ? l10n.removeFromSaved : l10n.saveDeal;
 
     Future<void> toggle() async {
-      final stored = await ref.read(savedDealIdsProvider.notifier).toggle(dealId);
+      final stored = await ref
+          .read(savedDealIdsProvider.notifier)
+          .toggle(dealId);
       if (!context.mounted) return;
       showStoreMessage(
         context,
         !stored
             ? l10n.couldNotUpdateSaved
             : saved
-                ? l10n.removedFromSaved
-                : l10n.savedConfirmation,
+            ? l10n.removedFromSaved
+            : l10n.savedConfirmation,
       );
     }
 
-    if (inHeader) return CoralHeaderAction(icon: icon, tooltip: tooltip, onPressed: toggle);
+    if (inHeader) {
+      return CoralHeaderAction(icon: icon, tooltip: tooltip, onPressed: toggle);
+    }
 
     return IconButton(
       onPressed: toggle,

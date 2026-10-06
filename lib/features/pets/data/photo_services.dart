@@ -6,7 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
 import '../picture/crop_photo_screen.dart';
-import 'pets_repository.dart';
+import '../../../services/pets/data/pets_repository.dart';
 
 enum PetPhotoSource { camera, gallery }
 
@@ -30,7 +30,9 @@ class DevicePetPhotoPicker implements PetPhotoPicker {
   Future<Uint8List?> pick(PetPhotoSource source) async {
     try {
       final file = await ImagePicker().pickImage(
-        source: source == PetPhotoSource.camera ? ImageSource.camera : ImageSource.gallery,
+        source: source == PetPhotoSource.camera
+            ? ImageSource.camera
+            : ImageSource.gallery,
         maxWidth: maxSide,
         maxHeight: maxSide,
         imageQuality: 90,
@@ -38,15 +40,23 @@ class DevicePetPhotoPicker implements PetPhotoPicker {
       return file == null ? null : await file.readAsBytes();
     } on PlatformException {
       throw PetsException.of(
-        source == PetPhotoSource.camera ? PetsFailure.cameraNotAllowed : PetsFailure.photosNotAllowed,
+        source == PetPhotoSource.camera
+            ? PetsFailure.cameraNotAllowed
+            : PetsFailure.photosNotAllowed,
       );
     } catch (_) {
-      throw PetsException.of(source == PetPhotoSource.camera ? PetsFailure.camera : PetsFailure.photos);
+      throw PetsException.of(
+        source == PetPhotoSource.camera
+            ? PetsFailure.camera
+            : PetsFailure.photos,
+      );
     }
   }
 }
 
-final petPhotoPickerProvider = Provider<PetPhotoPicker>((ref) => const DevicePetPhotoPicker());
+final petPhotoPickerProvider = Provider<PetPhotoPicker>(
+  (ref) => const DevicePetPhotoPicker(),
+);
 
 /// How the crop step ended.
 class CropOutcome {
@@ -54,14 +64,10 @@ class CropOutcome {
   const CropOutcome.cropped(Uint8List this.jpeg) : another = false;
 
   /// The owner chose "Choose another".
-  const CropOutcome.another()
-      : jpeg = null,
-        another = true;
+  const CropOutcome.another() : jpeg = null, another = true;
 
   /// The owner went back.
-  const CropOutcome.cancelled()
-      : jpeg = null,
-        another = false;
+  const CropOutcome.cancelled() : jpeg = null, another = false;
 
   final Uint8List? jpeg;
   final bool another;
@@ -83,17 +89,21 @@ class ScreenPetPhotoCropper implements PetPhotoCropper {
     if (!isReadablePhoto(photo)) {
       throw PetsException.of(PetsFailure.photoUnsupportedChooseAnother);
     }
-    final outcome = await Navigator.of(context, rootNavigator: true).push<CropOutcome>(
-      PageRouteBuilder(
-        pageBuilder: (_, _, _) => CropPhotoScreen(photo: photo),
-        transitionsBuilder: (_, animation, _, child) => FadeTransition(opacity: animation, child: child),
-      ),
-    );
+    final outcome = await Navigator.of(context, rootNavigator: true)
+        .push<CropOutcome>(
+          PageRouteBuilder(
+            pageBuilder: (_, _, _) => CropPhotoScreen(photo: photo),
+            transitionsBuilder: (_, animation, _, child) =>
+                FadeTransition(opacity: animation, child: child),
+          ),
+        );
     return outcome ?? const CropOutcome.cancelled();
   }
 }
 
-final petPhotoCropperProvider = Provider<PetPhotoCropper>((ref) => const ScreenPetPhotoCropper());
+final petPhotoCropperProvider = Provider<PetPhotoCropper>(
+  (ref) => const ScreenPetPhotoCropper(),
+);
 
 /// Whether [bytes] look like a picture the app can crop (JPEG, PNG, WebP,
 /// GIF, BMP…). Only the file's header is read.
@@ -128,4 +138,5 @@ Uint8List squarePetPhoto(Uint8List cropped) {
 }
 
 /// [squarePetPhoto] off the main thread.
-Future<Uint8List> squarePetPhotoInBackground(Uint8List cropped) => compute(squarePetPhoto, cropped);
+Future<Uint8List> squarePetPhotoInBackground(Uint8List cropped) =>
+    compute(squarePetPhoto, cropped);

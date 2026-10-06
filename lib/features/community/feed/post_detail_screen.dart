@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,8 +8,8 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
-import '../data/community_models.dart';
-import '../data/community_providers.dart';
+import '../../../services/community/data/community_models.dart';
+import '../../../services/community/data/community_providers.dart';
 import '../widgets/advice_notice.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
@@ -55,7 +56,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.feed.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final feed = ref.watch(feedControllerProvider);
     final post = ref.watch(postProvider(widget.postId));
@@ -80,7 +88,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           else ...[
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 16, AppSpacing.screen, 16),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screen,
+                  16,
+                  AppSpacing.screen,
+                  16,
+                ),
                 children: [
                   PostCard(
                     post: post,
@@ -90,7 +103,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(4, 18, 4, 8),
-                    child: Text(l10n.comments, style: AppText.label.copyWith(color: AppColors.brown, fontSize: 13)),
+                    child: Text(
+                      l10n.comments,
+                      style: AppText.label.copyWith(
+                        color: AppColors.brown,
+                        fontSize: 13,
+                      ),
+                    ),
                   ),
                   const AdviceNotice(),
                   const SizedBox(height: 10),
@@ -104,7 +123,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               sendTooltip: l10n.sendComment,
               sending: _sending,
               onSend: _send,
-              inputFormatters: [LengthLimitingTextInputFormatter(CommunityLimits.commentLength)],
+              inputFormatters: [
+                LengthLimitingTextInputFormatter(CommunityLimits.commentLength),
+              ],
             ),
           ],
         ],
@@ -119,7 +140,14 @@ class _Comments extends ConsumerWidget {
   final String postId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'community.feed.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final comments = ref.watch(commentsProvider(postId));
     final now = ref.watch(communityClockProvider)();
@@ -139,8 +167,14 @@ class _Comments extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // What failed, then why: two whole messages.
-              Text(l10n.commentsLoadFailed, style: AppText.body.copyWith(color: AppColors.brown)),
-              Text(communityErrorText(context, comments.error), style: AppText.body.copyWith(color: AppColors.brown)),
+              Text(
+                l10n.commentsLoadFailed,
+                style: AppText.body.copyWith(color: AppColors.brown),
+              ),
+              Text(
+                communityErrorText(context, comments.error),
+                style: AppText.body.copyWith(color: AppColors.brown),
+              ),
               TextButton(
                 onPressed: () => ref.invalidate(commentsProvider(postId)),
                 child: Text(context.l10n.commonTryAgain),
@@ -154,7 +188,10 @@ class _Comments extends ConsumerWidget {
     if (list.isEmpty) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-        child: Text(l10n.noComments, style: AppText.body.copyWith(color: AppColors.brown)),
+        child: Text(
+          l10n.noComments,
+          style: AppText.body.copyWith(color: AppColors.brown),
+        ),
       );
     }
 
@@ -181,16 +218,32 @@ class _CommentRow extends StatelessWidget {
   final DateTime now;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.feed.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
-    final when = l10n.relativeTime(context.l10n, AppFormat.of(context), comment.createdAt, now);
+    final when = l10n.relativeTime(
+      context.l10n,
+      AppFormat.of(context),
+      comment.createdAt,
+      now,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AuthorAvatar(name: comment.authorName, authorId: comment.authorId, size: 32),
+          AuthorAvatar(
+            name: comment.authorName,
+            authorId: comment.authorId,
+            size: 32,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -203,7 +256,10 @@ class _CommentRow extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: l10n.inLine(l10n.memberName(comment.authorName)),
-                        style: AppText.secondary.copyWith(fontWeight: FontWeight.w800, color: AppColors.ink),
+                        style: AppText.secondary.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.ink,
+                        ),
                       ),
                       TextSpan(text: ' · $when'),
                     ],
@@ -211,7 +267,10 @@ class _CommentRow extends StatelessWidget {
                   style: AppText.label.copyWith(color: AppColors.brown),
                 ),
                 const SizedBox(height: 2),
-                AutoDirectionText(comment.text, style: AppText.body.copyWith(height: 1.4)),
+                AutoDirectionText(
+                  comment.text,
+                  style: AppText.body.copyWith(height: 1.4),
+                ),
               ],
             ),
           ),

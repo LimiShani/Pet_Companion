@@ -33,13 +33,24 @@ class EmptyState extends StatelessWidget {
             Container(
               width: 88,
               height: 88,
-              decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+              decoration: const BoxDecoration(
+                color: AppColors.yellow,
+                shape: BoxShape.circle,
+              ),
               child: AppIcon(icon, size: 42, color: AppColors.coralDark),
             ),
             const SizedBox(height: 18),
-            Text(title, style: AppText.cardTitle.copyWith(fontSize: 18), textAlign: TextAlign.center),
+            Text(
+              title,
+              style: AppText.cardTitle.copyWith(fontSize: 18),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 6),
-            Text(message, style: AppText.body.copyWith(color: AppColors.brown), textAlign: TextAlign.center),
+            Text(
+              message,
+              style: AppText.body.copyWith(color: AppColors.brown),
+              textAlign: TextAlign.center,
+            ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 18),
               FilledButton(onPressed: onAction, child: Text(actionLabel!)),

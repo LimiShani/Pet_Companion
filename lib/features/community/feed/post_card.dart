@@ -7,8 +7,8 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../community_words.dart';
-import '../data/community_models.dart';
-import '../data/community_providers.dart';
+import '../../../services/community/data/community_models.dart';
+import '../../../services/community/data/community_providers.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
@@ -35,7 +35,9 @@ class PostCard extends ConsumerWidget {
     final app = context.l10n;
     final format = AppFormat.of(context);
     final now = ref.watch(communityClockProvider)();
-    final viewerId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
+    final viewerId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
     final isMine = post.authorId == viewerId;
     final meta = dotted([
       // A name in the other script is kept as one unit, so it cannot
@@ -66,7 +68,9 @@ class PostCard extends ConsumerWidget {
                         // avatar whatever language it is in.
                         AutoDirectionText(
                           l10n.memberName(post.authorName),
-                          style: AppText.cardTitle.copyWith(fontWeight: FontWeight.w800),
+                          style: AppText.cardTitle.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -81,20 +85,31 @@ class PostCard extends ConsumerWidget {
                   ),
                   PopupMenuButton<_PostAction>(
                     tooltip: l10n.postOptions,
-                    icon: const AppIcon(Icons.more_horiz_rounded, color: AppColors.brown),
+                    icon: const AppIcon(
+                      Icons.more_horiz_rounded,
+                      color: AppColors.brown,
+                    ),
                     color: AppColors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     onSelected: (action) => _onAction(context, ref, action),
                     itemBuilder: (context) => [
                       if (isMine)
                         PopupMenuItem(
                           value: _PostAction.delete,
-                          child: _MenuRow(icon: Icons.delete_outline_rounded, label: app.commonDelete),
+                          child: _MenuRow(
+                            icon: Icons.delete_outline_rounded,
+                            label: app.commonDelete,
+                          ),
                         )
                       else
                         PopupMenuItem(
                           value: _PostAction.report,
-                          child: _MenuRow(icon: Icons.flag_outlined, label: l10n.report),
+                          child: _MenuRow(
+                            icon: Icons.flag_outlined,
+                            label: l10n.report,
+                          ),
                         ),
                     ],
                   ),
@@ -102,7 +117,10 @@ class PostCard extends ConsumerWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                child: AutoDirectionText(post.text, style: AppText.body.copyWith(fontSize: 15, height: 1.45)),
+                child: AutoDirectionText(
+                  post.text,
+                  style: AppText.body.copyWith(fontSize: 15, height: 1.45),
+                ),
               ),
               if (post.photo != null)
                 Padding(
@@ -116,8 +134,12 @@ class PostCard extends ConsumerWidget {
                 children: [
                   _CountButton(
                     tooltip: post.likedByMe ? l10n.unlike : l10n.like,
-                    icon: post.likedByMe ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                    color: post.likedByMe ? AppColors.coralDark : AppColors.brown,
+                    icon: post.likedByMe
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    color: post.likedByMe
+                        ? AppColors.coralDark
+                        : AppColors.brown,
                     count: format.integer(post.likeCount),
                     countInWords: l10n.likeCount(post.likeCount),
                     onTap: () => togglePostLike(context, ref, post),
@@ -140,7 +162,11 @@ class PostCard extends ConsumerWidget {
     );
   }
 
-  Future<void> _onAction(BuildContext context, WidgetRef ref, _PostAction action) async {
+  Future<void> _onAction(
+    BuildContext context,
+    WidgetRef ref,
+    _PostAction action,
+  ) async {
     final flow = switch (action) {
       _PostAction.report => reportPostFlow(context, ref, post),
       _PostAction.delete => deletePostFlow(context, ref, post),
@@ -209,7 +235,10 @@ class _CountButton extends StatelessWidget {
                 Text(
                   count,
                   semanticsLabel: countInWords,
-                  style: AppText.secondary.copyWith(fontWeight: FontWeight.w800, color: AppColors.brown),
+                  style: AppText.secondary.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.brown,
+                  ),
                 ),
               ],
             ),

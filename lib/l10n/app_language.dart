@@ -30,10 +30,12 @@ enum AppLanguage {
 
 /// A language's name in its own letters, so its speakers can find it
 /// whatever language the app is showing. Never translated.
-String nativeLanguageName(Locale locale) => isHebrew(locale) ? 'עברית' : 'English';
+String nativeLanguageName(Locale locale) =>
+    isHebrew(locale) ? 'עברית' : 'English';
 
 /// Whether [locale] is Hebrew. Older Android versions report it as `iw`.
-bool isHebrew(Locale locale) => locale.languageCode == 'he' || locale.languageCode == 'iw';
+bool isHebrew(Locale locale) =>
+    locale.languageCode == 'he' || locale.languageCode == 'iw';
 
 /// The key of the language choice in the [SettingsStore].
 const languageSettingKey = 'app_language';
@@ -46,35 +48,49 @@ final hebrewFollowsDeviceProvider = Provider<bool>((ref) => true);
 /// The language the app shows: the owner's [choice], or for
 /// [AppLanguage.system] Hebrew when the phone's first language is Hebrew
 /// (once [hebrewFollowsDevice] is on) and English on any other phone.
-Locale resolveAppLocale(AppLanguage choice, List<Locale> deviceLocales, {required bool hebrewFollowsDevice}) {
+Locale resolveAppLocale(
+  AppLanguage choice,
+  List<Locale> deviceLocales, {
+  required bool hebrewFollowsDevice,
+}) {
   switch (choice) {
     case AppLanguage.english:
       return englishLocale;
     case AppLanguage.hebrew:
       return hebrewLocale;
     case AppLanguage.system:
-      final onHebrewPhone = deviceLocales.isNotEmpty && isHebrew(deviceLocales.first);
-      return hebrewFollowsDevice && onHebrewPhone ? hebrewLocale : englishLocale;
+      final onHebrewPhone =
+          deviceLocales.isNotEmpty && isHebrew(deviceLocales.first);
+      return hebrewFollowsDevice && onHebrewPhone
+          ? hebrewLocale
+          : englishLocale;
   }
 }
 
 /// The owner's language choice, remembered on the phone.
 class AppLanguageController extends Notifier<AppLanguage> {
   @override
-  AppLanguage build() => AppLanguage.fromCode(ref.watch(settingsStoreProvider).read(languageSettingKey));
+  AppLanguage build() => AppLanguage.fromCode(
+    ref.watch(settingsStoreProvider).read(languageSettingKey),
+  );
 
   /// Switches the app to [language] at once and remembers it.
   Future<void> choose(AppLanguage language) async {
     state = language;
     try {
-      await ref.read(settingsStoreProvider).write(languageSettingKey, language.code);
+      await ref
+          .read(settingsStoreProvider)
+          .write(languageSettingKey, language.code);
     } catch (_) {
       // The choice holds for this session; it just is not remembered.
     }
   }
 }
 
-final appLanguageProvider = NotifierProvider<AppLanguageController, AppLanguage>(AppLanguageController.new);
+final appLanguageProvider =
+    NotifierProvider<AppLanguageController, AppLanguage>(
+      AppLanguageController.new,
+    );
 
 /// The phone's own languages, most preferred first, kept up to date when
 /// the owner changes them in the phone's settings.
@@ -91,7 +107,9 @@ class DeviceLocales extends Notifier<List<Locale>> with WidgetsBindingObserver {
   void didChangeLocales(List<Locale>? locales) => state = locales ?? const [];
 }
 
-final deviceLocalesProvider = NotifierProvider<DeviceLocales, List<Locale>>(DeviceLocales.new);
+final deviceLocalesProvider = NotifierProvider<DeviceLocales, List<Locale>>(
+  DeviceLocales.new,
+);
 
 /// The language the app is showing now.
 final appLocaleProvider = Provider<Locale>(

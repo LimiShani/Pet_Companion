@@ -12,5 +12,8 @@ abstract final class HealthRoutes {
 /// stays visible, or push a `MaterialPageRoute` on the root navigator for
 /// full-screen flows.
 final List<RouteBase> healthRoutes = [
-  GoRoute(path: HealthRoutes.root, builder: (context, state) => const HealthScreen()),
+  GoRoute(
+    path: HealthRoutes.root,
+    builder: (context, state) => const HealthScreen(),
+  ),
 ];

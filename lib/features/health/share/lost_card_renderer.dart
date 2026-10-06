@@ -1,3 +1,5 @@
+import '../../../services/pets/data/pets_repository.dart';
+import '../../../services/pets/data/pets_repository_provider.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -9,8 +11,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../models/pet.dart';
-import '../../pets/pets.dart';
-import '../data/health_models.dart';
+import '../../../services/pet_records/data/health_models.dart';
 
 /// Finds the picture that goes on a pet's lost card. Behind an interface so
 /// tests never load a photo.
@@ -38,7 +39,9 @@ class PetProfilePhotoSource implements LostCardPhotoSource {
         final bytes = photo.bytes;
         if (bytes != null) return MemoryImage(bytes);
         final url = photo.url;
-        if (url != null) return CachedNetworkImageProvider(url.toString(), cacheKey: path);
+        if (url != null) {
+          return CachedNetworkImageProvider(url.toString(), cacheKey: path);
+        }
       } catch (_) {
         // No picture is better than no card.
       }
@@ -50,7 +53,9 @@ class PetProfilePhotoSource implements LostCardPhotoSource {
 }
 
 final lostCardPhotoSourceProvider = Provider<LostCardPhotoSource>(
-  (ref) => PetProfilePhotoSource((path) => ref.read(petsRepositoryProvider).loadPhoto(path)),
+  (ref) => PetProfilePhotoSource(
+    (path) => ref.read(petsRepositoryProvider).loadPhoto(path),
+  ),
 );
 
 /// Turns the card on screen into files to share. Behind an interface so
@@ -77,7 +82,9 @@ class WidgetLostCardRenderer implements LostCardRenderer {
   Future<Uint8List> png(GlobalKey boundary, {double width = 1080}) async {
     try {
       final render = boundary.currentContext?.findRenderObject();
-      if (render is! RenderRepaintBoundary || render.size.isEmpty) throw _failed;
+      if (render is! RenderRepaintBoundary || render.size.isEmpty) {
+        throw _failed;
+      }
       final image = await render.toImage(pixelRatio: width / render.size.width);
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
@@ -98,7 +105,9 @@ class WidgetLostCardRenderer implements LostCardRenderer {
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           margin: const pw.EdgeInsets.all(36),
-          build: (context) => pw.Center(child: pw.Image(pw.MemoryImage(png), fit: pw.BoxFit.contain)),
+          build: (context) => pw.Center(
+            child: pw.Image(pw.MemoryImage(png), fit: pw.BoxFit.contain),
+          ),
         ),
       );
       return await doc.save();
@@ -108,4 +117,6 @@ class WidgetLostCardRenderer implements LostCardRenderer {
   }
 }
 
-final lostCardRendererProvider = Provider<LostCardRenderer>((ref) => const WidgetLostCardRenderer());
+final lostCardRendererProvider = Provider<LostCardRenderer>(
+  (ref) => const WidgetLostCardRenderer(),
+);

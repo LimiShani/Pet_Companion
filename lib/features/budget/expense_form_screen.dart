@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,21 +14,25 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/unsaved_changes_guard.dart';
-import '../care/widgets/care_widgets.dart';
-import '../health/state/health_providers.dart' show healthClockProvider;
-import 'budget_words.dart';
-import 'data/budget_models.dart';
-import 'state/budget_providers.dart';
-import 'widgets/budget_widgets.dart';
+import '../../presentation/care_widgets.dart';
+import '../../services/pet_records/state/health_providers.dart'
+    show healthClockProvider;
+import '../../presentation/budget_words.dart';
+import '../../services/budget/data/budget_models.dart';
+import '../../services/budget/state/budget_providers.dart';
+import '../../presentation/budget_widgets.dart';
 
 /// Opens the form of [expense], or of a new expense for [petId] (`null`:
 /// the whole home).
-Future<void> openExpenseForm(BuildContext context, {Expense? expense, String? petId}) =>
-    Navigator.of(context, rootNavigator: true).push<void>(
-      MaterialPageRoute(
-        builder: (_) => ExpenseFormScreen(expense: expense, petId: petId),
-      ),
-    );
+Future<void> openExpenseForm(
+  BuildContext context, {
+  Expense? expense,
+  String? petId,
+}) => Navigator.of(context, rootNavigator: true).push<void>(
+  MaterialPageRoute(
+    builder: (_) => ExpenseFormScreen(expense: expense, petId: petId),
+  ),
+);
 
 /// Adds or changes an expense: the amount, the category, the pet (or the
 /// whole home), the date, a note and how often it is paid. A stored
@@ -52,12 +57,15 @@ class ExpenseFormScreen extends ConsumerStatefulWidget {
 class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   final _form = GlobalKey<FormState>();
   late final Expense? _expense = widget.expense;
-  late final _amount = TextEditingController(text: _expense == null ? '' : _numberText(_expense.amount));
+  late final _amount = TextEditingController(
+    text: _expense == null ? '' : _numberText(_expense.amount),
+  );
   late final _note = TextEditingController(text: _expense?.note ?? '');
   late ExpenseCategory _category = _expense?.category ?? ExpenseCategory.food;
   late String? _petId = _expense == null ? widget.petId : _expense.petId;
   late DateTime _date = _expense?.spentOn ?? _today();
-  late ExpenseFrequency _frequency = _expense?.frequency ?? ExpenseFrequency.once;
+  late ExpenseFrequency _frequency =
+      _expense?.frequency ?? ExpenseFrequency.once;
   late DateTime? _endedOn = _expense?.endedOn;
   bool _saving = false;
   Object? _error;
@@ -70,12 +78,22 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
     return DateTime(now.year, now.month, now.day);
   }
 
-  static String _numberText(double value) =>
-      value == value.roundToDouble() ? value.toInt().toString() : value.toStringAsFixed(2);
+  static String _numberText(double value) => value == value.roundToDouble()
+      ? value.toInt().toString()
+      : value.toStringAsFixed(2);
 
-  static double? _number(String text) => double.tryParse(text.trim().replaceAll(',', '.'));
+  static double? _number(String text) =>
+      double.tryParse(text.trim().replaceAll(',', '.'));
 
-  List<Object?> _fields() => [_amount.text, _note.text, _category, _petId, _date, _frequency, _endedOn];
+  List<Object?> _fields() => [
+    _amount.text,
+    _note.text,
+    _category,
+    _petId,
+    _date,
+    _frequency,
+    _endedOn,
+  ];
 
   bool get _dirty => !_saving && !listEquals(_fields(), _initial);
 
@@ -144,10 +162,20 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.deleteExpenseTitle),
-        content: Text(expense.isRecurring ? l10n.deleteRecurringBody : l10n.deleteExpenseBody),
+        content: Text(
+          expense.isRecurring
+              ? l10n.deleteRecurringBody
+              : l10n.deleteExpenseBody,
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(common.commonCancel)),
-          FilledButton(onPressed: () => Navigator.of(context).pop(true), child: Text(common.commonDelete)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(common.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(common.commonDelete),
+          ),
         ],
       ),
     );
@@ -173,14 +201,26 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'budget.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.budgetL10n;
     final format = AppFormat.of(context);
     final pets = ref.watch(petsProvider);
     final error = _error;
     final expense = _expense;
 
-    Widget chips<T>(List<T> values, T selected, String Function(T) label, ValueChanged<T> onSelected) => Wrap(
+    Widget chips<T>(
+      List<T> values,
+      T selected,
+      String Function(T) label,
+      ValueChanged<T> onSelected,
+    ) => Wrap(
       spacing: 8,
       runSpacing: 4,
       children: [
@@ -205,10 +245,14 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             key: ExpenseFormScreen.amountKey,
             controller: _amount,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            ],
             validator: (text) {
               final value = _number(text ?? '');
-              return value == null || value <= 0 || value > 1000000 ? l10n.amountInvalid : null;
+              return value == null || value <= 0 || value > 1000000
+                  ? l10n.amountInvalid
+                  : null;
             },
             decoration: InputDecoration(
               labelText: l10n.amountLabel,
@@ -218,7 +262,12 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             ),
           ),
           CareSectionLabel(l10n.categoryLabel),
-          chips(ExpenseCategory.values, _category, l10n.category, (v) => _category = v),
+          chips(
+            ExpenseCategory.values,
+            _category,
+            l10n.category,
+            (v) => _category = v,
+          ),
           CareSectionLabel(l10n.forLabel),
           chips<String?>([null, for (final p in pets) p.id], _petId, (id) {
             if (id == null) return l10n.wholeHome;
@@ -230,7 +279,11 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             onTap: _pickDate,
             child: Row(
               children: [
-                const AppIcon(Icons.calendar_today_rounded, size: 18, color: AppColors.brown),
+                const AppIcon(
+                  Icons.calendar_today_rounded,
+                  size: 18,
+                  color: AppColors.brown,
+                ),
                 const SizedBox(width: 10),
                 Expanded(child: Text(format.date(_date), style: AppText.body)),
               ],
@@ -240,19 +293,32 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             key: ExpenseFormScreen.noteKey,
             controller: _note,
             maxLength: 120,
-            decoration: InputDecoration(labelText: l10n.noteLabel, hintText: l10n.noteHint, counterText: ''),
+            decoration: InputDecoration(
+              labelText: l10n.noteLabel,
+              hintText: l10n.noteHint,
+              counterText: '',
+            ),
           ),
           CareSectionLabel(l10n.howOften),
-          chips(ExpenseFrequency.values, _frequency, l10n.frequency, (v) => _frequency = v),
+          chips(
+            ExpenseFrequency.values,
+            _frequency,
+            l10n.frequency,
+            (v) => _frequency = v,
+          ),
           if (_frequency != ExpenseFrequency.once)
             Padding(
               padding: const EdgeInsetsDirectional.only(start: 6, top: 6),
               child: Text(
-                _frequency == ExpenseFrequency.monthly ? l10n.monthlyNote : l10n.yearlyNote,
+                _frequency == ExpenseFrequency.monthly
+                    ? l10n.monthlyNote
+                    : l10n.yearlyNote,
                 style: AppText.secondary,
               ),
             ),
-          if (expense != null && !expense.isNew && _frequency != ExpenseFrequency.once) ...[
+          if (expense != null &&
+              !expense.isNew &&
+              _frequency != ExpenseFrequency.once) ...[
             const SizedBox(height: 10),
             if (_endedOn == null)
               Align(
@@ -273,14 +339,23 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                 crossAxisAlignment: WrapCrossAlignment.center,
                 spacing: 8,
                 children: [
-                  Text(l10n.stoppedOn(format.date(_endedOn!)), style: AppText.body),
-                  TextButton(onPressed: () => setState(() => _endedOn = null), child: Text(l10n.keepRepeating)),
+                  Text(
+                    l10n.stoppedOn(format.date(_endedOn!)),
+                    style: AppText.body,
+                  ),
+                  TextButton(
+                    onPressed: () => setState(() => _endedOn = null),
+                    child: Text(l10n.keepRepeating),
+                  ),
                 ],
               ),
           ],
           if (error != null) ...[
             const SizedBox(height: 10),
-            Text(budgetErrorText(context, error), style: AppText.body.copyWith(color: AppColors.coralDark)),
+            Text(
+              budgetErrorText(context, error),
+              style: AppText.body.copyWith(color: AppColors.coralDark),
+            ),
           ],
           const SizedBox(height: 20),
           PrimaryButton(
@@ -295,7 +370,8 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
 
     return ListenableBuilder(
       listenable: Listenable.merge([_amount, _note]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: BudgetKeeper(
         page: true,
         child: Scaffold(
@@ -321,7 +397,9 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
                     AppSpacing.screen,
                     8,
                     AppSpacing.screen,
-                    24 + MediaQuery.viewInsetsOf(context).bottom + MediaQuery.paddingOf(context).bottom,
+                    24 +
+                        MediaQuery.viewInsetsOf(context).bottom +
+                        MediaQuery.paddingOf(context).bottom,
                   ),
                   child: form,
                 ),

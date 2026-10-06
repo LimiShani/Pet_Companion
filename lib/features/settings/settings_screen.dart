@@ -73,7 +73,10 @@ class _SectionLabel extends StatelessWidget {
       header: true,
       child: Padding(
         padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
-        child: Text(text, style: AppText.label.copyWith(color: AppColors.brown)),
+        child: Text(
+          text,
+          style: AppText.label.copyWith(color: AppColors.brown),
+        ),
       ),
     );
   }
@@ -88,7 +91,13 @@ class _Note extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(start: 6, end: 6, top: 8),
-      child: Text(text, style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600)),
+      child: Text(
+        text,
+        style: AppText.label.copyWith(
+          color: AppColors.brown,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

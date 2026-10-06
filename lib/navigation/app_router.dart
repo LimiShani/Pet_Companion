@@ -1,3 +1,7 @@
+import '../platform/feature_module.dart';
+import '../features/auth/reset_password_screen.dart';
+import '../access/access_provider.dart';
+import '../access/access_unavailable_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,24 +10,22 @@ import '../auth/auth_controller.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/signup_screen.dart';
 import '../features/auth/splash_screen.dart';
-import '../features/community/community_routes.dart';
-import '../features/health/health_routes.dart';
 import '../features/home/home_screen.dart';
-import '../features/pets/pets_routes.dart';
 import '../features/settings/settings_routes.dart';
 import '../features/settings/side_menu.dart';
-import '../features/store/store_routes.dart';
 import '../state/pets_provider.dart';
 import '../widgets/app_bottom_nav.dart';
 
 abstract final class AppRoutes {
+  static const resetPassword = '/reset-password';
+  static const accessUnavailable = '/access-unavailable';
   static const splash = '/';
   static const login = '/login';
   static const signUp = '/signup';
   static const home = '/home';
-  static const health = HealthRoutes.root;
-  static const community = CommunityRoutes.root;
-  static const store = StoreRoutes.root;
+  static const health = '/health';
+  static const community = '/community';
+  static const store = '/store';
 
   static const _public = {login, signUp};
   static bool isPublic(String location) => _public.contains(location);
@@ -32,9 +34,14 @@ abstract final class AppRoutes {
 /// The app's router. Built once; auth changes re-run [_redirect] through
 /// [refreshListenable] instead of rebuilding the router.
 final routerProvider = Provider<GoRouter>((ref) {
+  final modules = ref.watch(featureModulesProvider);
+  final tabs = modules.where((m) => m.tab != null).map((m) => m.tab!).toList();
   final refresh = _RouterRefresh();
   ref.listen(authControllerProvider, (_, _) => refresh.ping());
   // The first-pet gate: loading, failed, no pet yet, or ready for the tabs.
+  ref.listen(passwordRecoveryProvider, (_, _) => refresh.ping());
+  ref.listen(accessProvider, (_, _) => refresh.ping());
+  ref.listen(installedFeaturesProvider, (_, _) => refresh.ping());
   ref.listen(petsGateProvider, (_, _) => refresh.ping());
   ref.onDispose(refresh.dispose);
 
@@ -43,24 +50,43 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) => _redirect(ref, state.matchedLocation),
     routes: [
-      GoRoute(path: AppRoutes.splash, builder: (context, state) => const SplashScreen()),
-      GoRoute(path: AppRoutes.login, builder: (context, state) => const LoginScreen()),
-      GoRoute(path: AppRoutes.signUp, builder: (context, state) => const SignUpScreen()),
+      GoRoute(
+        path: AppRoutes.resetPassword,
+        builder: (_, _) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.accessUnavailable,
+        builder: (_, _) => const AccessUnavailableScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.splash,
+        builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.signUp,
+        builder: (context, state) => const SignUpScreen(),
+      ),
       StatefulShellRoute.indexedStack(
-        builder: (context, state, shell) => _AppShell(shell: shell),
+        builder: (context, state, shell) => _AppShell(shell: shell, tabs: tabs),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(path: AppRoutes.home, builder: (context, state) => const HomeScreen()),
-          ]),
-          // Each feature owns its branch's routes (see <feature>_routes.dart).
-          StatefulShellBranch(routes: healthRoutes),
-          StatefulShellBranch(routes: communityRoutes),
-          StatefulShellBranch(routes: storeRoutes),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          for (final tab in tabs) StatefulShellBranch(routes: tab.routes),
         ],
       ),
       // The first-pet welcome, the add-a-pet flow, the pet profile and "My
       // pets": full screen, beside the tabs (see pets_routes.dart).
-      ...petsRoutes,
+      for (final module in modules) ...module.routes,
       // The Settings page: full screen too, opened from the side menu and
       // the account sheet.
       ...settingsRoutes,
@@ -80,15 +106,55 @@ String? _redirect(Ref ref, String location) {
   final signedIn = auth.value != null;
   if (!signedIn) return AppRoutes.isPublic(location) ? null : AppRoutes.login;
 
+  if (ref.read(passwordRecoveryProvider)) {
+    return location == AppRoutes.resetPassword ? null : AppRoutes.resetPassword;
+  }
+  if (location == AppRoutes.resetPassword) return AppRoutes.home;
+  final access = ref.read(accessProvider);
+  if (access.isLoading) {
+    return location == AppRoutes.splash ? null : AppRoutes.splash;
+  }
+  if (access.hasError) {
+    return location == AppRoutes.accessUnavailable
+        ? null
+        : AppRoutes.accessUnavailable;
+  }
+  if (location == AppRoutes.accessUnavailable) return AppRoutes.home;
+  final routeCapability = location.startsWith('/health')
+      ? 'health.records.view|health.schedule.view|health.emergency.view'
+      : location.startsWith('/community/chat')
+      ? 'community.chat.view'
+      : location.startsWith('/community/guide')
+      ? 'community.guides.view'
+      : location.startsWith('/community')
+      ? 'community.feed.view|community.chat.view|community.guides.view'
+      : location.startsWith('/store')
+      ? 'store.deals.view'
+      : null;
+  if (routeCapability != null && !canUse(ref, routeCapability)) {
+    return AppRoutes.home;
+  }
+
   switch (ref.read(petsGateProvider)) {
     case PetsGate.loading:
       return location == AppRoutes.splash ? null : AppRoutes.splash;
     case PetsGate.failed:
-      return location == PetsRoutes.welcome ? null : PetsRoutes.welcome;
+      if (!canUse(ref, 'pets.view')) {
+        return location == AppRoutes.home ? null : AppRoutes.home;
+      }
+      return location == '/welcome' ? null : '/welcome';
     case PetsGate.empty:
-      return PetsRoutes.openWithoutPets(location) ? null : PetsRoutes.welcome;
+      if (!canUse(ref, 'pets.edit')) {
+        return location == AppRoutes.home ? null : AppRoutes.home;
+      }
+      return (location == '/welcome' || location == '/pets/new')
+          ? null
+          : '/welcome';
     case PetsGate.ready:
-      final leave = AppRoutes.isPublic(location) || location == AppRoutes.splash || location == PetsRoutes.welcome;
+      final leave =
+          AppRoutes.isPublic(location) ||
+          location == AppRoutes.splash ||
+          location == '/welcome';
       return leave ? AppRoutes.home : null;
   }
 }
@@ -105,7 +171,8 @@ class _RouterRefresh extends ChangeNotifier {
 /// Its button is on Home, and only there can it also be pulled in from the
 /// screen's edge.
 class _AppShell extends StatefulWidget {
-  const _AppShell({required this.shell});
+  const _AppShell({required this.shell, required this.tabs});
+  final List<FeatureTab> tabs;
 
   final StatefulNavigationShell shell;
 
@@ -146,7 +213,9 @@ class _AppShellState extends State<_AppShell> {
   /// is handled here, once this frame is built.
   void _report() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) NavigationNotification(canHandlePop: !_onHome).dispatch(context);
+      if (mounted) {
+        NavigationNotification(canHandlePop: !_onHome).dispatch(context);
+      }
     });
   }
 
@@ -172,8 +241,12 @@ class _AppShellState extends State<_AppShell> {
           drawer: const AppSideMenu(),
           drawerEnableOpenDragGesture: onHome,
           bottomNavigationBar: AppBottomNav(
+            tabs: widget.tabs,
             currentIndex: shell.currentIndex,
-            onSelect: (index) => shell.goBranch(index, initialLocation: index == shell.currentIndex),
+            onSelect: (index) => shell.goBranch(
+              index,
+              initialLocation: index == shell.currentIndex,
+            ),
           ),
         ),
       ),

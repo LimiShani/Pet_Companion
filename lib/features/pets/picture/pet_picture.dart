@@ -8,9 +8,9 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../data/photo_services.dart';
-import '../icons/pet_icon_bank.dart';
-import '../pet_words.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pet_icon_bank.dart';
+import '../../../presentation/pet_words.dart';
+import '../../../presentation/pets_widgets.dart';
 import 'icon_bank_screen.dart';
 
 /// A picture the owner chose for a pet.
@@ -71,13 +71,19 @@ Future<PetPicture?> choosePetPicture(
       return choice == null ? null : IconPicture(choice);
     case _PictureAction.camera:
     case _PictureAction.gallery:
-      final source = action == _PictureAction.camera ? PetPhotoSource.camera : PetPhotoSource.gallery;
+      final source = action == _PictureAction.camera
+          ? PetPhotoSource.camera
+          : PetPhotoSource.gallery;
       try {
         // "Choose another" on the crop step comes back here.
         while (true) {
-          final photo = await container.read(petPhotoPickerProvider).pick(source);
+          final photo = await container
+              .read(petPhotoPickerProvider)
+              .pick(source);
           if (photo == null || !context.mounted) return null;
-          final outcome = await container.read(petPhotoCropperProvider).crop(context, photo);
+          final outcome = await container
+              .read(petPhotoCropperProvider)
+              .crop(context, photo);
           if (outcome.jpeg != null) return PhotoPicture(outcome.jpeg!);
           if (!outcome.another || !context.mounted) return null;
         }
@@ -104,12 +110,18 @@ Future<Pet> savePetPicture(PetsStore store, Pet pet, PetPicture picture) async {
       next = pet.withPicture();
   }
   final stored = await store.save(next);
-  if (oldPath != null && oldPath != stored.photoPath) await store.deletePhoto(oldPath);
+  if (oldPath != null && oldPath != stored.photoPath) {
+    await store.deletePhoto(oldPath);
+  }
   return stored;
 }
 
 class _PictureSheet extends StatelessWidget {
-  const _PictureSheet({required this.petName, required this.species, required this.canRemove});
+  const _PictureSheet({
+    required this.petName,
+    required this.species,
+    required this.canRemove,
+  });
 
   final String petName;
   final PetSpecies species;
@@ -126,7 +138,9 @@ class _PictureSheet extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        PetsHeading(name.isEmpty ? l10n.yourPetsPicture : l10n.petPictureTitle(name)),
+        PetsHeading(
+          name.isEmpty ? l10n.yourPetsPicture : l10n.petPictureTitle(name),
+        ),
         const SizedBox(height: 14),
         PetsRow(
           leading: const PetsDisc(Icons.photo_camera_rounded),

@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,12 +12,12 @@ import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 import 'attachments.dart';
 
 /// Opens the add / edit record page over the whole app. Returns the saved
@@ -30,13 +31,22 @@ Future<HealthRecord?> openRecordForm(
   HealthRecord? record,
   RecordKind? kind,
   bool planned = false,
-}) => pushHealthPage<HealthRecord>(context, RecordFormScreen(pet: pet, record: record, kind: kind, planned: planned));
+}) => pushHealthPage<HealthRecord>(
+  context,
+  RecordFormScreen(pet: pet, record: record, kind: kind, planned: planned),
+);
 
 /// One form for every kind of record; the fields follow the kind. Only the
 /// title is required. A date that is still ahead saves the record as an
 /// upcoming item in the Schedule; any other date puts it in the History.
 class RecordFormScreen extends ConsumerStatefulWidget {
-  const RecordFormScreen({super.key, required this.pet, this.record, this.kind, this.planned = false});
+  const RecordFormScreen({
+    super.key,
+    required this.pet,
+    this.record,
+    this.kind,
+    this.planned = false,
+  });
 
   final Pet pet;
 
@@ -52,10 +62,14 @@ class RecordFormScreen extends ConsumerStatefulWidget {
 class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   final _form = GlobalKey<FormState>();
   late final _title = TextEditingController(text: widget.record?.title ?? '');
-  late final _product = TextEditingController(text: widget.record?.productName ?? '');
+  late final _product = TextEditingController(
+    text: widget.record?.productName ?? '',
+  );
   late final _clinic = TextEditingController(text: widget.record?.clinic ?? '');
   late final _notes = TextEditingController(text: widget.record?.notes ?? '');
-  late final _cost = TextEditingController(text: _costText(widget.record?.costAmount));
+  late final _cost = TextEditingController(
+    text: _costText(widget.record?.costAmount),
+  );
   late RecordKind _kind;
   late DateTime _day;
   late TimeOfDay _time;
@@ -80,9 +94,11 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   String get _petId => widget.pet.id;
 
   /// An existing record keeps its own currency; a new cost is in the app's.
-  String get _currency => widget.record?.costCurrency ?? AppConfig.defaultCurrency;
+  String get _currency =>
+      widget.record?.costCurrency ?? AppConfig.defaultCurrency;
 
-  static String _costText(double? amount) => amount == null ? '' : formatNumber(amount, decimals: 2);
+  static String _costText(double? amount) =>
+      amount == null ? '' : formatNumber(amount, decimals: 2);
   DateTime get _now => ref.read(healthClockProvider)();
   DateTime get _at => atTime(_day, _time);
   bool get _ahead => _at.isAfter(_now);
@@ -98,7 +114,9 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       _time = TimeOfDay.fromDateTime(record.when);
       _nextDue = record.nextDueOn;
     } else {
-      _kind = widget.kind ?? SpeciesSettings.of(widget.pet.species).recordKinds.first;
+      _kind =
+          widget.kind ??
+          SpeciesSettings.of(widget.pet.species).recordKinds.first;
       if (widget.planned) {
         _day = addDays(now, 1);
         _time = const TimeOfDay(hour: 9, minute: 0);
@@ -143,7 +161,11 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   }
 
   Future<void> _pickTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _time, helpText: context.healthL10n.fieldTime);
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _time,
+      helpText: context.healthL10n.fieldTime,
+    );
     if (picked != null && mounted) setState(() => _time = picked);
   }
 
@@ -153,7 +175,9 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     final current = _nextDue;
     final picked = await showDatePicker(
       context: context,
-      initialDate: current != null && !current.isBefore(first) ? current : first,
+      initialDate: current != null && !current.isBefore(first)
+          ? current
+          : first,
       firstDate: first,
       lastDate: DateTime(now.year + 20, 12, 31),
       currentDate: now,
@@ -171,7 +195,9 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
       return;
     }
     try {
-      await ref.read(healthDocumentsProvider(_petId).notifier).add(record.id, file);
+      await ref
+          .read(healthDocumentsProvider(_petId).notifier)
+          .add(record.id, file);
     } catch (error) {
       if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
@@ -221,21 +247,30 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               productName: _kind.hasProduct ? _product.text.trim() : '',
               nextDueOn: nextDue,
               followUpOf: widget.record?.followUpOf,
-              costAmount: _cost.text.trim().isEmpty ? null : parseMoney(_cost.text),
+              costAmount: _cost.text.trim().isEmpty
+                  ? null
+                  : parseMoney(_cost.text),
               costCurrency: _currency,
             ),
           );
       Object? fileProblem;
       for (final file in _pending) {
         try {
-          await ref.read(healthDocumentsProvider(_petId).notifier).add(saved.id, file);
+          await ref
+              .read(healthDocumentsProvider(_petId).notifier)
+              .add(saved.id, file);
         } catch (error) {
           fileProblem = error;
         }
       }
       if (!mounted) return;
       if (fileProblem != null) {
-        showHealthSnack(context, context.healthL10n.savedButFileNotAttached(healthErrorOf(context, fileProblem)));
+        showHealthSnack(
+          context,
+          context.healthL10n.savedButFileNotAttached(
+            healthErrorOf(context, fileProblem),
+          ),
+        );
       }
       Navigator.of(context).pop(saved);
     } catch (error) {
@@ -272,14 +307,23 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final record = widget.record;
     final kinds = SpeciesSettings.of(widget.pet.species).recordKinds;
     final ahead = _ahead;
     final documents = record == null
         ? const <HealthDocument>[]
         : [
-            for (final d in ref.watch(healthDocumentsProvider(_petId)).value ?? const <HealthDocument>[])
+            for (final d
+                in ref.watch(healthDocumentsProvider(_petId)).value ??
+                    const <HealthDocument>[])
               if (d.recordId == record.id) d,
           ];
     final given = _kind.hasNextDue || _kind == RecordKind.medicine;
@@ -365,7 +409,10 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               value: format.timeOfDay(_time),
               onTap: _pickTime,
             ),
-            if (ahead) ...[const SizedBox(height: 6), FinePrint(l10n.recordAheadNote, center: false)],
+            if (ahead) ...[
+              const SizedBox(height: 6),
+              FinePrint(l10n.recordAheadNote, center: false),
+            ],
             if (_kind.hasNextDue && !ahead) ...[
               const SizedBox(height: 10),
               PickerTile(
@@ -375,7 +422,9 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
                 value: _nextDue == null ? l10n.notSet : format.date(_nextDue!),
                 placeholder: _nextDue == null,
                 onTap: _pickNextDue,
-                onClear: _nextDue == null ? null : () => setState(() => _nextDue = null),
+                onClear: _nextDue == null
+                    ? null
+                    : () => setState(() => _nextDue = null),
               ),
               const SizedBox(height: 6),
               FinePrint(l10n.nextDueNote, center: false),
@@ -392,14 +441,20 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
             TextFormField(
               key: const Key('record-cost'),
               controller: _cost,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
+              ],
               textInputAction: TextInputAction.next,
               // An amount: left to right on every screen, beside its sign.
               textDirection: TextDirection.ltr,
               textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
               decoration: InputDecoration(
-                labelText: ahead ? l10n.expectedCostOptional : l10n.costOptional,
+                labelText: ahead
+                    ? l10n.expectedCostOptional
+                    : l10n.costOptional,
                 prefixText: '${currencySymbol(_currency)} ',
               ),
               validator: (value) {
@@ -409,7 +464,10 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               },
             ),
             const SizedBox(height: 6),
-            FinePrint(ahead ? l10n.costNoteExpected : l10n.costNotePaid, center: false),
+            FinePrint(
+              ahead ? l10n.costNoteExpected : l10n.costNotePaid,
+              center: false,
+            ),
             const SizedBox(height: 10),
             TextFormField(
               key: const Key('record-notes'),
@@ -417,14 +475,21 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               minLines: 2,
               maxLines: 6,
               textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(labelText: l10n.notesOptional, hintText: l10n.notesHint),
-              validator: (value) => (value?.length ?? 0) > 4000 ? l10n.validNotesTooLong : null,
+              decoration: InputDecoration(
+                labelText: l10n.notesOptional,
+                hintText: l10n.notesHint,
+              ),
+              validator: (value) =>
+                  (value?.length ?? 0) > 4000 ? l10n.validNotesTooLong : null,
             ),
             FormLabel(l10n.attachments),
             for (final document in documents)
               Padding(
                 padding: const EdgeInsetsDirectional.only(bottom: 8),
-                child: DocumentRow(document: document, onRemove: () => _removeDocument(document)),
+                child: DocumentRow(
+                  document: document,
+                  onRemove: () => _removeDocument(document),
+                ),
               ),
             for (final file in _pending)
               Padding(
@@ -433,14 +498,19 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
                   name: file.name,
                   sizeBytes: file.bytes.length,
                   isPdf: file.mimeType == 'application/pdf',
-                  bytes: _previews.putIfAbsent(file, () => Future.value(file.bytes)),
+                  bytes: _previews.putIfAbsent(
+                    file,
+                    () => Future.value(file.bytes),
+                  ),
                   onRemove: () => setState(() => _pending.remove(file)),
                 ),
               ),
             OutlinedButton.icon(
               key: const Key('record-attach'),
               onPressed: _saving ? null : _attach,
-              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(kHealthTapTarget),
+              ),
               icon: const AppIcon(Icons.attach_file_rounded),
               label: Text(l10n.addPhotoOrPdf),
             ),
@@ -448,18 +518,25 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               const SizedBox(height: 12),
               Text(
                 error is String ? error : format.error(error),
-                style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+                style: AppText.body.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
             const SizedBox(height: 22),
-            PrimaryButton(label: l10n.saveRecord, loading: _saving, onPressed: _save),
+            PrimaryButton(
+              label: l10n.saveRecord,
+              loading: _saving,
+              onPressed: _save,
+            ),
           ],
         ),
       ),
     );
     return ListenableBuilder(
       listenable: Listenable.merge([_title, _product, _clinic, _notes, _cost]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: page,
     );
   }

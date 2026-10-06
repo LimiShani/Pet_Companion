@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -5,10 +6,10 @@ import '../../../l10n/l10n.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/app_icon.dart';
-import '../health_format.dart';
-import '../state/health_keeper.dart';
-import '../widgets/health_widgets.dart';
-import 'emergency_contacts.dart';
+import '../../../presentation/health_format.dart';
+import '../../../services/pet_records/state/health_keeper.dart';
+import '../../../presentation/health_widgets.dart';
+import '../../../services/pet_records/state/emergency_contacts.dart';
 import 'emergency_sheet.dart';
 
 /// The one place that defines how the emergency button looks.
@@ -60,9 +61,20 @@ class EmergencyButton extends ConsumerWidget {
   final bool showStatusDot;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final background = onCoral ? EmergencyButtonStyle.onCoralBackground : EmergencyButtonStyle.onLightBackground;
-    final foreground = onCoral ? EmergencyButtonStyle.onCoralForeground : EmergencyButtonStyle.onLightForeground;
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    final background = onCoral
+        ? EmergencyButtonStyle.onCoralBackground
+        : EmergencyButtonStyle.onLightBackground;
+    final foreground = onCoral
+        ? EmergencyButtonStyle.onCoralForeground
+        : EmergencyButtonStyle.onLightForeground;
 
     final petName = ref.watch(
       petsProvider.select((pets) {
@@ -74,11 +86,19 @@ class EmergencyButton extends ConsumerWidget {
     );
     // Only "loaded, and nothing to call" shows the dot: loading and load
     // errors leave the button as it is.
-    final contacts = showStatusDot ? ref.watch(emergencyContactsProvider(petId)) : null;
-    final nothingToCall = contacts != null && contacts.hasValue && !contacts.hasError && !contacts.value!.hasPhone;
+    final contacts = showStatusDot
+        ? ref.watch(emergencyContactsProvider(petId))
+        : null;
+    final nothingToCall =
+        contacts != null &&
+        contacts.hasValue &&
+        !contacts.hasError &&
+        !contacts.value!.hasPhone;
 
     final l10n = context.healthL10n;
-    final label = petName == null ? l10n.emergencyContacts : l10n.emergencyContactsFor(petName);
+    final label = petName == null
+        ? l10n.emergencyContacts
+        : l10n.emergencyContactsFor(petName);
     // What a screen reader says: the same, and that nothing can be called yet.
     final spoken = !nothingToCall
         ? label
@@ -87,17 +107,32 @@ class EmergencyButton extends ConsumerWidget {
         : l10n.emergencyContactsForNoPhone(petName);
     final pill = Container(
       height: EmergencyButtonStyle.pillHeight,
-      constraints: const BoxConstraints(minWidth: EmergencyButtonStyle.pillHeight),
-      padding: compact ? EdgeInsets.zero : const EdgeInsetsDirectional.only(start: 12, end: 14),
-      decoration: BoxDecoration(color: background, borderRadius: const BorderRadius.all(Radius.circular(999))),
+      constraints: const BoxConstraints(
+        minWidth: EmergencyButtonStyle.pillHeight,
+      ),
+      padding: compact
+          ? EdgeInsets.zero
+          : const EdgeInsetsDirectional.only(start: 12, end: 14),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: const BorderRadius.all(Radius.circular(999)),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          AppIcon(EmergencyButtonStyle.icon, size: compact ? 22 : 18, color: foreground),
+          AppIcon(
+            EmergencyButtonStyle.icon,
+            size: compact ? 22 : 18,
+            color: foreground,
+          ),
           if (!compact) ...[
             const SizedBox(width: 6),
-            Text(l10n.emergencyButton, maxLines: 1, style: EmergencyButtonStyle.textStyle.copyWith(color: foreground)),
+            Text(
+              l10n.emergencyButton,
+              maxLines: 1,
+              style: EmergencyButtonStyle.textStyle.copyWith(color: foreground),
+            ),
           ],
         ],
       ),
@@ -105,7 +140,13 @@ class EmergencyButton extends ConsumerWidget {
 
     return HealthKeeper(
       petId: petId,
-      child: _button(context, label: label, spoken: spoken, pill: pill, nothingToCall: nothingToCall),
+      child: _button(
+        context,
+        label: label,
+        spoken: spoken,
+        pill: pill,
+        nothingToCall: nothingToCall,
+      ),
     );
   }
 
@@ -126,7 +167,10 @@ class EmergencyButton extends ConsumerWidget {
           customBorder: const StadiumBorder(),
           onTap: () => showEmergencySheet(context, petId),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
+            constraints: const BoxConstraints(
+              minWidth: kHealthTapTarget,
+              minHeight: kHealthTapTarget,
+            ),
             child: Center(
               widthFactor: 1,
               heightFactor: 1,
@@ -145,7 +189,10 @@ class EmergencyButton extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: EmergencyButtonStyle.dot,
                           shape: BoxShape.circle,
-                          border: Border.all(color: onCoral ? AppColors.coral : AppColors.white, width: 2),
+                          border: Border.all(
+                            color: onCoral ? AppColors.coral : AppColors.white,
+                            width: 2,
+                          ),
                         ),
                       ),
                     ),

@@ -1,3 +1,5 @@
+import '../../access/access_provider.dart';
+import '../../access/access_admin_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,9 +10,10 @@ import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/petloop_icon.dart';
-import '../budget/budget.dart';
-import '../findvet/findvet.dart';
-import '../pets/pets.dart';
+import '../../platform/feature_ui.dart';
+import '../../services/findvet/state/find_vet_providers.dart'
+    show vetIsAdminProvider;
+
 import 'settings_routes.dart';
 import 'widgets/menu_entry.dart';
 
@@ -37,14 +40,17 @@ class AppSideMenu extends ConsumerWidget {
 
   /// Opens the menu of the scaffold around [context]. Nothing happens where
   /// there is none (a widget pumped on its own in a test).
-  static void open(BuildContext context) => Scaffold.maybeOf(context)?.openDrawer();
+  static void open(BuildContext context) =>
+      Scaffold.maybeOf(context)?.openDrawer();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final user = ref.watch(authControllerProvider).value;
     final petCount = ref.watch(petsProvider.select((pets) => pets.length));
-    final reviewer = ref.watch(vetIsAdminProvider).value ?? false;
+    final reviewer =
+        ref.watch(capabilityProvider('findvet.admin')) &&
+        (ref.watch(vetIsAdminProvider).value ?? false);
 
     void close() => Scaffold.maybeOf(context)?.closeDrawer();
 
@@ -55,7 +61,9 @@ class AppSideMenu extends ConsumerWidget {
       surfaceTintColor: Colors.transparent,
       clipBehavior: Clip.antiAlias,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadiusDirectional.horizontal(end: Radius.circular(AppSpacing.shellRadius)),
+        borderRadius: BorderRadiusDirectional.horizontal(
+          end: Radius.circular(AppSpacing.shellRadius),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -65,38 +73,41 @@ class AppSideMenu extends ConsumerWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               children: [
-                MenuEntry(
-                  key: findVetKey,
-                  icon: const Icon(Icons.local_hospital_rounded),
-                  title: context.findVetL10n.findVetTitle,
-                  subtitle: context.findVetL10n.findVetMenuSubtitle,
-                  onTap: () {
-                    close();
-                    openFindVet(context);
-                  },
-                ),
+                if (ref.watch(capabilityProvider('findvet.search')))
+                  MenuEntry(
+                    key: findVetKey,
+                    icon: const Icon(Icons.local_hospital_rounded),
+                    title: context.findVetL10n.findVetTitle,
+                    subtitle: context.findVetL10n.findVetMenuSubtitle,
+                    onTap: () {
+                      close();
+                      openFeature<Object>(context, 'find-vet', '');
+                    },
+                  ),
                 const SizedBox(height: 4),
-                MenuEntry(
-                  key: myPetsKey,
-                  icon: const PetLoopIcon(PetLoopGlyph.pet),
-                  title: l10n.menuMyPets,
-                  subtitle: l10n.homePetCount(petCount),
-                  onTap: () {
-                    close();
-                    openMyPets(context);
-                  },
-                ),
+                if (ref.watch(capabilityProvider('pets.view')))
+                  MenuEntry(
+                    key: myPetsKey,
+                    icon: const PetLoopIcon(PetLoopGlyph.pet),
+                    title: l10n.menuMyPets,
+                    subtitle: l10n.homePetCount(petCount),
+                    onTap: () {
+                      close();
+                      openFeature<Object>(context, 'my-pets', '');
+                    },
+                  ),
                 const SizedBox(height: 4),
-                MenuEntry(
-                  key: budgetKey,
-                  icon: const Icon(Icons.account_balance_wallet_rounded),
-                  title: context.budgetL10n.budgetTitle,
-                  subtitle: context.budgetL10n.menuBudgetSummary,
-                  onTap: () {
-                    close();
-                    openBudget(context);
-                  },
-                ),
+                if (ref.watch(capabilityProvider('budget.view')))
+                  MenuEntry(
+                    key: budgetKey,
+                    icon: const Icon(Icons.account_balance_wallet_rounded),
+                    title: context.budgetL10n.budgetTitle,
+                    subtitle: context.budgetL10n.menuBudgetSummary,
+                    onTap: () {
+                      close();
+                      openFeature<Object>(context, 'budget', '');
+                    },
+                  ),
                 const SizedBox(height: 4),
                 MenuEntry(
                   key: settingsKey,
@@ -108,6 +119,26 @@ class AppSideMenu extends ConsumerWidget {
                     openSettings(context);
                   },
                 ),
+                if (ref.watch(capabilityProvider('access.admin')))
+                  MenuEntry(
+                    icon: const Icon(Icons.admin_panel_settings_outlined),
+                    title: Localizations.localeOf(context).languageCode == 'he'
+                        ? 'הרשאות לתכונות'
+                        : 'Feature access',
+                    onTap: () {
+                      close();
+                      openAccessAdministration(context);
+                    },
+                  ),
+                if (ref.watch(capabilityProvider('basket.view')))
+                  MenuEntry(
+                    icon: const Icon(Icons.shopping_basket_outlined),
+                    title: context.budgetL10n.myBasket,
+                    onTap: () {
+                      close();
+                      openFeature<Object>(context, 'basket', '');
+                    },
+                  ),
                 if (reviewer) ...[
                   const SizedBox(height: 4),
                   MenuEntry(
@@ -117,7 +148,7 @@ class AppSideMenu extends ConsumerWidget {
                     subtitle: context.findVetL10n.adminMenuSubtitle,
                     onTap: () {
                       close();
-                      openDirectoryReview(context);
+                      openFeature<Object>(context, 'directory-review', '');
                     },
                   ),
                 ],
@@ -168,7 +199,9 @@ class _Account extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.coral,
-        borderRadius: BorderRadiusDirectional.only(bottomEnd: Radius.circular(AppSpacing.shellRadius)),
+        borderRadius: BorderRadiusDirectional.only(
+          bottomEnd: Radius.circular(AppSpacing.shellRadius),
+        ),
       ),
       child: SafeArea(
         bottom: false,
@@ -182,13 +215,20 @@ class _Account extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.yellow,
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.white.withValues(alpha: 0.85), width: 2),
+                  border: Border.all(
+                    color: AppColors.white.withValues(alpha: 0.85),
+                    width: 2,
+                  ),
                 ),
                 child: Center(
                   child: ExcludeSemantics(
                     child: Text(
                       user?.initial ?? '?',
-                      style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
                     ),
                   ),
                 ),
@@ -201,7 +241,11 @@ class _Account extends StatelessWidget {
                   children: [
                     Text(
                       user?.displayName ?? '',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.white),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.white,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -209,7 +253,10 @@ class _Account extends StatelessWidget {
                       user?.email ?? '',
                       // An address reads left to right on every screen.
                       textDirection: TextDirection.ltr,
-                      style: AppText.secondary.copyWith(color: AppColors.white, fontWeight: FontWeight.w700),
+                      style: AppText.secondary.copyWith(
+                        color: AppColors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

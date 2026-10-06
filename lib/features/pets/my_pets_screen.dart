@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,14 +8,14 @@ import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
-import 'data/pets_repository_provider.dart';
+import '../../services/pets/data/pets_repository_provider.dart';
 import 'pet_actions.dart';
-import 'pet_words.dart';
+import '../../presentation/pet_words.dart';
 import 'profile/remove_pet.dart';
-import 'state/pet_completeness.dart';
-import 'widgets/pet_avatar.dart';
+import '../../services/pets/state/pet_completeness.dart';
+import '../../presentation/pet_avatar.dart';
 import 'widgets/pet_essentials_keeper.dart';
-import 'widgets/pets_widgets.dart';
+import '../../presentation/pets_widgets.dart';
 
 /// All the owner's pets at a glance: who is complete, who has gaps, "Add a
 /// pet", and the archived ones with "Restore".
@@ -22,7 +23,14 @@ class MyPetsScreen extends ConsumerWidget {
   const MyPetsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pets = ref.watch(petsProvider);
     final archived = ref.watch(archivedPetsProvider);
     final now = ref.watch(petsClockProvider)();
@@ -66,7 +74,14 @@ class _PetRow extends ConsumerWidget {
   final DateTime now;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final info = ref.watch(petCompletenessProvider(pet.id));
 
     return PetsCard(
@@ -74,7 +89,10 @@ class _PetRow extends ConsumerWidget {
       onTap: () => openPetProfile(context, pet.id, fromMyPets: true),
       padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 10, 10),
       // Stays up to date while a profile covers this page.
-      child: PetEssentialsKeeper(petId: pet.id, child: _content(context.petsL10n, info)),
+      child: PetEssentialsKeeper(
+        petId: pet.id,
+        child: _content(context.petsL10n, info),
+      ),
     );
   }
 
@@ -88,12 +106,25 @@ class _PetRow extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(pet.name, style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800)),
-              Text(petSummaryLine(l10n, pet, now: now), style: AppText.secondary.copyWith(color: AppColors.brown)),
+              Text(
+                pet.name,
+                style: AppText.cardTitle.copyWith(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              Text(
+                petSummaryLine(l10n, pet, now: now),
+                style: AppText.secondary.copyWith(color: AppColors.brown),
+              ),
               if (info.isKnown) ...[
                 const SizedBox(height: 5),
                 if (info.isComplete)
-                  PetsTag(l10n.complete, tone: TagTone.green, icon: Icons.check_rounded)
+                  PetsTag(
+                    l10n.complete,
+                    tone: TagTone.green,
+                    icon: Icons.check_rounded,
+                  )
                 else
                   PetsTag(l10n.essentialsToAdd(missing), tone: TagTone.yellow),
               ],
@@ -132,7 +163,14 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pet = widget.pet;
     final when = pet.archivedAt;
     final l10n = context.petsL10n;
@@ -140,7 +178,9 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
     return PetsRow(
       leading: PetAvatar(pet: pet, size: 56, dimmed: true),
       title: pet.name,
-      subtitle: when == null ? kind : l10n.archivedRow(kind, AppFormat.of(context).date(when)),
+      subtitle: when == null
+          ? kind
+          : l10n.archivedRow(kind, AppFormat.of(context).date(when)),
       trailing: PillButton(
         l10n.restore,
         key: Key('restore-${pet.id}'),

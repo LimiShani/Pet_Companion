@@ -7,7 +7,12 @@ import 'app_icon.dart';
 
 /// Simple screen used for tabs that are not implemented yet.
 class PlaceholderScreen extends StatelessWidget {
-  const PlaceholderScreen({super.key, required this.title, required this.icon, required this.message});
+  const PlaceholderScreen({
+    super.key,
+    required this.title,
+    required this.icon,
+    required this.message,
+  });
 
   final String title;
   final IconData icon;
@@ -26,13 +31,24 @@ class PlaceholderScreen extends StatelessWidget {
               Container(
                 width: 96,
                 height: 96,
-                decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+                decoration: const BoxDecoration(
+                  color: AppColors.yellow,
+                  shape: BoxShape.circle,
+                ),
                 child: AppIcon(icon, size: 48, color: AppColors.coral),
               ),
               const SizedBox(height: 20),
-              Text(context.l10n.placeholderComingSoon(title), style: AppText.petName, textAlign: TextAlign.center),
+              Text(
+                context.l10n.placeholderComingSoon(title),
+                style: AppText.petName,
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 8),
-              Text(message, style: AppText.body.copyWith(color: AppColors.brown), textAlign: TextAlign.center),
+              Text(
+                message,
+                style: AppText.body.copyWith(color: AppColors.brown),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),

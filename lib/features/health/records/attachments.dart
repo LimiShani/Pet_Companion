@@ -8,12 +8,12 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
-import '../data/file_services.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/file_services.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 
 enum _AttachmentSource { camera, gallery, pdf }
 
@@ -23,7 +23,10 @@ enum _AttachmentSource { camera, gallery, pdf }
 /// 5 MB) is explained and not returned.
 Future<PickedFile?> pickAttachment(BuildContext context) async {
   final container = ProviderScope.containerOf(context, listen: false);
-  final source = await showHealthSheet<_AttachmentSource>(context, const _AttachmentSourceSheet());
+  final source = await showHealthSheet<_AttachmentSource>(
+    context,
+    const _AttachmentSourceSheet(),
+  );
   if (source == null) return null;
   final picker = container.read(attachmentPickerProvider);
   try {
@@ -35,12 +38,19 @@ Future<PickedFile?> pickAttachment(BuildContext context) async {
     if (file == null) return null;
     final problem = file.failure;
     if (problem != null) {
-      if (context.mounted) showHealthSnack(context, context.healthL10n.failure(problem, context.l10n));
+      if (context.mounted) {
+        showHealthSnack(
+          context,
+          context.healthL10n.failure(problem, context.l10n),
+        );
+      }
       return null;
     }
     return file;
   } catch (error) {
-    if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+    if (context.mounted) {
+      showHealthSnack(context, healthErrorOf(context, error));
+    }
     return null;
   }
 }
@@ -51,7 +61,12 @@ class _AttachmentSourceSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.healthL10n;
-    Widget option(_AttachmentSource source, IconData icon, String title, String detail) => Padding(
+    Widget option(
+      _AttachmentSource source,
+      IconData icon,
+      String title,
+      String detail,
+    ) => Padding(
       padding: const EdgeInsetsDirectional.only(bottom: 8),
       child: HealthCard(
         key: ValueKey('attach-${source.name}'),
@@ -66,7 +81,10 @@ class _AttachmentSourceSheet extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: AppText.cardTitle),
-                  Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                  Text(
+                    detail,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
                 ],
               ),
             ),
@@ -81,9 +99,24 @@ class _AttachmentSourceSheet extends StatelessWidget {
       children: [
         SheetTitle(l10n.addPhotoOrPdf, subtitle: l10n.attachSheetNote),
         const SizedBox(height: 12),
-        option(_AttachmentSource.camera, Icons.photo_camera_rounded, l10n.takeAPhoto, l10n.withTheCamera),
-        option(_AttachmentSource.gallery, Icons.photo_library_rounded, l10n.chooseAPhoto, l10n.fromYourPhotos),
-        option(_AttachmentSource.pdf, Icons.picture_as_pdf_rounded, l10n.chooseAPdf, l10n.fromPhoneFiles),
+        option(
+          _AttachmentSource.camera,
+          Icons.photo_camera_rounded,
+          l10n.takeAPhoto,
+          l10n.withTheCamera,
+        ),
+        option(
+          _AttachmentSource.gallery,
+          Icons.photo_library_rounded,
+          l10n.chooseAPhoto,
+          l10n.fromYourPhotos,
+        ),
+        option(
+          _AttachmentSource.pdf,
+          Icons.picture_as_pdf_rounded,
+          l10n.chooseAPdf,
+          l10n.fromPhoneFiles,
+        ),
       ],
     );
   }
@@ -119,7 +152,12 @@ class AttachmentRow extends StatelessWidget {
     return HealthCard(
       onTap: onTap,
       radius: AppSpacing.fieldRadius,
-      padding: const EdgeInsetsDirectional.only(start: 10, end: 4, top: 8, bottom: 8),
+      padding: const EdgeInsetsDirectional.only(
+        start: 10,
+        end: 4,
+        top: 8,
+        bottom: 8,
+      ),
       child: Row(
         children: [
           ClipRRect(
@@ -129,7 +167,12 @@ class AttachmentRow extends StatelessWidget {
               height: 52,
               color: AppColors.yellow,
               child: isPdf || source == null
-                  ? AppIcon(isPdf ? Icons.picture_as_pdf_rounded : Icons.image_rounded, color: AppColors.ink)
+                  ? AppIcon(
+                      isPdf
+                          ? Icons.picture_as_pdf_rounded
+                          : Icons.image_rounded,
+                      color: AppColors.ink,
+                    )
                   : _Preview(bytes: source),
             ),
           ),
@@ -144,10 +187,16 @@ class AttachmentRow extends StatelessWidget {
                   style: AppText.cardTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  textDirection: directionOfText(name, fallback: TextDirection.ltr),
+                  textDirection: directionOfText(
+                    name,
+                    fallback: TextDirection.ltr,
+                  ),
                 ),
                 Text(
-                  format.dots([isPdf ? l10n.fileKindPdf : l10n.fileKindPhoto, format.fileSize(sizeBytes)]),
+                  format.dots([
+                    isPdf ? l10n.fileKindPdf : l10n.fileKindPhoto,
+                    format.fileSize(sizeBytes),
+                  ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],
@@ -159,7 +208,10 @@ class AttachmentRow extends StatelessWidget {
               tooltip: l10n.removeNamed(name),
               icon: const AppIcon(Icons.close_rounded, size: 20),
               color: AppColors.brown,
-              constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
+              constraints: const BoxConstraints(
+                minWidth: kHealthTapTarget,
+                minHeight: kHealthTapTarget,
+              ),
             )
           else
             const SizedBox(width: 8),
@@ -180,13 +232,16 @@ class _Preview extends StatelessWidget {
       future: bytes,
       builder: (context, snapshot) {
         final data = snapshot.data;
-        if (data == null) return const AppIcon(Icons.image_rounded, color: AppColors.ink);
+        if (data == null) {
+          return const AppIcon(Icons.image_rounded, color: AppColors.ink);
+        }
         return Image.memory(
           data,
           fit: BoxFit.cover,
           gaplessPlayback: true,
           excludeFromSemantics: true,
-          errorBuilder: (_, _, _) => const AppIcon(Icons.broken_image_rounded, color: AppColors.ink),
+          errorBuilder: (_, _, _) =>
+              const AppIcon(Icons.broken_image_rounded, color: AppColors.ink),
         );
       },
     );
@@ -225,7 +280,11 @@ class _DocumentRowState extends ConsumerState<DocumentRow> {
       return;
     }
     // A failed preview just shows the placeholder icon.
-    _bytes = ref.read(healthRepositoryProvider).documentBytes(widget.document)..ignore();
+    _bytes =
+        ref
+            .read(medicalRecordsRepositoryProvider)
+            .documentBytes(widget.document)
+          ..ignore();
   }
 
   @override
@@ -256,16 +315,26 @@ Future<void> openDocument(BuildContext context, HealthDocument document) async {
     return;
   }
   final container = ProviderScope.containerOf(context, listen: false);
-  final repo = container.read(healthRepositoryProvider);
+  final repo = container.read(medicalRecordsRepositoryProvider);
   final sharer = container.read(fileSharerProvider);
   try {
     final link = await repo.documentLink(document);
     if (link != null && await sharer.openLink(link)) return;
     final bytes = await repo.documentBytes(document);
-    final opened = await sharer.share(SharedFile(name: document.fileName, mimeType: document.mimeType, bytes: bytes));
-    if (!opened && context.mounted) showHealthSnack(context, context.healthL10n.couldNotOpenFile);
+    final opened = await sharer.share(
+      SharedFile(
+        name: document.fileName,
+        mimeType: document.mimeType,
+        bytes: bytes,
+      ),
+    );
+    if (!opened && context.mounted) {
+      showHealthSnack(context, context.healthL10n.couldNotOpenFile);
+    }
   } catch (error) {
-    if (context.mounted) showHealthSnack(context, healthErrorOf(context, error));
+    if (context.mounted) {
+      showHealthSnack(context, healthErrorOf(context, error));
+    }
   }
 }
 
@@ -282,7 +351,8 @@ class PhotoViewScreen extends ConsumerStatefulWidget {
 class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
   late Future<Uint8List> _bytes = _load();
 
-  Future<Uint8List> _load() => ref.read(healthRepositoryProvider).documentBytes(widget.document);
+  Future<Uint8List> _load() =>
+      ref.read(medicalRecordsRepositoryProvider).documentBytes(widget.document);
 
   Future<void> _share() async {
     try {
@@ -290,8 +360,16 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
       final doc = widget.document;
       final shared = await ref
           .read(fileSharerProvider)
-          .share(SharedFile(name: doc.fileName, mimeType: doc.mimeType, bytes: bytes));
-      if (!shared && mounted) showHealthSnack(context, context.healthL10n.couldNotOpenShareSheet);
+          .share(
+            SharedFile(
+              name: doc.fileName,
+              mimeType: doc.mimeType,
+              bytes: bytes,
+            ),
+          );
+      if (!shared && mounted) {
+        showHealthSnack(context, context.healthL10n.couldNotOpenShareSheet);
+      }
     } catch (error) {
       if (mounted) showHealthSnack(context, healthErrorOf(context, error));
     }
@@ -325,7 +403,9 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
                   );
                 }
                 final data = snapshot.data;
-                if (data == null) return const Center(child: CircularProgressIndicator());
+                if (data == null) {
+                  return const Center(child: CircularProgressIndicator());
+                }
                 return ColoredBox(
                   color: AppColors.ink,
                   child: SizedBox.expand(
@@ -337,8 +417,11 @@ class _PhotoViewScreenState extends ConsumerState<PhotoViewScreen> {
                           key: const Key('photo-view'),
                           fit: BoxFit.contain,
                           semanticLabel: widget.document.fileName,
-                          errorBuilder: (_, _, _) =>
-                              const AppIcon(Icons.broken_image_rounded, size: 64, color: AppColors.white),
+                          errorBuilder: (_, _, _) => const AppIcon(
+                            Icons.broken_image_rounded,
+                            size: 64,
+                            color: AppColors.white,
+                          ),
                         ),
                       ),
                     ),

@@ -29,15 +29,25 @@ abstract final class PetsRoutes {
   static const start = '/';
 
   /// Where a signed-in owner who has no pet yet may be.
-  static bool openWithoutPets(String location) => location == welcome || location == addPet;
+  static bool openWithoutPets(String location) =>
+      location == welcome || location == addPet;
 }
 
 /// Full-screen routes (no bottom bar), placed beside the tabs.
 final petsRoutes = <RouteBase>[
-  GoRoute(path: PetsRoutes.welcome, builder: (context, state) => const WelcomeScreen()),
-  GoRoute(path: PetsRoutes.myPets, builder: (context, state) => const MyPetsScreen()),
+  GoRoute(
+    path: PetsRoutes.welcome,
+    builder: (context, state) => const WelcomeScreen(),
+  ),
+  GoRoute(
+    path: PetsRoutes.myPets,
+    builder: (context, state) => const MyPetsScreen(),
+  ),
   // Before the profile, which would otherwise take "new" for a pet id.
-  GoRoute(path: PetsRoutes.addPet, builder: (context, state) => const AddPetScreen()),
+  GoRoute(
+    path: PetsRoutes.addPet,
+    builder: (context, state) => const AddPetScreen(),
+  ),
   GoRoute(
     path: '${PetsRoutes.myPets}/:petId',
     builder: (context, state) => PetProfileScreen(

@@ -10,5 +10,7 @@ void showStoreMessage(BuildContext context, String text) =>
 void showStoreMessageOn(ScaffoldMessengerState messenger, String text) {
   messenger
     ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(text), duration: const Duration(seconds: 3)));
+    ..showSnackBar(
+      SnackBar(content: Text(text), duration: const Duration(seconds: 3)),
+    );
 }

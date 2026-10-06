@@ -1,3 +1,4 @@
+import '../../services/pet_records/data/health_models.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,18 +6,19 @@ import 'package:go_router/go_router.dart';
 import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
-import '../health/emergency/emergency.dart';
+import '../../platform/feature_ui.dart';
+import '../../services/pet_records/state/emergency_contacts.dart';
 import 'add_pet/add_pet_screen.dart';
-import 'icons/pet_icon_bank.dart';
+import '../../presentation/pet_icon_bank.dart';
 import 'my_pets_screen.dart';
-import 'pet_words.dart';
+import '../../presentation/pet_words.dart';
 import 'pets_routes.dart';
 import 'picture/pet_picture.dart';
 import 'profile/basics_sheet.dart';
 import 'profile/pet_profile_screen.dart';
-import 'state/pet_completeness.dart';
+import '../../services/pets/state/pet_completeness.dart';
 import 'widgets/pet_basics_fields.dart';
-import 'widgets/pets_widgets.dart';
+import '../../presentation/pets_widgets.dart';
 
 /// Opens the add-a-pet flow, full screen (no bottom bar). Returns the new
 /// pet, which is already saved and selected, or `null` when the owner left
@@ -30,13 +32,23 @@ Future<Pet?> openAddPet(BuildContext context) {
 
 /// Opens the profile of the pet with [petId]: the edit page, with archive
 /// and delete at the end. Nothing opens for an unknown id.
-Future<void> openPetProfile(BuildContext context, String petId, {bool fromMyPets = false}) async {
+Future<void> openPetProfile(
+  BuildContext context,
+  String petId, {
+  bool fromMyPets = false,
+}) async {
   if (_petOf(context, petId, 'openPetProfile') == null) return;
   final router = GoRouter.maybeOf(context);
   if (router != null) {
-    await router.push<void>(PetsRoutes.profile(petId), extra: fromMyPets ? PetsRoutes.fromMyPets : null);
+    await router.push<void>(
+      PetsRoutes.profile(petId),
+      extra: fromMyPets ? PetsRoutes.fromMyPets : null,
+    );
   } else {
-    await pushPetsPage<void>(context, PetProfileScreen(petId: petId, fromMyPets: fromMyPets));
+    await pushPetsPage<void>(
+      context,
+      PetProfileScreen(petId: petId, fromMyPets: fromMyPets),
+    );
   }
 }
 
@@ -74,13 +86,19 @@ Future<void> changePetPicture(BuildContext context, String petId) async {
     petName: pet.name,
     species: pet.species,
     canRemove: pet.hasPhoto || pet.iconKey != null,
-    currentIcon: pet.iconKey == null ? null : PetIconChoice.parse(pet.iconKey, species: pet.species),
+    currentIcon: pet.iconKey == null
+        ? null
+        : PetIconChoice.parse(pet.iconKey, species: pet.species),
   );
   if (picture == null) return;
   try {
     // The pet as it is now: the sheet may have been open for a while.
     final current = container.read(petsStoreProvider).byId(petId) ?? pet;
-    await savePetPicture(container.read(petsStoreProvider.notifier), current, picture);
+    await savePetPicture(
+      container.read(petsStoreProvider.notifier),
+      current,
+      picture,
+    );
   } catch (e) {
     if (context.mounted) showPetsSnack(context, petsErrorOf(context, e));
   }
@@ -90,21 +108,33 @@ Future<void> changePetPicture(BuildContext context, String petId) async {
 /// Health's vet picker or health profile page for the health items, a small
 /// sheet with the one field for the pet's own items, the picture sheet for
 /// the photo.
-Future<void> openPetInfoItem(BuildContext context, {required String petId, required PetInfoItem item}) async {
+Future<void> openPetInfoItem(
+  BuildContext context, {
+  required String petId,
+  required PetInfoItem item,
+}) async {
   final pet = _petOf(context, petId, 'openPetInfoItem');
   if (pet == null) return;
   final l10n = context.petsL10n;
   switch (item) {
     case PetInfoItem.vetPhone:
-      await openHealthCriticalItem(context, petId: petId, item: HealthCriticalItem.vetPhone);
+      await openFeature<Object>(context, 'health-critical', petId, {
+        'item': HealthCriticalItem.vetPhone,
+      });
     case PetInfoItem.allergies:
-      await openHealthCriticalItem(context, petId: petId, item: HealthCriticalItem.allergies);
+      await openFeature<Object>(context, 'health-critical', petId, {
+        'item': HealthCriticalItem.allergies,
+      });
     case PetInfoItem.conditions:
-      await openHealthCriticalItem(context, petId: petId, item: HealthCriticalItem.conditions);
+      await openFeature<Object>(context, 'health-critical', petId, {
+        'item': HealthCriticalItem.conditions,
+      });
     case PetInfoItem.microchip:
-      await openHealthProfile(context, petId);
+      await openFeature<Object>(context, 'health-profile', petId);
     case PetInfoItem.emergencyVet:
-      await showVetPicker(context, petId: petId, role: VetRole.emergency);
+      await openFeature<Object>(context, 'vet-picker', petId, {
+        'role': VetRole.emergency,
+      });
     case PetInfoItem.age:
       await showPetBasicsSheet(
         context,

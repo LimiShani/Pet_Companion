@@ -4,11 +4,11 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../health/widgets/health_widgets.dart' show kHealthTapTarget;
-import '../data/vet_models.dart';
+import '../../../presentation/health_widgets.dart' show kHealthTapTarget;
+import '../../../services/findvet/data/vet_models.dart';
 import '../findvet_words.dart';
-import '../regions/regions.dart';
-import '../state/find_vet_providers.dart';
+import '../../../services/findvet/regions/regions.dart';
+import '../../../services/findvet/state/find_vet_providers.dart';
 
 /// "Where should we look?": the phone's location (asked for only on the
 /// tap, after saying why) or a place typed by hand. Typing a city name
@@ -98,7 +98,9 @@ class _AreaPickerState extends State<AreaPicker> {
   }
 
   void _pick(PlaceMatch match, AreaSource source) {
-    widget.onPicked(SearchArea(label: match.label, point: match.point, source: source));
+    widget.onPicked(
+      SearchArea(label: match.label, point: match.point, source: source),
+    );
   }
 
   String? _problemText(FindVetL10n l10n) => switch (widget.problem) {
@@ -114,7 +116,9 @@ class _AreaPickerState extends State<AreaPicker> {
   Widget build(BuildContext context) {
     final l10n = context.findVetL10n;
     final problem = _problemText(l10n);
-    final canOpenSettings = widget.problem == AreaProblem.deniedForever || widget.problem == AreaProblem.serviceOff;
+    final canOpenSettings =
+        widget.problem == AreaProblem.deniedForever ||
+        widget.problem == AreaProblem.serviceOff;
     final localMatches = _matches.isNotEmpty && !_searching;
 
     return Column(
@@ -122,7 +126,10 @@ class _AreaPickerState extends State<AreaPicker> {
       children: [
         Semantics(
           header: true,
-          child: Text(l10n.areaQuestion, style: AppText.cardTitle.copyWith(fontSize: 19)),
+          child: Text(
+            l10n.areaQuestion,
+            style: AppText.cardTitle.copyWith(fontSize: 19),
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -130,18 +137,32 @@ class _AreaPickerState extends State<AreaPicker> {
           children: [
             const Padding(
               padding: EdgeInsetsDirectional.only(top: 2, end: 8),
-              child: AppIcon(Icons.lock_outline_rounded, size: 20, color: AppColors.brown),
+              child: AppIcon(
+                Icons.lock_outline_rounded,
+                size: 20,
+                color: AppColors.brown,
+              ),
             ),
-            Expanded(child: Text(l10n.locationWhy, style: AppText.body.copyWith(color: AppColors.brown))),
+            Expanded(
+              child: Text(
+                l10n.locationWhy,
+                style: AppText.body.copyWith(color: AppColors.brown),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         FilledButton.icon(
           key: AreaPicker.useLocationKey,
           onPressed: widget.locating ? null : widget.onUseLocation,
-          style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget)),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(kHealthTapTarget),
+          ),
           icon: widget.locating
-              ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                )
               : const AppIcon(Icons.my_location_rounded),
           label: Text(widget.locating ? l10n.locating : l10n.useMyLocation),
         ),
@@ -165,7 +186,12 @@ class _AreaPickerState extends State<AreaPicker> {
                       child: TextButton(
                         key: AreaPicker.openSettingsKey,
                         onPressed: widget.onOpenSettings,
-                        style: TextButton.styleFrom(minimumSize: const Size(kHealthTapTarget, kHealthTapTarget)),
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(
+                            kHealthTapTarget,
+                            kHealthTapTarget,
+                          ),
+                        ),
                         child: Text(l10n.openSettings),
                       ),
                     ),
@@ -175,7 +201,10 @@ class _AreaPickerState extends State<AreaPicker> {
           ),
         ],
         const SizedBox(height: 18),
-        Text(l10n.orTypePlace, style: AppText.label.copyWith(color: AppColors.brown)),
+        Text(
+          l10n.orTypePlace,
+          style: AppText.label.copyWith(color: AppColors.brown),
+        ),
         const SizedBox(height: 6),
         Row(
           children: [
@@ -186,7 +215,10 @@ class _AreaPickerState extends State<AreaPicker> {
                 textInputAction: TextInputAction.search,
                 onChanged: _suggest,
                 onSubmitted: (_) => _search(),
-                decoration: InputDecoration(hintText: l10n.placeSearchHint, labelText: l10n.placeSearchHint),
+                decoration: InputDecoration(
+                  hintText: l10n.placeSearchHint,
+                  labelText: l10n.placeSearchHint,
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -194,9 +226,15 @@ class _AreaPickerState extends State<AreaPicker> {
               key: AreaPicker.searchKey,
               tooltip: l10n.placeSearchButton,
               onPressed: _searching ? null : _search,
-              constraints: const BoxConstraints(minWidth: kHealthTapTarget, minHeight: kHealthTapTarget),
+              constraints: const BoxConstraints(
+                minWidth: kHealthTapTarget,
+                minHeight: kHealthTapTarget,
+              ),
               icon: _searching
-                  ? const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2.5))
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                    )
                   : const AppIcon(Icons.search_rounded),
             ),
           ],
@@ -204,7 +242,10 @@ class _AreaPickerState extends State<AreaPicker> {
         if (_message != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Semantics(liveRegion: true, child: Text(_message!, style: AppText.body)),
+            child: Semantics(
+              liveRegion: true,
+              child: Text(_message!, style: AppText.body),
+            ),
           ),
         if (localMatches) ...[
           const SizedBox(height: 8),
@@ -216,8 +257,15 @@ class _AreaPickerState extends State<AreaPicker> {
               child: ListTile(
                 key: AreaPicker.matchKey(match.label),
                 minTileHeight: kHealthTapTarget,
-                leading: const AppIcon(Icons.place_outlined, color: AppColors.coralDark),
-                title: Text(match.label, maxLines: 2, overflow: TextOverflow.ellipsis),
+                leading: const AppIcon(
+                  Icons.place_outlined,
+                  color: AppColors.coralDark,
+                ),
+                title: Text(
+                  match.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 onTap: () => _pick(match, AreaSource.locality),
               ),
             ),
@@ -229,7 +277,12 @@ class _AreaPickerState extends State<AreaPicker> {
 
 /// "Searching near Rehovot · Change", with the warning for a rough fix.
 class AreaBar extends StatelessWidget {
-  const AreaBar({super.key, required this.area, required this.onChange, this.radiusM});
+  const AreaBar({
+    super.key,
+    required this.area,
+    required this.onChange,
+    this.radiusM,
+  });
 
   static const changeKey = Key('findvet-change-area');
 
@@ -240,17 +293,24 @@ class AreaBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.findVetL10n;
-    final place = area.source == AreaSource.device ? l10n.yourLocation : area.label;
+    final place = area.source == AreaSource.device
+        ? l10n.yourLocation
+        : area.label;
     return Container(
       padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 6, 6),
-      decoration: BoxDecoration(color: AppColors.white, borderRadius: BorderRadius.circular(AppSpacing.fieldRadius)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               AppIcon(
-                area.source == AreaSource.device ? Icons.my_location_rounded : Icons.place_rounded,
+                area.source == AreaSource.device
+                    ? Icons.my_location_rounded
+                    : Icons.place_rounded,
                 size: 20,
                 color: AppColors.coralDark,
               ),
@@ -266,7 +326,12 @@ class AreaBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     if (radiusM != null)
-                      Text(l10n.withinKm(radiusKm(radiusM!)), style: AppText.secondary.copyWith(color: AppColors.brown)),
+                      Text(
+                        l10n.withinKm(radiusKm(radiusM!)),
+                        style: AppText.secondary.copyWith(
+                          color: AppColors.brown,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -277,7 +342,9 @@ class AreaBar extends StatelessWidget {
                 child: TextButton(
                   key: changeKey,
                   onPressed: onChange,
-                  style: TextButton.styleFrom(minimumSize: const Size(kHealthTapTarget, kHealthTapTarget)),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
+                  ),
                   child: Text(l10n.changeArea),
                 ),
               ),
@@ -285,7 +352,11 @@ class AreaBar extends StatelessWidget {
           ),
           if (area.isApproximate)
             Padding(
-              padding: const EdgeInsetsDirectional.only(top: 4, end: 8, bottom: 4),
+              padding: const EdgeInsetsDirectional.only(
+                top: 4,
+                end: 8,
+                bottom: 4,
+              ),
               child: Text(
                 l10n.approximateLocation(((area.accuracyM ?? 0) / 1000).ceil()),
                 style: AppText.secondary.copyWith(color: AppColors.ink),

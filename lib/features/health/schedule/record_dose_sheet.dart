@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,11 +8,11 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../data/health_models.dart';
-import '../health_format.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_format.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// Opens the "Record dose" sheet: for one reminder ([entry]), or for a
 /// medicine given only when needed ([medication], no reminder).
@@ -19,16 +20,33 @@ import '../widgets/health_widgets.dart';
 /// It records what actually happened (given now, given at another time, not
 /// given, not sure), who logged it and when. It shows the vet's
 /// instructions as typed and never suggests a dose or a repeat.
-Future<void> showRecordDoseSheet(BuildContext context, Pet pet, {ScheduleEntry? entry, Medication? medication}) {
-  assert(entry != null || medication != null, 'A dose belongs to a reminder or to a medicine.');
+Future<void> showRecordDoseSheet(
+  BuildContext context,
+  Pet pet, {
+  ScheduleEntry? entry,
+  Medication? medication,
+}) {
+  assert(
+    entry != null || medication != null,
+    'A dose belongs to a reminder or to a medicine.',
+  );
   return showHealthSheet<void>(
     context,
-    RecordDoseSheet(pet: pet, entry: entry, medication: entry?.medication ?? medication),
+    RecordDoseSheet(
+      pet: pet,
+      entry: entry,
+      medication: entry?.medication ?? medication,
+    ),
   );
 }
 
 class RecordDoseSheet extends ConsumerStatefulWidget {
-  const RecordDoseSheet({super.key, required this.pet, this.entry, this.medication});
+  const RecordDoseSheet({
+    super.key,
+    required this.pet,
+    this.entry,
+    this.medication,
+  });
 
   final Pet pet;
   final ScheduleEntry? entry;
@@ -108,15 +126,30 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.schedule.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final entry = widget.entry;
     final medication = widget.medication;
     final now = ref.watch(healthClockProvider)();
-    final name = ref.watch(authControllerProvider.select((auth) => auth.value?.displayName.trim() ?? ''));
+    final name = ref.watch(
+      authControllerProvider.select(
+        (auth) => auth.value?.displayName.trim() ?? '',
+      ),
+    );
     final notes = medication?.instructions.trim() ?? '';
     final by = medication?.prescribedBy.trim() ?? '';
-    final wide = FilledButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget));
-    final wideOutlined = OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(kHealthTapTarget));
+    final wide = FilledButton.styleFrom(
+      minimumSize: const Size.fromHeight(kHealthTapTarget),
+    );
+    final wideOutlined = OutlinedButton.styleFrom(
+      minimumSize: const Size.fromHeight(kHealthTapTarget),
+    );
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final error = _error;
@@ -131,13 +164,18 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
         _ => l10n.reminderForDay(format.weekdayDate(entry.due), time),
       };
     }
-    final instructions = medication == null ? '' : format.instructions(medication);
+    final instructions = medication == null
+        ? ''
+        : format.instructions(medication);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        SheetTitle(medication?.displayName ?? entry?.item.title ?? l10n.medicine, subtitle: subtitle),
+        SheetTitle(
+          medication?.displayName ?? entry?.item.title ?? l10n.medicine,
+          subtitle: subtitle,
+        ),
         if (instructions.isNotEmpty || notes.isNotEmpty || by.isNotEmpty) ...[
           const SizedBox(height: 12),
           HealthCard(
@@ -148,9 +186,17 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (instructions.isNotEmpty) Text(l10n.vetsInstructions(instructions), style: AppText.body),
+                if (instructions.isNotEmpty)
+                  Text(
+                    l10n.vetsInstructions(instructions),
+                    style: AppText.body,
+                  ),
                 if (notes.isNotEmpty) TypedText(notes, style: AppText.body),
-                if (by.isNotEmpty) TypedText(by, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                if (by.isNotEmpty)
+                  TypedText(
+                    by,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
               ],
             ),
           ),
@@ -192,17 +238,24 @@ class _RecordDoseSheetState extends ConsumerState<RecordDoseSheet> {
           textCapitalization: TextCapitalization.sentences,
           maxLines: 2,
           minLines: 1,
-          decoration: InputDecoration(labelText: l10n.noteOptional, hintText: l10n.doseNoteHint),
+          decoration: InputDecoration(
+            labelText: l10n.noteOptional,
+            hintText: l10n.doseNoteHint,
+          ),
         ),
         if (error != null) ...[
           const SizedBox(height: 10),
           Text(
             error is String ? error : format.error(error),
-            style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+            style: AppText.body.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
         ],
         const SizedBox(height: 12),
-        FinePrint(name.isEmpty ? l10n.doseFinePrintYou : l10n.doseFinePrintNamed(name)),
+        FinePrint(
+          name.isEmpty ? l10n.doseFinePrintYou : l10n.doseFinePrintNamed(name),
+        ),
       ],
     );
   }

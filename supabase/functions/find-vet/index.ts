@@ -14,6 +14,7 @@
 // without sign-in; abuse is held back by the per-client and daily limits.
 
 import { createFindVetHandler } from '../_shared/find_vet_handler.ts';
+import { createFeatureAuthorizer } from '../_shared/access.ts';
 import { createGoogleProvider } from '../_shared/providers/google.ts';
 import { noneProvider } from '../_shared/providers/none.ts';
 import { DEFAULT_DAILY_GEOCODE_CAP, DEFAULT_DAILY_PLACES_CAP, positiveIntOr } from '../_shared/quota.ts';
@@ -27,6 +28,7 @@ const serviceKey = env('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const googleKey = env('GOOGLE_PLACES_API_KEY');
 
 const handler = createFindVetHandler({
+  authorize: (request) => createFeatureAuthorizer({ url: supabaseUrl, serviceKey })(request, 'findvet.search'),
   provider: googleKey ? createGoogleProvider({ apiKey: googleKey }) : noneProvider,
   store: createPostgrestStore({ url: supabaseUrl, serviceKey }),
   regions: registryLookup,

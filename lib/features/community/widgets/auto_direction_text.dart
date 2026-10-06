@@ -8,7 +8,13 @@ import '../community_words.dart';
 /// one left to right in a Hebrew app. Text with no letters (digits, emoji)
 /// follows the screen.
 class AutoDirectionText extends StatelessWidget {
-  const AutoDirectionText(this.text, {super.key, this.style, this.maxLines, this.overflow});
+  const AutoDirectionText(
+    this.text, {
+    super.key,
+    this.style,
+    this.maxLines,
+    this.overflow,
+  });
 
   final String text;
   final TextStyle? style;

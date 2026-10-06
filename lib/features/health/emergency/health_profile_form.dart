@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,10 +10,10 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
-import '../data/health_models.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// The basic health information of a pet as a ready-made form section:
 /// microchip number, allergies and conditions, the last two each with a
@@ -47,7 +48,8 @@ class HealthBasicsSection extends ConsumerStatefulWidget {
   final bool guardChanges;
 
   @override
-  ConsumerState<HealthBasicsSection> createState() => _HealthBasicsSectionState();
+  ConsumerState<HealthBasicsSection> createState() =>
+      _HealthBasicsSectionState();
 }
 
 class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
@@ -73,7 +75,14 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
 
   @override
   void dispose() {
-    for (final c in [_microchip, _allergies, _conditions, _contactName, _contactPhone, _notes]) {
+    for (final c in [
+      _microchip,
+      _allergies,
+      _conditions,
+      _contactName,
+      _contactPhone,
+      _notes,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -95,7 +104,15 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   }
 
   List<Object?> _answers() => [
-    for (final c in [_microchip, _allergies, _conditions, _contactName, _contactPhone, _notes]) c.text,
+    for (final c in [
+      _microchip,
+      _allergies,
+      _conditions,
+      _contactName,
+      _contactPhone,
+      _notes,
+    ])
+      c.text,
     _notChipped,
     _noAllergies,
     _noConditions,
@@ -115,8 +132,12 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
       _error = null;
     });
     try {
-      final allergies = _noAllergies ? const <String>[] : _lines(_allergies.text);
-      final conditions = _noConditions ? const <String>[] : _lines(_conditions.text);
+      final allergies = _noAllergies
+          ? const <String>[]
+          : _lines(_allergies.text);
+      final conditions = _noConditions
+          ? const <String>[]
+          : _lines(_conditions.text);
       final saved = await ref
           .read(healthProfileProvider(widget.petId).notifier)
           .save(
@@ -127,8 +148,12 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
               allergiesNoneKnown: _noAllergies,
               conditions: conditions,
               conditionsNoneKnown: _noConditions,
-              contactName: widget.withContactAndNotes ? _contactName.text.trim() : null,
-              contactPhone: widget.withContactAndNotes ? _contactPhone.text.trim() : null,
+              contactName: widget.withContactAndNotes
+                  ? _contactName.text.trim()
+                  : null,
+              contactPhone: widget.withContactAndNotes
+                  ? _contactPhone.text.trim()
+                  : null,
               notes: widget.withContactAndNotes ? _notes.text.trim() : null,
             ),
           );
@@ -146,7 +171,14 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(healthProfileProvider(widget.petId));
     final current = profile.value;
     final l10n = context.healthL10n;
@@ -155,7 +187,8 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
           ? HealthLoadError(
               title: l10n.loadFailedProfile,
               error: profile.error!,
-              onRetry: () => ref.invalidate(healthProfileProvider(widget.petId)),
+              onRetry: () =>
+                  ref.invalidate(healthProfileProvider(widget.petId)),
             )
           : const HealthLoading();
     }
@@ -176,8 +209,14 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
             // A number: left to right on every screen.
             textDirection: TextDirection.ltr,
             textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
-            decoration: InputDecoration(labelText: _notChipped ? l10n.notChipped : l10n.microchipNumberOptional),
-            validator: (value) => (value?.trim().length ?? 0) > 40 ? l10n.validNumberTooLong(40) : null,
+            decoration: InputDecoration(
+              labelText: _notChipped
+                  ? l10n.notChipped
+                  : l10n.microchipNumberOptional,
+            ),
+            validator: (value) => (value?.trim().length ?? 0) > 40
+                ? l10n.validNumberTooLong(40)
+                : null,
           ),
           _TickLine(
             checkKey: const Key('profile-not-chipped'),
@@ -226,7 +265,10 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
                 final v = value?.trim() ?? '';
                 if (v.isEmpty) return null;
                 final digits = v.replaceAll(RegExp('[^0-9]'), '');
-                return digits.length < 5 || RegExp(r'[^0-9+()\-\s.]').hasMatch(v) ? l10n.validPhone : null;
+                return digits.length < 5 ||
+                        RegExp(r'[^0-9+()\-\s.]').hasMatch(v)
+                    ? l10n.validPhone
+                    : null;
               },
             ),
             FormLabel(l10n.anythingElseForVet),
@@ -243,7 +285,9 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
             const SizedBox(height: 12),
             Text(
               healthErrorOf(context, _error),
-              style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+              style: AppText.body.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
             ),
           ],
           const SizedBox(height: 22),
@@ -257,8 +301,16 @@ class _HealthBasicsSectionState extends ConsumerState<HealthBasicsSection> {
     );
     if (!widget.guardChanges) return form;
     return ListenableBuilder(
-      listenable: Listenable.merge([_microchip, _allergies, _conditions, _contactName, _contactPhone, _notes]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      listenable: Listenable.merge([
+        _microchip,
+        _allergies,
+        _conditions,
+        _contactName,
+        _contactPhone,
+        _notes,
+      ]),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: form,
     );
   }
@@ -283,7 +335,14 @@ class _AnswerField extends StatelessWidget {
   final ValueChanged<bool> onNoneKnown;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -295,10 +354,18 @@ class _AnswerField extends StatelessWidget {
           minLines: 1,
           maxLines: 4,
           textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(labelText: noneKnown ? l10n.noneKnown : label),
-          validator: (value) => (value?.length ?? 0) > 600 ? l10n.validKeepShorter : null,
+          decoration: InputDecoration(
+            labelText: noneKnown ? l10n.noneKnown : label,
+          ),
+          validator: (value) =>
+              (value?.length ?? 0) > 600 ? l10n.validKeepShorter : null,
         ),
-        _TickLine(checkKey: checkKey, label: l10n.noneKnown, value: noneKnown, onChanged: onNoneKnown),
+        _TickLine(
+          checkKey: checkKey,
+          label: l10n.noneKnown,
+          value: noneKnown,
+          onChanged: onNoneKnown,
+        ),
       ],
     );
   }
@@ -306,7 +373,12 @@ class _AnswerField extends StatelessWidget {
 
 /// A tick box with a label: an honest "nothing to enter" answer.
 class _TickLine extends StatelessWidget {
-  const _TickLine({required this.checkKey, required this.label, required this.value, required this.onChanged});
+  const _TickLine({
+    required this.checkKey,
+    required this.label,
+    required this.value,
+    required this.onChanged,
+  });
 
   final Key checkKey;
   final String label;
@@ -314,7 +386,14 @@ class _TickLine extends StatelessWidget {
   final ValueChanged<bool> onChanged;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return CheckboxListTile(
       key: checkKey,
       value: value,
@@ -338,7 +417,14 @@ class HealthProfileScreen extends StatelessWidget {
       pushHealthPage<void>(context, HealthProfileScreen(pet: pet));
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.edit',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return HealthPage(
       title: context.healthL10n.petsHealthProfile(pet.name),
       child: Column(
@@ -361,7 +447,10 @@ class HealthProfileScreen extends StatelessWidget {
 
 /// Opens [HealthProfileScreen] for [petId]; nothing opens for an unknown id.
 Future<void> openHealthProfileById(BuildContext context, String petId) {
-  for (final pet in ProviderScope.containerOf(context, listen: false).read(petsProvider)) {
+  for (final pet in ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(petsProvider)) {
     if (pet.id == petId) return HealthProfileScreen.open(context, pet);
   }
   assert(false, 'openHealthProfile: no pet with id "$petId" in petsProvider');

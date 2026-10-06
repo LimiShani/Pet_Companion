@@ -29,6 +29,7 @@ function handler(over: Partial<FindVetDeps> = {}) {
   });
   const logs: string[] = [];
   const deps: FindVetDeps = {
+    authorize: async () => true,
     provider: fakeProvider({ status: 'ok', value: [place({ placeId: 'p1', ...offset(JERUSALEM, 500, 0) })] }),
     store,
     regions: registryLookup,
@@ -41,6 +42,19 @@ function handler(over: Partial<FindVetDeps> = {}) {
   };
   return { h: createFindVetHandler(deps), store, logs, deps };
 }
+
+test('denied feature returns before request parsing and paid provider calls', async () => {
+  const { h, deps } = handler({ authorize: async () => false });
+  deps.provider.nearbyVets = async () => { throw new Error('Must not call provider'); };
+  const response = await h(post('malformed JSON'));
+  assert.equal(response.status, 403);
+  assert.deepEqual(await response.json(), {error: 'feature_denied'});
+});
+
+test('authorization failure returns unavailable without a search', async () => {
+  const { h } = handler({ authorize: async () => { throw new Error('offline'); } });
+  assert.equal((await h(post('malformed JSON'))).status, 503);
+});
 
 const searchBody = { action: 'search', mode: 'emergency', lat: JERUSALEM.lat, lng: JERUSALEM.lng, radiusM: 10_000, lang: 'he' };
 

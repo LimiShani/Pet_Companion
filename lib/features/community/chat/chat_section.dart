@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,8 +9,8 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
-import '../data/audience.dart';
-import '../data/community_models.dart';
+import '../../../services/community/data/audience.dart';
+import '../../../services/community/data/community_models.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/icon_disc.dart';
 import '../widgets/scope_bar.dart';
@@ -23,14 +24,23 @@ class ChatSection extends ConsumerWidget {
   const ChatSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'community.chat.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final channels = ref.watch(chatChannelsProvider);
     final scope = ref.watch(communityScopeProvider);
     final list = channels.value;
 
     if (list == null) {
-      if (channels.isLoading) return const Center(child: CircularProgressIndicator());
+      if (channels.isLoading) {
+        return const Center(child: CircularProgressIndicator());
+      }
       return SectionState(
         icon: Icons.cloud_off_rounded,
         title: l10n.roomsLoadFailed,
@@ -60,16 +70,29 @@ class ChatSection extends ConsumerWidget {
         const SizedBox(height: 12),
         if (visible.isEmpty)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen + 4, vertical: 8),
-            child: Text(l10n.noRoomsFor(scope), style: AppText.body.copyWith(color: AppColors.brown)),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screen + 4,
+              vertical: 8,
+            ),
+            child: Text(
+              l10n.noRoomsFor(scope),
+              style: AppText.body.copyWith(color: AppColors.brown),
+            ),
           ),
         for (final channel in visible)
           Padding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.screen, 0, AppSpacing.screen, AppSpacing.cardGap),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.screen,
+              0,
+              AppSpacing.screen,
+              AppSpacing.cardGap,
+            ),
             child: _ChannelCard(
               channel: channel,
               // Under Everything each room says which animal it is for.
-              tag: scope == CommunityScope.everything ? SmallTag.forAudience(l10n, channel.audience) : null,
+              tag: scope == CommunityScope.everything
+                  ? SmallTag.forAudience(l10n, channel.audience)
+                  : null,
             ),
           ),
       ],
@@ -84,7 +107,14 @@ class _ChannelCard extends StatelessWidget {
   final Widget? tag;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.chat.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
 
     return Card(
@@ -106,7 +136,10 @@ class _ChannelCard extends StatelessWidget {
                     // name, which reads in its own direction.
                     AutoDirectionText(
                       l10n.roomName(channel),
-                      style: AppText.cardTitle.copyWith(fontSize: 16, fontWeight: FontWeight.w800),
+                      style: AppText.cardTitle.copyWith(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -119,14 +152,20 @@ class _ChannelCard extends StatelessWidget {
                     ),
                     if (tag != null) ...[
                       const SizedBox(height: 6),
-                      Align(alignment: AlignmentDirectional.centerStart, child: tag!),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: tag!,
+                      ),
                     ],
                   ],
                 ),
               ),
               const SizedBox(width: 8),
               // Mirrors itself in a right-to-left layout.
-              const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+              const AppIcon(
+                Icons.chevron_right_rounded,
+                color: AppColors.brown,
+              ),
             ],
           ),
         ),

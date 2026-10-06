@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -13,11 +14,11 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/unsaved_changes_guard.dart';
-import 'data/deal.dart';
-import 'data/link_opener.dart';
-import 'state/store_providers.dart';
+import '../../services/store/data/deal.dart';
+import '../../services/store/data/link_opener.dart';
+import '../../services/store/state/store_providers.dart';
 import 'store_format.dart';
-import 'store_strings.dart';
+import '../../presentation/store_strings.dart';
 
 /// Checks for the "Share a deal" form, answering in the language of the
 /// strings they are given: `DealValidators(context.storeL10n).title`. Each
@@ -47,13 +48,17 @@ class DealValidators {
   String? title(String? value) {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return _l10n.validTitleRequired;
-    if (v.length < minTitleLength) return _l10n.validTitleTooShort(minTitleLength);
+    if (v.length < minTitleLength) {
+      return _l10n.validTitleTooShort(minTitleLength);
+    }
     return null;
   }
 
-  String? seller(String? value) => (value?.trim() ?? '').isEmpty ? _l10n.validSellerRequired : null;
+  String? seller(String? value) =>
+      (value?.trim() ?? '').isEmpty ? _l10n.validSellerRequired : null;
 
-  String? category(DealCategory? value) => value == null ? _l10n.validCategoryRequired : null;
+  String? category(DealCategory? value) =>
+      value == null ? _l10n.validCategoryRequired : null;
 
   /// The old price: a number above zero.
   String? originalPrice(String? value) {
@@ -72,7 +77,9 @@ class DealValidators {
     if (price == null) return _l10n.validNotANumber;
     if (price <= 0) return _l10n.validPriceAboveZero;
     final original = parsePrice(originalText);
-    if (original != null && price >= original) return _l10n.validPriceBelowOriginal;
+    if (original != null && price >= original) {
+      return _l10n.validPriceBelowOriginal;
+    }
     return null;
   }
 
@@ -80,7 +87,9 @@ class DealValidators {
     final v = value?.trim() ?? '';
     if (v.isEmpty) return _l10n.validLinkRequired;
     final uri = safeDealLink(v);
-    if (uri == null || !uri.host.contains('.')) return _l10n.validLinkNotHttps(httpsPrefix);
+    if (uri == null || !uri.host.contains('.')) {
+      return _l10n.validLinkNotHttps(httpsPrefix);
+    }
     return null;
   }
 
@@ -93,7 +102,9 @@ class DealValidators {
 
   /// A typed package amount needs a unit. A unit on its own is ignored.
   String? packageUnit(PackageUnit? unit, String amountText) =>
-      unit == null && amountText.trim().isNotEmpty ? _l10n.validPackageUnit : null;
+      unit == null && amountText.trim().isNotEmpty
+      ? _l10n.validPackageUnit
+      : null;
 
   /// What a paid delivery costs: a number above zero.
   String? deliveryCost(String? value) {
@@ -151,7 +162,17 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   late final List<Object?> _initial;
 
   List<Object?> _fields() => [
-    for (final c in [_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]) c.text,
+    for (final c in [
+      _title,
+      _price,
+      _original,
+      _packageAmount,
+      _deliveryCost,
+      _seller,
+      _link,
+      _description,
+    ])
+      c.text,
     _category,
     _packageUnit,
     _delivery,
@@ -169,7 +190,16 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
 
   @override
   void dispose() {
-    for (final c in [_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]) {
+    for (final c in [
+      _title,
+      _price,
+      _original,
+      _packageAmount,
+      _deliveryCost,
+      _seller,
+      _link,
+      _description,
+    ]) {
       c.dispose();
     }
     super.dispose();
@@ -203,15 +233,17 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   PackageSize? get _package {
     final amount = DealValidators.parseAmount(_packageAmount.text);
     final unit = _packageUnit;
-    return amount == null || amount <= 0 || unit == null ? null : PackageSize(amount, unit);
+    return amount == null || amount <= 0 || unit == null
+        ? null
+        : PackageSize(amount, unit);
   }
 
   /// The delivery cost as chosen: `null` for "not sure", zero for free.
   double? get _deliveryAmount => switch (_delivery) {
-        _Delivery.notSure => null,
-        _Delivery.free => 0,
-        _Delivery.paid => DealValidators.parsePrice(_deliveryCost.text),
-      };
+    _Delivery.notSure => null,
+    _Delivery.free => 0,
+    _Delivery.paid => DealValidators.parsePrice(_deliveryCost.text),
+  };
 
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
@@ -232,7 +264,9 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
       sellerName: _seller.text.trim(),
       link: _link.text.trim(),
       // The deal runs until the end of its last day.
-      expiresAt: end == null ? null : DateTime(end.year, end.month, end.day, 23, 59, 59),
+      expiresAt: end == null
+          ? null
+          : DateTime(end.year, end.month, end.day, 23, 59, 59),
       package: _package,
       deliveryCost: _deliveryAmount,
       species: {..._species},
@@ -253,7 +287,14 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final format = StoreFormat.of(context);
     final valid = DealValidators(l10n);
@@ -269,7 +310,12 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
           Expanded(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 24),
+              padding: const EdgeInsetsDirectional.fromSTEB(
+                AppSpacing.screen,
+                16,
+                AppSpacing.screen,
+                24,
+              ),
               child: SafeArea(
                 top: false,
                 child: Form(
@@ -278,7 +324,10 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text(l10n.shareIntro, style: AppText.body.copyWith(color: AppColors.brown)),
+                      Text(
+                        l10n.shareIntro,
+                        style: AppText.body.copyWith(color: AppColors.brown),
+                      ),
                       const SizedBox(height: 14),
                       _Labeled(
                         label: l10n.fieldTitle,
@@ -288,8 +337,13 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           validator: valid.title,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.sentences,
-                          inputFormatters: [LengthLimitingTextInputFormatter(120)],
-                          decoration: InputDecoration(hintText: l10n.fieldTitleHint, errorMaxLines: 3),
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(120),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: l10n.fieldTitleHint,
+                            errorMaxLines: 3,
+                          ),
                         ),
                       ),
                       _Labeled(
@@ -299,10 +353,16 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           initialValue: _category,
                           isExpanded: true,
                           validator: valid.category,
-                          onChanged: (value) => setState(() => _category = value),
-                          icon: const AppIcon(Icons.expand_more_rounded, color: AppColors.brown),
+                          onChanged: (value) =>
+                              setState(() => _category = value),
+                          icon: const AppIcon(
+                            Icons.expand_more_rounded,
+                            color: AppColors.brown,
+                          ),
                           dropdownColor: AppColors.white,
-                          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+                          borderRadius: BorderRadius.circular(
+                            AppSpacing.fieldRadius,
+                          ),
                           style: _fieldStyle,
                           decoration: const InputDecoration(errorMaxLines: 3),
                           hint: _DropdownHint(l10n.fieldCategoryHint),
@@ -310,7 +370,11 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                             for (final category in DealCategory.values)
                               DropdownMenuItem(
                                 value: category,
-                                child: Text(l10n.category(category), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  l10n.category(category),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                           ],
                         ),
@@ -318,7 +382,10 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                       _Labeled(
                         label: l10n.fieldAnimals,
                         help: l10n.fieldAnimalsHelp,
-                        child: _AnimalChips(selected: _species, onToggle: _toggleSpecies),
+                        child: _AnimalChips(
+                          selected: _species,
+                          onToggle: _toggleSpecies,
+                        ),
                       ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,10 +396,17 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                               child: TextFormField(
                                 key: const Key('share-price'),
                                 controller: _price,
-                                validator: (value) => valid.price(value, _original.text),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                validator: (value) =>
+                                    valid.price(value, _original.text),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(hintText: '0', errorMaxLines: 4),
+                                decoration: const InputDecoration(
+                                  hintText: '0',
+                                  errorMaxLines: 4,
+                                ),
                               ),
                             ),
                           ),
@@ -344,9 +418,15 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 key: const Key('share-original-price'),
                                 controller: _original,
                                 validator: valid.originalPrice,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(hintText: '0', errorMaxLines: 4),
+                                decoration: const InputDecoration(
+                                  hintText: '0',
+                                  errorMaxLines: 4,
+                                ),
                               ),
                             ),
                           ),
@@ -356,9 +436,18 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                         listenTo: [_price, _original],
                         text: () {
                           final now = DealValidators.parsePrice(_price.text);
-                          final before = DealValidators.parsePrice(_original.text);
-                          if (now == null || before == null || now <= 0 || now >= before) return null;
-                          return l10n.hintPercentOff(((1 - now / before) * 100).round());
+                          final before = DealValidators.parsePrice(
+                            _original.text,
+                          );
+                          if (now == null ||
+                              before == null ||
+                              now <= 0 ||
+                              now >= before) {
+                            return null;
+                          }
+                          return l10n.hintPercentOff(
+                            ((1 - now / before) * 100).round(),
+                          );
                         },
                       ),
                       _Labeled(
@@ -372,13 +461,21 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 key: const Key('share-package-amount'),
                                 controller: _packageAmount,
                                 validator: valid.packageAmount,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textInputAction: TextInputAction.next,
                                 // The unit's "choose a unit" problem depends on this field.
                                 onChanged: (_) {
-                                  if (_validation != AutovalidateMode.disabled) _form.currentState?.validate();
+                                  if (_validation != AutovalidateMode.disabled) {
+                                    _form.currentState?.validate();
+                                  }
                                 },
-                                decoration: InputDecoration(hintText: l10n.fieldPackageAmountHint, errorMaxLines: 4),
+                                decoration: InputDecoration(
+                                  hintText: l10n.fieldPackageAmountHint,
+                                  errorMaxLines: 4,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -387,19 +484,34 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 key: const Key('share-package-unit'),
                                 initialValue: _packageUnit,
                                 isExpanded: true,
-                                validator: (unit) => valid.packageUnit(unit, _packageAmount.text),
-                                onChanged: (value) => setState(() => _packageUnit = value),
-                                icon: const AppIcon(Icons.expand_more_rounded, color: AppColors.brown),
+                                validator: (unit) => valid.packageUnit(
+                                  unit,
+                                  _packageAmount.text,
+                                ),
+                                onChanged: (value) =>
+                                    setState(() => _packageUnit = value),
+                                icon: const AppIcon(
+                                  Icons.expand_more_rounded,
+                                  color: AppColors.brown,
+                                ),
                                 dropdownColor: AppColors.white,
-                                borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+                                borderRadius: BorderRadius.circular(
+                                  AppSpacing.fieldRadius,
+                                ),
                                 style: _fieldStyle,
-                                decoration: const InputDecoration(errorMaxLines: 4),
+                                decoration: const InputDecoration(
+                                  errorMaxLines: 4,
+                                ),
                                 hint: _DropdownHint(l10n.fieldPackageUnitHint),
                                 items: [
                                   for (final unit in PackageUnit.values)
                                     DropdownMenuItem(
                                       value: unit,
-                                      child: Text(l10n.unit(unit), maxLines: 1, overflow: TextOverflow.ellipsis),
+                                      child: Text(
+                                        l10n.unit(unit),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                 ],
                               ),
@@ -413,9 +525,16 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                         text: () {
                           final price = DealValidators.parsePrice(_price.text);
                           final size = _package;
-                          if (price == null || price <= 0 || size == null) return null;
-                          final unitPrice = UnitPrice(price / size.inBaseUnits, size.unit.kind);
-                          return l10n.hintUnitPrice(format.unitPrice(unitPrice, kStoreDefaultCurrency));
+                          if (price == null || price <= 0 || size == null) {
+                            return null;
+                          }
+                          final unitPrice = UnitPrice(
+                            price / size.inBaseUnits,
+                            size.unit.kind,
+                          );
+                          return l10n.hintUnitPrice(
+                            format.unitPrice(unitPrice, kStoreDefaultCurrency),
+                          );
                         },
                       ),
                       _Labeled(
@@ -437,7 +556,8 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                     label: Text(label),
                                     selected: _delivery == option,
                                     showCheckmark: false,
-                                    onSelected: (_) => setState(() => _delivery = option),
+                                    onSelected: (_) =>
+                                        setState(() => _delivery = option),
                                   ),
                               ],
                             ),
@@ -447,9 +567,15 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                                 key: const Key('share-delivery-cost'),
                                 controller: _deliveryCost,
                                 validator: valid.deliveryCost,
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(hintText: l10n.fieldDeliveryCost(symbol), errorMaxLines: 3),
+                                decoration: InputDecoration(
+                                  hintText: l10n.fieldDeliveryCost(symbol),
+                                  errorMaxLines: 3,
+                                ),
                               ),
                             ],
                           ],
@@ -461,8 +587,18 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                         text: () {
                           final price = DealValidators.parsePrice(_price.text);
                           final delivery = _deliveryAmount;
-                          if (price == null || price <= 0 || delivery == null || delivery < 0) return null;
-                          return l10n.hintFinalPrice(format.money(price + delivery, kStoreDefaultCurrency));
+                          if (price == null ||
+                              price <= 0 ||
+                              delivery == null ||
+                              delivery < 0) {
+                            return null;
+                          }
+                          return l10n.hintFinalPrice(
+                            format.money(
+                              price + delivery,
+                              kStoreDefaultCurrency,
+                            ),
+                          );
                         },
                       ),
                       _Labeled(
@@ -473,8 +609,13 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           validator: valid.seller,
                           textInputAction: TextInputAction.next,
                           textCapitalization: TextCapitalization.words,
-                          inputFormatters: [LengthLimitingTextInputFormatter(80)],
-                          decoration: InputDecoration(hintText: l10n.fieldSellerHint, errorMaxLines: 3),
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(80),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: l10n.fieldSellerHint,
+                            errorMaxLines: 3,
+                          ),
                         ),
                       ),
                       _Labeled(
@@ -504,8 +645,12 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                           minLines: 3,
                           maxLines: 6,
                           textCapitalization: TextCapitalization.sentences,
-                          inputFormatters: [LengthLimitingTextInputFormatter(1000)],
-                          decoration: InputDecoration(hintText: l10n.fieldDescriptionHint),
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(1000),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: l10n.fieldDescriptionHint,
+                          ),
                         ),
                       ),
                       _Labeled(
@@ -519,18 +664,27 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                       if (error != null) ...[
                         Text(
                           storeErrorText(context, error),
-                          style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+                          style: AppText.body.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
                       ],
                       Text(
                         l10n.checkedTodayNote(format.date(today)),
-                        style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+                        style: AppText.label.copyWith(
+                          color: AppColors.brown,
+                          fontWeight: FontWeight.w600,
+                        ),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 12),
-                      PrimaryButton(label: l10n.shareDealButton, onPressed: _submit, loading: _sending),
+                      PrimaryButton(
+                        label: l10n.shareDealButton,
+                        onPressed: _submit,
+                        loading: _sending,
+                      ),
                     ],
                   ),
                 ),
@@ -541,13 +695,26 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
       ),
     );
     return ListenableBuilder(
-      listenable: Listenable.merge([_title, _price, _original, _packageAmount, _deliveryCost, _seller, _link, _description]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      listenable: Listenable.merge([
+        _title,
+        _price,
+        _original,
+        _packageAmount,
+        _deliveryCost,
+        _seller,
+        _link,
+        _description,
+      ]),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: page,
     );
   }
 
-  static final _fieldStyle = AppText.body.copyWith(fontSize: 16, color: AppColors.ink);
+  static final _fieldStyle = AppText.body.copyWith(
+    fontSize: 16,
+    color: AppColors.ink,
+  );
 }
 
 /// A small brown label above a form field, as on the auth screens, with an
@@ -560,7 +727,14 @@ class _Labeled extends StatelessWidget {
   final String? help;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -568,13 +742,26 @@ class _Labeled extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
-            child: Text(label, style: AppText.label.copyWith(color: AppColors.brown)),
+            child: Text(
+              label,
+              style: AppText.label.copyWith(color: AppColors.brown),
+            ),
           ),
           child,
           if (help != null)
             Padding(
-              padding: const EdgeInsetsDirectional.only(start: 8, top: 5, end: 8),
-              child: Text(help!, style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600)),
+              padding: const EdgeInsetsDirectional.only(
+                start: 8,
+                top: 5,
+                end: 8,
+              ),
+              child: Text(
+                help!,
+                style: AppText.label.copyWith(
+                  color: AppColors.brown,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
         ],
       ),
@@ -589,10 +776,20 @@ class _DropdownHint extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Text(
       text,
-      style: AppText.body.copyWith(fontSize: 16, color: AppColors.brown.withValues(alpha: 0.55)),
+      style: AppText.body.copyWith(
+        fontSize: 16,
+        color: AppColors.brown.withValues(alpha: 0.55),
+      ),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -610,7 +807,14 @@ class _AnimalChips extends StatelessWidget {
   final ValueChanged<PetSpecies?> onToggle;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     return Wrap(
       spacing: 8,
@@ -643,7 +847,14 @@ class _Hint extends StatelessWidget {
   final String? Function() text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return ListenableBuilder(
       listenable: Listenable.merge(listenTo),
       builder: (context, _) {
@@ -655,8 +866,14 @@ class _Hint extends StatelessWidget {
             alignment: AlignmentDirectional.centerStart,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: AppColors.sage, borderRadius: BorderRadius.circular(999)),
-              child: Text(value, style: AppText.secondary.copyWith(fontWeight: FontWeight.w800)),
+              decoration: BoxDecoration(
+                color: AppColors.sage,
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                value,
+                style: AppText.secondary.copyWith(fontWeight: FontWeight.w800),
+              ),
             ),
           ),
         );
@@ -668,14 +885,25 @@ class _Hint extends StatelessWidget {
 /// Looks like a text field; opens the calendar. Shows the chosen last day
 /// with a button to remove it.
 class _EndDateField extends StatelessWidget {
-  const _EndDateField({required this.date, required this.onPick, required this.onClear});
+  const _EndDateField({
+    required this.date,
+    required this.onPick,
+    required this.onClear,
+  });
 
   final DateTime? date;
   final VoidCallback onPick;
   final VoidCallback onClear;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.share',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final picked = date;
     return Material(
@@ -693,7 +921,9 @@ class _EndDateField extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    picked == null ? l10n.addEndDate : l10n.endsDate(StoreFormat.of(context).date(picked)),
+                    picked == null
+                        ? l10n.addEndDate
+                        : l10n.endsDate(StoreFormat.of(context).date(picked)),
                     style: AppText.body.copyWith(
                       fontSize: 16,
                       color: picked == null ? AppColors.brown : AppColors.ink,
@@ -711,7 +941,10 @@ class _EndDateField extends StatelessWidget {
                   IconButton(
                     tooltip: l10n.removeEndDate,
                     onPressed: onClear,
-                    icon: const AppIcon(Icons.close_rounded, color: AppColors.brown),
+                    icon: const AppIcon(
+                      Icons.close_rounded,
+                      color: AppColors.brown,
+                    ),
                   ),
               ],
             ),

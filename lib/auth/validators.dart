@@ -26,7 +26,9 @@ class Validators {
   String? password(String? value) {
     final v = value ?? '';
     if (v.isEmpty) return _l10n.validPasswordEmpty;
-    if (v.length < minPasswordLength) return _l10n.validMinLength(minPasswordLength);
+    if (v.length < minPasswordLength) {
+      return _l10n.validMinLength(minPasswordLength);
+    }
     return null;
   }
 

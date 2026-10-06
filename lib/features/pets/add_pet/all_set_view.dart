@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -7,15 +8,20 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
-import '../state/pet_completeness.dart';
+import '../../../services/pets/state/pet_completeness.dart';
 import '../widgets/essentials_list.dart';
-import '../widgets/pet_avatar.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pet_avatar.dart';
+import '../../../presentation/pets_widgets.dart';
 
 /// The last page of the add-a-pet flow: what was filled in, and what is
 /// still open with a one-tap "Add now".
 class AllSetView extends ConsumerWidget {
-  const AllSetView({super.key, required this.pet, required this.onDashboard, required this.onAddAnother});
+  const AllSetView({
+    super.key,
+    required this.pet,
+    required this.onDashboard,
+    required this.onAddAnother,
+  });
 
   final Pet pet;
   final VoidCallback onDashboard;
@@ -35,12 +41,20 @@ class AllSetView extends ConsumerWidget {
   static String _closing(PetsL10n l10n, PetCompleteness info, String name) {
     if (!info.isKnown) return l10n.allSetNoteUnknown(name);
     if (info.isComplete) return l10n.allSetNoteComplete(name);
-    final onlyTheVet = info.missing.length == 1 && info.missing.single == PetInfoItem.vetPhone;
+    final onlyTheVet =
+        info.missing.length == 1 && info.missing.single == PetInfoItem.vetPhone;
     return onlyTheVet ? l10n.allSetNoteVet(name) : l10n.allSetNoteRest(name);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final info = ref.watch(petCompletenessProvider(pet.id));
     final l10n = context.petsL10n;
 
@@ -58,14 +72,24 @@ class AllSetView extends ConsumerWidget {
                     width: double.infinity,
                     decoration: const BoxDecoration(
                       color: AppColors.coral,
-                      borderRadius: BorderRadius.vertical(bottom: Radius.circular(AppSpacing.shellRadius)),
+                      borderRadius: BorderRadius.vertical(
+                        bottom: Radius.circular(AppSpacing.shellRadius),
+                      ),
                     ),
-                    child: const SafeArea(bottom: false, child: SizedBox(height: _picture - _drop + 28)),
+                    child: const SafeArea(
+                      bottom: false,
+                      child: SizedBox(height: _picture - _drop + 28),
+                    ),
                   ),
                 ),
                 Stack(
                   children: [
-                    PetAvatar(pet: pet, size: _picture, borderColor: AppColors.cream, borderWidth: 5),
+                    PetAvatar(
+                      pet: pet,
+                      size: _picture,
+                      borderColor: AppColors.cream,
+                      borderWidth: 5,
+                    ),
                     PositionedDirectional(
                       end: 0,
                       bottom: 0,
@@ -77,7 +101,11 @@ class AllSetView extends ConsumerWidget {
                           shape: BoxShape.circle,
                           border: Border.all(color: AppColors.cream, width: 3),
                         ),
-                        child: const AppIcon(Icons.check_rounded, size: 22, color: AppColors.ink),
+                        child: const AppIcon(
+                          Icons.check_rounded,
+                          size: 22,
+                          color: AppColors.ink,
+                        ),
                       ),
                     ),
                   ],
@@ -94,15 +122,29 @@ class AllSetView extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  PetsHeading(l10n.petIsReady(pet.name), center: true, size: 24),
+                  PetsHeading(
+                    l10n.petIsReady(pet.name),
+                    center: true,
+                    size: 24,
+                  ),
                   const SizedBox(height: 2),
                   PetsNote(_summary(l10n, info), center: true),
                   const SizedBox(height: 16),
-                  EssentialsList(pet: pet, addLabel: l10n.addNow, editable: false),
+                  EssentialsList(
+                    pet: pet,
+                    addLabel: l10n.addNow,
+                    editable: false,
+                  ),
                   const SizedBox(height: 12),
-                  PrimaryButton(label: l10n.goToDashboard(pet.name), onPressed: onDashboard),
+                  PrimaryButton(
+                    label: l10n.goToDashboard(pet.name),
+                    onPressed: onDashboard,
+                  ),
                   const SizedBox(height: 10),
-                  PetsOutlineButton(l10n.addAnotherPet, onPressed: onAddAnother),
+                  PetsOutlineButton(
+                    l10n.addAnotherPet,
+                    onPressed: onAddAnother,
+                  ),
                   const SizedBox(height: 12),
                   PetsFinePrint(_closing(l10n, info, pet.name), center: true),
                 ],

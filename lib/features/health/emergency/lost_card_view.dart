@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
-import '../data/health_models.dart';
+import '../../../services/pet_records/data/health_models.dart';
 
 /// The few fixed words of a lost card, in the card's own language. The
 /// card is read by neighbours, so it does not follow the app's language:
@@ -52,7 +52,8 @@ Locale lostCardLocale(LostCardLanguage language) => Locale(language.code);
 
 /// What the language switch of the lost-pet page calls [language]: its name
 /// in its own letters (עברית, English), on every screen.
-String lostCardLanguageName(LostCardLanguage language) => nativeLanguageName(lostCardLocale(language));
+String lostCardLanguageName(LostCardLanguage language) =>
+    nativeLanguageName(lostCardLocale(language));
 
 /// Everything that is on one lost card. Plain text, so it can be checked
 /// without drawing anything.
@@ -118,7 +119,10 @@ bool looksLikeExactAddress(String area) => RegExp(r'\d').hasMatch(area);
 
 /// "kelly-lost-card": a file name made from the pet's name.
 String lostCardFileName(String petName, String extension) {
-  final slug = petName.toLowerCase().replaceAll(RegExp('[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-+|-+$'), '');
+  final slug = petName
+      .toLowerCase()
+      .replaceAll(RegExp('[^a-z0-9]+'), '-')
+      .replaceAll(RegExp(r'^-+|-+$'), '');
   return '${slug.isEmpty ? 'pet' : slug}-lost-card.$extension';
 }
 
@@ -136,11 +140,23 @@ class LostCardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final words = content.words;
     final picture = photo;
-    final cardDirection = words.rightToLeft ? TextDirection.rtl : TextDirection.ltr;
+    final cardDirection = words.rightToLeft
+        ? TextDirection.rtl
+        : TextDirection.ltr;
     // What the owner typed keeps its own direction on the card.
-    TextDirection typed(String text) => directionOfText(text, fallback: cardDirection);
-    const body = TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.ink, height: 1.4);
-    const small = TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.brown);
+    TextDirection typed(String text) =>
+        directionOfText(text, fallback: cardDirection);
+    const body = TextStyle(
+      fontSize: 15,
+      fontWeight: FontWeight.w700,
+      color: AppColors.ink,
+      height: 1.4,
+    );
+    const small = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w700,
+      color: AppColors.brown,
+    );
 
     return Directionality(
       textDirection: cardDirection,
@@ -158,11 +174,18 @@ class LostCardView extends StatelessWidget {
             ColoredBox(
               color: AppColors.coralDark,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
                 child: Text(
                   content.heading,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: AppColors.white),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.white,
+                  ),
                 ),
               ),
             ),
@@ -175,7 +198,8 @@ class LostCardView extends StatelessWidget {
                   gaplessPlayback: true,
                   excludeFromSemantics: true,
                   // A photo that cannot be shown leaves the space quiet.
-                  errorBuilder: (_, _, _) => const ColoredBox(color: AppColors.sage),
+                  errorBuilder: (_, _, _) =>
+                      const ColoredBox(color: AppColors.sage),
                 ),
               ),
             Padding(
@@ -184,11 +208,19 @@ class LostCardView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (content.description.trim().isNotEmpty)
-                    Text(content.description.trim(), style: body, textDirection: typed(content.description.trim())),
+                    Text(
+                      content.description.trim(),
+                      style: body,
+                      textDirection: typed(content.description.trim()),
+                    ),
                   if (content.extra.trim().isNotEmpty)
                     Padding(
                       padding: const EdgeInsetsDirectional.only(top: 4),
-                      child: Text(content.extra.trim(), style: body, textDirection: typed(content.extra.trim())),
+                      child: Text(
+                        content.extra.trim(),
+                        style: body,
+                        textDirection: typed(content.extra.trim()),
+                      ),
                     ),
                   for (final (label, value) in content.facts)
                     Padding(
@@ -205,7 +237,11 @@ class LostCardView extends StatelessWidget {
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(value, style: body.copyWith(fontSize: 14), textDirection: typed(value)),
+                            child: Text(
+                              value,
+                              style: body.copyWith(fontSize: 14),
+                              textDirection: typed(value),
+                            ),
                           ),
                         ],
                       ),
@@ -217,7 +253,10 @@ class LostCardView extends StatelessWidget {
               Padding(
                 padding: const EdgeInsetsDirectional.fromSTEB(18, 14, 18, 0),
                 child: DecoratedBox(
-                  decoration: BoxDecoration(color: AppColors.yellow, borderRadius: BorderRadius.circular(18)),
+                  decoration: BoxDecoration(
+                    color: AppColors.yellow,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                   child: Padding(
                     padding: const EdgeInsetsDirectional.all(12),
                     child: Column(
@@ -233,7 +272,11 @@ class LostCardView extends StatelessWidget {
                           child: Text(
                             content.phone.trim(),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: AppColors.ink),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                            ),
                           ),
                         ),
                       ],
@@ -243,7 +286,11 @@ class LostCardView extends StatelessWidget {
               ),
             Padding(
               padding: const EdgeInsetsDirectional.fromSTEB(18, 10, 18, 14),
-              child: Text(words.footer, textAlign: TextAlign.center, style: small.copyWith(fontSize: 11)),
+              child: Text(
+                words.footer,
+                textAlign: TextAlign.center,
+                style: small.copyWith(fontSize: 11),
+              ),
             ),
           ],
         ),

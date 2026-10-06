@@ -1,3 +1,5 @@
+import '../../../access/access_provider.dart';
+import '../../../access/feature_gate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,18 +13,20 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/primary_button.dart';
 import '../../../widgets/unsaved_changes_guard.dart';
-import '../../firstdays/firstdays.dart';
-import '../../health/emergency/emergency.dart';
+import '../../../platform/feature_ui.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../presentation/health_strings.dart';
 import '../checklist_sheet.dart';
-import '../data/pets_repository_provider.dart';
+import '../../../services/pets/data/pets_repository_provider.dart';
 import '../pet_actions.dart';
-import '../pet_words.dart';
-import '../state/pet_completeness.dart';
-import '../widgets/pet_avatar.dart';
+import '../../../presentation/pet_words.dart';
+import '../../../services/pets/state/pet_completeness.dart';
+import '../../../presentation/pet_avatar.dart';
 import '../widgets/pet_basics_fields.dart';
 import '../widgets/pet_essentials_keeper.dart';
 import '../widgets/pet_reminder_card.dart';
-import '../widgets/pets_widgets.dart';
+import '../../../presentation/pets_widgets.dart';
 import 'remove_pet.dart';
 
 /// The pet's profile: everything the add-a-pet flow asks, on one page, to
@@ -30,7 +34,11 @@ import 'remove_pet.dart';
 /// The vet and the health basics are Health's pieces. Archive and delete
 /// sit at the very end.
 class PetProfileScreen extends ConsumerStatefulWidget {
-  const PetProfileScreen({super.key, required this.petId, this.fromMyPets = false});
+  const PetProfileScreen({
+    super.key,
+    required this.petId,
+    this.fromMyPets = false,
+  });
 
   final String petId;
 
@@ -79,7 +87,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
 
   /// The answers of the form. Switching between the two ways of giving the
   /// age is not one: it changes nothing by itself.
-  static List<Object?> _answers(String name, PetSpecies species, PetBasicsController basics) => [
+  static List<Object?> _answers(
+    String name,
+    PetSpecies species,
+    PetBasicsController basics,
+  ) => [
     name,
     species,
     basics.ageAmount.text,
@@ -106,7 +118,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final shown = _shown;
     if (shown == null || !mounted) return;
     setState(() {
-      if (_name.text.trim() == shown.name && _name.text != pet.name) _name.text = pet.name;
+      if (_name.text.trim() == shown.name && _name.text != pet.name) {
+        _name.text = pet.name;
+      }
       if (_species == shown.species) _species = pet.species;
       _basics
         ?..refresh(pet, _now)
@@ -130,7 +144,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   Future<void> _save() async {
     final pet = _pet;
     final basics = _basics;
-    if (pet == null || basics == null || !_form.currentState!.validate()) return;
+    if (pet == null || basics == null || !_form.currentState!.validate()) {
+      return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -138,7 +154,14 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     try {
       final stored = await ref
           .read(petsStoreProvider.notifier)
-          .save(basics.applyTo(pet, now: _now, name: _name.text.trim(), species: _species));
+          .save(
+            basics.applyTo(
+              pet,
+              now: _now,
+              name: _name.text.trim(),
+              species: _species,
+            ),
+          );
       if (!mounted) return;
       // Saved: from here on the form follows the stored pet again.
       basics.markSaved();
@@ -159,8 +182,15 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final pet = _pet;
     if (pet == null || _removing) return;
     final container = ProviderScope.containerOf(context, listen: false);
-    final others = container.read(petsProvider).where((p) => p.id != pet.id).length;
-    final choice = await askHowToRemovePet(context, pet, canArchive: others > 0);
+    final others = container
+        .read(petsProvider)
+        .where((p) => p.id != pet.id)
+        .length;
+    final choice = await askHowToRemovePet(
+      context,
+      pet,
+      canArchive: others > 0,
+    );
     if (choice == null || !mounted) return;
 
     final messenger = ScaffoldMessenger.maybeOf(context);
@@ -205,22 +235,44 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    ref.listen(petsStoreProvider.select((pets) => pets.byId(widget.petId)), (_, next) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    ref.listen(petsStoreProvider.select((pets) => pets.byId(widget.petId)), (
+      _,
+      next,
+    ) {
       if (next != null) _follow(next);
     });
-    final pet = ref.watch(petsStoreProvider.select((pets) => pets.byId(widget.petId)));
+    final pet = ref.watch(
+      petsStoreProvider.select((pets) => pets.byId(widget.petId)),
+    );
     final basics = _basics;
     if (pet == null || basics == null) {
       // Deleted (or never there): nothing to edit.
-      return PetsPage(title: context.petsL10n.petProfile, child: PetsNote(context.petsL10n.petNoLongerHere));
+      return PetsPage(
+        title: context.petsL10n.petProfile,
+        child: PetsNote(context.petsL10n.petNoLongerHere),
+      );
     }
     final now = ref.watch(petsClockProvider)();
 
     // Stays up to date while Health's pages or a sheet cover this one.
     return ListenableBuilder(
-      listenable: Listenable.merge([_name, basics, basics.ageAmount, basics.weight, basics.breed]),
-      builder: (context, child) => UnsavedChangesGuard(dirty: _dirty, child: child!),
+      listenable: Listenable.merge([
+        _name,
+        basics,
+        basics.ageAmount,
+        basics.weight,
+        basics.breed,
+      ]),
+      builder: (context, child) =>
+          UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: PetEssentialsKeeper(petId: pet.id, child: _page(pet, basics, now)),
     );
   }
@@ -228,7 +280,9 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   Widget _page(Pet pet, PetBasicsController basics, DateTime now) {
     return PetsPage(
       title: pet.name,
-      actions: [HeaderTextAction(context.petsL10n.myPetsTitle, onPressed: _openMyPets)],
+      actions: [
+        HeaderTextAction(context.petsL10n.myPetsTitle, onPressed: _openMyPets),
+      ],
       child: Form(
         key: _form,
         child: Column(
@@ -279,7 +333,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               key: const Key('pet-name'),
               controller: _name,
               textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(labelText: context.petsL10n.fieldName, errorMaxLines: 3),
+              decoration: InputDecoration(
+                labelText: context.petsL10n.fieldName,
+                errorMaxLines: 3,
+              ),
               validator: (text) {
                 final value = text?.trim() ?? '';
                 if (value.isEmpty) return context.petsL10n.nameMissing;
@@ -296,7 +353,10 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
               borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
               items: [
                 for (final species in PetSpecies.values)
-                  DropdownMenuItem(value: species, child: Text(petSpeciesText(context.petsL10n, species))),
+                  DropdownMenuItem(
+                    value: species,
+                    child: Text(petSpeciesText(context.petsL10n, species)),
+                  ),
               ],
               onChanged: (species) {
                 if (species == null) return;
@@ -306,28 +366,43 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             ),
             PetBasicsFields(controller: basics, now: now),
             PetsLabel(context.petsL10n.vet),
-            PetVetTile(petId: pet.id),
+            featureSlot('vet-tile', pet.id),
             const SizedBox(height: 8),
-            PetVetTile(petId: pet.id, role: VetRole.emergency),
+            featureSlot('vet-tile', pet.id, {'role': VetRole.emergency}),
             PetsLabel(context.petsL10n.healthBasics),
             _HealthBasicsCard(pet: pet),
             // Start the first 30 days, or see them (a summary once over).
-            FirstDaysProfileEntry(pet: pet),
+            featureSlot('firstdays-profile', pet.id),
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.only(top: 12),
-                child: Text(_error!, style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error)),
+                child: Text(
+                  _error!,
+                  style: AppText.body.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
               ),
             const SizedBox(height: 20),
-            PrimaryButton(label: context.petsL10n.saveChanges, loading: _saving, onPressed: _save),
-            const Padding(padding: EdgeInsets.only(top: 24, bottom: 16), child: Divider()),
+            PrimaryButton(
+              label: context.petsL10n.saveChanges,
+              loading: _saving,
+              onPressed: _save,
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 24, bottom: 16),
+              child: Divider(),
+            ),
             PetsOutlineButton(
               context.petsL10n.archivePet(pet.name),
               icon: Icons.archive_outlined,
               onPressed: _removing ? null : _remove,
             ),
             const SizedBox(height: 4),
-            PetsTextButton(context.petsL10n.deletePet(pet.name), onPressed: _removing ? null : _remove),
+            PetsTextButton(
+              context.petsL10n.deletePet(pet.name),
+              onPressed: _removing ? null : _remove,
+            ),
           ],
         ),
       ),
@@ -339,7 +414,14 @@ class _SmallCameraBadge extends StatelessWidget {
   const _SmallCameraBadge();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Container(
       width: 34,
       height: 34,
@@ -348,7 +430,11 @@ class _SmallCameraBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: AppColors.cream, width: 3),
       ),
-      child: const AppIcon(Icons.photo_camera_rounded, size: 16, color: AppColors.white),
+      child: const AppIcon(
+        Icons.photo_camera_rounded,
+        size: 16,
+        color: AppColors.white,
+      ),
     );
   }
 }
@@ -362,7 +448,14 @@ class _EssentialsCard extends ConsumerWidget {
   final Pet pet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     announcePetCompletion(ref, context, pet.id);
     final info = ref.watch(petCompletenessProvider(pet.id));
     if (!info.needsAttention) return const SizedBox.shrink();
@@ -381,16 +474,26 @@ class _EssentialsCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(essentialsStillToAdd(context.petsL10n, info), style: AppText.cardTitle),
                   Text(
-                    [for (final item in info.missing) item.labelIn(context.petsL10n)].join(' · '),
+                    essentialsStillToAdd(context.petsL10n, info),
+                    style: AppText.cardTitle,
+                  ),
+                  Text(
+                    [
+                      for (final item in info.missing)
+                        item.labelIn(context.petsL10n),
+                    ].join(' · '),
                     style: AppText.secondary.copyWith(color: AppColors.brown),
                   ),
                 ],
               ),
             ),
             const SizedBox(width: 8),
-            PillButton(context.l10n.commonAdd, key: const Key('profile-essentials-add'), onPressed: open),
+            PillButton(
+              context.l10n.commonAdd,
+              key: const Key('profile-essentials-add'),
+              onPressed: open,
+            ),
           ],
         ),
       ),
@@ -406,42 +509,67 @@ class _HealthBasicsCard extends ConsumerWidget {
   final Pet pet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'pets.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(capabilityProvider('health.emergency.view'))) {
+      return const SizedBox.shrink();
+    }
     final profile = ref.watch(healthProfileProvider(pet.id));
     final value = profile.value;
     if (value == null) {
       return PetsCard(
         child: profile.hasError
             ? PetsNote(healthErrorOf(context, profile.error))
-            : const Center(child: Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator())),
+            : const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(8),
+                  child: CircularProgressIndicator(),
+                ),
+              ),
       );
     }
-    void open() => openHealthProfile(context, pet.id);
+    void open() => openFeature<Object>(context, 'health-profile', pet.id);
     final l10n = context.petsL10n;
     final app = context.l10n;
     String list(List<String> entries, bool noneKnown) => entries.isNotEmpty
         ? [for (final entry in entries) typedInLine(l10n, entry)].join(', ')
         : (noneKnown ? l10n.noneKnown : l10n.notAnsweredYet);
 
-    Widget row(String label, String text, String action, {required String keyName}) => Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(label, style: AppText.secondary.copyWith(color: AppColors.brown)),
-                  Text(text, style: AppText.cardTitle),
-                ],
+    Widget row(
+      String label,
+      String text,
+      String action, {
+      required String keyName,
+    }) => Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: AppText.secondary.copyWith(color: AppColors.brown),
               ),
-            ),
-            TextButton(
-              key: Key('health-$keyName'),
-              onPressed: open,
-              style: TextButton.styleFrom(minimumSize: const Size(kPetsTapTarget, kPetsTapTarget)),
-              child: Text(action),
-            ),
-          ],
-        );
+              Text(text, style: AppText.cardTitle),
+            ],
+          ),
+        ),
+        TextButton(
+          key: Key('health-$keyName'),
+          onPressed: open,
+          style: TextButton.styleFrom(
+            minimumSize: const Size(kPetsTapTarget, kPetsTapTarget),
+          ),
+          child: Text(action),
+        ),
+      ],
+    );
 
     final chip = value.microchip.trim();
     return PetsCard(

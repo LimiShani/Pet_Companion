@@ -1,3 +1,5 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
@@ -5,14 +7,14 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/empty_state.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
 import '../insights/quick_log_sheet.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 import '../widgets/weight_trend.dart';
 
 /// Weight over time with vet visits marked under the line, and the journal
@@ -44,7 +46,14 @@ class _InsightsSectionState extends State<InsightsSection> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pet = widget.pet;
     final data = widget.data;
     final settings = SpeciesSettings.of(pet.species);
@@ -60,7 +69,8 @@ class _InsightsSectionState extends State<InsightsSection> {
       );
     }
 
-    final journal = [...data.observations]..sort((a, b) => b.observedAt.compareTo(a.observedAt));
+    final journal = [...data.observations]
+      ..sort((a, b) => b.observedAt.compareTo(a.observedAt));
     // A chip for every category that has an entry, in the species' order.
     final present = {for (final o in journal) o.category};
     final categories = [
@@ -69,13 +79,19 @@ class _InsightsSectionState extends State<InsightsSection> {
       for (final key in present)
         if (!settings.quickLog.any((c) => c.key == key)) settings.category(key),
     ];
-    bool isBehaviour(String key) => settings.category(key).group == QuickLogGroup.behaviour;
+    bool isBehaviour(String key) =>
+        settings.category(key).group == QuickLogGroup.behaviour;
     final hasBehaviour = present.any(isBehaviour);
     final behaviourOnly = _behaviourOnly && hasBehaviour;
-    final selected = !behaviourOnly && present.contains(_category) ? _category : null;
+    final selected = !behaviourOnly && present.contains(_category)
+        ? _category
+        : null;
     final shown = [
       for (final o in journal)
-        if (behaviourOnly ? isBehaviour(o.category) : selected == null || o.category == selected) o,
+        if (behaviourOnly
+            ? isBehaviour(o.category)
+            : selected == null || o.category == selected)
+          o,
     ];
 
     return Column(
@@ -147,7 +163,12 @@ class _InsightsSectionState extends State<InsightsSection> {
 }
 
 class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({required this.chipKey, required this.label, required this.selected, required this.onSelected});
+  const _CategoryChip({
+    required this.chipKey,
+    required this.label,
+    required this.selected,
+    required this.onSelected,
+  });
 
   final Key chipKey;
   final String label;
@@ -155,7 +176,14 @@ class _CategoryChip extends StatelessWidget {
   final VoidCallback onSelected;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(end: 8),
       child: ChoiceChip(
@@ -170,7 +198,12 @@ class _CategoryChip extends StatelessWidget {
 }
 
 class _WeightCard extends StatelessWidget {
-  const _WeightCard({required this.pet, required this.weights, required this.visits, required this.grams});
+  const _WeightCard({
+    required this.pet,
+    required this.weights,
+    required this.visits,
+    required this.grams,
+  });
 
   final Pet pet;
 
@@ -182,7 +215,14 @@ class _WeightCard extends StatelessWidget {
   final bool grams;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final header = Row(
@@ -192,11 +232,17 @@ class _WeightCard extends StatelessWidget {
           l10n.logWeight,
           key: const Key('log-weight'),
           icon: Icons.add_rounded,
-          onPressed: () => showQuickLog(context, pet, category: Observation.weightCategory),
+          onPressed: () =>
+              showQuickLog(context, pet, category: Observation.weightCategory),
         ),
       ],
     );
-    const padding = EdgeInsetsDirectional.only(start: 16, end: 12, top: 6, bottom: 14);
+    const padding = EdgeInsetsDirectional.only(
+      start: 16,
+      end: 12,
+      top: 6,
+      bottom: 14,
+    );
 
     if (weights.isEmpty) {
       return HealthCard(
@@ -206,7 +252,10 @@ class _WeightCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             header,
-            Text(l10n.noWeightYet, style: AppText.secondary.copyWith(color: AppColors.brown)),
+            Text(
+              l10n.noWeightYet,
+              style: AppText.secondary.copyWith(color: AppColors.brown),
+            ),
           ],
         ),
       );
@@ -224,15 +273,26 @@ class _WeightCard extends StatelessWidget {
     // Only the visits inside the period the line covers are drawn.
     final marked = [
       for (final visit in visits)
-        if (!visit.isBefore(first.observedAt) && !visit.isAfter(latest.observedAt)) visit,
+        if (!visit.isBefore(first.observedAt) &&
+            !visit.isAfter(latest.observedAt))
+          visit,
     ];
     String plain(double kg) => format.weightNumber(kg, grams: grams);
     final summary = format.dots([
-      if (previous != null) format.weightChangeSince(previous.value!, latest.value!, previous.observedAt, grams: grams),
+      if (previous != null)
+        format.weightChangeSince(
+          previous.value!,
+          latest.value!,
+          previous.observedAt,
+          grams: grams,
+        ),
       if (weights.length > 1) l10n.weightHighest(plain(highest)),
       if (weights.length > 1) l10n.weightLowest(plain(lowest)),
     ]);
-    final small = AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600);
+    final small = AppText.label.copyWith(
+      color: AppColors.brown,
+      fontWeight: FontWeight.w600,
+    );
 
     return HealthCard(
       key: const Key('insights-weight'),
@@ -254,12 +314,17 @@ class _WeightCard extends StatelessWidget {
             ),
           ),
           Text(
-            format.dots([format.date(latest.observedAt), l10n.weighIns(weights.length)]),
+            format.dots([
+              format.date(latest.observedAt),
+              l10n.weighIns(weights.length),
+            ]),
             style: AppText.secondary.copyWith(color: AppColors.brown),
           ),
           const SizedBox(height: 10),
           WeightTrendChart(
-            points: [for (final w in weights) TrendPoint(w.observedAt, w.value!)],
+            points: [
+              for (final w in weights) TrendPoint(w.observedAt, w.value!),
+            ],
             events: marked,
             semanticsLabel: l10n.weightTrendSemantics(
               format.weight(first.value!, grams: grams),
@@ -279,7 +344,11 @@ class _WeightCard extends StatelessWidget {
           ),
           if (summary.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(summary, key: const Key('weight-summary'), style: AppText.secondary),
+            Text(
+              summary,
+              key: const Key('weight-summary'),
+              style: AppText.secondary,
+            ),
           ],
         ],
       ),
@@ -292,7 +361,12 @@ class _WeightCard extends StatelessWidget {
 /// which runs left to right in every language; the legend reads in the
 /// language of the screen.
 class _ChartDates extends StatelessWidget {
-  const _ChartDates({required this.first, required this.latest, required this.legend, required this.style});
+  const _ChartDates({
+    required this.first,
+    required this.latest,
+    required this.legend,
+    required this.style,
+  });
 
   final String first;
   final String latest;
@@ -300,7 +374,14 @@ class _ChartDates extends StatelessWidget {
   final TextStyle style;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final screen = Directionality.of(context);
     final text = legend;
     return Directionality(
@@ -322,7 +403,12 @@ class _ChartDates extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                     Flexible(
-                      child: Text(text, style: style, maxLines: 1, overflow: TextOverflow.ellipsis),
+                      child: Text(
+                        text,
+                        style: style,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -339,7 +425,12 @@ class _ChartDates extends StatelessWidget {
 
 /// One entry of the journal.
 class _ObservationCard extends StatelessWidget {
-  const _ObservationCard({required this.observation, required this.category, required this.grams, required this.onTap});
+  const _ObservationCard({
+    required this.observation,
+    required this.category,
+    required this.grams,
+    required this.onTap,
+  });
 
   final Observation observation;
   final QuickLogCategory category;
@@ -347,7 +438,14 @@ class _ObservationCard extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final value = observation.value;
@@ -369,9 +467,15 @@ class _ObservationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(format.dots([l10n.quickLogCategory(category), answer]), style: AppText.cardTitle),
                 Text(
-                  format.dots([format.date(observation.observedAt), observation.note]),
+                  format.dots([l10n.quickLogCategory(category), answer]),
+                  style: AppText.cardTitle,
+                ),
+                Text(
+                  format.dots([
+                    format.date(observation.observedAt),
+                    observation.note,
+                  ]),
                   style: AppText.secondary.copyWith(color: AppColors.brown),
                 ),
               ],

@@ -6,11 +6,11 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../care/widgets/care_widgets.dart';
+import '../../../presentation/care_widgets.dart';
 import '../first_days_screen.dart';
 import '../first_days_words.dart';
-import '../state/first_days_logic.dart';
-import '../state/first_days_providers.dart';
+import '../../../services/firstdays/state/first_days_logic.dart';
+import '../../../services/firstdays/state/first_days_providers.dart';
 import 'first_days_keeper.dart';
 
 /// Home's "The first 30 days of Mitzi" card: the day, the progress and the
@@ -19,7 +19,11 @@ import 'first_days_keeper.dart';
 ///
 /// [margin] is the gap kept above the card when it shows.
 class FirstDaysHomeCard extends StatelessWidget {
-  const FirstDaysHomeCard({super.key, required this.pet, this.margin = const EdgeInsets.only(top: AppSpacing.cardGap)});
+  const FirstDaysHomeCard({
+    super.key,
+    required this.pet,
+    this.margin = const EdgeInsets.only(top: AppSpacing.cardGap),
+  });
 
   static const cardKey = Key('first-days-card');
   static const openKey = Key('first-days-card-open');
@@ -73,7 +77,10 @@ class _Card extends StatelessWidget {
                   height: 64,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: AppColors.white.withValues(alpha: 0.6), width: 3),
+                    border: Border.all(
+                      color: AppColors.white.withValues(alpha: 0.6),
+                      width: 3,
+                    ),
                   ),
                   child: ClipOval(
                     child: SvgPicture.asset(
@@ -100,7 +107,9 @@ class _Card extends StatelessWidget {
                           Expanded(
                             child: Text(
                               l10n.cardDay(format.integer(view.shownDay)),
-                              style: AppText.body.copyWith(fontWeight: FontWeight.w800),
+                              style: AppText.body.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -108,18 +117,27 @@ class _Card extends StatelessWidget {
                           const SizedBox(width: 8),
                           Text(
                             '${format.integer(view.doneCount)}/${format.integer(view.total)}',
-                            style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+                            style: AppText.body.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      CareProgress(value: view.progress, track: AppColors.white.withValues(alpha: 0.7)),
+                      CareProgress(
+                        value: view.progress,
+                        track: AppColors.white.withValues(alpha: 0.7),
+                      ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           Expanded(
                             child: Text(
-                              next == null ? '' : l10n.cardNext(firstDaysTaskText(l10n, next.task.id)),
+                              next == null
+                                  ? ''
+                                  : l10n.cardNext(
+                                      firstDaysTaskText(l10n, next.task.id),
+                                    ),
                               style: AppText.body,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

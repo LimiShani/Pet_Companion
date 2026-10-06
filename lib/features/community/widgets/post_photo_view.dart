@@ -5,11 +5,15 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../data/community_models.dart';
+import '../../../services/community/data/community_models.dart';
 
 /// The picture of a post: rounded, 4:3, whatever its source.
 class PostPhotoView extends StatelessWidget {
-  const PostPhotoView({super.key, required this.photo, this.aspectRatio = 4 / 3});
+  const PostPhotoView({
+    super.key,
+    required this.photo,
+    this.aspectRatio = 4 / 3,
+  });
 
   final PostPhoto photo;
   final double aspectRatio;
@@ -25,28 +29,35 @@ class PostPhotoView extends StatelessWidget {
           aspectRatio: aspectRatio,
           child: switch (photo) {
             AssetPostPhoto(:final asset) => Image.asset(
-                asset,
-                fit: BoxFit.cover,
-                excludeFromSemantics: true,
-                errorBuilder: (context, error, stack) => const _PhotoFallback(),
-              ),
+              asset,
+              fit: BoxFit.cover,
+              excludeFromSemantics: true,
+              errorBuilder: (context, error, stack) => const _PhotoFallback(),
+            ),
             PlaceholderPostPhoto(:final color, :final icon) => ColoredBox(
-                color: color,
-                child: Center(child: AppIcon(icon, size: 72, color: AppColors.ink.withValues(alpha: 0.55))),
+              color: color,
+              child: Center(
+                child: AppIcon(
+                  icon,
+                  size: 72,
+                  color: AppColors.ink.withValues(alpha: 0.55),
+                ),
               ),
+            ),
             MemoryPostPhoto(:final bytes) => Image.memory(
-                bytes,
-                fit: BoxFit.cover,
-                excludeFromSemantics: true,
-                errorBuilder: (context, error, stack) => const _PhotoFallback(),
-              ),
+              bytes,
+              fit: BoxFit.cover,
+              excludeFromSemantics: true,
+              errorBuilder: (context, error, stack) => const _PhotoFallback(),
+            ),
             RemotePostPhoto(:final url, :final cacheKey) => CachedNetworkImage(
-                imageUrl: url,
-                cacheKey: cacheKey,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const _PhotoFallback(loading: true),
-                errorWidget: (context, url, error) => const _PhotoFallback(),
-              ),
+              imageUrl: url,
+              cacheKey: cacheKey,
+              fit: BoxFit.cover,
+              placeholder: (context, url) =>
+                  const _PhotoFallback(loading: true),
+              errorWidget: (context, url, error) => const _PhotoFallback(),
+            ),
           },
         ),
       ),

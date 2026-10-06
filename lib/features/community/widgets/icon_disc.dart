@@ -15,8 +15,15 @@ class IconDisc extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
-      child: DirectionalCommunityIcon(icon, size: size * 0.5, color: AppColors.ink),
+      decoration: const BoxDecoration(
+        color: AppColors.yellow,
+        shape: BoxShape.circle,
+      ),
+      child: DirectionalCommunityIcon(
+        icon,
+        size: size * 0.5,
+        color: AppColors.ink,
+      ),
     );
   }
 }

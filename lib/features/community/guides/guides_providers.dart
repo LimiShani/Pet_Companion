@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/audience.dart';
-import '../data/community_language.dart';
-import '../data/community_providers.dart';
-import '../data/guides_repository.dart';
+import '../../../services/community/data/audience.dart';
+import '../../../services/community/data/community_language.dart';
+import '../../../services/community/data/community_providers.dart';
+import '../../../services/community/data/guides_repository.dart';
 import '../feed/feed_controller.dart' show noRetry;
 
 /// Everything the guides screens need, loaded together.
@@ -30,9 +30,9 @@ class GuideLibrary {
   /// The categories that have at least one guide under [scope], in display
   /// order.
   List<GuideCategory> categoriesIn(CommunityScope scope) => [
-        for (final c in categories)
-          if (guides.any((g) => g.categoryId == c.id && scope.shows(g.audience))) c,
-      ];
+    for (final c in categories)
+      if (guides.any((g) => g.categoryId == c.id && scope.shows(g.audience))) c,
+  ];
 
   /// Guides under [scope], in [categoryId] (all when `null`), that match
   /// [query].
@@ -40,21 +40,20 @@ class GuideLibrary {
     String query = '',
     String? categoryId,
     CommunityScope scope = CommunityScope.everything,
-  }) =>
-      [
-        for (final g in guides)
-          if (scope.shows(g.audience) && (categoryId == null || g.categoryId == categoryId) && g.matches(query)) g,
-      ];
+  }) => [
+    for (final g in guides)
+      if (scope.shows(g.audience) &&
+          (categoryId == null || g.categoryId == categoryId) &&
+          g.matches(query))
+        g,
+  ];
 }
 
 /// The guides in the language the Community content is shown in.
-final guideLibraryProvider = FutureProvider<GuideLibrary>(
-  (ref) async {
-    final repo = ref.watch(guidesRepositoryProvider);
-    final language = ref.watch(communityLanguageProvider);
-    final categories = await repo.fetchCategories();
-    final guides = await repo.fetchGuides(language);
-    return GuideLibrary(categories: categories, guides: guides);
-  },
-  retry: noRetry,
-);
+final guideLibraryProvider = FutureProvider<GuideLibrary>((ref) async {
+  final repo = ref.watch(guidesRepositoryProvider);
+  final language = ref.watch(communityLanguageProvider);
+  final categories = await repo.fetchCategories();
+  final guides = await repo.fetchGuides(language);
+  return GuideLibrary(categories: categories, guides: guides);
+}, retry: noRetry);

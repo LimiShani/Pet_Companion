@@ -5,9 +5,9 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/directional_icon.dart';
-import '../data/deal.dart';
+import '../../../services/store/data/deal.dart';
 import '../store_format.dart';
-import '../store_strings.dart';
+import '../../../presentation/store_strings.dart';
 import 'deal_badge.dart';
 import 'deal_image.dart';
 
@@ -60,9 +60,17 @@ class DealCard extends StatelessWidget {
           children: [
             Stack(
               children: [
-                AspectRatio(aspectRatio: 4 / 3, child: DealImage(deal: deal, faded: expired)),
-                PositionedDirectional(start: 10, top: 10, child: DealBadge(deal: deal, expired: expired)),
-                if (corner != null) PositionedDirectional(end: 4, top: 4, child: corner!),
+                AspectRatio(
+                  aspectRatio: 4 / 3,
+                  child: DealImage(deal: deal, faded: expired),
+                ),
+                PositionedDirectional(
+                  start: 10,
+                  top: 10,
+                  child: DealBadge(deal: deal, expired: expired),
+                ),
+                if (corner != null)
+                  PositionedDirectional(end: 4, top: 4, child: corner!),
                 if (showAnimals && !deal.isForEveryPet)
                   PositionedDirectional(
                     start: 10,
@@ -87,7 +95,10 @@ class DealCard extends StatelessWidget {
                   Text(
                     deal.title,
                     textDirection: contentDirection(context, deal.title),
-                    style: AppText.cardTitle.copyWith(color: textColor, height: 1.25),
+                    style: AppText.cardTitle.copyWith(
+                      color: textColor,
+                      height: 1.25,
+                    ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -95,19 +106,34 @@ class DealCard extends StatelessWidget {
                   DealPrices(deal: deal, color: textColor),
                   if (unitPrice != null) ...[
                     const SizedBox(height: 5),
-                    _UnitPricePill(text: format.unitPrice(unitPrice, deal.currency), color: textColor),
+                    _UnitPricePill(
+                      text: format.unitPrice(unitPrice, deal.currency),
+                      color: textColor,
+                    ),
                   ],
                   if (delivery != null) ...[
                     const SizedBox(height: 5),
                     _SmallLine(
                       // A vehicle drives the way the language reads.
-                      icon: const MirroredIcon(Icons.local_shipping_outlined, size: 14, color: AppColors.brown),
-                      text: delivery == 0 ? l10n.freeDelivery : l10n.plusDelivery(format.money(delivery, deal.currency)),
+                      icon: const MirroredIcon(
+                        Icons.local_shipping_outlined,
+                        size: 14,
+                        color: AppColors.brown,
+                      ),
+                      text: delivery == 0
+                          ? l10n.freeDelivery
+                          : l10n.plusDelivery(
+                              format.money(delivery, deal.currency),
+                            ),
                     ),
                   ],
                   const SizedBox(height: 6),
                   _SmallLine(
-                    icon: const AppIcon(Icons.storefront_rounded, size: 14, color: AppColors.brown),
+                    icon: const AppIcon(
+                      Icons.storefront_rounded,
+                      size: 14,
+                      color: AppColors.brown,
+                    ),
                     text: deal.sellerName,
                     isContent: true,
                   ),
@@ -132,10 +158,16 @@ class _UnitPricePill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(color: const Color(0xFFE0E6D3), borderRadius: BorderRadius.circular(999)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE0E6D3),
+        borderRadius: BorderRadius.circular(999),
+      ),
       child: Text(
         text,
-        style: AppText.label.copyWith(color: color, fontWeight: FontWeight.w800),
+        style: AppText.label.copyWith(
+          color: color,
+          fontWeight: FontWeight.w800,
+        ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
@@ -145,7 +177,11 @@ class _UnitPricePill extends StatelessWidget {
 
 /// A small brown line with an icon: the seller, the delivery cost.
 class _SmallLine extends StatelessWidget {
-  const _SmallLine({required this.icon, required this.text, this.isContent = false});
+  const _SmallLine({
+    required this.icon,
+    required this.text,
+    this.isContent = false,
+  });
 
   final Widget icon;
   final String text;
@@ -179,7 +215,12 @@ class _SmallLine extends StatelessWidget {
 /// "₪179  ₪299": the price now, then the old price struck through. Wraps
 /// onto two lines when they do not fit side by side.
 class DealPrices extends StatelessWidget {
-  const DealPrices({super.key, required this.deal, this.color = AppColors.ink, this.large = false});
+  const DealPrices({
+    super.key,
+    required this.deal,
+    this.color = AppColors.ink,
+    this.large = false,
+  });
 
   final Deal deal;
   final Color color;
@@ -195,7 +236,9 @@ class DealPrices extends StatelessWidget {
       children: [
         Text(
           format.money(deal.price, deal.currency),
-          style: (large ? AppText.metric : AppText.pillValue).copyWith(color: color),
+          style: (large ? AppText.metric : AppText.pillValue).copyWith(
+            color: color,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

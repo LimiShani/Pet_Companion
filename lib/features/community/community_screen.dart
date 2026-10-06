@@ -1,3 +1,5 @@
+import '../../access/feature_gate.dart';
+import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,7 +25,8 @@ class CommunityGuidesRequest extends Notifier<bool> {
   void clear() => state = false;
 }
 
-final communityGuidesRequestProvider = NotifierProvider<CommunityGuidesRequest, bool>(CommunityGuidesRequest.new);
+final communityGuidesRequestProvider =
+    NotifierProvider<CommunityGuidesRequest, bool>(CommunityGuidesRequest.new);
 
 /// The Community tab: a social feed, topic chat rooms and a library of
 /// guides, switched from the header.
@@ -45,13 +48,26 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   final _visited = <int>{_feed};
 
   void _select(int index) => setState(() {
-        _index = index;
-        _visited.add(index);
-      });
+    _index = index;
+    _visited.add(index);
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'community.feed.view|community.chat.view|community.guides.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
+    final visible = [
+      if (ref.watch(capabilityProvider('community.feed.view'))) 0,
+      if (ref.watch(capabilityProvider('community.chat.view'))) 1,
+      if (ref.watch(capabilityProvider('community.guides.view'))) 2,
+    ];
+    final index = visible.contains(_index) ? _index : visible.first;
     if (ref.watch(communityGuidesRequestProvider)) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -65,7 +81,9 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
     // top of it on a small phone (in Hebrew it is on the left, right over
     // that button), so it waits until there are posts.
     final feedShowsPosts = ref.watch(
-      feedControllerProvider.select((feed) => feed.value == null ? feed.isLoading : feed.value!.isNotEmpty),
+      feedControllerProvider.select(
+        (feed) => feed.value == null ? feed.isLoading : feed.value!.isNotEmpty,
+      ),
     );
 
     return Scaffold(
@@ -75,24 +93,38 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
           CoralHeader(
             title: l10n.tabTitle,
             bottom: CoralSegmentedControl(
-              labels: [l10n.sectionFeed, l10n.sectionChat, l10n.sectionGuides],
-              selectedIndex: _index,
-              onChanged: _select,
+              labels: [
+                for (final section in visible)
+                  [
+                    l10n.sectionFeed,
+                    l10n.sectionChat,
+                    l10n.sectionGuides,
+                  ][section],
+              ],
+              selectedIndex: visible.indexOf(index),
+              onChanged: (selected) => _select(visible[selected]),
             ),
           ),
           Expanded(
             child: IndexedStack(
-              index: _index,
+              index: index,
               children: [
                 const FeedSection(),
-                _visited.contains(1) ? const ChatSection() : const SizedBox.shrink(),
-                _visited.contains(2) ? const GuidesSection() : const SizedBox.shrink(),
+                (_visited.contains(1) || index == 1) && visible.contains(1)
+                    ? const ChatSection()
+                    : const SizedBox.shrink(),
+                (_visited.contains(2) || index == 2) && visible.contains(2)
+                    ? const GuidesSection()
+                    : const SizedBox.shrink(),
               ],
             ),
           ),
         ],
       ),
-      floatingActionButton: _index == _feed && feedShowsPosts
+      floatingActionButton:
+          index == _feed &&
+              feedShowsPosts &&
+              ref.watch(capabilityProvider('community.feed.post'))
           ? FloatingActionButton.extended(
               onPressed: () => openPostComposer(context),
               icon: const AppIcon(Icons.edit_rounded),

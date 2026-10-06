@@ -1,3 +1,4 @@
+import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,11 +9,11 @@ import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
-import 'data/deal.dart';
-import 'data/link_opener.dart';
-import 'state/store_providers.dart';
+import '../../services/store/data/deal.dart';
+import '../../services/store/data/link_opener.dart';
+import '../../services/store/state/store_providers.dart';
 import 'store_format.dart';
-import 'store_strings.dart';
+import '../../presentation/store_strings.dart';
 import 'widgets/deal_badge.dart';
 import 'widgets/deal_card.dart';
 import 'widgets/deal_image.dart';
@@ -71,7 +72,14 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final deals = ref.watch(dealsProvider);
     final current = ref.watch(dealByIdProvider(widget.dealId));
@@ -85,20 +93,26 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
           CoralHeader(
             title: l10n.dealTitle,
             showBack: true,
-            actions: [if (deal != null) SaveDealButton(dealId: deal.id, inHeader: true)],
+            actions: [
+              if (deal != null) SaveDealButton(dealId: deal.id, inHeader: true),
+            ],
           ),
           Expanded(
             child: deal != null
-                ? _DealBody(deal: deal, busy: _deleting, onDelete: () => _delete(deal))
+                ? _DealBody(
+                    deal: deal,
+                    busy: _deleting,
+                    onDelete: () => _delete(deal),
+                  )
                 : deals.isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : EmptyState(
-                        icon: Icons.search_off_rounded,
-                        title: l10n.dealGoneTitle,
-                        message: l10n.dealGoneMessage,
-                        actionLabel: l10n.backToStore,
-                        onAction: () => Navigator.of(context).maybePop(),
-                      ),
+                ? const Center(child: CircularProgressIndicator())
+                : EmptyState(
+                    icon: Icons.search_off_rounded,
+                    title: l10n.dealGoneTitle,
+                    message: l10n.dealGoneMessage,
+                    actionLabel: l10n.backToStore,
+                    onAction: () => Navigator.of(context).maybePop(),
+                  ),
           ),
         ],
       ),
@@ -107,7 +121,11 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
 }
 
 class _DealBody extends ConsumerWidget {
-  const _DealBody({required this.deal, required this.busy, required this.onDelete});
+  const _DealBody({
+    required this.deal,
+    required this.busy,
+    required this.onDelete,
+  });
 
   final Deal deal;
 
@@ -124,33 +142,55 @@ class _DealBody extends ConsumerWidget {
       await ref.read(reportedDealIdsProvider.notifier).report(deal.id);
       showStoreMessageOn(messenger, thanks);
     } catch (error) {
-      if (context.mounted) showStoreMessageOn(messenger, storeErrorText(context, error));
+      if (context.mounted) {
+        showStoreMessageOn(messenger, storeErrorText(context, error));
+      }
     }
   }
 
   Future<void> _open(BuildContext context, WidgetRef ref) async {
     final uri = safeDealLink(deal.link);
     final opened = uri != null && await ref.read(linkOpenerProvider).open(uri);
-    if (!opened && context.mounted) showStoreMessage(context, context.storeL10n.couldNotOpenOffer);
+    if (!opened && context.mounted) {
+      showStoreMessage(context, context.storeL10n.couldNotOpenOffer);
+    }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final format = StoreFormat.of(context);
     final now = ref.watch(storeClockProvider)();
-    final userId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
+    final userId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
     final expired = deal.isExpired(now);
     final host = safeDealLink(deal.link)?.host;
     final mine = deal.isSharedBy(userId);
-    final reported = ref.watch(reportedDealIdsProvider.select((ids) => ids.value?.contains(deal.id) ?? false));
+    final reported = ref.watch(
+      reportedDealIdsProvider.select(
+        (ids) => ids.value?.contains(deal.id) ?? false,
+      ),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
           child: SingleChildScrollView(
-            padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 16, AppSpacing.screen, 16),
+            padding: const EdgeInsetsDirectional.fromSTEB(
+              AppSpacing.screen,
+              16,
+              AppSpacing.screen,
+              16,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -158,11 +198,22 @@ class _DealBody extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
                   child: Stack(
                     children: [
-                      AspectRatio(aspectRatio: 16 / 9, child: DealImage(deal: deal, discSize: 92, faded: expired)),
+                      AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: DealImage(
+                          deal: deal,
+                          discSize: 92,
+                          faded: expired,
+                        ),
+                      ),
                       PositionedDirectional(
                         start: 14,
                         top: 14,
-                        child: DealBadge(deal: deal, expired: expired, large: true),
+                        child: DealBadge(
+                          deal: deal,
+                          expired: expired,
+                          large: true,
+                        ),
                       ),
                     ],
                   ),
@@ -172,7 +223,10 @@ class _DealBody extends ConsumerWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _Pill(label: l10n.category(deal.category), color: AppColors.yellow),
+                    _Pill(
+                      label: l10n.category(deal.category),
+                      color: AppColors.yellow,
+                    ),
                     AnimalsTag(
                       key: const Key('deal-animals'),
                       label: l10n.forWhom(deal.speciesInOrder),
@@ -187,23 +241,35 @@ class _DealBody extends ConsumerWidget {
                 Text(
                   deal.title,
                   textDirection: contentDirection(context, deal.title),
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, height: 1.2),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                  ),
                 ),
                 if (expired) ...[
                   const SizedBox(height: 14),
                   _Notice(text: l10n.dealEndedOn(format.date(deal.expiresAt!))),
                 ] else if (deal.isPriceStale(now)) ...[
                   const SizedBox(height: 14),
-                  _Notice(key: const Key('deal-price-stale'), text: l10n.priceMayHaveChanged),
+                  _Notice(
+                    key: const Key('deal-price-stale'),
+                    text: l10n.priceMayHaveChanged,
+                  ),
                 ],
                 const SizedBox(height: 14),
                 _PriceCard(deal: deal),
                 const SizedBox(height: AppSpacing.cardGap),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.white,
-                    borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppSpacing.surfaceRadius,
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -252,10 +318,14 @@ class _DealBody extends ConsumerWidget {
                     child: reported
                         ? const _ReportedNote()
                         : TextButton.icon(
-                            onPressed: busy ? null : () => _report(context, ref),
+                            onPressed: busy
+                                ? null
+                                : () => _report(context, ref),
                             icon: const AppIcon(Icons.flag_outlined, size: 18),
                             label: Text(l10n.reportExpired),
-                            style: TextButton.styleFrom(minimumSize: const Size(44, 44)),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(44, 44),
+                            ),
                           ),
                   ),
                 ],
@@ -272,7 +342,12 @@ class _DealBody extends ConsumerWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.screen, 8, AppSpacing.screen, 12),
+          padding: const EdgeInsetsDirectional.fromSTEB(
+            AppSpacing.screen,
+            8,
+            AppSpacing.screen,
+            12,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -291,7 +366,10 @@ class _DealBody extends ConsumerWidget {
                 Text(
                   // A web address reads left to right in every language.
                   l10n.opensInBrowser(context.isRtl ? ltr(host) : host),
-                  style: AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600),
+                  style: AppText.label.copyWith(
+                    color: AppColors.brown,
+                    fontWeight: FontWeight.w600,
+                  ),
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -321,7 +399,14 @@ class _PriceCard extends StatelessWidget {
   final Deal deal;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
     final format = StoreFormat.of(context);
     final size = deal.package;
@@ -331,7 +416,11 @@ class _PriceCard extends StatelessWidget {
     // A deal with neither a package size nor a delivery cost looks as it
     // did before these existed.
     final hasBreakdown = size != null || delivery != null;
-    final line = Divider(height: 1, thickness: 1, color: AppColors.ink.withValues(alpha: 0.22));
+    final line = Divider(
+      height: 1,
+      thickness: 1,
+      color: AppColors.ink.withValues(alpha: 0.22),
+    );
 
     String money(double amount) => format.money(amount, deal.currency);
 
@@ -361,21 +450,26 @@ class _PriceCard extends StatelessWidget {
                 label: l10n.unitPriceLabel,
                 value: format.unitPrice(unitPrice, deal.currency),
               ),
-            if (size != null) _PriceLine(label: l10n.packageLabel, value: format.package(size)),
+            if (size != null)
+              _PriceLine(label: l10n.packageLabel, value: format.package(size)),
             _PriceLine(
               label: l10n.deliveryLabel,
               value: delivery == null
                   ? l10n.deliveryNotGiven
                   : delivery == 0
-                      ? l10n.deliveryFree
-                      : l10n.deliveryPlus(money(delivery)),
+                  ? l10n.deliveryFree
+                  : l10n.deliveryPlus(money(delivery)),
               note: delivery == null ? l10n.deliveryAskSeller : null,
             ),
             if (finalPrice != null) ...[
               const SizedBox(height: 4),
               line,
               const SizedBox(height: 4),
-              _PriceLine(label: l10n.finalPriceLabel, value: money(finalPrice), strong: true),
+              _PriceLine(
+                label: l10n.finalPriceLabel,
+                value: money(finalPrice),
+                strong: true,
+              ),
             ],
           ],
         ],
@@ -387,7 +481,12 @@ class _PriceCard extends StatelessWidget {
 /// A label at the start and its value at the end. Wraps when they do not
 /// fit on one line.
 class _PriceLine extends StatelessWidget {
-  const _PriceLine({required this.label, required this.value, this.note, this.strong = false});
+  const _PriceLine({
+    required this.label,
+    required this.value,
+    this.note,
+    this.strong = false,
+  });
 
   final String label;
   final String value;
@@ -399,7 +498,14 @@ class _PriceLine extends StatelessWidget {
   final bool strong;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Column(
@@ -410,10 +516,17 @@ class _PriceLine extends StatelessWidget {
             crossAxisAlignment: WrapCrossAlignment.center,
             spacing: 12,
             children: [
-              Text(label, style: AppText.body.copyWith(fontWeight: strong ? FontWeight.w800 : FontWeight.w600)),
+              Text(
+                label,
+                style: AppText.body.copyWith(
+                  fontWeight: strong ? FontWeight.w800 : FontWeight.w600,
+                ),
+              ),
               Text(
                 value,
-                style: strong ? AppText.pillValue : AppText.body.copyWith(fontWeight: FontWeight.w800),
+                style: strong
+                    ? AppText.pillValue
+                    : AppText.body.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
           ),
@@ -438,15 +551,29 @@ class _Pill extends StatelessWidget {
   final Color? color;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
       decoration: BoxDecoration(
         color: color ?? AppColors.white,
         borderRadius: BorderRadius.circular(999),
-        border: color == null ? Border.all(color: Theme.of(context).colorScheme.outlineVariant) : null,
+        border: color == null
+            ? Border.all(color: Theme.of(context).colorScheme.outlineVariant)
+            : null,
       ),
-      child: Text(label, style: AppText.label, maxLines: 1, overflow: TextOverflow.ellipsis),
+      child: Text(
+        label,
+        style: AppText.label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
     );
   }
 }
@@ -455,18 +582,32 @@ class _ReportedNote extends StatelessWidget {
   const _ReportedNote();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 44),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const AppIcon(Icons.check_circle_outline_rounded, size: 18, color: AppColors.brown),
+          const AppIcon(
+            Icons.check_circle_outline_rounded,
+            size: 18,
+            color: AppColors.brown,
+          ),
           const SizedBox(width: 8),
           Flexible(
             child: Text(
               context.storeL10n.reportedExpired,
-              style: AppText.body.copyWith(color: AppColors.brown, fontWeight: FontWeight.w700),
+              style: AppText.body.copyWith(
+                color: AppColors.brown,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -483,7 +624,14 @@ class _Notice extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -494,7 +642,12 @@ class _Notice extends StatelessWidget {
         children: [
           const AppIcon(Icons.schedule_rounded, size: 20, color: AppColors.ink),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: AppText.body.copyWith(fontWeight: FontWeight.w700))),
+          Expanded(
+            child: Text(
+              text,
+              style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
         ],
       ),
     );
@@ -502,7 +655,12 @@ class _Notice extends StatelessWidget {
 }
 
 class _InfoRow extends StatelessWidget {
-  const _InfoRow({required this.icon, required this.label, required this.value, this.isContent = false});
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isContent = false,
+  });
 
   final IconData icon;
   final String label;
@@ -513,7 +671,14 @@ class _InfoRow extends StatelessWidget {
   final bool isContent;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'store.deals.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
@@ -524,10 +689,15 @@ class _InfoRow extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: AppText.label.copyWith(color: AppColors.brown)),
+                Text(
+                  label,
+                  style: AppText.label.copyWith(color: AppColors.brown),
+                ),
                 Text(
                   value,
-                  textDirection: isContent ? contentDirection(context, value) : null,
+                  textDirection: isContent
+                      ? contentDirection(context, value)
+                      : null,
                   style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],

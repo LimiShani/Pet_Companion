@@ -1,3 +1,4 @@
+import '../../../platform/feature_ui.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -12,8 +13,7 @@ import '../../../widgets/brand.dart';
 import '../../../widgets/pet_selector.dart';
 import '../../../widgets/petloop_icon.dart';
 import '../../auth/widgets/account_sheet.dart';
-import '../../health/emergency/emergency.dart';
-import '../../pets/pets.dart';
+
 import '../../settings/side_menu.dart';
 
 /// The pinned top bar of the dashboard: the button of the side menu,
@@ -62,12 +62,19 @@ class HomeTopBar extends ConsumerWidget {
       shadowColor: AppColors.brown,
       elevation: raised ? 6 : 0,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(bottom: Radius.circular(raised ? AppSpacing.shellRadius : 0)),
+        borderRadius: BorderRadius.vertical(
+          bottom: Radius.circular(raised ? AppSpacing.shellRadius : 0),
+        ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(AppSpacing.screen, _paddingTop, AppSpacing.screen, _paddingBottom),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screen,
+            _paddingTop,
+            AppSpacing.screen,
+            _paddingBottom,
+          ),
           child: SizedBox(
             height: rowHeight,
             child: Row(
@@ -78,7 +85,10 @@ class HomeTopBar extends ConsumerWidget {
                   icon: const PetLoopIcon(PetLoopGlyph.menu, size: 26),
                   color: AppColors.white,
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(width: _menuSize, height: _menuSize),
+                  constraints: const BoxConstraints.tightFor(
+                    width: _menuSize,
+                    height: _menuSize,
+                  ),
                 ),
                 Expanded(
                   child: LayoutBuilder(
@@ -87,7 +97,10 @@ class HomeTopBar extends ConsumerWidget {
                       // what is left. Only when the pill alone is wider than
                       // the room between menu and avatar (a tiny phone with
                       // very large text) is the pill scaled down to fit.
-                      final pillRoom = math.max(0.0, constraints.maxWidth - _gapBeforePill);
+                      final pillRoom = math.max(
+                        0.0,
+                        constraints.maxWidth - _gapBeforePill,
+                      );
                       return Row(
                         children: [
                           const Expanded(child: _Brand()),
@@ -96,7 +109,7 @@ class HomeTopBar extends ConsumerWidget {
                             constraints: BoxConstraints(maxWidth: pillRoom),
                             child: FittedBox(
                               fit: BoxFit.scaleDown,
-                              child: EmergencyButton(petId: petId),
+                              child: featureSlot('emergency-button', petId),
                             ),
                           ),
                         ],
@@ -107,7 +120,9 @@ class HomeTopBar extends ConsumerWidget {
                 const SizedBox(width: _gapAfterPill),
                 _AccountAvatar(
                   initial: user?.initial ?? '?',
-                  onTap: user == null ? null : () => AccountSheet.show(context, user),
+                  onTap: user == null
+                      ? null
+                      : () => AccountSheet.show(context, user),
                 ),
               ],
             ),
@@ -138,7 +153,11 @@ class _Brand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const wordmark = PetLoopWordmark(key: HomeTopBar.brandWordmarkKey, height: _wordmarkHeight, tone: BrandTone.white);
+    const wordmark = PetLoopWordmark(
+      key: HomeTopBar.brandWordmarkKey,
+      height: _wordmarkHeight,
+      tone: BrandTone.white,
+    );
 
     return Semantics(
       header: true,
@@ -148,7 +167,9 @@ class _Brand extends StatelessWidget {
           builder: (context, constraints) {
             final room = constraints.maxWidth;
             final showWordmark = room >= wordmark.width * _minScaleWordmarkOnly;
-            final showMark = !showWordmark || room >= (wordmark.width + _markSize + _gap) * _minScaleWithMark;
+            final showMark =
+                !showWordmark ||
+                room >= (wordmark.width + _markSize + _gap) * _minScaleWithMark;
 
             return FittedBox(
               fit: BoxFit.scaleDown,
@@ -156,7 +177,12 @@ class _Brand extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (showMark) const PetLoopMark(key: HomeTopBar.brandMarkKey, size: _markSize, tone: BrandTone.white),
+                  if (showMark)
+                    const PetLoopMark(
+                      key: HomeTopBar.brandMarkKey,
+                      size: _markSize,
+                      tone: BrandTone.white,
+                    ),
                   if (showMark && showWordmark) const SizedBox(width: _gap),
                   if (showWordmark) wordmark,
                 ],
@@ -206,10 +232,19 @@ class HomePetRow extends ConsumerWidget {
             top: false,
             bottom: false,
             child: Padding(
-              padding: EdgeInsets.fromLTRB(AppSpacing.screen, topInset + 8, AppSpacing.screen, 10),
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                topInset + 8,
+                AppSpacing.screen,
+                10,
+              ),
               child: Row(
                 children: [
-                  Expanded(child: PetSelector(onAdd: () => openAddPet(context))),
+                  Expanded(
+                    child: PetSelector(
+                      onAdd: () => openFeature<Object>(context, 'add-pet', ''),
+                    ),
+                  ),
                   const SizedBox(width: 8),
                   Text(
                     context.l10n.homePetCount(count),
@@ -241,7 +276,12 @@ class _AccountAvatar extends StatelessWidget {
       label: context.l10n.homeAccount,
       child: Material(
         color: AppColors.yellow,
-        shape: CircleBorder(side: BorderSide(color: AppColors.white.withValues(alpha: 0.85), width: 2)),
+        shape: CircleBorder(
+          side: BorderSide(
+            color: AppColors.white.withValues(alpha: 0.85),
+            width: 2,
+          ),
+        ),
         child: InkWell(
           customBorder: const CircleBorder(),
           onTap: onTap,
@@ -251,7 +291,11 @@ class _AccountAvatar extends StatelessWidget {
             child: Center(
               child: Text(
                 initial,
-                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: AppColors.ink),
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                ),
               ),
             ),
           ),

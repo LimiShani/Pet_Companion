@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,25 +8,37 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/primary_button.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
 import '../emergency/emergency_sheet.dart';
-import '../health_format.dart';
-import '../health_strings.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../presentation/health_format.dart';
+import '../../../presentation/health_strings.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 
 /// Opens the Quick log: pick a category suited to the species, pick a
 /// simple answer (or type the weight), save. Notes are optional.
 ///
 /// [category] preselects a category key (the weight, from "Log weight").
 /// With [observation] the sheet edits or deletes an existing entry.
-Future<void> showQuickLog(BuildContext context, Pet pet, {String? category, Observation? observation}) =>
-    showHealthSheet<void>(context, QuickLogSheet(pet: pet, category: category, observation: observation));
+Future<void> showQuickLog(
+  BuildContext context,
+  Pet pet, {
+  String? category,
+  Observation? observation,
+}) => showHealthSheet<void>(
+  context,
+  QuickLogSheet(pet: pet, category: category, observation: observation),
+);
 
 class QuickLogSheet extends ConsumerStatefulWidget {
-  const QuickLogSheet({super.key, required this.pet, this.category, this.observation});
+  const QuickLogSheet({
+    super.key,
+    required this.pet,
+    this.category,
+    this.observation,
+  });
 
   final Pet pet;
   final String? category;
@@ -65,7 +78,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
       _note.text = observation.note;
       final value = observation.value;
       if (value != null) {
-        _weight.text = _grams ? formatNumber(value * 1000, decimals: 0) : formatNumber(value, decimals: 2);
+        _weight.text = _grams
+            ? formatNumber(value * 1000, decimals: 0)
+            : formatNumber(value, decimals: 2);
       }
     }
     _weight.addListener(() => setState(() {}));
@@ -87,7 +102,8 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     return _grams ? typed / 1000 : typed;
   }
 
-  bool get _ready => _category != null && (_isWeight ? _kilograms != null : _level != null);
+  bool get _ready =>
+      _category != null && (_isWeight ? _kilograms != null : _level != null);
 
   Future<void> _pickWhen() async {
     final now = _now;
@@ -138,7 +154,12 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           );
       if (!mounted) return;
       Navigator.of(context).pop();
-      showHealthSnack(context, _editing ? context.healthL10n.entryUpdated : context.healthL10n.savedToJournal);
+      showHealthSnack(
+        context,
+        _editing
+            ? context.healthL10n.entryUpdated
+            : context.healthL10n.savedToJournal,
+      );
     } catch (error) {
       if (mounted) {
         setState(() {
@@ -158,7 +179,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     if (!confirmed || !mounted) return;
     setState(() => _busy = true);
     try {
-      await ref.read(observationsProvider(_petId).notifier).delete(widget.observation!.id);
+      await ref
+          .read(observationsProvider(_petId).notifier)
+          .delete(widget.observation!.id);
       if (mounted) Navigator.of(context).pop();
     } catch (error) {
       if (mounted) {
@@ -177,7 +200,14 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.records.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final pet = widget.pet;
     final category = _category;
     final now = ref.watch(healthClockProvider)();
@@ -186,7 +216,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
     final error = _error;
     Observation? lastWeight;
     if (_isWeight) {
-      final weights = weightEntries(ref.watch(observationsProvider(_petId)).value ?? const []);
+      final weights = weightEntries(
+        ref.watch(observationsProvider(_petId)).value ?? const [],
+      );
       for (final w in weights) {
         if (w.id != widget.observation?.id) lastWeight = w;
       }
@@ -198,7 +230,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
       children: [
         SheetTitle(
           _editing ? l10n.editEntry : l10n.quickLogFor(pet.name),
-          subtitle: _editing ? (category == null ? null : l10n.quickLogCategory(category)) : l10n.whatDidYouNotice,
+          subtitle: _editing
+              ? (category == null ? null : l10n.quickLogCategory(category))
+              : l10n.whatDidYouNotice,
         ),
         if (!_editing)
           // Two short groups. A species without behaviour categories keeps
@@ -208,7 +242,10 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
               if (_settings.quickLogIn(QuickLogGroup.behaviour).isEmpty)
                 const SizedBox(height: 12)
               else
-                FormLabel(l10n.quickLogGroup(group), key: ValueKey('quick-group-${group.name}')),
+                FormLabel(
+                  l10n.quickLogGroup(group),
+                  key: ValueKey('quick-group-${group.name}'),
+                ),
               Wrap(
                 spacing: 8,
                 runSpacing: 4,
@@ -216,7 +253,11 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
                   for (final c in _settings.quickLogIn(group))
                     ChoiceChip(
                       key: ValueKey('quick-${c.key}'),
-                      avatar: HealthIcon(c.icon, size: 18, color: AppColors.ink),
+                      avatar: HealthIcon(
+                        c.icon,
+                        size: 18,
+                        color: AppColors.ink,
+                      ),
                       label: Text(l10n.quickLogCategory(c)),
                       selected: c.key == category?.key,
                       showCheckmark: false,
@@ -235,8 +276,12 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
             TextField(
               key: const Key('quick-weight-field'),
               controller: _weight,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9.,]'))],
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
+              ],
               // A number: left to right on every screen, its unit beside it.
               textDirection: TextDirection.ltr,
               textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
@@ -294,7 +339,9 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
           const SizedBox(height: 10),
           Text(
             error is String ? error : format.error(error),
-            style: AppText.body.copyWith(color: Theme.of(context).colorScheme.error),
+            style: AppText.body.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
           ),
         ],
         const SizedBox(height: 16),
@@ -313,7 +360,12 @@ class _QuickLogSheetState extends ConsumerState<QuickLogSheet> {
             ),
           ),
         Center(
-          child: HealthLink(l10n.looksUrgent, key: const Key('quick-urgent'), icon: emergencyIcon, onPressed: _urgent),
+          child: HealthLink(
+            l10n.looksUrgent,
+            key: const Key('quick-urgent'),
+            icon: emergencyIcon,
+            onPressed: _urgent,
+          ),
         ),
         FinePrint(l10n.quickLogFinePrint),
       ],

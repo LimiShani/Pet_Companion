@@ -46,7 +46,10 @@ class MenuEntry extends StatelessWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(color: AppColors.yellow, shape: BoxShape.circle),
+                    decoration: const BoxDecoration(
+                      color: AppColors.yellow,
+                      shape: BoxShape.circle,
+                    ),
                     child: IconTheme.merge(
                       data: const IconThemeData(size: 22, color: AppColors.ink),
                       child: Center(child: icon),
@@ -58,11 +61,18 @@ class MenuEntry extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                        Text(
+                          title,
+                          style: AppText.cardTitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         if (subtitle != null)
                           Text(
                             subtitle!,
-                            style: AppText.secondary.copyWith(color: AppColors.brown),
+                            style: AppText.secondary.copyWith(
+                              color: AppColors.brown,
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -70,7 +80,10 @@ class MenuEntry extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+                  const AppIcon(
+                    Icons.chevron_right_rounded,
+                    color: AppColors.brown,
+                  ),
                 ],
               ),
             ),

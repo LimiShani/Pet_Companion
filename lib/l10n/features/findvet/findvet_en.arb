@@ -1,0 +1,366 @@
+{
+  "@@locale": "en",
+  "findVetTitle": "Find a vet",
+  "findVetMenuSubtitle": "Emergency or regular care nearby",
+  "loginEmergencyLink": "Pet emergency? Find a vet",
+  "@loginEmergencyLink": {
+    "description": "Link on the sign-in screen: opens the emergency search without an account."
+  },
+  "emergencySheetFindVet": "Find an emergency vet nearby",
+  "choiceQuestion": "What do you need?",
+  "emergencyChoiceTitle": "Emergency care",
+  "emergencyChoiceBody": "The nearest places that advertise emergency care, with Call and Directions.",
+  "longTermChoiceTitle": "Long term care",
+  "longTermChoiceBody": "Nearby practices with their details, and a regular vet to save.",
+  "modeEmergency": "Emergency",
+  "modeLongTerm": "Long term",
+  "areaQuestion": "Where should we look?",
+  "locationWhy": "To find vets near you, PetLoop asks the phone for your location once. It is used for this search only and is not saved.",
+  "useMyLocation": "Use my location",
+  "locating": "Finding your location…",
+  "orTypePlace": "Or type a city, address or postcode",
+  "placeSearchHint": "City, address or postcode",
+  "placeSearchButton": "Search",
+  "placeNoMatch": "We could not find that place. Try the name of a city.",
+  "placeLookupFailed": "Could not look that up right now. Try the name of a city.",
+  "problemDenied": "Location access was not allowed. You can type a place instead.",
+  "problemDeniedForever": "Location access is off for PetLoop. It can be turned on in the phone's settings, or you can type a place.",
+  "problemServiceOff": "Location is switched off on this phone. Turn it on, or type a place.",
+  "problemUnavailable": "We could not get your location. Type a place instead.",
+  "problemOutsideRegion": "Find a vet works in Israel for now. Type a place in Israel.",
+  "openSettings": "Open settings",
+  "searchingNear": "Searching near {place}",
+  "@searchingNear": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "yourLocation": "your location",
+  "approximateLocation": "Your location is approximate (within about {km} km). Change the area if it looks wrong.",
+  "@approximateLocation": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "changeArea": "Change",
+  "changeAreaLabel": "Change the area",
+  "withinKm": "Within {km} km",
+  "@withinKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "searching": "Looking for vets…",
+  "callFirstTitle": "Call before you go",
+  "callFirstBody": "Opening hours and \"24/7\" do not tell us whether they can take your pet right now.",
+  "callToConfirm": "Call to confirm they can receive your pet",
+  "evidenceListed": "Listed nearby",
+  "evidenceListedNote": "Found in a map listing. Emergency care is not confirmed by PetLoop.",
+  "evidenceAdvertised": "Emergency service advertised",
+  "evidenceAdvertisedSchedule": "Emergency service advertised · {schedule}",
+  "@evidenceAdvertisedSchedule": {
+    "placeholders": {
+      "schedule": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceSourceChecked": "On their own website, last checked {date}",
+  "@evidenceSourceChecked": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceSourceNotChecked": "On their own website, not checked again yet",
+  "evidenceUnverified": "Emergency service not re-confirmed",
+  "evidenceUnverifiedNote": "Their website did not show it when we last looked ({date}). Ask when you call.",
+  "@evidenceUnverifiedNote": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceUnverifiedNoDate": "We could not confirm it on their website lately. Ask when you call.",
+  "evidenceOpenNow": "Published hours: open now",
+  "evidenceClosedNow": "Published hours: closed now",
+  "evidenceHoursUnknown": "Opening hours not published",
+  "evidenceAccepting": "Accepting patients now",
+  "evidenceLimited": "Accepting patients, with limits",
+  "evidenceDiverting": "Sending patients elsewhere right now",
+  "evidenceReported": "Reported by the facility at {time}, valid until {until}",
+  "@evidenceReported": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "until": {
+        "type": "String"
+      }
+    }
+  },
+  "staleNote": "PetLoop last checked these details on {date}.",
+  "@staleNote": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "staleNever": "PetLoop has not checked these details yet.",
+  "closedTemporarily": "Listed as temporarily closed",
+  "distanceKm": "{km} km",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceM": "{m} m",
+  "@distanceM": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "call": "Call",
+  "callName": "Call {name}",
+  "@callName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noPhone": "No phone number listed",
+  "directions": "Directions",
+  "directionsName": "Directions to {name}",
+  "@directionsName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "website": "Website",
+  "viewOnMaps": "View on Google Maps",
+  "save": "Save",
+  "saveName": "Save {name} as a regular vet",
+  "@saveName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "saveChoosePet": "Save as the regular vet of…",
+  "saveForPet": "Save for {pet}",
+  "@saveForPet": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "saveNeedsPet": "Add a pet first to save a regular vet.",
+  "savedVet": "Saved as a regular vet.",
+  "details": "Details",
+  "fewerDetails": "Fewer details",
+  "hoursTitle": "Published hours",
+  "speciesLine": "Treats: {list}",
+  "@speciesLine": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "servicesLine": "Services: {list}",
+  "@servicesLine": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "factSource": "From their website, checked {date}",
+  "@factSource": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "factSourceNoDate": "From their website",
+  "speciesDog": "dogs",
+  "speciesCat": "cats",
+  "speciesRabbit": "rabbits",
+  "speciesBird": "birds",
+  "speciesReptile": "reptiles",
+  "speciesRodent": "small rodents",
+  "speciesExotic": "exotic animals",
+  "speciesHorse": "horses",
+  "speciesFarm": "farm animals",
+  "sectionAdvertised": "Advertising emergency service",
+  "sectionOther": "Other vets nearby",
+  "sectionOtherNote": "Not confirmed as emergency services. Call to ask.",
+  "sectionUnverified": "Emergency service not re-confirmed",
+  "firstOption": "Nearest option",
+  "secondOption": "Second option",
+  "onlyOneAdvertised": "Only one place advertising emergency care was found within {km} km.",
+  "@onlyOneAdvertised": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "noticeExpanded": "Nothing close enough, so we searched up to {km} km.",
+  "@noticeExpanded": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "noticeProviderDown": "Live search is not working right now. These are emergency facilities from PetLoop's own directory, each with the date we last checked it.",
+  "noticeProviderDownLongTerm": "Live search is not working right now. These practices come from PetLoop's own directory.",
+  "noticeDirectoryCopy": "No connection. This is the copy of PetLoop's directory saved on this phone on {date}.",
+  "@noticeDirectoryCopy": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "noResultsTitle": "No vets found nearby",
+  "noResultsBody": "Nothing within {km} km.",
+  "@noResultsBody": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "noEmergencyResultsBody": "No place advertising emergency care within {km} km.",
+  "@noEmergencyResultsBody": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "searchWider": "Search up to {km} km",
+  "@searchWider": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "tryAnotherArea": "Try another area",
+  "errorTitle": "Could not search",
+  "errorOffline": "No connection, and no saved copy of the directory yet. Check the connection and try again.",
+  "errorRateLimited": "Too many searches in a short time. Please try again in a few minutes.",
+  "errorUnavailable": "Search is not available right now. Please try again.",
+  "errorInvalid": "That place cannot be searched. Try another one.",
+  "tryAgain": "Try again",
+  "demoBanner": "Sample data: these places are made up. The real search works once the app is connected to its server.",
+  "listingsFrom": "Map listings:",
+  "@listingsFrom": {
+    "description": "Followed by the untranslated text \"Google Maps\" (Google requires it as is)."
+  },
+  "legendLink": "What the labels mean",
+  "legendListedBody": "Found in a map listing near the area. That alone says nothing about emergency care, whatever the name says.",
+  "legendAdvertisedBody": "The facility's own website (or the facility itself) says it offers emergency care. PetLoop checks this every week and shows the date of the last check.",
+  "legendOpenBody": "Its published hours say it is open now. That does not mean a vet is free to see your pet.",
+  "legendAcceptingBody": "Shown only when the facility itself has reported that it is taking patients, and only until that report expires. Otherwise you will see \"Call to confirm\".",
+  "legendCallBody": "Calling does not mark anything as confirmed. Only the facility can tell you whether it can take your pet now.",
+  "adminTitle": "Directory review",
+  "adminMenuSubtitle": "Approve, correct or withdraw facilities",
+  "adminNeedsAttention": "Needs attention",
+  "adminNoItems": "Nothing to review.",
+  "adminFacilities": "Facilities",
+  "adminResolve": "Resolved",
+  "adminDismiss": "Dismiss",
+  "adminApprove": "Approve",
+  "adminMarkReview": "Mark for review",
+  "adminWithdraw": "Withdraw",
+  "adminWithdrawEmergency": "Withdraw emergency",
+  "adminCorrect": "Correct a fact",
+  "adminNoteHint": "Note: what you checked",
+  "adminFact": "Fact",
+  "adminValue": "Value",
+  "adminValueHint": "For lists, separate with commas",
+  "adminSourceUrl": "Source link (https://…)",
+  "adminSourceRequired": "A source link starting with https:// is needed.",
+  "adminValueRequired": "A value is needed.",
+  "adminStatusPending": "Pending approval",
+  "adminStatusApproved": "Approved",
+  "adminStatusNeedsReview": "Needs review",
+  "adminStatusWithdrawn": "Withdrawn",
+  "adminClaimStatusCurrent": "current",
+  "adminClaimStatusUnverified": "not re-confirmed",
+  "adminClaimStatusConflict": "conflict",
+  "adminClaimStatusWithdrawn": "withdrawn",
+  "adminFactKeyEmergency": "Emergency service",
+  "adminFactKeySchedule": "Schedule",
+  "adminFactKeyPhone": "Phone",
+  "adminFactKeyAddress": "Address",
+  "adminFactKeyWebsite": "Website",
+  "adminFactKeySpecies": "Species",
+  "adminFactKeyServices": "Services",
+  "adminKindEmergencyEvidenceMissing": "Emergency evidence missing",
+  "adminKindPhoneConflict": "Phone number differs",
+  "adminKindAddressConflict": "Address differs",
+  "adminKindClosure": "May have closed",
+  "adminKindSourceUnreachable": "Source page unreachable",
+  "adminKindNewEmergencyEvidence": "New emergency wording found",
+  "adminKindVerifyCoordinates": "Check the map position",
+  "adminKindLinkCandidate": "Possible map listing match",
+  "adminKindRobotsDisallowed": "Site does not allow checks",
+  "adminSeverityHigh": "High",
+  "adminSeverityMedium": "Medium",
+  "adminSeverityLow": "Low",
+  "adminLastChecked": "Last checked {date}",
+  "@adminLastChecked": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "adminNeverChecked": "Never checked",
+  "adminLoadFailed": "Could not load the review queue.",
+  "adminSaved": "Saved.",
+  "adminActionFailed": "Could not save. Please try again.",
+  "adminNotAllowed": "This page is for directory reviewers.",
+  "adminLinkAction": "Link to a directory facility",
+  "adminLinkTitle": "Link this Google listing to…",
+  "adminLinkNote": "Pick the facility this listing belongs to. From then on they show as one place, with PetLoop's checked details.",
+  "adminLinkConfirm": "Link \"{listing}\" to {facility}?",
+  "@adminLinkConfirm": {
+    "placeholders": {
+      "listing": {
+        "type": "String"
+      },
+      "facility": {
+        "type": "String"
+      }
+    }
+  },
+  "adminLinked": "Linked. The search now shows them as one place.",
+  "adminLinkFailed": "Could not link. Please try again.",
+  "adminLinkNoFacilities": "There are no facilities in the directory yet.",
+  "adminLink": "Link"
+}

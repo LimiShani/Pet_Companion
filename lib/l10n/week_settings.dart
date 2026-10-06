@@ -21,13 +21,25 @@ class WeekSettings {
   /// Sunday first; Sunday to Thursday are the weekdays.
   static const israeli = WeekSettings(
     firstDay: DateTime.sunday,
-    weekdays: {DateTime.sunday, DateTime.monday, DateTime.tuesday, DateTime.wednesday, DateTime.thursday},
+    weekdays: {
+      DateTime.sunday,
+      DateTime.monday,
+      DateTime.tuesday,
+      DateTime.wednesday,
+      DateTime.thursday,
+    },
   );
 
   /// Monday first; Monday to Friday are the weekdays.
   static const mondayToFriday = WeekSettings(
     firstDay: DateTime.monday,
-    weekdays: {DateTime.monday, DateTime.tuesday, DateTime.wednesday, DateTime.thursday, DateTime.friday},
+    weekdays: {
+      DateTime.monday,
+      DateTime.tuesday,
+      DateTime.wednesday,
+      DateTime.thursday,
+      DateTime.friday,
+    },
   );
 
   static const defaults = israeli;
@@ -39,7 +51,9 @@ class WeekSettings {
   final Set<int> weekdays;
 
   /// The seven days in the order a day picker shows them.
-  List<int> get orderedDays => [for (var i = 0; i < 7; i++) (firstDay - 1 + i) % 7 + 1];
+  List<int> get orderedDays => [
+    for (var i = 0; i < 7; i++) (firstDay - 1 + i) % 7 + 1,
+  ];
 
   /// The days "Weekends" means: every day that is not a weekday.
   Set<int> get weekend => {
@@ -50,23 +64,30 @@ class WeekSettings {
   bool isEveryDay(Set<int> days) => days.length == 7;
 
   /// Whether [days] is exactly the weekdays.
-  bool isWeekdays(Set<int> days) => weekdays.isNotEmpty && setEquals(days, weekdays);
+  bool isWeekdays(Set<int> days) =>
+      weekdays.isNotEmpty && setEquals(days, weekdays);
 
   /// Whether [days] is exactly the weekend.
-  bool isWeekend(Set<int> days) => weekend.isNotEmpty && setEquals(days, weekend);
+  bool isWeekend(Set<int> days) =>
+      weekend.isNotEmpty && setEquals(days, weekend);
 
   /// [days] in this week's order.
   List<int> sorted(Iterable<int> days) {
     final order = orderedDays;
-    return days.toList()..sort((a, b) => order.indexOf(a).compareTo(order.indexOf(b)));
+    return days.toList()
+      ..sort((a, b) => order.indexOf(a).compareTo(order.indexOf(b)));
   }
 
-  WeekSettings copyWith({int? firstDay, Set<int>? weekdays}) =>
-      WeekSettings(firstDay: firstDay ?? this.firstDay, weekdays: weekdays ?? this.weekdays);
+  WeekSettings copyWith({int? firstDay, Set<int>? weekdays}) => WeekSettings(
+    firstDay: firstDay ?? this.firstDay,
+    weekdays: weekdays ?? this.weekdays,
+  );
 
   @override
   bool operator ==(Object other) =>
-      other is WeekSettings && other.firstDay == firstDay && setEquals(other.weekdays, weekdays);
+      other is WeekSettings &&
+      other.firstDay == firstDay &&
+      setEquals(other.weekdays, weekdays);
 
   @override
   int get hashCode => Object.hash(firstDay, Object.hashAllUnordered(weekdays));
@@ -136,4 +157,7 @@ class WeekSettingsController extends Notifier<WeekSettings> {
   }
 }
 
-final weekSettingsProvider = NotifierProvider<WeekSettingsController, WeekSettings>(WeekSettingsController.new);
+final weekSettingsProvider =
+    NotifierProvider<WeekSettingsController, WeekSettings>(
+      WeekSettingsController.new,
+    );

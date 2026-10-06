@@ -4,24 +4,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'composition/feature_modules.dart';
+import 'platform/feature_module.dart';
 import 'auth/auth_controller.dart';
 import 'auth/auth_repository.dart';
 import 'auth/supabase_auth_repository.dart';
 import 'config/app_config.dart';
-import 'features/health/data/reminder_scheduler.dart';
+import 'services/pet_records/data/reminder_scheduler.dart';
 import 'l10n/l10n.dart';
 import 'notifications/notifications.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppConfig.validate();
 
   AuthRepository? supabaseAuth;
   if (AppConfig.hasSupabase) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabasePublishableKey);
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      publishableKey: AppConfig.supabasePublishableKey,
+    );
     supabaseAuth = SupabaseAuthRepository(Supabase.instance.client);
   } else if (kDebugMode) {
-    debugPrint('PetLoop: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
-        'using the in-memory auth backend (see README).');
+    debugPrint(
+      'PetLoop: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
+      'using the in-memory auth backend (see README).',
+    );
   }
 
   // The phone's saved choices (language, week layout), read before the
@@ -37,12 +45,16 @@ Future<void> main() async {
     WidgetsBinding.instance.platformDispatcher.locales,
     hebrewFollowsDevice: true,
   );
-  final notifications = await FlutterNotificationPlatform.start(snoozeLabel: lookupNotificationsL10n(locale).snooze);
+  final notifications = await FlutterNotificationPlatform.start(
+    snoozeLabel: lookupNotificationsL10n(locale).snooze,
+  );
 
   runApp(
     ProviderScope(
       overrides: [
-        if (supabaseAuth != null) authRepositoryProvider.overrideWithValue(supabaseAuth),
+        featureModulesProvider.overrideWithValue(defaultFeatureModules),
+        if (supabaseAuth != null)
+          authRepositoryProvider.overrideWithValue(supabaseAuth),
         if (settings != null) settingsStoreProvider.overrideWithValue(settings),
         if (notifications != null) ...[
           notificationPlatformProvider.overrideWithValue(notifications),

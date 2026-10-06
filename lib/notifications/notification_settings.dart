@@ -53,7 +53,9 @@ class NotificationSettings {
   /// Whether quiet hours hold [kind] back. Medicines never wait, and an
   /// appointment reminder is about a fixed time, so it never waits either.
   static bool waitsInQuietHours(NotificationKind kind) =>
-      kind == NotificationKind.meal || kind == NotificationKind.walk || kind == NotificationKind.basket;
+      kind == NotificationKind.meal ||
+      kind == NotificationKind.walk ||
+      kind == NotificationKind.basket;
 
   /// Whether [at] is within quiet hours (22:00 included, 07:00 not).
   static bool isQuiet(DateTime at) {
@@ -65,8 +67,16 @@ class NotificationSettings {
   /// time from 22:00 on, 07:00 of the same day for a time before 07:00.
   static DateTime quietEndAfter(DateTime at) {
     final minutes = at.hour * 60 + at.minute;
-    final day = minutes >= quietStart ? DateTime(at.year, at.month, at.day + 1) : DateTime(at.year, at.month, at.day);
-    return DateTime(day.year, day.month, day.day, quietEnd ~/ 60, quietEnd % 60);
+    final day = minutes >= quietStart
+        ? DateTime(at.year, at.month, at.day + 1)
+        : DateTime(at.year, at.month, at.day);
+    return DateTime(
+      day.year,
+      day.month,
+      day.day,
+      quietEnd ~/ 60,
+      quietEnd % 60,
+    );
   }
 
   NotificationSettings copyWith({
@@ -90,13 +100,14 @@ class NotificationSettings {
   }
 
   /// The same settings with the switch of [kind] set to [on].
-  NotificationSettings withKind(NotificationKind kind, bool on) => switch (kind) {
-    NotificationKind.meal => copyWith(meals: on),
-    NotificationKind.walk => copyWith(walks: on),
-    NotificationKind.medicine => copyWith(medicines: on),
-    NotificationKind.appointment => copyWith(appointments: on),
-    NotificationKind.basket => copyWith(basket: on),
-  };
+  NotificationSettings withKind(NotificationKind kind, bool on) =>
+      switch (kind) {
+        NotificationKind.meal => copyWith(meals: on),
+        NotificationKind.walk => copyWith(walks: on),
+        NotificationKind.medicine => copyWith(medicines: on),
+        NotificationKind.appointment => copyWith(appointments: on),
+        NotificationKind.basket => copyWith(basket: on),
+      };
 
   @override
   bool operator ==(Object other) =>
@@ -110,13 +121,22 @@ class NotificationSettings {
       other.quietHours == quietHours;
 
   @override
-  int get hashCode => Object.hash(enabled, meals, walks, medicines, appointments, basket, quietHours);
+  int get hashCode => Object.hash(
+    enabled,
+    meals,
+    walks,
+    medicines,
+    appointments,
+    basket,
+    quietHours,
+  );
 }
 
 /// The keys of the notification choices in the [SettingsStore]: `1` or `0`.
 const notificationsSettingKey = 'notifications_on';
 const quietHoursSettingKey = 'notifications_quiet_hours';
-String notificationKindSettingKey(NotificationKind kind) => 'notifications_${kind.name}';
+String notificationKindSettingKey(NotificationKind kind) =>
+    'notifications_${kind.name}';
 
 /// Set once the owner has been asked for permission to show notifications
 /// (the explanation sheet was shown): the app never asks again by itself.
@@ -138,9 +158,18 @@ class NotificationSettingsController extends Notifier<NotificationSettings> {
       enabled: read(notificationsSettingKey, d.enabled),
       meals: read(notificationKindSettingKey(NotificationKind.meal), d.meals),
       walks: read(notificationKindSettingKey(NotificationKind.walk), d.walks),
-      medicines: read(notificationKindSettingKey(NotificationKind.medicine), d.medicines),
-      appointments: read(notificationKindSettingKey(NotificationKind.appointment), d.appointments),
-      basket: read(notificationKindSettingKey(NotificationKind.basket), d.basket),
+      medicines: read(
+        notificationKindSettingKey(NotificationKind.medicine),
+        d.medicines,
+      ),
+      appointments: read(
+        notificationKindSettingKey(NotificationKind.appointment),
+        d.appointments,
+      ),
+      basket: read(
+        notificationKindSettingKey(NotificationKind.basket),
+        d.basket,
+      ),
       quietHours: read(quietHoursSettingKey, d.quietHours),
     );
   }
@@ -171,6 +200,7 @@ class NotificationSettingsController extends Notifier<NotificationSettings> {
   }
 }
 
-final notificationSettingsProvider = NotifierProvider<NotificationSettingsController, NotificationSettings>(
-  NotificationSettingsController.new,
-);
+final notificationSettingsProvider =
+    NotifierProvider<NotificationSettingsController, NotificationSettings>(
+      NotificationSettingsController.new,
+    );

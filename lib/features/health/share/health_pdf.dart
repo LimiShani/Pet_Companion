@@ -8,7 +8,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../l10n/bidi.dart';
-import '../data/health_models.dart';
+import '../../../services/pet_records/data/health_models.dart';
 import 'health_report.dart';
 
 /// Turns a [HealthReport] into the bytes of a PDF file. Behind an interface
@@ -19,7 +19,9 @@ abstract class HealthPdfBuilder {
   Future<Uint8List> build(HealthReport report);
 }
 
-final healthPdfBuilderProvider = Provider<HealthPdfBuilder>((ref) => PdfHealthPdfBuilder());
+final healthPdfBuilderProvider = Provider<HealthPdfBuilder>(
+  (ref) => PdfHealthPdfBuilder(),
+);
 
 /// Punctuation that phones type by themselves, as plain characters every
 /// font has.
@@ -46,9 +48,13 @@ List<String> pdfPieces(String text) => [
 /// (an English report) and Fredoka, which also has the Hebrew letters (a
 /// Hebrew report).
 class HealthPdfFonts {
-  HealthPdfFonts({required this.nunito, required this.nunitoBold, required this.fredoka, required this.fredokaBold})
-    : _nunitoChars = TtfParser(nunito).charToGlyphIndexMap.keys.toSet(),
-      _fredokaChars = TtfParser(fredoka).charToGlyphIndexMap.keys.toSet();
+  HealthPdfFonts({
+    required this.nunito,
+    required this.nunitoBold,
+    required this.fredoka,
+    required this.fredokaBold,
+  }) : _nunitoChars = TtfParser(nunito).charToGlyphIndexMap.keys.toSet(),
+       _fredokaChars = TtfParser(fredoka).charToGlyphIndexMap.keys.toSet();
 
   final ByteData nunito;
   final ByteData nunitoBold;
@@ -66,7 +72,9 @@ class HealthPdfFonts {
 
   /// Loads the four font files with [load] (the app's asset bundle unless
   /// given).
-  static Future<HealthPdfFonts> load([Future<ByteData> Function(String path)? load]) async {
+  static Future<HealthPdfFonts> load([
+    Future<ByteData> Function(String path)? load,
+  ]) async {
     final read = load ?? rootBundle.load;
     final files = await Future.wait([
       read(_files.nunito),
@@ -74,11 +82,18 @@ class HealthPdfFonts {
       read(_files.fredoka),
       read(_files.fredokaBold),
     ]);
-    return HealthPdfFonts(nunito: files[0], nunitoBold: files[1], fredoka: files[2], fredokaBold: files[3]);
+    return HealthPdfFonts(
+      nunito: files[0],
+      nunitoBold: files[1],
+      fredoka: files[2],
+      fredokaBold: files[3],
+    );
   }
 
-  static bool _covers(Set<int> chars, String text) =>
-      pdfPieces(text).join().runes.every((rune) => rune == 0x0A || rune == 0x20 || chars.contains(rune));
+  static bool _covers(Set<int> chars, String text) => pdfPieces(text)
+      .join()
+      .runes
+      .every((rune) => rune == 0x0A || rune == 0x20 || chars.contains(rune));
 
   /// Whether Fredoka, the font of a right-to-left report, draws all of [text].
   bool fredokaCovers(String text) => _covers(_fredokaChars, text);
@@ -96,7 +111,10 @@ class HealthPdfFonts {
 /// drawn with the phone's own fonts onto pages that are placed in the PDF
 /// as pictures, so every name still reads correctly.
 class PdfHealthPdfBuilder implements HealthPdfBuilder {
-  PdfHealthPdfBuilder({this.compress = true, Future<ByteData> Function(String path)? loadFont}) : _loadFont = loadFont;
+  PdfHealthPdfBuilder({
+    this.compress = true,
+    Future<ByteData> Function(String path)? loadFont,
+  }) : _loadFont = loadFont;
 
   /// Whether the PDF's content is compressed; tests read it when not.
   final bool compress;
@@ -121,7 +139,9 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       final text = _plain(report);
       final fonts = await _fonts();
       final all = text.allText.join('\n');
-      final fits = report.rightToLeft ? fonts.fredokaCovers(all) : fonts.nunitoCovers(all);
+      final fits = report.rightToLeft
+          ? fonts.fredokaCovers(all)
+          : fonts.nunitoCovers(all);
       return fits ? await _textPdf(text, fonts) : await _picturePdf(text);
     } on HealthException {
       rethrow;
@@ -136,7 +156,9 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     subtitle: plainPunctuation(r.subtitle),
     prepared: plainPunctuation(r.prepared),
     fileName: r.fileName,
-    facts: [for (final f in r.facts) (plainPunctuation(f.$1), plainPunctuation(f.$2))],
+    facts: [
+      for (final f in r.facts) (plainPunctuation(f.$1), plainPunctuation(f.$2)),
+    ],
     recordsTitle: plainPunctuation(r.recordsTitle),
     records: [
       for (final row in r.records)
@@ -187,7 +209,8 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
 
     /// [cells] from the start of the line: the first on the right in a
     /// right-to-left report.
-    List<pw.Widget> row(List<pw.Widget> cells) => rtl ? cells.reversed.toList() : cells;
+    List<pw.Widget> row(List<pw.Widget> cells) =>
+        rtl ? cells.reversed.toList() : cells;
     Map<int, pw.TableColumnWidth> widths(List<pw.TableColumnWidth> columns) {
       final ordered = rtl ? columns.reversed.toList() : columns;
       return {for (var i = 0; i < ordered.length; i++) i: ordered[i]};
@@ -196,8 +219,14 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     final factStyle = pw.TextStyle(fontSize: 11, color: _ink);
     final labelStyle = pw.TextStyle(fontSize: 10, color: _muted);
     final cellStyle = pw.TextStyle(fontSize: 10, color: _ink);
-    final headStyle = pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: _ink);
-    const border = pw.TableBorder(horizontalInside: pw.BorderSide(color: _line, width: 0.5));
+    final headStyle = pw.TextStyle(
+      fontSize: 10,
+      fontWeight: pw.FontWeight.bold,
+      color: _ink,
+    );
+    const border = pw.TableBorder(
+      horizontalInside: pw.BorderSide(color: _line, width: 0.5),
+    );
 
     doc.addPage(
       pw.MultiPage(
@@ -215,13 +244,23 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
               // Page numbers read left to right in every language.
               pw.Directionality(
                 textDirection: pw.TextDirection.ltr,
-                child: pw.Text('${context.pageNumber} / ${context.pagesCount}', style: small),
+                child: pw.Text(
+                  '${context.pageNumber} / ${context.pagesCount}',
+                  style: small,
+                ),
               ),
             ],
           ),
         ),
         build: (context) => [
-          _text(report.title, pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: _ink)),
+          _text(
+            report.title,
+            pw.TextStyle(
+              fontSize: 22,
+              fontWeight: pw.FontWeight.bold,
+              color: _ink,
+            ),
+          ),
           pw.SizedBox(height: 4),
           _text(report.subtitle, pw.TextStyle(fontSize: 12, color: _ink)),
           pw.SizedBox(height: 2),
@@ -230,15 +269,30 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
           if (report.facts.isNotEmpty)
             pw.Table(
               border: border,
-              columnWidths: widths(const [pw.FixedColumnWidth(120), pw.FlexColumnWidth()]),
+              columnWidths: widths(const [
+                pw.FixedColumnWidth(120),
+                pw.FlexColumnWidth(),
+              ]),
               children: [
                 for (final fact in report.facts)
-                  pw.TableRow(children: row([cell(fact.$1, labelStyle), cell(fact.$2, factStyle)])),
+                  pw.TableRow(
+                    children: row([
+                      cell(fact.$1, labelStyle),
+                      cell(fact.$2, factStyle),
+                    ]),
+                  ),
               ],
             ),
           if (report.records.isNotEmpty) ...[
             pw.SizedBox(height: 18),
-            _text(report.recordsTitle, pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: _ink)),
+            _text(
+              report.recordsTitle,
+              pw.TextStyle(
+                fontSize: 14,
+                fontWeight: pw.FontWeight.bold,
+                color: _ink,
+              ),
+            ),
             pw.SizedBox(height: 6),
             pw.Table(
               border: border,
@@ -252,7 +306,10 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
                 if (report.columns.isNotEmpty)
                   pw.TableRow(
                     decoration: const pw.BoxDecoration(color: _accent),
-                    children: row([for (final heading in report.columns) cell(heading, headStyle)]),
+                    children: row([
+                      for (final heading in report.columns)
+                        cell(heading, headStyle),
+                    ]),
                   ),
                 for (final record in report.records)
                   pw.TableRow(
@@ -291,14 +348,23 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
           (rune >= 0xFE70 && rune <= 0xFEFF)) {
         return true;
       }
-      if ((rune >= 0x41 && rune <= 0x5A) || (rune >= 0x61 && rune <= 0x7A) || rune >= 0xC0) return false;
+      if ((rune >= 0x41 && rune <= 0x5A) ||
+          (rune >= 0x61 && rune <= 0x7A) ||
+          rune >= 0xC0) {
+        return false;
+      }
     }
     return false;
   }
 
   Future<Uint8List> _picturePdf(HealthReport report) async {
     const width = _pageWidth - _margin * 2;
-    TextPainter block(String text, {double size = 11, bool bold = false, ui.Color color = _inkColor}) {
+    TextPainter block(
+      String text, {
+      double size = 11,
+      bool bold = false,
+      ui.Color color = _inkColor,
+    }) {
       // The report's own direction; a block of another language keeps its
       // own. Flutter lays out the direction marks of the strings itself.
       final rtl = report.rightToLeft || _startsRightToLeft(text);
@@ -319,7 +385,8 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       )..layout(minWidth: width, maxWidth: width);
     }
 
-    String line(List<String> parts) => parts.where((p) => p.isNotEmpty).join(' · ');
+    String line(List<String> parts) =>
+        parts.where((p) => p.isNotEmpty).join(' · ');
 
     // Every block with the gap above it.
     final blocks = <(double, TextPainter)>[
@@ -327,12 +394,23 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       (4, block(report.subtitle, size: 12)),
       (2, block(report.prepared, size: 9, color: _mutedColor)),
       for (var i = 0; i < report.facts.length; i++) ...[
-        (i == 0 ? 16.0 : 8.0, block(report.facts[i].$1, size: 10, color: _mutedColor)),
+        (
+          i == 0 ? 16.0 : 8.0,
+          block(report.facts[i].$1, size: 10, color: _mutedColor),
+        ),
         (1, block(report.facts[i].$2)),
       ],
-      if (report.records.isNotEmpty) (20, block(report.recordsTitle, size: 14, bold: true)),
+      if (report.records.isNotEmpty)
+        (20, block(report.recordsTitle, size: 14, bold: true)),
       for (final row in report.records) ...[
-        (10, block(line([row.date, isolate(row.kind)]), size: 10, color: _mutedColor)),
+        (
+          10,
+          block(
+            line([row.date, isolate(row.kind)]),
+            size: 10,
+            color: _mutedColor,
+          ),
+        ),
         (1, block(row.title, bold: true)),
         if (row.details.isNotEmpty) (1, block(row.details, size: 10)),
       ],
@@ -344,7 +422,8 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     var y = _margin;
     for (final (gap, painter) in blocks) {
       var top = pages.last.isEmpty ? y : y + gap;
-      if (pages.last.isNotEmpty && top + painter.height > _pageHeight - _margin) {
+      if (pages.last.isNotEmpty &&
+          top + painter.height > _pageHeight - _margin) {
         pages.add([]);
         top = _margin;
       }
@@ -352,7 +431,11 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       y = top + painter.height;
     }
 
-    final doc = pw.Document(title: report.fileName, creator: 'PetLoop', compress: compress);
+    final doc = pw.Document(
+      title: report.fileName,
+      creator: 'PetLoop',
+      compress: compress,
+    );
     for (final page in pages) {
       final recorder = ui.PictureRecorder();
       final canvas = ui.Canvas(recorder)..scale(_scale);
@@ -364,17 +447,24 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
         painter.paint(canvas, ui.Offset(_margin, top));
       }
       final picture = recorder.endRecording();
-      final image = await picture.toImage((_pageWidth * _scale).round(), (_pageHeight * _scale).round());
+      final image = await picture.toImage(
+        (_pageWidth * _scale).round(),
+        (_pageHeight * _scale).round(),
+      );
       final png = await image.toByteData(format: ui.ImageByteFormat.png);
       picture.dispose();
       image.dispose();
       if (png == null) throw HealthException.of(HealthFailure.pdf);
-      final bytes = png.buffer.asUint8List(png.offsetInBytes, png.lengthInBytes);
+      final bytes = png.buffer.asUint8List(
+        png.offsetInBytes,
+        png.lengthInBytes,
+      );
       doc.addPage(
         pw.Page(
           pageFormat: PdfPageFormat.a4,
           margin: pw.EdgeInsets.zero,
-          build: (context) => pw.Image(pw.MemoryImage(bytes), fit: pw.BoxFit.fill),
+          build: (context) =>
+              pw.Image(pw.MemoryImage(bytes), fit: pw.BoxFit.fill),
         ),
       );
     }

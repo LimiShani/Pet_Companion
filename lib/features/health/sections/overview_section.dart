@@ -1,3 +1,4 @@
+import '../../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,17 +7,17 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../pets/pets.dart';
-import '../data/health_models.dart';
-import '../data/species_settings.dart';
+import '../../../presentation/pet_avatar.dart';
+import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/data/species_settings.dart';
 import '../emergency/contact_actions.dart';
 import '../emergency/health_profile_form.dart';
 import '../emergency/vet_picker.dart';
 import '../emergency/vets_screen.dart';
-import '../health_format.dart';
-import '../state/health_providers.dart';
-import '../state/schedule_logic.dart';
-import '../widgets/health_widgets.dart';
+import '../../../presentation/health_format.dart';
+import '../../../services/pet_records/state/health_providers.dart';
+import '../../../services/pet_records/state/schedule_logic.dart';
+import '../../../presentation/health_widgets.dart';
 import '../widgets/weight_trend.dart';
 
 /// What the Overview's buttons do. The tab wires them to the record form,
@@ -66,9 +67,18 @@ class OverviewSection extends ConsumerWidget {
   final Widget? reminder;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final now = ref.watch(healthClockProvider)();
-    void show(HealthSection section) => ref.read(healthSectionProvider.notifier).show(section);
+    void show(HealthSection section) =>
+        ref.read(healthSectionProvider.notifier).show(section);
 
     final today = entriesOn(data.plan, now);
     final open = [
@@ -86,14 +96,18 @@ class OverviewSection extends ConsumerWidget {
     nextEntry ??= open.isEmpty ? null : open.first;
     final upcoming = upcomingRecords(data.records, now);
     final nextRecord = upcoming.isEmpty ? null : upcoming.first;
-    final review = entriesNeedingReview(data.plan, now).length + recordsNeedingReview(data.records, now).length;
+    final review =
+        entriesNeedingReview(data.plan, now).length +
+        recordsNeedingReview(data.records, now).length;
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
 
     final history = historyRecords(data.records);
     final weights = weightEntries(data.observations);
     DateTime? lastRecord = history.isEmpty ? null : history.first.when;
     for (final o in data.observations) {
-      if (lastRecord == null || o.observedAt.isAfter(lastRecord)) lastRecord = o.observedAt;
+      if (lastRecord == null || o.observedAt.isAfter(lastRecord)) {
+        lastRecord = o.observedAt;
+      }
     }
     final medicines = data.plan.activeMedications(now);
     final l10n = context.healthL10n;
@@ -123,14 +137,22 @@ class OverviewSection extends ConsumerWidget {
             onSchedule: () => show(HealthSection.schedule),
           ),
         ],
-        if (data.isEmpty) ...[const SizedBox(height: 8), _GettingStarted(pet: pet, actions: actions)],
+        if (data.isEmpty) ...[
+          const SizedBox(height: 8),
+          _GettingStarted(pet: pet, actions: actions),
+        ],
         const SizedBox(height: AppSpacing.cardGap),
         _QuickActions(actions: actions),
         const SizedBox(height: AppSpacing.cardGap),
         _VetCard(pet: pet, vets: data.vets),
         if (medicines.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.cardGap),
-          _MedicinesCard(medicines: medicines, plan: data.plan, now: now, actions: actions),
+          _MedicinesCard(
+            medicines: medicines,
+            plan: data.plan,
+            now: now,
+            actions: actions,
+          ),
         ],
         if (weights.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.cardGap),
@@ -145,7 +167,13 @@ class OverviewSection extends ConsumerWidget {
           _RecordsCard(
             history: history,
             // The same records the History's "Documents" filter shows.
-            documents: history.where((r) => r.kind == RecordKind.document || data.documentsOf(r.id).isNotEmpty).length,
+            documents: history
+                .where(
+                  (r) =>
+                      r.kind == RecordKind.document ||
+                      data.documentsOf(r.id).isNotEmpty,
+                )
+                .length,
             onKind: (kind) {
               ref.read(historyFilterProvider.notifier).showKind(kind);
               show(HealthSection.history);
@@ -168,12 +196,25 @@ class _PetSummary extends StatelessWidget {
   final String? status;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final format = HealthFormat.of(context);
     return HealthCard(
       key: const Key('overview-pet'),
       onTap: () => HealthProfileScreen.open(context, pet),
-      padding: const EdgeInsetsDirectional.only(start: 14, end: 8, top: 12, bottom: 12),
+      padding: const EdgeInsetsDirectional.only(
+        start: 14,
+        end: 8,
+        top: 12,
+        bottom: 12,
+      ),
       child: Row(
         children: [
           Container(
@@ -194,15 +235,28 @@ class _PetSummary extends StatelessWidget {
               children: [
                 TypedText(
                   pet.name,
-                  style: AppText.cardTitle.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
+                  style: AppText.cardTitle.copyWith(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                Text(format.petLine(pet), style: AppText.secondary.copyWith(color: AppColors.brown)),
-                if (status != null) Text(status!, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                Text(
+                  format.petLine(pet),
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
+                if (status != null)
+                  Text(
+                    status!,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                  ),
                 Text(
                   format.l10n.healthProfile,
-                  style: AppText.secondary.copyWith(color: AppColors.coralDark, fontWeight: FontWeight.w800),
+                  style: AppText.secondary.copyWith(
+                    color: AppColors.coralDark,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -232,8 +286,20 @@ class _ComingUp extends StatelessWidget {
   final VoidCallback onSchedule;
 
   @override
-  Widget build(BuildContext context) {
-    final divider = Divider(height: 16, thickness: 1, color: AppColors.white.withValues(alpha: 0.55));
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    final divider = Divider(
+      height: 16,
+      thickness: 1,
+      color: AppColors.white.withValues(alpha: 0.55),
+    );
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final e = entry;
@@ -243,7 +309,10 @@ class _ComingUp extends StatelessWidget {
         _ComingUpRow(
           icon: careKindIcon(e.item.kind),
           title: e.item.title,
-          detail: l10n.dayAndTime(format.common.commonToday, format.timeOfDay(e.item.time)),
+          detail: l10n.dayAndTime(
+            format.common.commonToday,
+            format.timeOfDay(e.item.time),
+          ),
           trailing: e.item.isMedication && actions.onRecordDose != null
               ? FilledButton(
                   key: const Key('overview-record-dose'),
@@ -262,8 +331,13 @@ class _ComingUp extends StatelessWidget {
         _ComingUpRow(
           icon: recordKindIcon(r.kind),
           title: r.title,
-          detail: format.dots([format.relativeDayTime(r.scheduledAt, now), r.clinic]),
-          onTap: actions.onOpenRecord == null ? onSchedule : () => actions.onOpenRecord!(r),
+          detail: format.dots([
+            format.relativeDayTime(r.scheduledAt, now),
+            r.clinic,
+          ]),
+          onTap: actions.onOpenRecord == null
+              ? onSchedule
+              : () => actions.onOpenRecord!(r),
         ),
       if (reviewCount > 0)
         InkWell(
@@ -273,8 +347,17 @@ class _ComingUp extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 40),
             child: Row(
               children: [
-                Expanded(child: Text(l10n.remindersNeedReview(reviewCount), style: AppText.secondary)),
-                const AppIcon(Icons.chevron_right_rounded, size: 20, color: AppColors.ink),
+                Expanded(
+                  child: Text(
+                    l10n.remindersNeedReview(reviewCount),
+                    style: AppText.secondary,
+                  ),
+                ),
+                const AppIcon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.ink,
+                ),
               ],
             ),
           ),
@@ -285,7 +368,12 @@ class _ComingUp extends StatelessWidget {
       key: const Key('overview-coming-up'),
       color: AppColors.peach,
       radius: AppSpacing.cardRadius,
-      padding: const EdgeInsetsDirectional.only(start: 16, end: 12, top: 8, bottom: 10),
+      padding: const EdgeInsetsDirectional.only(
+        start: 16,
+        end: 12,
+        top: 8,
+        bottom: 10,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -294,13 +382,23 @@ class _ComingUp extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.comingUp,
-                  style: AppText.cardTitle.copyWith(fontSize: 17, fontWeight: FontWeight.w800),
+                  style: AppText.cardTitle.copyWith(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-              HealthLink(l10n.sectionSchedule, onPressed: onSchedule, color: AppColors.ink),
+              HealthLink(
+                l10n.sectionSchedule,
+                onPressed: onSchedule,
+                color: AppColors.ink,
+              ),
             ],
           ),
-          for (var i = 0; i < rows.length; i++) ...[if (i > 0) divider, rows[i]],
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0) divider,
+            rows[i],
+          ],
         ],
       ),
     );
@@ -308,7 +406,13 @@ class _ComingUp extends StatelessWidget {
 }
 
 class _ComingUpRow extends StatelessWidget {
-  const _ComingUpRow({required this.icon, required this.title, required this.detail, this.trailing, this.onTap});
+  const _ComingUpRow({
+    required this.icon,
+    required this.title,
+    required this.detail,
+    this.trailing,
+    this.onTap,
+  });
 
   final IconData icon;
   final String title;
@@ -317,7 +421,15 @@ class _ComingUpRow extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return InkWell(
       onTap: onTap,
       child: ConstrainedBox(
@@ -330,7 +442,12 @@ class _ComingUpRow extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TypedText(title, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  TypedText(
+                    title,
+                    style: AppText.cardTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   Text(detail, style: AppText.secondary),
                 ],
               ),
@@ -349,7 +466,15 @@ class _QuickActions extends StatelessWidget {
   final OverviewActions actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final buttons = [
       if (actions.onQuickLog != null)
@@ -379,14 +504,23 @@ class _QuickActions extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (var i = 0; i < buttons.length; i++) ...[if (i > 0) const SizedBox(width: 8), Expanded(child: buttons[i])],
+        for (var i = 0; i < buttons.length; i++) ...[
+          if (i > 0) const SizedBox(width: 8),
+          Expanded(child: buttons[i]),
+        ],
       ],
     );
   }
 }
 
 class _QuickAction extends StatelessWidget {
-  const _QuickAction({super.key, required this.icon, required this.label, required this.onTap, this.primary = false});
+  const _QuickAction({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.primary = false,
+  });
 
   final IconData icon;
   final String label;
@@ -394,7 +528,15 @@ class _QuickAction extends StatelessWidget {
   final bool primary;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final fg = primary ? AppColors.white : AppColors.ink;
     return Semantics(
       button: true,
@@ -416,7 +558,10 @@ class _QuickAction extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.secondary.copyWith(color: fg, fontWeight: FontWeight.w800),
+                  style: AppText.secondary.copyWith(
+                    color: fg,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),
@@ -434,7 +579,14 @@ class _VetCard extends StatelessWidget {
   final PetVets vets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final vet = vets.regular ?? vets.emergency;
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
@@ -448,17 +600,28 @@ class _VetCard extends StatelessWidget {
       );
     }
     // The address as typed, the phone number left to right.
-    final detail = format.dots([if (vet.hasAddress) vet.address, if (vet.hasPhone) format.ltrInLine(vet.phone)]);
+    final detail = format.dots([
+      if (vet.hasAddress) vet.address,
+      if (vet.hasPhone) format.ltrInLine(vet.phone),
+    ]);
     return HealthCard(
       key: const Key('overview-vet'),
-      padding: const EdgeInsetsDirectional.only(start: 16, end: 12, top: 6, bottom: 14),
+      padding: const EdgeInsetsDirectional.only(
+        start: 16,
+        end: 12,
+        top: 6,
+        bottom: 14,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
               Expanded(child: Text(l10n.vet, style: AppText.cardTitle)),
-              HealthLink(l10n.details, onPressed: () => VetsScreen.open(context, pet)),
+              HealthLink(
+                l10n.details,
+                onPressed: () => VetsScreen.open(context, pet),
+              ),
             ],
           ),
           Row(
@@ -470,7 +633,13 @@ class _VetCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     TypedText(vet.name, style: AppText.cardTitle),
-                    if (detail.isNotEmpty) Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                    if (detail.isNotEmpty)
+                      Text(
+                        detail,
+                        style: AppText.secondary.copyWith(
+                          color: AppColors.brown,
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -493,7 +662,12 @@ class _VetCard extends StatelessWidget {
 }
 
 class _MedicinesCard extends StatelessWidget {
-  const _MedicinesCard({required this.medicines, required this.plan, required this.now, required this.actions});
+  const _MedicinesCard({
+    required this.medicines,
+    required this.plan,
+    required this.now,
+    required this.actions,
+  });
 
   final List<Medication> medicines;
   final CarePlan plan;
@@ -501,7 +675,15 @@ class _MedicinesCard extends StatelessWidget {
   final OverviewActions actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     return HealthCard(
@@ -512,12 +694,17 @@ class _MedicinesCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(l10n.medicines, style: AppText.cardTitle)),
-              HealthTag(l10n.medicinesActive(medicines.length), highlight: true),
+              HealthTag(
+                l10n.medicinesActive(medicines.length),
+                highlight: true,
+              ),
             ],
           ),
           for (final m in medicines)
             InkWell(
-              onTap: actions.onOpenMedicine == null ? null : () => actions.onOpenMedicine!(m),
+              onTap: actions.onOpenMedicine == null
+                  ? null
+                  : () => actions.onOpenMedicine!(m),
               child: Padding(
                 padding: const EdgeInsetsDirectional.only(top: 10),
                 child: Row(
@@ -531,8 +718,18 @@ class _MedicinesCard extends StatelessWidget {
                         children: [
                           TypedText(m.displayName, style: AppText.cardTitle),
                           if (format.instructions(m).isNotEmpty)
-                            Text(format.instructions(m), style: AppText.secondary.copyWith(color: AppColors.brown)),
-                          Text(_lastDose(format, m), style: AppText.secondary.copyWith(color: AppColors.brown)),
+                            Text(
+                              format.instructions(m),
+                              style: AppText.secondary.copyWith(
+                                color: AppColors.brown,
+                              ),
+                            ),
+                          Text(
+                            _lastDose(format, m),
+                            style: AppText.secondary.copyWith(
+                              color: AppColors.brown,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -559,26 +756,49 @@ class _MedicinesCard extends StatelessWidget {
 }
 
 class _WeightCard extends StatelessWidget {
-  const _WeightCard({required this.weights, required this.grams, required this.onInsights});
+  const _WeightCard({
+    required this.weights,
+    required this.grams,
+    required this.onInsights,
+  });
 
   final List<Observation> weights;
   final bool grams;
   final VoidCallback onInsights;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final latest = weights.last;
     final previous = weights.length > 1 ? weights[weights.length - 2] : null;
     final detail = format.dots([
       format.date(latest.observedAt),
-      if (previous != null) format.weightChangeSince(previous.value!, latest.value!, previous.observedAt, grams: grams),
+      if (previous != null)
+        format.weightChangeSince(
+          previous.value!,
+          latest.value!,
+          previous.observedAt,
+          grams: grams,
+        ),
     ]);
 
     return HealthCard(
       key: const Key('overview-weight'),
-      padding: const EdgeInsetsDirectional.only(start: 16, end: 12, top: 6, bottom: 14),
+      padding: const EdgeInsetsDirectional.only(
+        start: 16,
+        end: 12,
+        top: 6,
+        bottom: 14,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -602,12 +822,17 @@ class _WeightCard extends StatelessWidget {
                         children: [
                           TextSpan(
                             text: ' ${format.weightUnit(grams: grams)}',
-                            style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+                            style: AppText.body.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    Text(detail, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                    Text(
+                      detail,
+                      style: AppText.secondary.copyWith(color: AppColors.brown),
+                    ),
                   ],
                 ),
               ),
@@ -615,7 +840,9 @@ class _WeightCard extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: WeightTrendChart(
-                  points: [for (final w in weights) TrendPoint(w.observedAt, w.value!)],
+                  points: [
+                    for (final w in weights) TrendPoint(w.observedAt, w.value!),
+                  ],
                   height: 56,
                   showGuides: false,
                   semanticsLabel: l10n.smallWeightChart,
@@ -630,7 +857,12 @@ class _WeightCard extends StatelessWidget {
 }
 
 class _RecordsCard extends StatelessWidget {
-  const _RecordsCard({required this.history, required this.documents, required this.onKind, required this.onDocuments});
+  const _RecordsCard({
+    required this.history,
+    required this.documents,
+    required this.onKind,
+    required this.onDocuments,
+  });
 
   final List<HealthRecord> history;
   final int documents;
@@ -638,7 +870,15 @@ class _RecordsCard extends StatelessWidget {
   final VoidCallback onDocuments;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     int count(RecordKind kind) => history.where((r) => r.kind == kind).length;
     final l10n = context.healthL10n;
     return HealthCard(
@@ -668,7 +908,11 @@ class _RecordsCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: _CountTile(count: documents, label: l10n.documents, onTap: onDocuments),
+                child: _CountTile(
+                  count: documents,
+                  label: l10n.documents,
+                  onTap: onDocuments,
+                ),
               ),
             ],
           ),
@@ -679,14 +923,26 @@ class _RecordsCard extends StatelessWidget {
 }
 
 class _CountTile extends StatelessWidget {
-  const _CountTile({required this.count, required this.label, required this.onTap});
+  const _CountTile({
+    required this.count,
+    required this.label,
+    required this.onTap,
+  });
 
   final int count;
   final String label;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Semantics(
       button: true,
       label: context.healthL10n.countAndLabel(count, label),
@@ -727,7 +983,15 @@ class _GettingStarted extends StatelessWidget {
   final OverviewActions actions;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
     final steps = [
       if (actions.onAddDocument != null)
@@ -760,7 +1024,10 @@ class _GettingStarted extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         HealthSectionTitle(l10n.startWithOneThing),
-        Text(l10n.startNote(pet.name), style: AppText.body.copyWith(color: AppColors.brown)),
+        Text(
+          l10n.startNote(pet.name),
+          style: AppText.body.copyWith(color: AppColors.brown),
+        ),
         for (final step in steps) ...[const SizedBox(height: 10), step],
       ],
     );
@@ -783,7 +1050,15 @@ class HealthPromptStep extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => FeatureGate(
+    capability:
+        'health.records.view|health.schedule.view|health.emergency.view',
+    hidden: true,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return HealthCard(
       onTap: onTap,
       padding: const EdgeInsets.all(14),
@@ -796,7 +1071,10 @@ class HealthPromptStep extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppText.cardTitle),
-                Text(message, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                Text(
+                  message,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
               ],
             ),
           ),

@@ -102,7 +102,11 @@ class Pet {
     final explicit = _ageYears;
     if (explicit != null) {
       final whole = explicit == explicit.roundToDouble();
-      return PetAge(PetAgeUnit.years, whole ? explicit.toInt() : null, exactYears: explicit);
+      return PetAge(
+        PetAgeUnit.years,
+        whole ? explicit.toInt() : null,
+        exactYears: explicit,
+      );
     }
     final born = birthDate;
     if (born == null) return null;
@@ -111,9 +115,15 @@ class Pet {
     if (months < 0) months = 0;
     if (months < 1) {
       final weeks = now.difference(born).inDays ~/ 7;
-      return PetAge(PetAgeUnit.weeks, weeks < 1 ? 0 : weeks, approx: birthDateApprox);
+      return PetAge(
+        PetAgeUnit.weeks,
+        weeks < 1 ? 0 : weeks,
+        approx: birthDateApprox,
+      );
     }
-    if (months < 24) return PetAge(PetAgeUnit.months, months, approx: birthDateApprox);
+    if (months < 24) {
+      return PetAge(PetAgeUnit.months, months, approx: birthDateApprox);
+    }
     return PetAge(PetAgeUnit.years, months ~/ 12, approx: birthDateApprox);
   }
 
@@ -132,7 +142,8 @@ class Pet {
     } else if (age.isUnderAWeek) {
       text = 'under a week';
     } else {
-      text = '$count ${age.unit.name.substring(0, age.unit.name.length - 1)}${count == 1 ? '' : 's'}';
+      text =
+          '$count ${age.unit.name.substring(0, age.unit.name.length - 1)}${count == 1 ? '' : 's'}';
     }
     if (age.approx) return 'About $text';
     return '${text[0].toUpperCase()}${text.substring(1)}';
@@ -206,7 +217,9 @@ class Pet {
       activity: activity,
       healthEvents: healthEvents,
       birthDate: keepAge ? this.birthDate : birthDate,
-      birthDateApprox: keepAge ? this.birthDateApprox : birthDate != null && birthDateApprox,
+      birthDateApprox: keepAge
+          ? this.birthDateApprox
+          : birthDate != null && birthDateApprox,
       sex: sex,
       neutered: neutered,
       photoPath: photoPath,
@@ -223,11 +236,20 @@ class Pet {
       _with(photoPath: photoPath, iconKey: iconKey, keepAsset: false);
 
   /// A copy that is archived at [at], or restored when [at] is `null`.
-  Pet withArchivedAt(DateTime? at) => _with(photoPath: photoPath, iconKey: iconKey, archivedAt: at, setArchived: true);
+  Pet withArchivedAt(DateTime? at) => _with(
+    photoPath: photoPath,
+    iconKey: iconKey,
+    archivedAt: at,
+    setArchived: true,
+  );
 
   /// A copy whose reminder is postponed until [until] (`null`: not postponed).
-  Pet withReminderSnoozedUntil(DateTime? until) =>
-      _with(photoPath: photoPath, iconKey: iconKey, snoozedUntil: until, setSnoozed: true);
+  Pet withReminderSnoozedUntil(DateTime? until) => _with(
+    photoPath: photoPath,
+    iconKey: iconKey,
+    snoozedUntil: until,
+    setSnoozed: true,
+  );
 
   Pet _with({
     required String? photoPath,
@@ -341,13 +363,19 @@ enum PetSpecies {
   /// app's language (`features/pets/pet_words.dart`).
   final String label;
 
-  static PetSpecies fromName(String? name) =>
-      PetSpecies.values.firstWhere((s) => s.name == name, orElse: () => PetSpecies.other);
+  static PetSpecies fromName(String? name) => PetSpecies.values.firstWhere(
+    (s) => s.name == name,
+    orElse: () => PetSpecies.other,
+  );
 }
 
 /// Today's feeding progress for one pet.
 class FeedingStatus {
-  const FeedingStatus({this.caloriesToday = 0, this.dailyGoal, this.nextFeeding});
+  const FeedingStatus({
+    this.caloriesToday = 0,
+    this.dailyGoal,
+    this.nextFeeding,
+  });
 
   final int caloriesToday;
 
@@ -365,7 +393,11 @@ class FeedingStatus {
 
 /// Today's activity for one pet.
 class ActivityStatus {
-  const ActivityStatus({this.steps = 0, this.activeTime = Duration.zero, this.nextWalk});
+  const ActivityStatus({
+    this.steps = 0,
+    this.activeTime = Duration.zero,
+    this.nextWalk,
+  });
 
   final int steps;
   final Duration activeTime;
@@ -374,7 +406,11 @@ class ActivityStatus {
 
 /// A scheduled or past health event (medicine, vet visit, vaccination...).
 class HealthEvent {
-  const HealthEvent({required this.title, required this.when, this.kind = HealthEventKind.other});
+  const HealthEvent({
+    required this.title,
+    required this.when,
+    this.kind = HealthEventKind.other,
+  });
 
   final String title;
   final DateTime when;

@@ -9,10 +9,10 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../checklist_sheet.dart';
 import '../pet_actions.dart';
-import '../pet_words.dart';
-import '../state/pet_completeness.dart';
+import '../../../presentation/pet_words.dart';
+import '../../../services/pets/state/pet_completeness.dart';
 import 'pet_essentials_keeper.dart';
-import 'pets_widgets.dart';
+import '../../../presentation/pets_widgets.dart';
 
 Pet? _find(List<Pet> pets, String id) {
   for (final pet in pets) {
@@ -30,10 +30,16 @@ String essentialsStillToAdd(PetsL10n l10n, PetCompleteness info) =>
 /// of a widget that shows the pet's missing essentials.
 void announcePetCompletion(WidgetRef ref, BuildContext context, String petId) {
   ref.listen(petCompletenessProvider(petId), (previous, next) {
-    if (previous == null || !previous.needsAttention || !next.isComplete) return;
-    if (!ref.read(petCompletionAnnouncerProvider).claim(petId, DateTime.now())) return;
+    if (previous == null || !previous.needsAttention || !next.isComplete) {
+      return;
+    }
+    if (!ref.read(petCompletionAnnouncerProvider).claim(petId, DateTime.now())) {
+      return;
+    }
     final pet = ref.read(petsStoreProvider).byId(petId);
-    if (pet != null && context.mounted) showPetsSnack(context, context.petsL10n.essentialsComplete(pet.name));
+    if (pet != null && context.mounted) {
+      showPetsSnack(context, context.petsL10n.essentialsComplete(pet.name));
+    }
   });
 }
 
@@ -74,7 +80,12 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 /// Shows nothing at all, and takes no space including [margin], when there
 /// is nothing to remind of: no `if` is needed around it.
 class PetReminderCard extends ConsumerWidget {
-  const PetReminderCard({super.key, required this.petId, this.compact = false, this.margin = EdgeInsets.zero});
+  const PetReminderCard({
+    super.key,
+    required this.petId,
+    this.compact = false,
+    this.margin = EdgeInsets.zero,
+  });
 
   final String petId;
   final bool compact;
@@ -84,7 +95,9 @@ class PetReminderCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     announcePetCompletion(ref, context, petId);
     final info = ref.watch(petCompletenessProvider(petId));
-    final name = ref.watch(petsProvider.select((pets) => _find(pets, petId)?.name));
+    final name = ref.watch(
+      petsProvider.select((pets) => _find(pets, petId)?.name),
+    );
     final next = info.next;
     if (!info.shouldRemind || name == null || next == null) {
       return PetEssentialsKeeper(petId: petId, child: const SizedBox.shrink());
@@ -102,7 +115,13 @@ class PetReminderCard extends ConsumerWidget {
       child: Padding(
         padding: margin,
         child: compact
-            ? _Line(label: label, action: action, count: count, onOpen: openNext, onNotNow: notNow)
+            ? _Line(
+                label: label,
+                action: action,
+                count: count,
+                onOpen: openNext,
+                onNotNow: notNow,
+              )
             : _Card(
                 label: label,
                 title: l10n.finishProfile(name),
@@ -169,7 +188,12 @@ class _Line extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(action, style: AppText.cardTitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+                Text(
+                  action,
+                  style: AppText.cardTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 Text(
                   count,
                   style: AppText.secondary.copyWith(color: AppColors.brown),
@@ -229,11 +253,17 @@ class _Card extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(title, style: AppText.cardTitle),
-                    Text(count, style: AppText.secondary.copyWith(color: AppColors.brown)),
+                    Text(
+                      count,
+                      style: AppText.secondary.copyWith(color: AppColors.brown),
+                    ),
                   ],
                 ),
               ),
-              const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+              const AppIcon(
+                Icons.chevron_right_rounded,
+                color: AppColors.brown,
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -256,7 +286,11 @@ class _Card extends StatelessWidget {
 
 /// Five short bars, one per essential, filled for the answered ones.
 class EssentialsProgress extends StatelessWidget {
-  const EssentialsProgress({super.key, required this.answered, required this.total});
+  const EssentialsProgress({
+    super.key,
+    required this.answered,
+    required this.total,
+  });
 
   final int answered;
   final int total;
@@ -296,7 +330,9 @@ class PetAttentionDot extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final needed = ref.watch(petCompletenessProvider(petId).select((info) => info.needsAttention));
+    final needed = ref.watch(
+      petCompletenessProvider(petId).select((info) => info.needsAttention),
+    );
     return PetEssentialsKeeper(
       petId: petId,
       child: !needed

@@ -10,7 +10,8 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/primary_button.dart';
-import '../findvet/findvet.dart';
+import '../../platform/feature_ui.dart';
+import '../../services/findvet/data/vet_models.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_text_field.dart';
 
@@ -54,7 +55,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       _showMessage(context.l10n.authForgotNeedsEmail);
       return;
     }
-    final sent = await ref.read(authControllerProvider.notifier).sendPasswordReset(email: email);
+    final sent = await ref
+        .read(authControllerProvider.notifier)
+        .sendPasswordReset(email: email);
     if (mounted) {
       final l10n = context.l10n;
       _showMessage(sent ? l10n.authResetSent(email) : l10n.authResetFailed);
@@ -111,24 +114,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 alignment: AlignmentDirectional.centerEnd,
                 child: TextButton(
                   onPressed: loading ? null : _forgotPassword,
-                  style: TextButton.styleFrom(foregroundColor: AppColors.coralDark),
-                  child: Text(l10n.authForgotPassword, style: AppText.secondary),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.coralDark,
+                  ),
+                  child: Text(
+                    l10n.authForgotPassword,
+                    style: AppText.secondary,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
-              PrimaryButton(label: l10n.authSignIn, onPressed: _submit, loading: loading),
+              PrimaryButton(
+                label: l10n.authSignIn,
+                onPressed: _submit,
+                loading: loading,
+              ),
               const SizedBox(height: 22),
               Wrap(
                 alignment: WrapAlignment.center,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Text(l10n.authNewHere, style: AppText.body.copyWith(color: AppColors.brown)),
+                  Text(
+                    l10n.authNewHere,
+                    style: AppText.body.copyWith(color: AppColors.brown),
+                  ),
                   TextButton(
-                    onPressed: loading ? null : () => context.push(AppRoutes.signUp),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.coralDark),
+                    onPressed: loading
+                        ? null
+                        : () => context.push(AppRoutes.signUp),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.coralDark,
+                    ),
                     child: Text(
                       l10n.authCreateAnAccount,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ],
@@ -137,10 +159,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               Center(
                 child: OutlinedButton.icon(
                   key: LoginScreen.findVetKey,
-                  onPressed: () => openFindVet(context, mode: VetSearchMode.emergency),
+                  onPressed: () => openFeature<Object>(
+                    context,
+                    'find-vet',
+                    '',
+                    {'mode': VetSearchMode.emergency},
+                  ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.coralDark,
-                    side: const BorderSide(color: AppColors.coralDark, width: 2),
+                    side: const BorderSide(
+                      color: AppColors.coralDark,
+                      width: 2,
+                    ),
                     minimumSize: const Size(0, 48),
                     shape: const StadiumBorder(),
                   ),

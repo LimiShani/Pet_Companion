@@ -41,33 +41,46 @@ void main() {
         textDirection: direction,
       );
 
-      testWidgets('Overview pages: vets, Emergency card, health profile, message', (tester) async {
-        await pump(tester);
+      testWidgets(
+        'Overview pages: vets, Emergency card, health profile, message',
+        (tester) async {
+          await pump(tester);
 
-        await tapVisible(tester, find.text('Details'));
-        expect(find.text("Kelly's vets"), findsOneWidget);
-        await tapVisible(tester, find.byKey(const ValueKey('edit-vet-regular')));
-        expect(find.text('Edit vet'), findsOneWidget);
-        await back(tester);
-        await tapVisible(tester, find.byKey(const ValueKey('message-regular')));
-        expect(find.textContaining('Message to'), findsOneWidget);
-        await closeSheet(tester);
-        await back(tester);
+          await tapVisible(tester, find.text('Details'));
+          expect(find.text("Kelly's vets"), findsOneWidget);
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('edit-vet-regular')),
+          );
+          expect(find.text('Edit vet'), findsOneWidget);
+          await back(tester);
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('message-regular')),
+          );
+          expect(find.textContaining('Message to'), findsOneWidget);
+          await closeSheet(tester);
+          await back(tester);
 
-        await tester.tap(find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')));
-        await tester.pumpAndSettle();
-        expect(find.text('Emergency · Kelly'), findsOneWidget);
-        await tapVisible(tester, find.text("Open Kelly's Emergency card"));
-        expect(find.text('Emergency card'), findsOneWidget);
-        await back(tester);
+          await tester.tap(
+            find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')),
+          );
+          await tester.pumpAndSettle();
+          expect(find.text('Emergency · Kelly'), findsOneWidget);
+          await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+          expect(find.text('Emergency card'), findsOneWidget);
+          await back(tester);
 
-        await tapVisible(tester, find.byKey(const Key('overview-pet')));
-        expect(find.text("Kelly's health profile"), findsOneWidget);
-        await back(tester);
-        expect(tester.takeException(), isNull);
-      });
+          await tapVisible(tester, find.byKey(const Key('overview-pet')));
+          expect(find.text("Kelly's health profile"), findsOneWidget);
+          await back(tester);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-      testWidgets('the emergency kit, the documents page and the lost card', (tester) async {
+      testWidgets('the emergency kit, the documents page and the lost card', (
+        tester,
+      ) async {
         final h = HealthHarness();
         h.cardPhotos.photo = MemoryImage(FakeHealthRepository.samplePng);
         await pumpHealthHost(
@@ -79,7 +92,9 @@ void main() {
           textDirection: direction,
         );
 
-        await tester.tap(find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')));
+        await tester.tap(
+          find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')),
+        );
         await tester.pumpAndSettle();
         await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
         expect(find.text("Kelly's emergency kit"), findsOneWidget);
@@ -95,26 +110,53 @@ void main() {
           find.byKey(const Key('lost-description')),
           'Mixed-breed dog, medium, light brown coat, red collar. Shy: please do not chase her.',
         );
-        await tester.enterText(find.byKey(const Key('lost-area')), 'Herzl 12, Florentin, Tel Aviv');
-        await tester.enterText(find.byKey(const Key('lost-phone')), '+972 50 555 0117');
-        await tester.enterText(find.byKey(const Key('lost-extra')), 'Needs a daily medicine');
+        await tester.enterText(
+          find.byKey(const Key('lost-area')),
+          'Herzl 12, Florentin, Tel Aviv',
+        );
+        await tester.enterText(
+          find.byKey(const Key('lost-phone')),
+          '+972 50 555 0117',
+        );
+        await tester.enterText(
+          find.byKey(const Key('lost-extra')),
+          'Needs a daily medicine',
+        );
         await tester.pumpAndSettle();
         await tapVisible(tester, find.byKey(const Key('lost-confirm-phone')));
-        expect(find.text('Show this phone number on the card: +972 50 555 0117'), findsOneWidget);
+        expect(
+          find.text('Show this phone number on the card: +972 50 555 0117'),
+          findsOneWidget,
+        );
         // Both languages of the card, in either app direction.
-        await tapVisible(tester, find.byKey(const ValueKey('lost-language-en')));
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('lost-language-en')),
+        );
         expect(find.text('Seen Kelly? Please call'), findsOneWidget);
-        await tapVisible(tester, find.byKey(const ValueKey('lost-language-he')));
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('lost-language-he')),
+        );
         await tapVisible(tester, find.text('Share as image'));
         expect(h.sharer.shared, hasLength(1));
         await back(tester);
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets("a cat's Quick log, routine form and a record with a cost", (tester) async {
+      testWidgets("a cat's Quick log, routine form and a record with a cost", (
+        tester,
+      ) async {
         final h = HealthHarness(
           repository: fakeHealth(seeded: false),
-          pets: const [Pet(id: 'mitzi', name: 'Mitzi', species: PetSpecies.cat, breed: 'Domestic shorthair')],
+          pets: const [
+            Pet(
+              id: 'mitzi',
+              name: 'Mitzi',
+              species: PetSpecies.cat,
+              breed: 'Domestic shorthair',
+            ),
+          ],
         );
         await pumpHealthHost(
           tester,
@@ -126,7 +168,10 @@ void main() {
         );
 
         await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
-        expect(find.byKey(const ValueKey('quick-group-behaviour')), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('quick-group-behaviour')),
+          findsOneWidget,
+        );
         await tapVisible(tester, find.byKey(const ValueKey('quick-biting')));
         await tapVisible(tester, find.byKey(const ValueKey('level-more')));
         await tapVisible(tester, find.text('Save to journal'));
@@ -135,60 +180,95 @@ void main() {
         await tester.pumpAndSettle();
 
         await tapVisible(tester, find.byKey(const Key('overview-add-record')));
-        await tester.enterText(find.byKey(const Key('record-title')), 'Yearly check and vaccinations at the clinic');
-        await tester.enterText(find.byKey(const Key('record-cost')), '12345.50');
+        await tester.enterText(
+          find.byKey(const Key('record-title')),
+          'Yearly check and vaccinations at the clinic',
+        );
+        await tester.enterText(
+          find.byKey(const Key('record-cost')),
+          '12345.50',
+        );
         await tapVisible(tester, find.text('Save record'));
 
         await openSection(tester, 'Schedule');
         await tapVisible(tester, find.text('Add to the schedule'));
         await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
-        await tapVisible(tester, find.byKey(const ValueKey('routine-kind-litterCleaning')));
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('routine-kind-litterCleaning')),
+        );
         await tapVisible(tester, find.text('Save routine'));
         expect(find.text('Litter box cleaning'), findsWidgets);
 
         await openSection(tester, 'History');
         expect(find.bySemanticsLabel(RegExp('Cost')), findsOneWidget);
-        await tapVisible(tester, find.text('Yearly check and vaccinations at the clinic'));
+        await tapVisible(
+          tester,
+          find.text('Yearly check and vaccinations at the clinic'),
+        );
         expect(find.byKey(const Key('record-cost-row')), findsOneWidget);
         await back(tester);
 
         await openSection(tester, 'Insights');
-        expect(find.byKey(const Key('journal-behaviour-group')), findsOneWidget);
+        expect(
+          find.byKey(const Key('journal-behaviour-group')),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Schedule, the dose sheet and the medicine and routine forms', (tester) async {
-        await pump(tester);
-        await openSection(tester, 'Schedule');
-        expect(find.text('Needs review'), findsOneWidget);
+      testWidgets(
+        'Schedule, the dose sheet and the medicine and routine forms',
+        (tester) async {
+          await pump(tester);
+          await openSection(tester, 'Schedule');
+          expect(find.text('Needs review'), findsOneWidget);
 
-        await tapVisible(tester, find.byKey(const ValueKey('record-p-joint-pm')));
-        expect(find.byKey(const Key('dose-given-now')), findsOneWidget);
-        await closeSheet(tester);
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('record-p-joint-pm')),
+          );
+          expect(find.byKey(const Key('dose-given-now')), findsOneWidget);
+          await closeSheet(tester);
 
-        await tapVisible(tester, find.byKey(const Key('done-today')));
-        expect(find.byKey(const ValueKey('undo-p-breakfast')), findsOneWidget);
+          await tapVisible(tester, find.byKey(const Key('done-today')));
+          expect(
+            find.byKey(const ValueKey('undo-p-breakfast')),
+            findsOneWidget,
+          );
 
-        await tapVisible(tester, find.byKey(const Key('schedule-add')));
-        expect(find.text('Add to the schedule'), findsOneWidget);
-        await closeSheet(tester);
+          await tapVisible(tester, find.byKey(const Key('schedule-add')));
+          expect(find.text('Add to the schedule'), findsOneWidget);
+          await closeSheet(tester);
 
-        await tapVisible(tester, find.byKey(const ValueKey('medicine-m-joint')));
-        expect(find.text('Edit medicine'), findsOneWidget);
-        expect(find.text('Dose log'), findsOneWidget);
-        await back(tester);
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('medicine-m-joint')),
+          );
+          expect(find.text('Edit medicine'), findsOneWidget);
+          expect(find.text('Dose log'), findsOneWidget);
+          await back(tester);
 
-        await tapVisible(tester, find.byKey(const ValueKey('routine-p-brush')));
-        expect(find.text('Edit routine'), findsOneWidget);
-        await back(tester);
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('routine-p-brush')),
+          );
+          expect(find.text('Edit routine'), findsOneWidget);
+          await back(tester);
 
-        await tapVisible(tester, find.byKey(const ValueKey('planned-r-rabies-due')));
-        expect(find.text('Planned for'), findsOneWidget);
-        await back(tester);
-        expect(tester.takeException(), isNull);
-      });
+          await tapVisible(
+            tester,
+            find.byKey(const ValueKey('planned-r-rabies-due')),
+          );
+          expect(find.text('Planned for'), findsOneWidget);
+          await back(tester);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
-      testWidgets('History, a record, its form and the attachment sheet', (tester) async {
+      testWidgets('History, a record, its form and the attachment sheet', (
+        tester,
+      ) async {
         await pump(tester);
         await openSection(tester, 'History');
         expect(find.byKey(const Key('history-count')), findsOneWidget);
@@ -202,12 +282,20 @@ void main() {
         await tester.tap(find.byTooltip('Edit record'));
         await tester.pumpAndSettle();
         expect(find.text('Edit record'), findsOneWidget);
-        await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('kind-vaccination')),
+        );
         expect(find.byKey(const Key('record-next-due')), findsOneWidget);
         await back(tester);
         // The kind was changed: leaving asks first, and the answer is
         // "Discard".
-        await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.byType(FilledButton)));
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.byType(FilledButton),
+          ),
+        );
         await tester.pumpAndSettle();
         await back(tester);
         expect(tester.takeException(), isNull);
@@ -226,7 +314,10 @@ void main() {
         expect(find.byKey(const Key('quick-weight-field')), findsOneWidget);
         await closeSheet(tester);
 
-        await tapVisible(tester, find.byKey(const ValueKey('observation-o-mobility')));
+        await tapVisible(
+          tester,
+          find.byKey(const ValueKey('observation-o-mobility')),
+        );
         expect(find.text('Edit entry'), findsOneWidget);
         await closeSheet(tester);
         expect(tester.takeException(), isNull);
@@ -249,13 +340,23 @@ void main() {
     });
   }
 
-  testWidgets('the chart and the back arrow follow a right-to-left layout', (tester) async {
-    await pumpHealthHost(tester, const HealthScreen(), page: true, textDirection: TextDirection.rtl);
+  testWidgets('the chart and the back arrow follow a right-to-left layout', (
+    tester,
+  ) async {
+    await pumpHealthHost(
+      tester,
+      const HealthScreen(),
+      page: true,
+      textDirection: TextDirection.rtl,
+    );
 
     // The summary's avatar sits at the start: the right-hand side.
     final card = tester.getRect(find.byKey(const Key('overview-pet')));
     final name = tester.getRect(
-      find.descendant(of: find.byKey(const Key('overview-pet')), matching: find.text('Kelly')),
+      find.descendant(
+        of: find.byKey(const Key('overview-pet')),
+        matching: find.text('Kelly'),
+      ),
     );
     expect(name.right, lessThan(card.right - 56));
 
@@ -264,34 +365,48 @@ void main() {
     expect(arrow.dx, greaterThan(390 / 2));
   });
 
-  testWidgets('the Overview keeps a slot for the Pets reminder under the pet summary', (tester) async {
-    // The slot holds the Pets feature's reminder card, which draws nothing
-    // for a pet whose essentials are all answered.
-    expect(petReminderSlot(const Pet(id: 'kelly', name: 'Kelly')), isA<PetReminderCard>());
+  testWidgets(
+    'the Overview keeps a slot for the Pets reminder under the pet summary',
+    (tester) async {
+      // The slot holds the Pets feature's reminder card, which draws nothing
+      // for a pet whose essentials are all answered.
+      final slot = petReminderSlot(const Pet(id: 'kelly', name: 'Kelly'));
+      expect(slot, isNotNull);
+      await pumpHealthHost(tester, slot!);
+      expect(find.byType(PetReminderCard), findsOneWidget);
 
-    await pumpHealthHost(
-      tester,
-      Consumer(
-        builder: (context, ref, _) {
-          final pet = ref.watch(selectedPetProvider);
-          final data = ref.watch(petHealthDataProvider(pet.id)).value;
-          if (data == null) return const SizedBox.shrink();
-          return Padding(
-            padding: const EdgeInsets.all(20),
-            child: OverviewSection(pet: pet, data: data, reminder: const Text('Reminder card goes here')),
-          );
-        },
-      ),
-    );
+      await pumpHealthHost(
+        tester,
+        Consumer(
+          builder: (context, ref, _) {
+            final pet = ref.watch(selectedPetProvider);
+            final data = ref.watch(petHealthDataProvider(pet.id)).value;
+            if (data == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: OverviewSection(
+                pet: pet,
+                data: data,
+                reminder: const Text('Reminder card goes here'),
+              ),
+            );
+          },
+        ),
+      );
 
-    final summary = tester.getRect(find.byKey(const Key('overview-pet')));
-    final reminder = tester.getRect(find.text('Reminder card goes here'));
-    final comingUp = tester.getRect(find.byKey(const Key('overview-coming-up')));
-    expect(reminder.top, greaterThanOrEqualTo(summary.bottom));
-    expect(reminder.bottom, lessThanOrEqualTo(comingUp.top));
-  });
+      final summary = tester.getRect(find.byKey(const Key('overview-pet')));
+      final reminder = tester.getRect(find.text('Reminder card goes here'));
+      final comingUp = tester.getRect(
+        find.byKey(const Key('overview-coming-up')),
+      );
+      expect(reminder.top, greaterThanOrEqualTo(summary.bottom));
+      expect(reminder.bottom, lessThanOrEqualTo(comingUp.top));
+    },
+  );
 
-  testWidgets('the tab works in the app as shipped, on the sample data', (tester) async {
+  testWidgets('the tab works in the app as shipped, on the sample data', (
+    tester,
+  ) async {
     // No Health overrides at all: the default repository (with its delay)
     // and the sample-data clock, which treats 10.06.25 as today.
     await pumpApp(tester);

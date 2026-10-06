@@ -35,13 +35,21 @@ enum PetLoopGlyph {
   weight;
 
   /// The pack names its files in kebab case: chevronLeft -> chevron-left.svg.
-  String get asset => 'assets/icons/${name.replaceAllMapped(RegExp('[A-Z]'), (m) => '-${m[0]!.toLowerCase()}')}.svg';
+  String get asset =>
+      'assets/icons/${name.replaceAllMapped(RegExp('[A-Z]'), (m) => '-${m[0]!.toLowerCase()}')}.svg';
 }
 
 /// A brand-pack icon drawn like an [Icon]: size and colour default to the
 /// surrounding [IconTheme], so it drops in where an [Icon] was.
 class PetLoopIcon extends StatelessWidget {
-  const PetLoopIcon(this.glyph, {super.key, this.size, this.color, this.semanticLabel, this.mirrorInRtl = false});
+  const PetLoopIcon(
+    this.glyph, {
+    super.key,
+    this.size,
+    this.color,
+    this.semanticLabel,
+    this.mirrorInRtl = false,
+  });
 
   final PetLoopGlyph glyph;
   final double? size;
@@ -75,7 +83,10 @@ class PetLoopIcon extends StatelessWidget {
       excludeSemantics: true,
       // Centred at its own size when the parent forces a bigger box, as an
       // [Icon] is.
-      child: SizedBox.square(dimension: side, child: Center(child: drawn)),
+      child: SizedBox.square(
+        dimension: side,
+        child: Center(child: drawn),
+      ),
     );
   }
 }
