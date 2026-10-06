@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
 import 'package:flutter/material.dart';
@@ -39,6 +41,43 @@ DateTime sampleDataNow() {
 /// fixed instant.
 final healthClockProvider = Provider<DateTime Function()>(
   (ref) => AppConfig.hasSupabase ? DateTime.now : sampleDataNow,
+);
+
+/// Today's date by [healthClockProvider], moving on at local midnight.
+///
+/// Day views (today's meals, walks, what is due) watch this rather than
+/// reading the clock once, so an app left open overnight shows, and saves
+/// into, the new day. A timer re-reads the clock at midnight; the app also
+/// calls [CurrentDay.check] on resume, because timers do not run while the
+/// phone sleeps.
+class CurrentDay extends Notifier<DateTime> {
+  Timer? _timer;
+
+  @override
+  DateTime build() {
+    ref.onDispose(() => _timer?.cancel());
+    final today = dateOnly(ref.watch(healthClockProvider)());
+    _arm();
+    return today;
+  }
+
+  /// Moves to the clock's day if it has changed.
+  void check() {
+    final today = dateOnly(ref.read(healthClockProvider)());
+    if (today != state) state = today;
+    _arm();
+  }
+
+  void _arm() {
+    _timer?.cancel();
+    final now = ref.read(healthClockProvider)();
+    final next = DateTime(now.year, now.month, now.day + 1);
+    _timer = Timer(next.difference(now) + const Duration(seconds: 1), check);
+  }
+}
+
+final currentDayProvider = NotifierProvider<CurrentDay, DateTime>(
+  CurrentDay.new,
 );
 
 /// The health backend: Supabase when the app is built with its
@@ -613,7 +652,7 @@ class CarePlanController extends SessionSafeAsyncNotifier<CarePlan> {
       }
     });
     final repo = ref.watch(scheduleRepositoryProvider);
-    final today = dateOnly(ref.watch(healthClockProvider)());
+    final today = ref.watch(currentDayProvider);
     // Waited for together, so a failure of one never leaves the others
     // failing unobserved.
     final results = await Future.wait<Object>([
