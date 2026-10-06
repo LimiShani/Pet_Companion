@@ -23,6 +23,8 @@ docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file
 if ($LASTEXITCODE -ne 0) { throw 'Permission behavior tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/signup_roles_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'New-account role protection tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/account_deletion_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Account deletion tests failed.' }
 
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/administration_history_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Administration history tests failed.' }

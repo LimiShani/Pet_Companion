@@ -79,6 +79,8 @@ serve as the procedure for a fresh project.
    * `supabase/migrations/0015_reliable_operations.sql`
    * `supabase/migrations/0016_permission_endpoint_guards.sql`
    * `supabase/migrations/0017_administration_history.sql`
+   * `supabase/migrations/0018_account_deletion_cleanup.sql` (lets accounts
+     with stored files be deleted; their files stay queued for clean-up)
 2. Run `supabase/seed/access_admin_bootstrap.sql` in SQL Editor. It provisions
    **pixel123@gmail.com** and aborts if that auth account does not exist. No email
    check or administrator secret is embedded in the mobile client.
