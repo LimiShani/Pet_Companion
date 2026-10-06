@@ -82,6 +82,7 @@ AsyncValue<R> _both<A, B, R>(
 final feedingDayProvider = Provider.autoDispose
     .family<AsyncValue<FeedingDay>, String>((ref, petId) {
       final pet = _petOf(ref, petId);
+      ref.watch(currentDayProvider);
       final now = ref.watch(healthClockProvider)();
       return _both(
         ref.watch(carePlanProvider(petId)),
@@ -95,6 +96,7 @@ final feedingDayProvider = Provider.autoDispose
 final activityDayProvider = Provider.autoDispose
     .family<AsyncValue<ActivityDay>, String>((ref, petId) {
       final pet = _petOf(ref, petId);
+      ref.watch(currentDayProvider);
       final now = ref.watch(healthClockProvider)();
       return _both(
         ref.watch(carePlanProvider(petId)),
@@ -107,6 +109,7 @@ final activityDayProvider = Provider.autoDispose
 /// What Home's health card lists, soonest first.
 final upcomingHealthProvider = Provider.autoDispose
     .family<AsyncValue<List<HealthItem>>, String>((ref, petId) {
+      ref.watch(currentDayProvider);
       final now = ref.watch(healthClockProvider)();
       return _both(
         ref.watch(carePlanProvider(petId)),

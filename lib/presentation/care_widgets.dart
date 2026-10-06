@@ -25,9 +25,22 @@ class CareKeeper extends StatefulWidget {
   State<CareKeeper> createState() => _CareKeeperState();
 }
 
-class _CareKeeperState extends State<CareKeeper> {
+class _CareKeeperState extends State<CareKeeper> with WidgetsBindingObserver {
   ProviderContainer? _container;
   final _subscriptions = <ProviderSubscription<Object?>>[];
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _container?.read(currentDayProvider.notifier).check();
+    }
+  }
 
   @override
   void didChangeDependencies() {
@@ -66,6 +79,7 @@ class _CareKeeperState extends State<CareKeeper> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     for (final sub in _subscriptions) {
       sub.close();
     }
