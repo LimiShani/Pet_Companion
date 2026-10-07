@@ -349,6 +349,7 @@ create table if not exists community_private.moderation_log (
   action text not null,
   created_at timestamptz not null default now()
 );
+alter table community_private.moderation_log enable row level security;
 revoke all on community_private.moderation_log from public, anon, authenticated;
 
 create or replace function community_private.require_moderator()
