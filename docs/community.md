@@ -97,6 +97,14 @@ Server rules (0021):
 - Menus offer only what the account may do: reporting a message needs
   `community.chat.send`, reporting a comment `community.feed.post`.
 
+## Push notifications
+
+Comments, likes and chat answers can reach a member's phone: see
+[push_notifications.md](push_notifications.md) (migration 0023, the
+`community-push` Edge Function, Firebase setup). The Settings card and the
+`post` / `room` actions that open a tapped notification live in this
+feature.
+
 ## Tests
 
 - `test/community/community_feed_members_test.dart`: kinds, search, the
