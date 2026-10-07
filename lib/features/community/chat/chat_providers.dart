@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../access/access_provider.dart';
 import '../../../auth/app_user.dart';
 import '../../../auth/auth_controller.dart';
+import '../../../notifications/push.dart';
 import '../../../platform/session.dart';
 
 import '../../../services/community/data/chat_repository.dart';
@@ -33,6 +34,8 @@ final chatRoomSummariesProvider = FutureProvider<Map<String, ChatRoomSummary>>((
   ref,
 ) async {
   ref.watch(sessionEpochProvider);
+  // A push notification arrived while the app is open: load again.
+  ref.watch(pushArrivalsProvider);
   final viewerId = ref.watch(
     authControllerProvider.select((auth) => auth.value?.id),
   );

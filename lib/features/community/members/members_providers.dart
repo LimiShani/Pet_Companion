@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
+import '../../../notifications/push.dart';
 import '../../../platform/session.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
@@ -41,6 +42,8 @@ final memberPostsProvider = FutureProvider.autoDispose
 /// first. Blocked members' doings are left out.
 final activityProvider = FutureProvider<List<ActivityItem>>((ref) async {
   ref.watch(sessionEpochProvider);
+  // A push notification arrived while the app is open: load again.
+  ref.watch(pushArrivalsProvider);
   final viewer = ref.watch(authControllerProvider).value;
   final community =
       ref.watch(capabilityProvider('community.feed.view')) ||

@@ -35,6 +35,19 @@ class FeatureSlot {
   final Widget Function(BuildContext context, FeatureRequest request) build;
 }
 
+/// Whether an installed module the account may use answers [name].
+bool canOpenFeature(BuildContext context, String name) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  for (final module in container.read(featureModulesProvider)) {
+    final action = module.actions[name];
+    if (action != null &&
+        container.read(capabilityProvider(action.capability))) {
+      return true;
+    }
+  }
+  return false;
+}
+
 Future<T?> openFeature<T>(
   BuildContext context,
   String name,

@@ -29,6 +29,24 @@ abstract final class AppConfig {
   /// True when both Supabase values were provided at build time.
   static const hasSupabase = supabaseUrl != '' && supabasePublishableKey != '';
 
+  /// Firebase Cloud Messaging for push notifications (from the Firebase
+  /// console's Android app: `google-services.json`'s current_key,
+  /// mobilesdk_app_id, project_id and project_number). Push stays off
+  /// without them. None of these is secret.
+  static const firebaseApiKey = String.fromEnvironment('FIREBASE_API_KEY');
+  static const firebaseAppId = String.fromEnvironment('FIREBASE_APP_ID');
+  static const firebaseProjectId = String.fromEnvironment(
+    'FIREBASE_PROJECT_ID',
+  );
+  static const firebaseSenderId = String.fromEnvironment('FIREBASE_SENDER_ID');
+
+  static const hasFirebase =
+      hasSupabase &&
+      firebaseApiKey != '' &&
+      firebaseAppId != '' &&
+      firebaseProjectId != '' &&
+      firebaseSenderId != '';
+
   /// The currency amounts are entered and shown in unless a record carries
   /// its own code (ISO 4217). One place to change it for the whole app.
   static const defaultCurrency = 'ILS';

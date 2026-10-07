@@ -1027,4 +1027,25 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get mutedTag => 'Muted';
+
+  @override
+  String get pushTitle => 'Community';
+
+  @override
+  String get pushReplies => 'Answers to my chat messages';
+
+  @override
+  String get pushComments => 'Comments on my posts';
+
+  @override
+  String get pushLikes => 'Likes on my posts';
+
+  @override
+  String get pushLikesNote => 'At most one a post every hour.';
+
+  @override
+  String get pushNote => 'Sent to this phone even when PetLoop is closed. Members you blocked never notify you.';
+
+  @override
+  String get pushLoadFailed => 'Cannot load your notification choices';
 }

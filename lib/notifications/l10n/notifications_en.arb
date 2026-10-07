@@ -146,5 +146,7 @@
   "askExactAllow": "Open Alarms & reminders",
   "@askExactAllow": {
     "description": "Button that opens Android's Alarms & reminders screen."
-  }
+  },
+  "communityChannel": "Community",
+  "@communityChannel": {"description": "The phone's name for the notifications of community activity (comments, likes, answers)."}
 }

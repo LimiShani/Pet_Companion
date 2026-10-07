@@ -1,5 +1,7 @@
 import '../platform/feature_ui.dart';
 import '../access/access_provider.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,7 +18,9 @@ import 'widgets/permission_sheet.dart';
 /// Where a tapped reminder's target leads: `feeding:<petId>` the feeding
 /// page, `activity:<petId>` the activity page, `health:<petId>` the
 /// Schedule of the Health tab, `basket:<petId>` the Store tab. The pet
-/// becomes the selected pet first. Anything else opens Home.
+/// becomes the selected pet first. A push notification's target names a
+/// feature action and an id (`post:<id>`, `room:<id>`): the module that
+/// answers it opens the page. Anything else opens Home.
 Future<void> openNotificationTarget(
   String target, {
   required GoRouter router,
@@ -57,6 +61,15 @@ Future<void> openNotificationTarget(
         }
       }
     default:
+      final context = router.routerDelegate.navigatorKey.currentContext;
+      if (pet == null &&
+          petId.isNotEmpty &&
+          context != null &&
+          context.mounted &&
+          canOpenFeature(context, where)) {
+        await openFeature<Object>(context, where, '', {'id': petId});
+        return;
+      }
       router.go(AppRoutes.home);
   }
 }
@@ -67,7 +80,12 @@ Future<void> openNotificationTarget(
 /// asks for permission the first time the account has something to remind
 /// about, and checks again what the phone allows when the app comes back.
 ///
-/// Without a [NotificationPlatform] (tests, the web) it is just [child].
+/// It also keeps this phone registered for push notifications
+/// ([PushRegistrar]), opens the page of a tapped push notification, and
+/// counts the ones that arrive while the app is open ([pushArrivalsProvider]).
+///
+/// Without a [NotificationPlatform] and without [PushMessaging] (tests, the
+/// web) it is just [child].
 class NotificationsHost extends ConsumerStatefulWidget {
   const NotificationsHost({super.key, required this.child});
 
@@ -80,25 +98,32 @@ class NotificationsHost extends ConsumerStatefulWidget {
 class _NotificationsHostState extends ConsumerState<NotificationsHost>
     with WidgetsBindingObserver {
   NotificationPlatform? _platform;
+  PushMessaging? _push;
   ReminderCoordinator? _coordinator;
   GoRouter? _router;
   bool _asking = false;
+  final _pushSubscriptions = <StreamSubscription<Object?>>[];
+
+  bool get _active => _platform != null || _push != null;
 
   @override
   void initState() {
     super.initState();
     final platform = _platform = ref.read(notificationPlatformProvider);
-    if (platform == null) return;
+    final push = _push = ref.read(pushMessagingProvider);
+    if (!_active) return;
     WidgetsBinding.instance.addObserver(this);
     // After the first frame: the scope's container is in place, and the
     // router has started.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      _coordinator = ReminderCoordinator(
-        ProviderScope.containerOf(context, listen: false),
-      )..start();
-      platform.onTap = (target) =>
-          ref.read(notificationTapsProvider.notifier).tapped(target);
+      if (platform != null) {
+        _coordinator = ReminderCoordinator(
+          ProviderScope.containerOf(context, listen: false),
+        )..start();
+        platform.onTap = _tapped;
+      }
+      if (push != null) _startPush(push);
       // A sheet or a page opened on top of the sign-in screen would go
       // with it: both wait until the tabs are on screen.
       final router = ref.read(routerProvider);
@@ -107,13 +132,35 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
     });
   }
 
+  void _tapped(String target) =>
+      ref.read(notificationTapsProvider.notifier).tapped(target);
+
+  void _startPush(PushMessaging push) {
+    // Created here so it follows the account from the start.
+    ref.read(pushRegistrarProvider);
+    _pushSubscriptions
+      ..add(push.taps.listen(_tapped, onError: (_) {}))
+      ..add(
+        push.arrivals.listen(
+          (_) => ref.read(pushArrivalsProvider.notifier).arrived(),
+          onError: (_) {},
+        ),
+      );
+    push.initialTap().then((target) {
+      if (target != null && mounted) _tapped(target);
+    }, onError: (_) {});
+  }
+
   @override
   void dispose() {
-    if (_platform != null) {
+    if (_active) {
       WidgetsBinding.instance.removeObserver(this);
-      _platform!.onTap = null;
+      _platform?.onTap = null;
       _router?.routerDelegate.removeListener(_onRoute);
       _coordinator?.dispose();
+      for (final sub in _pushSubscriptions) {
+        sub.cancel();
+      }
     }
     super.dispose();
   }
@@ -156,6 +203,8 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
         'feeding' || 'activity' => 'care.view',
         'health' => 'health.schedule.view',
         'basket' => 'basket.view',
+        'post' => 'community.feed.view',
+        'room' => 'community.chat.view',
         _ => null,
       };
       if (capability != null && !ref.read(capabilityProvider(capability))) {
@@ -222,7 +271,7 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
 
   @override
   Widget build(BuildContext context) {
-    if (_platform != null) {
+    if (_active) {
       ref.listen(notificationTapsProvider, (_, target) {
         if (target != null) _openWaitingTap();
       });

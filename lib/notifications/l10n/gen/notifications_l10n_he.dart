@@ -97,15 +97,13 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get exactTitle => 'בדיוק בזמן';
 
   @override
-  String get exactNote =>
-      'כדי שתזכורת לתרופה תגיע בדקה המדויקת, אנדרואיד מבקש את ההרשאה ״שעונים מעוררים ותזכורות״.';
+  String get exactNote => 'כדי שתזכורת לתרופה תגיע בדקה המדויקת, אנדרואיד מבקש את ההרשאה ״שעונים מעוררים ותזכורות״.';
 
   @override
   String get exactAllowed => 'יש הרשאה';
 
   @override
-  String get exactMissing =>
-      'עדיין אין הרשאה: תזכורת יכולה להגיע באיחור, עד שעה.';
+  String get exactMissing => 'עדיין אין הרשאה: תזכורת יכולה להגיע באיחור, עד שעה.';
 
   @override
   String get exactAllow => 'מתן הרשאה';
@@ -114,8 +112,7 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get blockedTitle => 'אין הרשאה להציג התראות';
 
   @override
-  String get blockedNote =>
-      'ההתראות של PetLoop כבויות בהגדרות הטלפון, ולכן אף תזכורת לא תצלצל.';
+  String get blockedNote => 'ההתראות של PetLoop כבויות בהגדרות הטלפון, ולכן אף תזכורת לא תצלצל.';
 
   @override
   String get openPhoneSettings => 'פתיחת הגדרות הטלפון';
@@ -133,8 +130,7 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get askMedicines => 'מנות של תרופות';
 
   @override
-  String get askAppointments =>
-      'תורים לווטרינר וחיסונים, בערב שלפני ושעתיים לפני';
+  String get askAppointments => 'תורים לווטרינר וחיסונים, בערב שלפני ושעתיים לפני';
 
   @override
   String get askFoot => 'בהגדרות אפשר לבחור מה מצלצל ולהוסיף שעות שקטות.';
@@ -150,4 +146,7 @@ class NotificationsL10nHe extends NotificationsL10n {
 
   @override
   String get askExactAllow => 'פתיחת ״שעונים מעוררים ותזכורות״';
+
+  @override
+  String get communityChannel => 'קהילה';
 }
