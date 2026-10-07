@@ -52,3 +52,7 @@ tools/agent_board/state/
 
 # Supabase CLI local state (linked project ref, CLI version)
 supabase/.temp/
+
+# Firebase downloads (values go into env.json instead)
+google-services.json
+GoogleService-Info.plist

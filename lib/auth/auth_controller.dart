@@ -12,6 +12,14 @@ final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => FakeAuthRepository(),
 );
 
+/// Work that must happen while the session still exists, just before
+/// signing out (for example: telling the server to stop sending this
+/// phone push notifications). Each runs at most a few seconds; a failure
+/// never stops the sign-out.
+final beforeSignOutProvider = Provider<List<Future<void> Function()>>(
+  (ref) => const [],
+);
+
 /// The signed-in user (`null` when signed out). Loading while a session is
 /// being restored or an auth action is in flight; error after a failed one.
 class AuthController extends AsyncNotifier<AppUser?> {
@@ -43,6 +51,13 @@ class AuthController extends AsyncNotifier<AppUser?> {
   );
 
   Future<bool> signOut() => _run(() async {
+    for (final task in ref.read(beforeSignOutProvider)) {
+      try {
+        await task().timeout(const Duration(seconds: 4));
+      } catch (_) {
+        // Offline or refused: signing out matters more.
+      }
+    }
     await ref.read(authRepositoryProvider).signOut();
     return null;
   });

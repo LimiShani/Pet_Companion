@@ -42,6 +42,7 @@ export 'notification_platform.dart';
 export 'notification_reminder_scheduler.dart';
 export 'notification_settings.dart';
 export 'notification_sink.dart';
+export 'push.dart';
 export 'reminder_planner.dart';
 
 /// The phone's notifications; `null` when the app runs without them (the

@@ -1039,4 +1039,25 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get mutedTag => 'מושתק';
+
+  @override
+  String get pushTitle => 'קהילה';
+
+  @override
+  String get pushReplies => 'תשובות להודעות שלי בצ׳אט';
+
+  @override
+  String get pushComments => 'תגובות לפוסטים שלי';
+
+  @override
+  String get pushLikes => 'לייקים לפוסטים שלי';
+
+  @override
+  String get pushLikesNote => 'לכל היותר אחת לכל פוסט בשעה.';
+
+  @override
+  String get pushNote => 'נשלח לטלפון הזה גם כשהאפליקציה סגורה. חשבונות שחסמת לא ישלחו לך התראות.';
+
+  @override
+  String get pushLoadFailed => 'אי אפשר לטעון את הבחירות שלך להתראות';
 }

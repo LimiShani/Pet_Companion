@@ -48,6 +48,10 @@ Future<void> main() async {
   final notifications = await FlutterNotificationPlatform.start(
     snoozeLabel: lookupNotificationsL10n(locale).snooze,
   );
+  // Push notifications from the community: only with Firebase settings.
+  final push = await FirebasePushMessaging.start(
+    channelName: lookupNotificationsL10n(locale).communityChannel,
+  );
 
   runApp(
     ProviderScope(
@@ -56,6 +60,14 @@ Future<void> main() async {
         if (supabaseAuth != null)
           authRepositoryProvider.overrideWithValue(supabaseAuth),
         if (settings != null) settingsStoreProvider.overrideWithValue(settings),
+        if (push != null) ...[
+          pushMessagingProvider.overrideWithValue(push),
+          beforeSignOutProvider.overrideWith(
+            (ref) => [
+              () async => ref.read(pushRegistrarProvider)?.signingOut(),
+            ],
+          ),
+        ],
         if (notifications != null) ...[
           notificationPlatformProvider.overrideWithValue(notifications),
           notificationSinkProvider.overrideWith(localNotificationSink),

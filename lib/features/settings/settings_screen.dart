@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../../notifications/push.dart';
 import '../../notifications/widgets/notification_settings_card.dart';
+import '../../platform/feature_ui.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
@@ -50,6 +53,13 @@ class SettingsScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   _SectionLabel(context.notificationsL10n.sectionTitle),
                   const NotificationSettingsCard(),
+                  // The community's push choices, when push is available.
+                  Consumer(
+                    builder: (context, ref, _) =>
+                        ref.watch(pushMessagingProvider) == null
+                        ? const SizedBox.shrink()
+                        : featureSlot('community-push-settings', ''),
+                  ),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),
                 ],

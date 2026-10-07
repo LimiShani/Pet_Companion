@@ -1834,6 +1834,48 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Muted'**
   String get mutedTag;
+
+  /// Title of the card in Settings with the community push notification switches.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get pushTitle;
+
+  /// No description provided for @pushReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'Answers to my chat messages'**
+  String get pushReplies;
+
+  /// No description provided for @pushComments.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments on my posts'**
+  String get pushComments;
+
+  /// No description provided for @pushLikes.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes on my posts'**
+  String get pushLikes;
+
+  /// No description provided for @pushLikesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'At most one a post every hour.'**
+  String get pushLikesNote;
+
+  /// No description provided for @pushNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to this phone even when PetLoop is closed. Members you blocked never notify you.'**
+  String get pushNote;
+
+  /// No description provided for @pushLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load your notification choices'**
+  String get pushLoadFailed;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

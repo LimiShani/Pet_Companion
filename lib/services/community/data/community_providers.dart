@@ -8,6 +8,7 @@ import 'fake_feed_repository.dart';
 import 'feed_repository.dart';
 import 'guides_repository.dart';
 import 'members_repository.dart';
+import 'push_preferences_repository.dart';
 import 'safety_repository.dart';
 import 'supabase_chat_repository.dart';
 import 'supabase_feed_repository.dart';
@@ -56,6 +57,15 @@ final communityMembersRepositoryProvider = Provider<CommunityMembersRepository>(
       chat: chat is FakeChatRepository ? chat : null,
     );
   },
+);
+
+/// What the member wants to hear about by push, chosen the same way.
+final pushPreferencesRepositoryProvider = Provider<PushPreferencesRepository>(
+  (ref) => AppConfig.hasSupabase
+      ? SupabasePushPreferencesRepository(sb.Supabase.instance.client)
+      : FakePushPreferencesRepository(
+          latency: const Duration(milliseconds: 300),
+        ),
 );
 
 /// Guides are bundled with the app in version 1.
