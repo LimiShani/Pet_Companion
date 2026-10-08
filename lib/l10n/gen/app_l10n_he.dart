@@ -218,6 +218,29 @@ class AppL10nHe extends AppL10n {
   String get accountSignOut => 'יציאה מהחשבון';
 
   @override
+  String get accountDelete => 'מחיקת החשבון';
+
+  @override
+  String get accountDeleteTitle => 'למחוק את החשבון?';
+
+  @override
+  String get accountDeleteBody => 'זה מוחק את החשבון לצמיתות: החיות שלכם, הרשומות והמסמכים שלהן, התמונות, הפוסטים וההודעות. אין דרך חזרה.';
+
+  @override
+  String get accountDeleteWord => 'מחיקה';
+
+  @override
+  String accountDeleteHint(String word) {
+    return 'הקלידו \u2068$word\u2069 לאישור';
+  }
+
+  @override
+  String get accountDeleteConfirm => 'למחוק את החשבון שלי';
+
+  @override
+  String get accountDeleted => 'החשבון נמחק.';
+
+  @override
   String get accountLanguage => 'שפה';
 
   @override

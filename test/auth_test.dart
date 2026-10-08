@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/config/app_config.dart';
+import 'package:pet_companion/features/auth/widgets/account_sheet.dart';
+import 'package:pet_companion/features/auth/widgets/delete_account_dialog.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/platform/link_opener.dart';
 import 'package:pet_companion/widgets/legal_notice.dart';
@@ -83,6 +85,54 @@ void main() {
     expect(find.text('Welcome, Limor'), findsOneWidget);
     expect(find.text('Add my first pet'), findsOneWidget);
     expect(find.text('Feeding'), findsNothing);
+  });
+
+  testWidgets('deleting the account asks for the word, then returns to login for good', (tester) async {
+    final en = lookupAppL10n(englishLocale);
+    await pumpApp(tester);
+    await signInAsDemo(tester);
+    await tester.tap(find.text('A'));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.tap(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.pumpAndSettle();
+    expect(find.text(en.accountDeleteTitle), findsOneWidget);
+    FilledButton confirm() =>
+        tester.widget<FilledButton>(find.byKey(DeleteAccountDialog.confirmKey));
+    expect(confirm().enabled, isFalse, reason: 'nothing typed yet');
+
+    await tester.enterText(find.byKey(DeleteAccountDialog.fieldKey), 'nope');
+    await tester.pump();
+    expect(confirm().enabled, isFalse, reason: 'the wrong word');
+
+    await tester.enterText(find.byKey(DeleteAccountDialog.fieldKey), ' delete ');
+    await tester.pump();
+    expect(confirm().enabled, isTrue, reason: 'case and spaces do not matter');
+    await tester.tap(find.byKey(DeleteAccountDialog.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text(en.accountDeleted), findsOneWidget);
+
+    // The account is really gone.
+    await signInAsDemo(tester);
+    expect(find.text(en.authErrNoAccount), findsOneWidget);
+  });
+
+  testWidgets('cancelling the deletion keeps the account', (tester) async {
+    await pumpApp(tester);
+    await signInAsDemo(tester);
+    await tester.tap(find.text('A'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.tap(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DeleteAccountDialog.cancelKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DeleteAccountDialog.fieldKey), findsNothing);
+    expect(find.text(FakeAuthRepository.demoEmail), findsOneWidget, reason: 'the sheet is still open');
   });
 
   testWidgets('the sign-up notice links to the Terms of Use and the Privacy Policy', (tester) async {

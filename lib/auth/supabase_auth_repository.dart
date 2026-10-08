@@ -116,6 +116,20 @@ class SupabaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    try {
+      // The server deletes the auth row (and, by cascade, everything the
+      // account owns); the session is then dead, so sign out locally only.
+      await _client.rpc('delete_my_account');
+      await _auth.signOut(scope: sb.SignOutScope.local);
+    } on sb.AuthException catch (e) {
+      throw _friendly(e);
+    } on sb.PostgrestException catch (e) {
+      throw AuthException(e.message);
+    }
+  }
+
+  @override
   Future<void> sendPasswordReset({required String email}) async {
     try {
       await _auth.resetPasswordForEmail(

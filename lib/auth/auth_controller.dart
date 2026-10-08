@@ -62,6 +62,29 @@ class AuthController extends AsyncNotifier<AppUser?> {
     return null;
   });
 
+  /// Deletes the account for good (after the same farewell tasks as a
+  /// sign-out, so the server stops pushing to this phone). Returns `null`
+  /// when done and signed out, or the failure: the account then still
+  /// exists and stays signed in.
+  Future<AuthException?> deleteAccount() async {
+    for (final task in ref.read(beforeSignOutProvider)) {
+      try {
+        await task().timeout(const Duration(seconds: 4));
+      } catch (_) {
+        // Offline or refused: the deletion matters more.
+      }
+    }
+    try {
+      await ref.read(authRepositoryProvider).deleteAccount();
+      state = const AsyncData(null);
+      return null;
+    } on AuthException catch (e) {
+      return e;
+    } catch (e) {
+      return AuthException('$e');
+    }
+  }
+
   Future<bool> sendPasswordReset({required String email}) async {
     try {
       await ref.read(authRepositoryProvider).sendPasswordReset(email: email);

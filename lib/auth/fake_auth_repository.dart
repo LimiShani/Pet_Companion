@@ -138,6 +138,19 @@ class FakeAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<void> deleteAccount() async {
+    final user = _current;
+    await _wait();
+    if (user == null) {
+      throw const AuthException('Sign in first.', AuthFailure.signInIncomplete);
+    }
+    _accounts.remove(_key(user.email));
+    _set(null);
+    _recovering = false;
+    _recovery.add(false);
+  }
+
+  @override
   Future<void> sendPasswordReset({required String email}) => _wait();
 }
 

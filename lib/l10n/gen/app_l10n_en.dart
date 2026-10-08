@@ -218,6 +218,29 @@ class AppL10nEn extends AppL10n {
   String get accountSignOut => 'Sign out';
 
   @override
+  String get accountDelete => 'Delete account';
+
+  @override
+  String get accountDeleteTitle => 'Delete your account?';
+
+  @override
+  String get accountDeleteBody => 'This removes your account for good: your pets, their records and documents, your photos, your posts and your messages. There is no way back.';
+
+  @override
+  String get accountDeleteWord => 'DELETE';
+
+  @override
+  String accountDeleteHint(String word) {
+    return 'Type $word to confirm';
+  }
+
+  @override
+  String get accountDeleteConfirm => 'Delete my account';
+
+  @override
+  String get accountDeleted => 'Your account was deleted.';
+
+  @override
   String get accountLanguage => 'Language';
 
   @override

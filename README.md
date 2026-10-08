@@ -16,6 +16,8 @@ Crash reports from users' phones (migration 0024, how to read them):
 [Crash reports](docs/crash_reports.md).
 The Terms of Use and the Privacy Policy (published from `docs/legal` with
 GitHub Pages, linked from sign-up and Settings): [Legal pages](docs/legal_pages.md).
+Self-service account deletion (migration 0025, what goes with the
+account): [Account deletion](docs/account_deletion.md).
 
 ```bash
 flutter pub get

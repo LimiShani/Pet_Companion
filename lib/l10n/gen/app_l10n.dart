@@ -497,6 +497,48 @@ abstract class AppL10n {
   /// **'Sign out'**
   String get accountSignOut;
 
+  /// No description provided for @accountDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get accountDelete;
+
+  /// No description provided for @accountDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get accountDeleteTitle;
+
+  /// No description provided for @accountDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This removes your account for good: your pets, their records and documents, your photos, your posts and your messages. There is no way back.'**
+  String get accountDeleteBody;
+
+  /// The word the owner must type to confirm; compared ignoring case.
+  ///
+  /// In en, this message translates to:
+  /// **'DELETE'**
+  String get accountDeleteWord;
+
+  /// No description provided for @accountDeleteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type {word} to confirm'**
+  String accountDeleteHint(String word);
+
+  /// No description provided for @accountDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete my account'**
+  String get accountDeleteConfirm;
+
+  /// No description provided for @accountDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account was deleted.'**
+  String get accountDeleted;
+
   /// No description provided for @accountLanguage.
   ///
   /// In en, this message translates to:

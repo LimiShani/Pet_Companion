@@ -10,15 +10,18 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/petloop_icon.dart';
 import '../../settings/settings_routes.dart';
 import '../../settings/widgets/menu_entry.dart';
+import 'delete_account_dialog.dart';
 
 /// Bottom sheet opened from the account avatar: who is signed in, a row
-/// that leads to the Settings page (language, week) and a sign-out button.
+/// that leads to the Settings page (language, week), a sign-out button and
+/// the way to delete the account.
 class AccountSheet extends ConsumerWidget {
   const AccountSheet({super.key, required this.user});
 
   final AppUser user;
 
   static const settingsKey = Key('account-settings');
+  static const deleteAccountKey = Key('account-delete');
 
   static Future<void> show(BuildContext context, AppUser user) =>
       showModalBottomSheet<void>(
@@ -131,9 +134,46 @@ class AccountSheet extends ConsumerWidget {
                 textStyle: AppText.button(15),
               ),
             ),
+            const SizedBox(height: 6),
+            TextButton(
+              key: deleteAccountKey,
+              onPressed: () => _deleteAccount(context, ref, l10n),
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.brown,
+                textStyle: AppText.label.copyWith(fontWeight: FontWeight.w700),
+              ),
+              child: Text(l10n.accountDelete),
+            ),
           ],
         ),
       ),
     );
+  }
+
+  /// Asks for the confirmation word, closes the sheet, deletes, and says
+  /// on the login screen that it is done (or why it is not).
+  Future<void> _deleteAccount(
+    BuildContext context,
+    WidgetRef ref,
+    AppL10n l10n,
+  ) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final confirmed = await showDeleteAccountDialog(context);
+    if (!confirmed || !context.mounted) return;
+    Navigator.of(context).pop();
+    final failure = await ref
+        .read(authControllerProvider.notifier)
+        .deleteAccount();
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            failure == null
+                ? l10n.accountDeleted
+                : authErrorText(l10n, failure),
+          ),
+        ),
+      );
   }
 }
