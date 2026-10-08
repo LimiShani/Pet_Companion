@@ -12,6 +12,8 @@ Community (chat, safety, moderation, members) and its migrations 0021 and
 0022: [Community](docs/community.md).
 Push notifications for community activity (Firebase setup, migration 0023,
 the Edge Function): [Push notifications](docs/push_notifications.md).
+Crash reports from users' phones (migration 0024, how to read them):
+[Crash reports](docs/crash_reports.md).
 
 ```bash
 flutter pub get
