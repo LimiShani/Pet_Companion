@@ -76,6 +76,13 @@
   "authErrConfirmEmailSent": "כמעט שם: צריך לפתוח את אימייל האישור ששלחנו עכשיו, ואז להיכנס.",
 
   "accountSignOut": "יציאה מהחשבון",
+  "accountDelete": "מחיקת החשבון",
+  "accountDeleteTitle": "למחוק את החשבון?",
+  "accountDeleteBody": "זה מוחק את החשבון לצמיתות: החיות שלכם, הרשומות והמסמכים שלהן, התמונות, הפוסטים וההודעות. אין דרך חזרה.",
+  "accountDeleteWord": "מחיקה",
+  "accountDeleteHint": "הקלידו \u2068{word}\u2069 לאישור",
+  "accountDeleteConfirm": "למחוק את החשבון שלי",
+  "accountDeleted": "החשבון נמחק.",
   "accountLanguage": "שפה",
   "languageFollowPhone": "לפי שפת המכשיר",
   "languageFollowPhoneNow": "כרגע: \u2068{language}\u2069",

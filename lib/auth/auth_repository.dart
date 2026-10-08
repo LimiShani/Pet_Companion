@@ -60,6 +60,11 @@ abstract class AuthRepository {
 
   Future<void> signOut();
 
+  /// Deletes the signed-in account and everything it owns, for good, and
+  /// ends the session. Throws an [AuthException] when the backend refused;
+  /// the account then still exists and stays signed in.
+  Future<void> deleteAccount();
+
   /// Sends a reset link. Must not reveal whether the email is registered.
   Future<void> sendPasswordReset({required String email});
 }
