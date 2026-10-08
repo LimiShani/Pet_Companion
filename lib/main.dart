@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,10 +15,24 @@ import 'config/app_config.dart';
 import 'services/pet_records/data/reminder_scheduler.dart';
 import 'l10n/l10n.dart';
 import 'notifications/notifications.dart';
+import 'platform/crash_reporting.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppConfig.validate();
+
+  // The phone's saved choices (language, week layout), read before the
+  // first frame so the app opens in the chosen language. When they cannot
+  // be read the app still runs and simply does not remember them.
+  final settings = await SharedPrefsSettingsStore.load();
+
+  // Crash reports, caught from here on; they queue (in the preferences)
+  // until the backend is ready below. See docs/crash_reports.md.
+  final crashes = CrashReporter(
+    environment: await CrashEnvironment.detect(),
+    store: settings,
+  );
+  installCrashHandlers(crashes);
 
   AuthRepository? supabaseAuth;
   if (AppConfig.hasSupabase) {
@@ -25,17 +41,17 @@ Future<void> main() async {
       publishableKey: AppConfig.supabasePublishableKey,
     );
     supabaseAuth = SupabaseAuthRepository(Supabase.instance.client);
-  } else if (kDebugMode) {
-    debugPrint(
-      'PetLoop: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
-      'using the in-memory auth backend (see README).',
-    );
+    crashes.sink = SupabaseCrashSink(Supabase.instance.client);
+  } else {
+    crashes.sink = const DebugPrintCrashSink();
+    if (kDebugMode) {
+      debugPrint(
+        'PetLoop: no SUPABASE_URL / SUPABASE_PUBLISHABLE_KEY given, '
+        'using the in-memory auth backend (see README).',
+      );
+    }
   }
-
-  // The phone's saved choices (language, week layout), read before the
-  // first frame so the app opens in the chosen language. When they cannot
-  // be read the app still runs and simply does not remember them.
-  final settings = await SharedPrefsSettingsStore.load();
+  unawaited(crashes.flush());
 
   // The phone's notifications (none on the web). The snooze button of iOS
   // is named once, here, in the language the app opens in.
@@ -57,6 +73,7 @@ Future<void> main() async {
     ProviderScope(
       overrides: [
         featureModulesProvider.overrideWithValue(defaultFeatureModules),
+        crashReporterProvider.overrideWithValue(crashes),
         if (supabaseAuth != null)
           authRepositoryProvider.overrideWithValue(supabaseAuth),
         if (settings != null) settingsStoreProvider.overrideWithValue(settings),
