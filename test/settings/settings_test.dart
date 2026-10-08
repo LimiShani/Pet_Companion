@@ -6,7 +6,10 @@ import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/auth/widgets/account_sheet.dart';
+import 'package:pet_companion/config/app_config.dart';
+import 'package:pet_companion/features/settings/widgets/legal_links.dart';
 import 'package:pet_companion/features/settings/widgets/week_choice.dart';
+import 'package:pet_companion/platform/link_opener.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/language_choice.dart';
 
@@ -346,5 +349,42 @@ void main() {
         await tester.pumpAndSettle();
       });
     }
+  });
+
+  group('About PetLoop', () {
+    testWidgets('opens the Terms of Use and the Privacy Policy in the browser', (tester) async {
+      final opener = RecordingLinkOpener();
+      await pumpApp(tester, overrides: [linkOpenerProvider.overrideWithValue(opener)]);
+      await signInAsDemo(tester);
+      await settle(tester);
+      await openSettingsFromMenu(tester, _en);
+
+      expect(find.text(_en.settingsAbout), findsOneWidget);
+      await tester.ensureVisible(find.byKey(LegalLinks.termsKey));
+      await tester.tap(find.byKey(LegalLinks.termsKey));
+      await tester.tap(find.byKey(LegalLinks.privacyKey));
+      await tester.pump();
+
+      expect(opener.opened, [AppConfig.termsUrl('en'), AppConfig.privacyUrl('en')]);
+    });
+
+    testWidgets('in Hebrew it opens the Hebrew pages, and says when a page would not open', (tester) async {
+      final opener = RecordingLinkOpener()..succeeds = false;
+      await pumpApp(
+        tester,
+        language: AppLanguage.hebrew,
+        overrides: [linkOpenerProvider.overrideWithValue(opener)],
+      );
+      await signInAsDemo(tester);
+      await settle(tester);
+      await openSettingsFromMenu(tester, _he);
+
+      await tester.ensureVisible(find.byKey(LegalLinks.privacyKey));
+      await tester.tap(find.byKey(LegalLinks.privacyKey));
+      await tester.pump();
+
+      expect(opener.opened.single.toString(), endsWith('/legal/privacy.he.html'));
+      expect(find.text(_he.legalOpenFailed), findsOneWidget);
+    });
   });
 }

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
+import 'package:pet_companion/config/app_config.dart';
+import 'package:pet_companion/l10n/l10n.dart';
+import 'package:pet_companion/platform/link_opener.dart';
+import 'package:pet_companion/widgets/legal_notice.dart';
 
 import 'helpers.dart';
 
@@ -79,6 +83,44 @@ void main() {
     expect(find.text('Welcome, Limor'), findsOneWidget);
     expect(find.text('Add my first pet'), findsOneWidget);
     expect(find.text('Feeding'), findsNothing);
+  });
+
+  testWidgets('the sign-up notice links to the Terms of Use and the Privacy Policy', (tester) async {
+    final opener = RecordingLinkOpener();
+    await pumpApp(tester, overrides: [linkOpenerProvider.overrideWithValue(opener)]);
+    await tester.tap(find.text('Create an account'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Terms of Use'), findsOneWidget);
+    expect(find.text('Privacy Policy'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(LegalNotice.termsKey));
+    await tester.tap(find.byKey(LegalNotice.termsKey));
+    await tester.tap(find.byKey(LegalNotice.privacyKey));
+    await tester.pump();
+
+    expect(opener.opened, [AppConfig.termsUrl('en'), AppConfig.privacyUrl('en')]);
+    expect(opener.opened[0].toString(), endsWith('/legal/terms.html'));
+    expect(opener.opened[1].toString(), endsWith('/legal/privacy.html'));
+  });
+
+  testWidgets('in Hebrew the sign-up notice opens the Hebrew pages', (tester) async {
+    final he = lookupAppL10n(hebrewLocale);
+    final opener = RecordingLinkOpener();
+    await pumpApp(
+      tester,
+      language: AppLanguage.hebrew,
+      overrides: [linkOpenerProvider.overrideWithValue(opener)],
+    );
+    await tester.tap(find.text(he.authCreateAnAccount));
+    await tester.pumpAndSettle();
+
+    expect(find.text(he.legalTerms), findsOneWidget);
+    expect(find.text(he.legalPrivacy), findsOneWidget);
+    await tester.ensureVisible(find.byKey(LegalNotice.privacyKey));
+    await tester.tap(find.byKey(LegalNotice.privacyKey));
+    await tester.pump();
+
+    expect(opener.opened.single.toString(), endsWith('/legal/privacy.he.html'));
   });
 
   testWidgets('sign up rejects an email that is already registered', (tester) async {

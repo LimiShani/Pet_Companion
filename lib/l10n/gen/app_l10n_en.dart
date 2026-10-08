@@ -89,8 +89,7 @@ class AppL10nEn extends AppL10n {
   String get authWelcomeBack => 'Welcome back';
 
   @override
-  String get authSignInSubtitle =>
-      'Sign in to see how your pets are doing today.';
+  String get authSignInSubtitle => 'Sign in to see how your pets are doing today.';
 
   @override
   String get authEmail => 'Email';
@@ -114,8 +113,7 @@ class AppL10nEn extends AppL10n {
   String get authCreateAnAccount => 'Create an account';
 
   @override
-  String get authForgotNeedsEmail =>
-      'Enter your email address above first, then tap Forgot password.';
+  String get authForgotNeedsEmail => 'Enter your email address above first, then tap Forgot password.';
 
   @override
   String authResetSent(String email) {
@@ -123,8 +121,7 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get authResetFailed =>
-      'Could not send a reset link. Please try again.';
+  String get authResetFailed => 'Could not send a reset link. Please try again.';
 
   @override
   String get authCreateTitle => 'Create your account';
@@ -153,8 +150,7 @@ class AppL10nEn extends AppL10n {
   String get authCreateAccount => 'Create account';
 
   @override
-  String get authTerms =>
-      'By creating an account you agree to the Terms of Use and Privacy Policy.';
+  String get authTerms => 'By creating an account you agree to the [Terms of Use] and [Privacy Policy].';
 
   @override
   String get authShowPassword => 'Show password';
@@ -195,35 +191,28 @@ class AppL10nEn extends AppL10n {
   String get authErrEmailTaken => 'An account with that email already exists.';
 
   @override
-  String get authErrInvalidCredentials =>
-      'Incorrect email or password. Please try again.';
+  String get authErrInvalidCredentials => 'Incorrect email or password. Please try again.';
 
   @override
-  String get authErrEmailNotConfirmed =>
-      'Please confirm your email address first. Check your inbox for the link.';
+  String get authErrEmailNotConfirmed => 'Please confirm your email address first. Check your inbox for the link.';
 
   @override
-  String get authErrRateLimited =>
-      'Too many attempts. Please wait a moment and try again.';
+  String get authErrRateLimited => 'Too many attempts. Please wait a moment and try again.';
 
   @override
   String get authErrWeakPassword => 'Please choose a longer password.';
 
   @override
-  String get authErrNetwork =>
-      'Cannot reach the server. Check your connection and try again.';
+  String get authErrNetwork => 'Cannot reach the server. Check your connection and try again.';
 
   @override
-  String get authErrSignInIncomplete =>
-      'Sign in did not return a user. Please try again.';
+  String get authErrSignInIncomplete => 'Sign in did not return a user. Please try again.';
 
   @override
-  String get authErrSignUpIncomplete =>
-      'Sign up did not return a user. Please try again.';
+  String get authErrSignUpIncomplete => 'Sign up did not return a user. Please try again.';
 
   @override
-  String get authErrConfirmEmailSent =>
-      'Almost there: open the confirmation email we just sent, then sign in.';
+  String get authErrConfirmEmailSent => 'Almost there: open the confirmation email we just sent, then sign in.';
 
   @override
   String get accountSignOut => 'Sign out';
@@ -243,8 +232,7 @@ class AppL10nEn extends AppL10n {
   String get languagePreviewTag => 'Preview';
 
   @override
-  String get languageNote =>
-      'You can change this at any time. What people write stays in the language it was written in.';
+  String get languageNote => 'You can change this at any time. What people write stays in the language it was written in.';
 
   @override
   String languageSwitchTo(String language) {
@@ -290,11 +278,25 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get settingsWeekNote =>
-      'Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.';
+  String get settingsWeekNote => 'Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.';
 
   @override
   String get settingsSavedNote => 'These settings are saved on this phone.';
+
+  @override
+  String get settingsAbout => 'About PetLoop';
+
+  @override
+  String get legalTerms => 'Terms of Use';
+
+  @override
+  String get legalPrivacy => 'Privacy Policy';
+
+  @override
+  String get legalOpensInBrowser => 'Opens in the browser.';
+
+  @override
+  String get legalOpenFailed => 'The page could not be opened. Try again later.';
 
   @override
   String get homeMenu => 'Menu';

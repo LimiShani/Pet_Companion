@@ -14,6 +14,8 @@ Push notifications for community activity (Firebase setup, migration 0023,
 the Edge Function): [Push notifications](docs/push_notifications.md).
 Crash reports from users' phones (migration 0024, how to read them):
 [Crash reports](docs/crash_reports.md).
+The Terms of Use and the Privacy Policy (published from `docs/legal` with
+GitHub Pages, linked from sign-up and Settings): [Legal pages](docs/legal_pages.md).
 
 ```bash
 flutter pub get
