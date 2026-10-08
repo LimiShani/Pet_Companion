@@ -191,6 +191,9 @@ void main() {
             time: TimeOfDay(hour: 13, minute: 0),
           ),
         );
+    // The controller hands the new plan to the scheduler a microtask after
+    // its state changes, so the save returns first; yield once, as above.
+    await Future<void>.delayed(Duration.zero);
     expect(h.scheduler.plans.length, greaterThan(before));
     expect(h.scheduler.last.items.map((i) => i.title), contains('Lunch'));
   });
