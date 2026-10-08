@@ -50,4 +50,24 @@ abstract final class AppConfig {
   /// The currency amounts are entered and shown in unless a record carries
   /// its own code (ISO 4217). One place to change it for the whole app.
   static const defaultCurrency = 'ILS';
+
+  /// Where the Terms of Use and the Privacy Policy are published: GitHub
+  /// Pages serving `docs/legal` (see docs/legal_pages.md). Another host
+  /// is given at build time with `PETLOOP_LEGAL_URL` (no trailing slash).
+  static const legalBaseUrl = String.fromEnvironment(
+    'PETLOOP_LEGAL_URL',
+    defaultValue: 'https://limishani.github.io/Pet_Companion/legal',
+  );
+
+  /// The Terms of Use in [languageCode] (`he` has its own page; every
+  /// other language gets the English one).
+  static Uri termsUrl(String languageCode) => _legalPage('terms', languageCode);
+
+  /// The Privacy Policy in [languageCode].
+  static Uri privacyUrl(String languageCode) =>
+      _legalPage('privacy', languageCode);
+
+  static Uri _legalPage(String page, String languageCode) => Uri.parse(
+    '$legalBaseUrl/$page${languageCode == 'he' ? '.he' : ''}.html',
+  );
 }

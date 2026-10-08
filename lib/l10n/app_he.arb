@@ -51,7 +51,7 @@
   "authRepeatPassword": "חזרה על הסיסמה",
   "authRepeatPasswordHint": "אותה סיסמה כמו למעלה",
   "authCreateAccount": "יצירת חשבון",
-  "authTerms": "יצירת חשבון היא הסכמה לתנאי השימוש ולמדיניות הפרטיות.",
+  "authTerms": "יצירת חשבון היא הסכמה ל[תנאי השימוש] ול[מדיניות הפרטיות].",
   "authShowPassword": "הצגת הסיסמה",
   "authHidePassword": "הסתרת הסיסמה",
 
@@ -97,6 +97,11 @@
   "settingsWeekendIs": "סוף השבוע: \u2068{days}\u2069",
   "settingsWeekNote": "השבוע שלך: איזה יום ראשון בסדר, ואילו ימים הם ימי חול. הימים המעומעמים הם סוף השבוע. לוח הזמנים בבריאות מתאים את עצמו לבחירה הזו: סדר הימים, ומה נחשב שם ״ימי חול״ ו״סוף שבוע״.",
   "settingsSavedNote": "ההגדרות נשמרות בטלפון הזה.",
+  "settingsAbout": "על PetLoop",
+  "legalTerms": "תנאי השימוש",
+  "legalPrivacy": "מדיניות הפרטיות",
+  "legalOpensInBrowser": "נפתח בדפדפן.",
+  "legalOpenFailed": "לא הצלחנו לפתוח את הדף. נסו שוב מאוחר יותר.",
 
   "homeMenu": "תפריט",
   "homeAccount": "חשבון",

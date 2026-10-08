@@ -59,7 +59,8 @@
   "authRepeatPasswordHint": "Same as above",
   "authCreateAccount": "Create account",
   "@authCreateAccount": {"description": "The button that submits the sign-up form."},
-  "authTerms": "By creating an account you agree to the Terms of Use and Privacy Policy.",
+  "authTerms": "By creating an account you agree to the [Terms of Use] and [Privacy Policy].",
+  "@authTerms": {"description": "The two bracketed parts become links, in this order: the Terms of Use, then the Privacy Policy. Keep both, keep the brackets."},
   "authShowPassword": "Show password",
   "authHidePassword": "Hide password",
 
@@ -120,6 +121,11 @@
   },
   "settingsWeekNote": "Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.",
   "settingsSavedNote": "These settings are saved on this phone.",
+  "settingsAbout": "About PetLoop",
+  "legalTerms": "Terms of Use",
+  "legalPrivacy": "Privacy Policy",
+  "legalOpensInBrowser": "Opens in the browser.",
+  "legalOpenFailed": "The page could not be opened. Try again later.",
 
   "homeMenu": "Menu",
   "homeAccount": "Account",

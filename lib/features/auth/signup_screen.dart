@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/auth_controller.dart';
 import '../../auth/validators.dart';
 import '../../l10n/l10n.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_theme.dart';
+import '../../widgets/legal_notice.dart';
 import '../../widgets/primary_button.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_text_field.dart';
@@ -125,14 +124,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 loading: loading,
               ),
               const SizedBox(height: 14),
-              Text(
-                l10n.authTerms,
-                textAlign: TextAlign.center,
-                style: AppText.label.copyWith(
-                  color: AppColors.brown,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              const LegalNotice(),
             ],
           ),
         ),

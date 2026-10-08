@@ -9,10 +9,11 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/language_choice.dart';
+import 'widgets/legal_links.dart';
 import 'widgets/week_choice.dart';
 
-/// The Settings page: the app's language, the week layout and the
-/// notifications. Every choice applies at once and is remembered on the
+/// The Settings page: the app's language, the week layout, the
+/// notifications and the legal pages. Every choice applies at once and is remembered on the
 /// phone (see `SettingsStore`).
 ///
 /// Opened from the side menu and from the account sheet with
@@ -60,6 +61,10 @@ class SettingsScreen extends StatelessWidget {
                         ? const SizedBox.shrink()
                         : featureSlot('community-push-settings', ''),
                   ),
+                  const SizedBox(height: 16),
+                  _SectionLabel(l10n.settingsAbout),
+                  const LegalLinks(),
+                  _Note(l10n.legalOpensInBrowser),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),
                 ],
