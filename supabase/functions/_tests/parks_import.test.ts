@@ -30,7 +30,7 @@ const NOW = new Date('2026-10-03T01:00:00Z');
 const ANSWER = {
   version: 0.6,
   elements: [
-    // A street before any park belongs to nothing.
+    // A street far from every park.
     { type: 'way', id: 900, tags: { highway: 'residential', name: 'Lost' }, geometry: [{ lat: 32.1, lon: 34.8 }, { lat: 32.1, lon: 34.81 }] },
     {
       type: 'way', id: 1, center: { lat: 32.18600, lon: 34.87200 },
@@ -53,20 +53,22 @@ const ANSWER = {
   ],
 };
 
-test('the query asks for dog parks in Israel and the named streets around each one', () => {
+test('the query asks for dog parks in Israel and the named streets near their points', () => {
   const q = overpassQuery();
+  assert.match(q, /^\[out:json\]\[timeout:90\]\[maxsize:67108864\];/);
   assert.match(q, /area\["ISO3166-1"="IL"\]\[admin_level=2\]/);
-  assert.match(q, /nwr\[leisure=dog_park\]\(area\.country\)/);
-  assert.match(q, /foreach\.parks->\.park\(/);
-  assert.match(q, /way\(around\.park:120\)\[highway~"\^\(primary\|/);
-  assert.match(q, /\[timeout:120\]/);
+  assert.match(q, /nwr\[leisure=dog_park\]\(area\.country\)->\.parks;\.parks out tags center;/);
+  assert.match(q, /node\(w\.parks\)->\.p2;way\(r\.parks\)->\.rw;node\(w\.rw\)->\.p3;/);
+  assert.match(q, /way\(around\.points:100\)\[highway~"\^\(primary\|/);
+  assert.doesNotMatch(q, /foreach/);
 });
 
-test('parsing pairs each park with the streets that follow it', () => {
+test('parsing finds the parks and the streets near each one', () => {
   const parks = parseOverpass(ANSWER);
   assert.deepEqual(parks.map((p) => p.sourceId), ['way/1', 'node/2', 'way/4']);
-  assert.equal(parks[0].streets.length, 2);
-  assert.equal(parks[1].streets.length, 0);
+  assert.deepEqual(parks[0].streets.map((s) => s.tags.name).sort(), ['אחוזה', 'ויצמן']);
+  assert.equal(parks[2].streets.length, 0, 'nothing near the remote park');
+  assert.ok(!parks.some((p) => p.streets.some((s) => s.tags.name === 'Lost')), 'a far street names nothing');
   assert.throws(() => parseOverpass({ nope: true }));
 });
 

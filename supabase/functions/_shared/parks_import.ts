@@ -1,7 +1,7 @@
 // The monthly dog parks import (docs/dog_parks.md, "Import").
 //
 // One Overpass query asks OpenStreetMap for every leisure=dog_park inside
-// Israel's boundary and, park by park, the named streets around it. Each
+// Israel's boundary and the named streets around them. Each
 // park becomes one row: its names, the nearest named street (an unnamed
 // park shows as "Dog park · <street>"), its centre, the nearest locality
 // of the app's list, the six details OSM may know (fence, water, shade,
@@ -30,30 +30,39 @@ export const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 export const USER_AGENT =
   'PetLoopParksImport/1.0 (+https://github.com/LimiShani/Pet_Companion; monthly import of leisure=dog_park in Israel)';
 /** The server stops the query after this many seconds; we wait a little longer. */
-export const OVERPASS_TIMEOUT_S = 120;
-export const FETCH_TIMEOUT_MS = 135_000;
-/** Streets further than this from the park's edge do not name it. */
-export const STREET_RADIUS_M = 120;
+export const OVERPASS_TIMEOUT_S = 90;
+export const FETCH_TIMEOUT_MS = 120_000;
+/** Streets further than this from every point of a park's outline do not name it. */
+export const STREET_RADIUS_M = 100;
 /** A park further than this from every locality gets no locality code. */
 export const LOCALITY_RADIUS_M = 15_000;
 
 /** The vehicle and pedestrian streets that may name a park (not paths or service roads). */
 const STREET_KINDS = 'primary|secondary|tertiary|residential|living_street|unclassified|pedestrian';
+/** Asked of Overpass up front; a smaller budget is admitted sooner on a busy server. */
+export const OVERPASS_MAXSIZE_BYTES = 64 * 1024 * 1024;
 
 /**
- * The one query. foreach keeps each park's streets right after it in the
- * answer, which is how the parser pairs them.
+ * The one query: the parks (with their centres), then the named streets
+ * near any point of any park (a node park, or the outline of a way or a
+ * multipolygon). "around" over points is cheap for Overpass; over the
+ * park polygons themselves, or park by park in a foreach, it is slow
+ * enough that the public servers refuse it (504, checked 2026-10-10).
+ * Each park's nearest street is picked afterwards (parseOverpass).
  */
 export function overpassQuery(countryCode = 'IL'): string {
   return [
-    `[out:json][timeout:${OVERPASS_TIMEOUT_S}];`,
+    `[out:json][timeout:${OVERPASS_TIMEOUT_S}][maxsize:${OVERPASS_MAXSIZE_BYTES}];`,
     `area["ISO3166-1"="${countryCode}"][admin_level=2]->.country;`,
     'nwr[leisure=dog_park](area.country)->.parks;',
-    'foreach.parks->.park(',
-    '  .park out tags center;',
-    `  way(around.park:${STREET_RADIUS_M})[highway~"^(${STREET_KINDS})$"][name];`,
-    '  out tags geom;',
-    ');',
+    '.parks out tags center;',
+    'node.parks->.p1;',
+    'node(w.parks)->.p2;',
+    'way(r.parks)->.rw;',
+    'node(w.rw)->.p3;',
+    '(.p1;.p2;.p3;)->.points;',
+    `way(around.points:${STREET_RADIUS_M})[highway~"^(${STREET_KINDS})$"][name];`,
+    'out tags geom;',
   ].join('');
 }
 
@@ -82,28 +91,54 @@ export interface OsmPark {
   sourceId: string;
   center: LatLng;
   tags: Tags;
+  /** The named streets that may name it (within a few hundred metres). */
   streets: OsmStreet[];
 }
 
-/** The parks of an Overpass answer, each with the streets that followed it. */
+/** How far from a park's centre a street may be to be its candidate. */
+export const STREET_CANDIDATE_M = 400;
+
+/** The parks of an Overpass answer, each with the streets near it. */
 export function parseOverpass(answer: unknown): OsmPark[] {
   const elements = (answer as { elements?: OsmElement[] } | null)?.elements;
   if (!Array.isArray(elements)) throw new Error('not an Overpass answer');
   const parks = new Map<string, OsmPark>();
-  let current: OsmPark | undefined;
+  const streets: (OsmStreet & { box: { minLat: number; maxLat: number; minLng: number; maxLng: number } })[] = [];
   for (const e of elements) {
     const tags = e.tags ?? {};
     if (tags.leisure === 'dog_park') {
-      const point = e.type === 'node' ? { lat: e.lat, lng: e.lon } : { lat: e.center?.lat, lng: e.center?.lon };
-      if (typeof point.lat !== 'number' || typeof point.lng !== 'number') {
-        current = undefined;
-        continue;
-      }
+      const lat = e.type === 'node' ? e.lat : e.center?.lat;
+      const lng = e.type === 'node' ? e.lon : e.center?.lon;
+      if (typeof lat !== 'number' || typeof lng !== 'number') continue;
       const sourceId = `${e.type}/${e.id}`;
-      current = parks.get(sourceId) ?? { sourceId, center: point as LatLng, tags, streets: [] };
-      parks.set(sourceId, current);
-    } else if (tags.highway && tags.name && current && Array.isArray(e.geometry)) {
-      current.streets.push({ tags, geometry: e.geometry.map((g) => ({ lat: g.lat, lng: g.lon })) });
+      if (!parks.has(sourceId)) parks.set(sourceId, { sourceId, center: { lat, lng }, tags, streets: [] });
+    } else if (tags.highway && tags.name && Array.isArray(e.geometry) && e.geometry.length > 0) {
+      const geometry = e.geometry.map((g) => ({ lat: g.lat, lng: g.lon }));
+      streets.push({
+        tags,
+        geometry,
+        box: {
+          minLat: Math.min(...geometry.map((g) => g.lat)),
+          maxLat: Math.max(...geometry.map((g) => g.lat)),
+          minLng: Math.min(...geometry.map((g) => g.lng)),
+          maxLng: Math.max(...geometry.map((g) => g.lng)),
+        },
+      });
+    }
+  }
+  // A cheap box test first: only streets whose box comes within
+  // STREET_CANDIDATE_M of the park's centre are measured.
+  const dLat = STREET_CANDIDATE_M / 111_320;
+  for (const park of parks.values()) {
+    const dLng = dLat / Math.max(0.01, Math.cos((park.center.lat * Math.PI) / 180));
+    for (const street of streets) {
+      const b = street.box;
+      if (
+        b.maxLat >= park.center.lat - dLat && b.minLat <= park.center.lat + dLat &&
+        b.maxLng >= park.center.lng - dLng && b.minLng <= park.center.lng + dLng
+      ) {
+        park.streets.push({ tags: street.tags, geometry: street.geometry });
+      }
     }
   }
   return [...parks.values()];
