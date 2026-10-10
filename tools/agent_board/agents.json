@@ -318,6 +318,80 @@
           "title": "Side menu and Settings page (language, week start)"
         }
       ]
+    },
+    {
+      "id": "chats",
+      "name": "Private chats agent",
+      "scope": "Private group chats in Community: an initiator invites members (accept to join), admins, join-time history, invitations, chat details page, push for private messages and invitations. Migration 0026.",
+      "branch": "feature/private-chats",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/private-chats",
+      "milestones": [
+        {
+          "id": "pc1",
+          "title": "Setup: read AGENTS.md, community chat code, the approved proposal; baseline analyze + tests green"
+        },
+        {
+          "id": "pc2",
+          "title": "Migration 0026: private channels, members, RLS by membership from join time, server functions, rate limits, push kinds + SQL tests"
+        },
+        {
+          "id": "pc3",
+          "title": "Repository layer: interface, fake, Supabase for private chats, invitations and members"
+        },
+        {
+          "id": "pc4",
+          "title": "Chat tab: My chats + topic rooms, invitation cards, New chat flow, Message from a member page"
+        },
+        {
+          "id": "pc5",
+          "title": "Group conversation: system lines, chat details page (members, roles, add, remove, rename, leave, mute)"
+        },
+        {
+          "id": "pc6",
+          "title": "Push: private messages + invitations (outbox kinds, preferences, community-push function), Activity entries"
+        },
+        {
+          "id": "pc7",
+          "title": "Hebrew + English strings, Hebrew at 320 px, docs/community.md, full tests + analyzer green"
+        }
+      ]
+    },
+    {
+      "id": "parks",
+      "name": "Dog parks agent",
+      "scope": "Dog parks search in Community > Outside: OpenStreetMap import, extended Israel localities, parks list by distance with filters, park page, favourites, member suggestions + review queue. Migration 0027.",
+      "branch": "feature/dog-parks",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/dog-parks",
+      "milestones": [
+        {
+          "id": "dp1",
+          "title": "Setup: read AGENTS.md, community + Find a vet code, the approved proposal; baseline analyze + tests green"
+        },
+        {
+          "id": "dp2",
+          "title": "Israel localities extended to ~250 with stable codes (shared with Find a vet)"
+        },
+        {
+          "id": "dp3",
+          "title": "Migration 0027: dog_parks, suggestions, favourites, review, capabilities + SQL tests"
+        },
+        {
+          "id": "dp4",
+          "title": "Import: Edge Function parks-import from OpenStreetMap (monthly), names from the nearest street, node tests"
+        },
+        {
+          "id": "dp5",
+          "title": "Outdoors module + 4th Community tab Outside with the Partners | Parks switch (partners placeholder)"
+        },
+        {
+          "id": "dp6",
+          "title": "Parks list (near me / city, filters), park page (details, navigate, suggest, favourite), review queue"
+        },
+        {
+          "id": "dp7",
+          "title": "Hebrew + English strings, Hebrew at 320 px, docs, full tests + analyzer green"
+        }
+      ]
     }
   ]
 }
