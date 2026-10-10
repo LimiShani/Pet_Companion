@@ -97,6 +97,16 @@ Server rules (0021):
 - Menus offer only what the account may do: reporting a message needs
   `community.chat.send`, reporting a comment `community.feed.post`.
 
+## Outside: dog parks
+
+The fourth section, Outside (Feed · Chat · Outside · Guides), comes from
+the `outdoors` module through the `community-outside` slot: a Partners |
+Parks switch, dog parks from OpenStreetMap with members' suggestions and
+a review queue, and the seams the meetups feature (Partners) plugs into.
+Design, owner steps (migration 0027, the `parks-import` Edge Function, its
+secret and schedule, the first import, appointing reviewers) and tests:
+[dog_parks.md](dog_parks.md).
+
 ## Push notifications
 
 Comments, likes and chat answers can reach a member's phone: see
