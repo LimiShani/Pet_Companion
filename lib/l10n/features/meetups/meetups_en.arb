@@ -1,0 +1,304 @@
+{
+  "@@locale": "en",
+  "areaQuestion": "Where do you go out?",
+  "areaWhy": "Pick a city to see walk and play ads around it. \"Near me\" asks the phone for your location once, only to find the nearest city. It is never saved or sent.",
+  "problemOutsideRegion": "Partners are listed in Israel for now. Pick a city in Israel.",
+  "safetyStrip": "Meet in a public place and don't share a home address.",
+  "@safetyStrip": {
+    "description": "The fixed safety line at the top of the board."
+  },
+  "newAd": "New ad",
+  "myAds": "My ads",
+  "myAdsCount": "My ads ({count})",
+  "@myAdsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "kindAll": "All",
+  "@kindAll": {
+    "description": "Filter chip: walks and play."
+  },
+  "kindWalk": "Walk",
+  "kindPlay": "Play",
+  "whenToday": "Today",
+  "@whenToday": {
+    "description": "Filter chip: ads that happen today."
+  },
+  "whenThisWeek": "This week",
+  "@whenThisWeek": {
+    "description": "Filter chip: within the next seven days."
+  },
+  "whenRecurring": "Regular",
+  "@whenRecurring": {
+    "description": "Filter chip: ads that repeat every week."
+  },
+  "atMyParks": "At my parks",
+  "sampleAds": "Sample ads",
+  "@sampleAds": {
+    "description": "Shown when the ads are made up (no backend)."
+  },
+  "emptyTitle": "No ads around here yet",
+  "emptyBody": "Post the first one, and members nearby can answer it.",
+  "emptyFiltered": "No ads match these filters.",
+  "clearFilters": "Clear filters",
+  "lookFurther": "Look up to 25 km",
+  "loadFailed": "We could not load the ads.",
+  "noPet": "Without a pet",
+  "@noPet": {
+    "description": "An ad posted without a pet."
+  },
+  "sizeSmall": "small",
+  "@sizeSmall": {
+    "description": "The ad's dog's size, in its summary line."
+  },
+  "sizeMedium": "medium-sized",
+  "sizeLarge": "large",
+  "suitsLine": "For {sizes} dogs",
+  "@suitsLine": {
+    "description": "\"For small and medium dogs\".",
+    "placeholders": {
+      "sizes": {
+        "type": "String"
+      }
+    }
+  },
+  "suitsSmall": "small",
+  "suitsMedium": "medium",
+  "suitsLarge": "large",
+  "suitsTwo": "{first} and {second}",
+  "@suitsTwo": {
+    "description": "Two sizes in a line.",
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceAbout": "about {distance}",
+  "@distanceAbout": {
+    "description": "Approximate distance, \"about 5 km\".",
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceNear": "under 1 km",
+  "answers": "{count, plural, =0{No answers yet} =1{1 answer} other{{count} answers}}",
+  "@answers": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "join": "I want to join",
+  "answeredTag": "You answered",
+  "openChat": "Open the chat",
+  "yourAd": "Your ad",
+  "manage": "Manage",
+  "hiddenTag": "Hidden after reports",
+  "endedTag": "Ended",
+  "closedTag": "Closed",
+  "more": "More",
+  "menuReport": "Report ad",
+  "menuBlock": "Block {name}",
+  "@menuBlock": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportTitle": "Report this ad?",
+  "reportBody": "Tell us what is wrong. After three reports an ad is hidden until a moderator looks at it.",
+  "reportThanks": "Thanks, the ad was reported.",
+  "dayPartMorning": "Morning",
+  "dayPartNoon": "Noon",
+  "dayPartEvening": "Evening",
+  "everyDay": "Every day",
+  "weekdays": "Weekdays",
+  "weekends": "Weekends",
+  "tomorrow": "Tomorrow",
+  "formNewTitle": "New ad",
+  "formEditTitle": "Edit ad",
+  "withWhom": "With whom?",
+  "whatQ": "What?",
+  "whereQ": "Where?",
+  "wherePark": "A park",
+  "whereOther": "Other place",
+  "choosePark": "Choose a park",
+  "changePark": "Change",
+  "parkRequired": "Choose a park, or another place.",
+  "cityLabel": "City",
+  "placeLabel": "Where exactly?",
+  "placeHint": "A public place, like the entrance to Yarkon Park",
+  "placeHelp": "No home addresses.",
+  "placeRequired": "Pick a city and say where.",
+  "whenQ": "When?",
+  "once": "Once",
+  "weekly": "Every week",
+  "dateLabel": "Date",
+  "fromLabel": "From",
+  "toLabel": "To",
+  "hoursProblem": "The meeting ends after it starts, within 12 hours.",
+  "pastProblem": "That time is already over.",
+  "tooFarProblem": "Up to 60 days ahead.",
+  "daysProblem": "Pick at least one day.",
+  "partQ": "Part of the day",
+  "suitsQ": "Suits… (optional)",
+  "sizeAny": "Any size",
+  "sizeSmallChip": "Small",
+  "sizeMediumChip": "Medium",
+  "sizeLargeChip": "Large",
+  "noteLabel": "A few words",
+  "noteHint": "For example: a calm hour-long walk, all sizes welcome",
+  "post": "Post",
+  "save": "Save",
+  "posted": "Your ad is up.",
+  "saved": "Saved.",
+  "recurringNote": "A regular ad stays up for 30 days, then it can be renewed.",
+  "limitsNote": "Up to 3 new ads a day and 5 open at once.",
+  "errRateLimited": "That's three new ads today. Try again tomorrow.",
+  "errTooManyOpen": "There are five open ads already. Close one to post another.",
+  "errNotOpen": "This ad is no longer open.",
+  "errBlocked": "This ad can't be answered.",
+  "errInvalid": "Something in the ad no longer fits (the park or the time). Check it and try again.",
+  "errUnavailable": "No connection. Try again in a moment.",
+  "errOther": "That didn't work. Try again.",
+  "joinTitle": "Message to {name}",
+  "@joinTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "joinBody": "A private chat opens between the two of you. {name} gets a notification when you send the message.",
+  "@joinBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "whoComing": "Who's coming?",
+  "justMe": "Just me",
+  "draftWalkPet": "Hi {name}, I saw your walk ad ({place}). I'd love to join with {pet}.",
+  "@draftWalkPet": {
+    "description": "The first message to the author, ready to edit.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      },
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "draftWalk": "Hi {name}, I saw your walk ad ({place}). I'd love to join.",
+  "@draftWalk": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "draftPlayPet": "Hi {name}, I saw your playdate ad ({place}). I'd love to join with {pet}.",
+  "@draftPlayPet": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      },
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "draftPlay": "Hi {name}, I saw your playdate ad ({place}). I'd love to join.",
+  "@draftPlay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "joinMessageLabel": "Your message",
+  "joinTip": "The first time, meet in an open place you both know.",
+  "joinSend": "Open the chat with this message",
+  "edit": "Edit",
+  "closeAd": "Found someone, close it",
+  "closeConfirmTitle": "Close this ad?",
+  "closeConfirmBody": "It leaves the board. A regular ad can be renewed later.",
+  "closeConfirm": "Close",
+  "closedDone": "The ad is closed.",
+  "renew": "Renew for 30 days",
+  "renewed": "Renewed for 30 more days.",
+  "postAgain": "Post again",
+  "groupButton": "Group for everyone who answered ({count})",
+  "@groupButton": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupNone": "Nobody to add: whoever answered is no longer available.",
+  "showsUntil": "Up until {date}",
+  "@showsUntil": {
+    "description": "When a regular ad stops showing.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "myAdsEmptyTitle": "No ads yet",
+  "myAdsEmptyBody": "Post an ad to find a walk or play partner nearby.",
+  "sectionOpen": "Open",
+  "sectionEnded": "Ended",
+  "sectionClosed": "Closed",
+  "adTitle": "Partner ad",
+  "adGone": "This ad is no longer up.",
+  "postHere": "Post a meetup here",
+  "atThisPark": "Meetups at this park",
+  "noneAtPark": "No meetups here yet.",
+  "notifyHere": "Tell me about new meetups here",
+  "notifySaveFirst": "Save the park to My parks to hear about new meetups here.",
+  "notifyFailed": "We could not save that. Try again.",
+  "cardMeetupsWeek": "{count, plural, =1{1 meetup this week} other{{count} meetups this week}}",
+  "@cardMeetupsWeek": {
+    "description": "On a park card.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cardMeetupToday": "Meetup today",
+  "@cardMeetupToday": {
+    "description": "On a park card."
+  },
+  "memberAds": "Walk and play ads",
+  "@memberAds": {
+    "description": "A member page's section of their open ads."
+  }
+}

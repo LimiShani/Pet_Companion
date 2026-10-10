@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/access/access_provider.dart';
+import 'package:pet_companion/features/meetups/meetups.dart';
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/services/findvet/data/location_service.dart';
@@ -41,12 +42,17 @@ class ParksKit {
            FakeParksRepository(latency: Duration.zero, favorites: favorites);
 
   final FakeParksRepository repo;
+
+  /// The partner ads (Outside opens on Partners, and park pages and cards
+  /// show meetups), answering at once.
+  final meetups = FakeMeetupsRepository(latency: Duration.zero);
   final FakeLocationService location;
   final launcher = RecordingParkLauncher();
   final bool reviewer;
 
   List<Override> get overrides => [
     parksRepositoryProvider.overrideWithValue(repo),
+    meetupsRepositoryProvider.overrideWithValue(meetups),
     locationServiceProvider.overrideWithValue(location),
     parkLauncherProvider.overrideWithValue(launcher),
     if (reviewer)
@@ -58,12 +64,14 @@ class ParksKit {
 }
 
 /// Pumps the app, signs in with the demo account, opens Community and its
-/// Outside section (Parks shows first).
+/// Outside section, then Parks (Partners shows first).
 Future<ParksKit> openOutside(
   WidgetTester tester, {
   ParksKit? kit,
   AppLanguage? language,
   Size size = const Size(390, 844),
+  bool parks = true,
+  List<Override> overrides = const [],
 }) async {
   final k = kit ?? ParksKit();
   // Signed in at the usual size; the screen under test then takes [size].
@@ -74,7 +82,7 @@ Future<ParksKit> openOutside(
       languageSettingKey: ?language?.code,
       'community.rules.demo': '1',
     }),
-    overrides: k.overrides,
+    overrides: [...k.overrides, ...overrides],
   );
   await signInAsDemo(tester);
   if (size != const Size(390, 844)) {
@@ -92,6 +100,10 @@ Future<ParksKit> openOutside(
   await tester.tap(find.text(hebrew ? he.sectionOutside : en.sectionOutside));
   await tester.pumpAndSettle();
   expect(find.byKey(OutsideSection.sectionKey), findsOneWidget);
+  if (parks) {
+    await tester.tap(find.byKey(OutsideSection.parksKey));
+    await tester.pumpAndSettle();
+  }
   return k;
 }
 

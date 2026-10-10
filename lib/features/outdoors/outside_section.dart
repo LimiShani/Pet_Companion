@@ -29,8 +29,8 @@ bool slotAvailable(WidgetRef ref, String name) {
 }
 
 /// Community > Outside: "Partners | Parks", the same kind of switch as
-/// the Store's "Deals | My basket". Parks shows first while Partners is
-/// still being built.
+/// the Store's "Deals | My basket". Partners shows first once the meetups
+/// module fills it; an account without parks sees Partners alone.
 class OutsideSection extends ConsumerWidget {
   const OutsideSection({super.key});
 
@@ -44,6 +44,12 @@ class OutsideSection extends ConsumerWidget {
     final l10n = context.outdoorsL10n;
     final view = ref.watch(outsideViewProvider);
     final controller = ref.read(outsideViewProvider.notifier);
+    if (!ref.watch(capabilityProvider(ParkCapabilities.view))) {
+      return KeyedSubtree(
+        key: sectionKey,
+        child: featureSlot(outsidePartnersSlot, ''),
+      );
+    }
     return OutdoorsKeeper(
       child: Column(
         key: sectionKey,

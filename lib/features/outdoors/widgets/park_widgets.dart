@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
+import '../../../platform/feature_ui.dart';
 import '../../../services/outdoors/data/park_models.dart';
 import '../../../services/outdoors/state/parks_providers.dart';
 import '../../../theme/app_colors.dart';
@@ -96,6 +97,10 @@ class ParkCard extends StatelessWidget {
 
   static Key keyOf(String parkId) => Key('park-card-$parkId');
 
+  /// The slot another feature (meetups) fills under the tags: "Meetup
+  /// today". It gets `parkId`; empty, it takes no room.
+  static const meetupsSlot = 'park-card-meetups';
+
   final ParkListing listing;
   final bool showDistance;
   final VoidCallback onTap;
@@ -172,6 +177,7 @@ class ParkCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       ParkTags(park),
                     ],
+                    featureSlot(meetupsSlot, '', {'parkId': park.id}),
                   ],
                 ),
               ),

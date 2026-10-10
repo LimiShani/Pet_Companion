@@ -19,6 +19,7 @@ const _modules = {
   'notifications': 'lib/notifications/l10n',
   'findvet': 'lib/l10n/features/findvet',
   'outdoors': 'lib/l10n/features/outdoors',
+  'meetups': 'lib/l10n/features/meetups',
 };
 
 const _firstStrongIsolate = '\u{2068}';

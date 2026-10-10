@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_companion/features/meetups/meetups.dart' show PartnersView;
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/features/settings/settings_routes.dart';
 import 'package:pet_companion/l10n/l10n.dart';
@@ -243,12 +244,12 @@ void main() {
       expect(find.text(he.updateTitle), findsWidgets);
     });
 
-    testWidgets('the suggestion form and the partners card fit', (tester) async {
+    testWidgets('the suggestion form and the partners board fit', (tester) async {
       await openOutside(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       await tester.tap(find.byKey(OutsideSection.partnersKey));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.text(he.partnersSoonTitle), findsOneWidget);
+      expect(find.byKey(PartnersView.safetyKey), findsOneWidget);
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(ParksView.suggestKey));

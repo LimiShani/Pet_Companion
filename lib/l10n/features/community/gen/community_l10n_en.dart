@@ -780,6 +780,9 @@ class CommunityL10nEn extends CommunityL10n {
   String get kindMessage => 'Chat message';
 
   @override
+  String get kindMeetup => 'Partner ad';
+
+  @override
   String reportCountLine(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../access/access_provider.dart';
 import '../../../config/app_config.dart';
+import '../../../platform/feature_module.dart';
 import '../../../platform/session.dart';
 import '../../findvet/data/location_service.dart';
 import '../../findvet/regions/regions.dart';
@@ -38,11 +39,19 @@ final parkLauncherProvider = Provider<ParkLauncher>(
 /// The two sides of Community > Outside.
 enum OutsideView { partners, parks }
 
-/// Which side of Outside is showing; Parks first while Partners (meetups)
-/// is being built.
+/// Which side of Outside is showing: Partners first when a module fills it
+/// (meetups) for this account, else Parks.
 class OutsideViewController extends Notifier<OutsideView> {
   @override
-  OutsideView build() => OutsideView.parks;
+  OutsideView build() {
+    for (final module in ref.watch(featureModulesProvider)) {
+      final slot = module.slots['outside-partners'];
+      if (slot != null && ref.watch(capabilityProvider(slot.capability))) {
+        return OutsideView.partners;
+      }
+    }
+    return OutsideView.parks;
+  }
 
   void show(OutsideView view) => state = view;
 }
