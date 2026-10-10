@@ -1065,7 +1065,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get errChatFull => 'בשיחה יכולים להיות עד 30 משתתפים.';
 
   @override
-  String get errNotChatAdmin => 'רק מי שמנהלים את השיחה יכולים לעשות את זה.';
+  String get errNotChatAdmin => 'רק מנהלי השיחה יכולים לעשות את זה.';
 
   @override
   String get errCannotInvite => 'את מי שבחרת אי אפשר להזמין לשיחה.';

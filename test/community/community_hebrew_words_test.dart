@@ -217,7 +217,7 @@ void main() {
       CommunityFailure.slowDown: 'רגע, זה היה מהר. כדאי לחכות דקה לפני שליחה נוספת.',
       CommunityFailure.notModerator: 'רק מנהלי הקהילה יכולים לעשות את זה.',
       CommunityFailure.chatFull: 'בשיחה יכולים להיות עד 30 משתתפים.',
-      CommunityFailure.notChatAdmin: 'רק מי שמנהלים את השיחה יכולים לעשות את זה.',
+      CommunityFailure.notChatAdmin: 'רק מנהלי השיחה יכולים לעשות את זה.',
       CommunityFailure.cannotInvite: 'את מי שבחרת אי אפשר להזמין לשיחה.',
       CommunityFailure.chatClosed: 'השיחה הזו סגורה.',
       CommunityFailure.unknown: 'משהו השתבש. אפשר לנסות שוב.',

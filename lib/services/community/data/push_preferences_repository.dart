@@ -129,14 +129,25 @@ class SupabasePushPreferencesRepository implements PushPreferencesRepository {
     required AppUser viewer,
     required PushPreferences preferences,
   }) => guardCommunity(() async {
-    await _client.from('push_preferences').upsert({
+    final row = {
       'user_id': viewer.id,
       'replies': preferences.replies,
       'comments': preferences.comments,
       'likes': preferences.likes,
-      'private_messages': preferences.privateMessages,
-      'chat_invites': preferences.chatInvites,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }, onConflict: 'user_id');
+    };
+    final table = _client.from('push_preferences');
+    try {
+      await table.upsert({
+        ...row,
+        'private_messages': preferences.privateMessages,
+        'chat_invites': preferences.chatInvites,
+      }, onConflict: 'user_id');
+    } on sb.PostgrestException catch (e) {
+      // Before 0026_private_chats.sql the private chat columns are not
+      // there: the other choices are still saved.
+      if (e.code != 'PGRST204') rethrow;
+      await table.upsert(row, onConflict: 'user_id');
+    }
   });
 }

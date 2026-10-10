@@ -82,6 +82,14 @@ without the function secrets the outbox fills and waits.
   messages are on by default; likes are off and, when on, come at most once
   an hour per post. Nothing comes from a member one blocked, or about one's
   own doings.
+- **Private chats** (0026). Messages in one's private chats and invitations
+  to a chat are on by default (two more switches in the Settings card). A
+  private chat sends no "answer" notification: every joined member but the
+  author hears of each message, unless they muted the chat (the mute is on
+  the server). A message notification counts the unread messages of the
+  chat ("3 new messages"); while one is waiting, the next message of the
+  same chat updates it instead of queueing another. A chat of two is
+  titled with the other person, a group with its name.
 - **Language.** Each phone registers with the app's language; texts are
   written in it (English or Hebrew).
 - **One per post or room.** A newer notification about the same post or
@@ -101,7 +109,7 @@ without the function secrets the outbox fills and waits.
 
 | Part | Where |
 |---|---|
-| Tables, triggers, claim/finish | `supabase/migrations/0023_community_push.sql` |
+| Tables, triggers, claim/finish | `supabase/migrations/0023_community_push.sql`; private chat kinds in `0026_private_chats.sql` |
 | Vault secrets and the 5-minute schedule | `supabase/scheduling/community_push.sql` |
 | Edge Function | `supabase/functions/community-push/`, `_shared/push_handler.ts`, `_shared/fcm.ts` |
 | Phone side | `lib/notifications/push.dart` (`FirebasePushMessaging`, `PushRegistrar`), `notifications_host.dart` (taps, arrivals) |
