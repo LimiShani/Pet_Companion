@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/l10n.dart';
+import '../../platform/feature_module.dart';
+import '../../platform/feature_ui.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
@@ -33,8 +35,8 @@ class CommunityGuidesRequest extends Notifier<bool> {
 final communityGuidesRequestProvider =
     NotifierProvider<CommunityGuidesRequest, bool>(CommunityGuidesRequest.new);
 
-/// The Community tab: a social feed, topic chat rooms and a library of
-/// guides, switched from the header.
+/// The Community tab: a social feed, topic chat rooms, Outside (dog parks)
+/// and a library of guides, switched from the header.
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
 
@@ -45,6 +47,9 @@ class CommunityScreen extends ConsumerStatefulWidget {
 class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   static const _feed = 0;
   static const _guides = 2;
+
+  /// Outside (dog parks): its own module fills the 'community-outside' slot.
+  static const _outside = 3;
 
   var _index = _feed;
 
@@ -67,9 +72,15 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
+    final outside = [
+      for (final module in ref.watch(featureModulesProvider))
+        if (module.slots['community-outside'] case final slot?)
+          ref.watch(capabilityProvider(slot.capability)),
+    ].contains(true);
     final visible = [
       if (ref.watch(capabilityProvider('community.feed.view'))) 0,
       if (ref.watch(capabilityProvider('community.chat.view'))) 1,
+      if (outside) _outside,
       if (ref.watch(capabilityProvider('community.guides.view'))) 2,
     ];
     final index = visible.contains(_index) ? _index : visible.first;
@@ -125,6 +136,7 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                       l10n.sectionFeed,
                       l10n.sectionChat,
                       l10n.sectionGuides,
+                      context.outdoorsL10n.sectionOutside,
                     ][section],
                 ],
                 selectedIndex: visible.indexOf(index),
@@ -141,6 +153,10 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                       : const SizedBox.shrink(),
                   (_visited.contains(2) || index == 2) && visible.contains(2)
                       ? const GuidesSection()
+                      : const SizedBox.shrink(),
+                  (_visited.contains(_outside) || index == _outside) &&
+                          visible.contains(_outside)
+                      ? featureSlot('community-outside', '')
                       : const SizedBox.shrink(),
                 ],
               ),

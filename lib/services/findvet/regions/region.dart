@@ -54,10 +54,15 @@ class GeoBounds {
 /// city or town of the region, with its centre.
 class Locality {
   const Locality({
+    this.code = '',
     required this.names,
     required this.point,
     this.aliases = const [],
   });
+
+  /// A stable lowercase slug ('raanana', 'tel-aviv-yafo'). Dog parks store
+  /// it (`dog_parks.locality_code`); the server has the same list.
+  final String code;
 
   /// The name per language code ('en', 'he', ...).
   final Map<String, String> names;
@@ -135,6 +140,40 @@ class VetRegion {
   /// when the region has data in it, else the region's own.
   String searchLanguage(String appLanguage) =>
       languages.contains(appLanguage) ? appLanguage : languages.first;
+
+  /// The locality with [code], or `null`.
+  Locality? localityByCode(String code) {
+    for (final locality in localities) {
+      if (locality.code == code) return locality;
+    }
+    return null;
+  }
+
+  /// The locality whose centre is nearest to [point], or `null` when none
+  /// is within [maxM] metres.
+  Locality? nearestLocality(GeoPoint point, {double maxM = 15000}) {
+    Locality? best;
+    var bestM = maxM;
+    for (final locality in localities) {
+      final m = locality.point.distanceTo(point);
+      if (m <= bestM) {
+        best = locality;
+        bestM = m;
+      }
+    }
+    return best;
+  }
+
+  /// Localities whose centre is within [radiusM] metres of [point],
+  /// nearest first.
+  List<Locality> localitiesWithin(GeoPoint point, double radiusM) {
+    final hits = [
+      for (final locality in localities)
+        if (locality.point.distanceTo(point) <= radiusM)
+          (locality, locality.point.distanceTo(point)),
+    ]..sort((a, b) => a.$2.compareTo(b.$2));
+    return [for (final hit in hits) hit.$1];
+  }
 
   /// Localities matching [query], best first (names that start with it
   /// before names that only contain it). Empty for a query under 2 letters.

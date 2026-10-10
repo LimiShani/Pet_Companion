@@ -1,0 +1,1611 @@
+{
+ "source": "OpenStreetMap (c) OpenStreetMap contributors, ODbL; see tool/gen_il_localities.py",
+ "localities": [
+  {
+   "en": "Jerusalem",
+   "he": "ירושלים",
+   "lat": 31.7683,
+   "lng": 35.2137,
+   "aliases": [
+    "Yerushalayim"
+   ],
+   "code": "jerusalem"
+  },
+  {
+   "en": "Tel Aviv-Yafo",
+   "he": "תל אביב-יפו",
+   "lat": 32.0853,
+   "lng": 34.7818,
+   "aliases": [
+    "Tel Aviv",
+    "Jaffa",
+    "Yafo",
+    "תל אביב",
+    "יפו"
+   ],
+   "code": "tel-aviv-yafo"
+  },
+  {
+   "en": "Haifa",
+   "he": "חיפה",
+   "lat": 32.794,
+   "lng": 34.9896,
+   "aliases": [],
+   "code": "haifa"
+  },
+  {
+   "en": "Rishon LeZion",
+   "he": "ראשון לציון",
+   "lat": 31.973,
+   "lng": 34.7925,
+   "aliases": [
+    "Rishon",
+    "Rishon Lezion"
+   ],
+   "code": "rishon-lezion"
+  },
+  {
+   "en": "Petah Tikva",
+   "he": "פתח תקווה",
+   "lat": 32.084,
+   "lng": 34.8878,
+   "aliases": [
+    "Petach Tikva",
+    "Petah Tiqva",
+    "פתח תקוה"
+   ],
+   "code": "petah-tikva"
+  },
+  {
+   "en": "Ashdod",
+   "he": "אשדוד",
+   "lat": 31.8014,
+   "lng": 34.6435,
+   "aliases": [],
+   "code": "ashdod"
+  },
+  {
+   "en": "Netanya",
+   "he": "נתניה",
+   "lat": 32.3215,
+   "lng": 34.8532,
+   "aliases": [
+    "Natanya"
+   ],
+   "code": "netanya"
+  },
+  {
+   "en": "Beersheba",
+   "he": "באר שבע",
+   "lat": 31.2518,
+   "lng": 34.7913,
+   "aliases": [
+    "Beer Sheva",
+    "Be'er Sheva",
+    "Beersheva"
+   ],
+   "code": "beersheba"
+  },
+  {
+   "en": "Bnei Brak",
+   "he": "בני ברק",
+   "lat": 32.0807,
+   "lng": 34.8338,
+   "aliases": [],
+   "code": "bnei-brak"
+  },
+  {
+   "en": "Holon",
+   "he": "חולון",
+   "lat": 32.0158,
+   "lng": 34.7874,
+   "aliases": [],
+   "code": "holon"
+  },
+  {
+   "en": "Ramat Gan",
+   "he": "רמת גן",
+   "lat": 32.0684,
+   "lng": 34.8248,
+   "aliases": [],
+   "code": "ramat-gan"
+  },
+  {
+   "en": "Rehovot",
+   "he": "רחובות",
+   "lat": 31.8928,
+   "lng": 34.8113,
+   "aliases": [
+    "Rechovot"
+   ],
+   "code": "rehovot"
+  },
+  {
+   "en": "Ashkelon",
+   "he": "אשקלון",
+   "lat": 31.6688,
+   "lng": 34.5743,
+   "aliases": [],
+   "code": "ashkelon"
+  },
+  {
+   "en": "Bat Yam",
+   "he": "בת ים",
+   "lat": 32.0132,
+   "lng": 34.748,
+   "aliases": [],
+   "code": "bat-yam"
+  },
+  {
+   "en": "Beit Shemesh",
+   "he": "בית שמש",
+   "lat": 31.747,
+   "lng": 34.9881,
+   "aliases": [],
+   "code": "beit-shemesh"
+  },
+  {
+   "en": "Kfar Saba",
+   "he": "כפר סבא",
+   "lat": 32.175,
+   "lng": 34.907,
+   "aliases": [
+    "Kfar Sava"
+   ],
+   "code": "kfar-saba"
+  },
+  {
+   "en": "Herzliya",
+   "he": "הרצליה",
+   "lat": 32.1624,
+   "lng": 34.8447,
+   "aliases": [
+    "Herzliyya"
+   ],
+   "code": "herzliya"
+  },
+  {
+   "en": "Hadera",
+   "he": "חדרה",
+   "lat": 32.434,
+   "lng": 34.9196,
+   "aliases": [],
+   "code": "hadera"
+  },
+  {
+   "en": "Modi'in-Maccabim-Re'ut",
+   "he": "מודיעין-מכבים-רעות",
+   "lat": 31.898,
+   "lng": 35.0104,
+   "aliases": [
+    "Modiin",
+    "Modi'in",
+    "מודיעין",
+    "Modiin-Maccabim-Reut"
+   ],
+   "code": "modiin-maccabim-reut"
+  },
+  {
+   "en": "Nazareth",
+   "he": "נצרת",
+   "lat": 32.6996,
+   "lng": 35.3035,
+   "aliases": [],
+   "code": "nazareth"
+  },
+  {
+   "en": "Lod",
+   "he": "לוד",
+   "lat": 31.951,
+   "lng": 34.8881,
+   "aliases": [],
+   "code": "lod"
+  },
+  {
+   "en": "Ramla",
+   "he": "רמלה",
+   "lat": 31.9293,
+   "lng": 34.8664,
+   "aliases": [],
+   "code": "ramla"
+  },
+  {
+   "en": "Ra'anana",
+   "he": "רעננה",
+   "lat": 32.1848,
+   "lng": 34.8713,
+   "aliases": [
+    "Raanana"
+   ],
+   "code": "raanana"
+  },
+  {
+   "en": "Rosh HaAyin",
+   "he": "ראש העין",
+   "lat": 32.0956,
+   "lng": 34.9566,
+   "aliases": [
+    "Rosh Haayin"
+   ],
+   "code": "rosh-haayin"
+  },
+  {
+   "en": "Hod HaSharon",
+   "he": "הוד השרון",
+   "lat": 32.15,
+   "lng": 34.888,
+   "aliases": [],
+   "code": "hod-hasharon"
+  },
+  {
+   "en": "Ramat HaSharon",
+   "he": "רמת השרון",
+   "lat": 32.146,
+   "lng": 34.839,
+   "aliases": [],
+   "code": "ramat-hasharon"
+  },
+  {
+   "en": "Kiryat Gat",
+   "he": "קריית גת",
+   "lat": 31.61,
+   "lng": 34.7642,
+   "aliases": [
+    "Qiryat Gat",
+    "קרית גת"
+   ],
+   "code": "kiryat-gat"
+  },
+  {
+   "en": "Nahariya",
+   "he": "נהריה",
+   "lat": 33.0059,
+   "lng": 35.0941,
+   "aliases": [
+    "Nahariah",
+    "Nahariyya"
+   ],
+   "code": "nahariya"
+  },
+  {
+   "en": "Afula",
+   "he": "עפולה",
+   "lat": 32.6078,
+   "lng": 35.2897,
+   "aliases": [],
+   "code": "afula"
+  },
+  {
+   "en": "Karmiel",
+   "he": "כרמיאל",
+   "lat": 32.919,
+   "lng": 35.295,
+   "aliases": [],
+   "code": "karmiel"
+  },
+  {
+   "en": "Eilat",
+   "he": "אילת",
+   "lat": 29.5577,
+   "lng": 34.9519,
+   "aliases": [],
+   "code": "eilat"
+  },
+  {
+   "en": "Tiberias",
+   "he": "טבריה",
+   "lat": 32.7922,
+   "lng": 35.5312,
+   "aliases": [],
+   "code": "tiberias"
+  },
+  {
+   "en": "Kiryat Shmona",
+   "he": "קריית שמונה",
+   "lat": 33.2073,
+   "lng": 35.5697,
+   "aliases": [
+    "קרית שמונה"
+   ],
+   "code": "kiryat-shmona"
+  },
+  {
+   "en": "Dimona",
+   "he": "דימונה",
+   "lat": 31.07,
+   "lng": 35.03,
+   "aliases": [],
+   "code": "dimona"
+  },
+  {
+   "en": "Arad",
+   "he": "ערד",
+   "lat": 31.2589,
+   "lng": 35.2128,
+   "aliases": [],
+   "code": "arad"
+  },
+  {
+   "en": "Yavne",
+   "he": "יבנה",
+   "lat": 31.878,
+   "lng": 34.739,
+   "aliases": [],
+   "code": "yavne"
+  },
+  {
+   "en": "Ness Ziona",
+   "he": "נס ציונה",
+   "lat": 31.9293,
+   "lng": 34.7987,
+   "aliases": [
+    "Nes Ziona"
+   ],
+   "code": "ness-ziona"
+  },
+  {
+   "en": "Givatayim",
+   "he": "גבעתיים",
+   "lat": 32.0722,
+   "lng": 34.8125,
+   "aliases": [],
+   "code": "givatayim"
+  },
+  {
+   "en": "Kiryat Ono",
+   "he": "קריית אונו",
+   "lat": 32.063,
+   "lng": 34.855,
+   "aliases": [
+    "קרית אונו"
+   ],
+   "code": "kiryat-ono"
+  },
+  {
+   "en": "Or Yehuda",
+   "he": "אור יהודה",
+   "lat": 32.029,
+   "lng": 34.856,
+   "aliases": [],
+   "code": "or-yehuda"
+  },
+  {
+   "en": "Kiryat Ata",
+   "he": "קריית אתא",
+   "lat": 32.809,
+   "lng": 35.106,
+   "aliases": [
+    "קרית אתא",
+    "Qiryat Ata"
+   ],
+   "code": "kiryat-ata"
+  },
+  {
+   "en": "Akko",
+   "he": "עכו",
+   "lat": 32.9281,
+   "lng": 35.082,
+   "aliases": [
+    "Acre",
+    "Acco"
+   ],
+   "code": "akko"
+  },
+  {
+   "en": "Safed",
+   "he": "צפת",
+   "lat": 32.9646,
+   "lng": 35.496,
+   "aliases": [
+    "Tzfat",
+    "Zefat"
+   ],
+   "code": "safed"
+  },
+  {
+   "en": "Sderot",
+   "he": "שדרות",
+   "lat": 31.525,
+   "lng": 34.596,
+   "aliases": [],
+   "code": "sderot"
+  },
+  {
+   "en": "Netivot",
+   "he": "נתיבות",
+   "lat": 31.423,
+   "lng": 34.589,
+   "aliases": [],
+   "code": "netivot"
+  },
+  {
+   "en": "Ofakim",
+   "he": "אופקים",
+   "lat": 31.314,
+   "lng": 34.62,
+   "aliases": [],
+   "code": "ofakim"
+  },
+  {
+   "en": "Rahat",
+   "he": "רהט",
+   "lat": 31.393,
+   "lng": 34.757,
+   "aliases": [],
+   "code": "rahat"
+  },
+  {
+   "en": "Gedera",
+   "he": "גדרה",
+   "lat": 31.812,
+   "lng": 34.779,
+   "aliases": [],
+   "code": "gedera"
+  },
+  {
+   "en": "Shoham",
+   "he": "שוהם",
+   "lat": 31.999,
+   "lng": 34.946,
+   "aliases": [],
+   "code": "shoham"
+  },
+  {
+   "en": "Mevaseret Zion",
+   "he": "מבשרת ציון",
+   "lat": 31.803,
+   "lng": 35.15,
+   "aliases": [
+    "Mevaseret Tsiyon"
+   ],
+   "code": "mevaseret-zion"
+  },
+  {
+   "en": "Zikhron Ya'akov",
+   "he": "זכרון יעקב",
+   "lat": 32.57,
+   "lng": 34.952,
+   "aliases": [
+    "Zichron Yaakov",
+    "Zikhron Yaakov"
+   ],
+   "code": "zikhron-yaakov"
+  },
+  {
+   "en": "Pardes Hanna-Karkur",
+   "he": "פרדס חנה-כרכור",
+   "lat": 32.473,
+   "lng": 34.97,
+   "aliases": [
+    "Pardes Hana",
+    "Pardes Hana-Karkur"
+   ],
+   "code": "pardes-hanna-karkur"
+  },
+  {
+   "en": "Caesarea",
+   "he": "קיסריה",
+   "lat": 32.5,
+   "lng": 34.9,
+   "aliases": [],
+   "code": "caesarea"
+  },
+  {
+   "en": "Yokne'am Illit",
+   "he": "יקנעם עילית",
+   "lat": 32.659,
+   "lng": 35.11,
+   "aliases": [
+    "Yokneam",
+    "Yoqneam Illit",
+    "יוקנעם עילית"
+   ],
+   "code": "yokneam-illit"
+  },
+  {
+   "en": "Migdal HaEmek",
+   "he": "מגדל העמק",
+   "lat": 32.678,
+   "lng": 35.24,
+   "aliases": [
+    "Migdal HaEmeq"
+   ],
+   "code": "migdal-haemek"
+  },
+  {
+   "en": "Beit She'an",
+   "he": "בית שאן",
+   "lat": 32.497,
+   "lng": 35.497,
+   "aliases": [
+    "Beit Shean"
+   ],
+   "code": "beit-shean"
+  },
+  {
+   "en": "Umm al-Fahm",
+   "he": "אום אל-פחם",
+   "lat": 32.519,
+   "lng": 35.153,
+   "aliases": [],
+   "code": "umm-al-fahm"
+  },
+  {
+   "en": "Ma'alot-Tarshiha",
+   "he": "מעלות-תרשיחא",
+   "lat": 33.016,
+   "lng": 35.271,
+   "aliases": [
+    "Maalot",
+    "Maalot Tarshiha"
+   ],
+   "code": "maalot-tarshiha"
+  },
+  {
+   "en": "Katzrin",
+   "he": "קצרין",
+   "lat": 32.992,
+   "lng": 35.691,
+   "aliases": [
+    "Qatzrin"
+   ],
+   "code": "katzrin"
+  },
+  {
+   "en": "Mitzpe Ramon",
+   "he": "מצפה רמון",
+   "lat": 30.61,
+   "lng": 34.801,
+   "aliases": [
+    "Mitspe Ramon"
+   ],
+   "code": "mitzpe-ramon"
+  },
+  {
+   "code": "abu-ghosh",
+   "en": "Abu Ghosh",
+   "he": "אבו גוש",
+   "lat": 31.8064,
+   "lng": 35.1089,
+   "aliases": []
+  },
+  {
+   "code": "abu-sinan",
+   "en": "Abu Sinan",
+   "he": "אבו סנאן",
+   "lat": 32.9586,
+   "lng": 35.1717,
+   "aliases": []
+  },
+  {
+   "code": "aloot",
+   "en": "Aloot",
+   "he": "עלוט",
+   "lat": 32.7183,
+   "lng": 35.2613,
+   "aliases": [
+    "Ilut"
+   ]
+  },
+  {
+   "code": "arara",
+   "en": "Ar'ara",
+   "he": "ערערה",
+   "lat": 32.4966,
+   "lng": 35.0956,
+   "aliases": []
+  },
+  {
+   "code": "ararat-an-naqab",
+   "en": "Ar'arat an-Naqab",
+   "he": "ערערה בנגב",
+   "lat": 31.1595,
+   "lng": 35.023,
+   "aliases": []
+  },
+  {
+   "code": "arraba",
+   "en": "Arraba",
+   "he": "עראבה",
+   "lat": 32.8486,
+   "lng": 35.3358,
+   "aliases": []
+  },
+  {
+   "code": "atlit",
+   "en": "Atlit",
+   "he": "עתלית",
+   "lat": 32.6907,
+   "lng": 34.9423,
+   "aliases": []
+  },
+  {
+   "code": "azor",
+   "en": "Azor",
+   "he": "אזור",
+   "lat": 32.0282,
+   "lng": 34.8026,
+   "aliases": []
+  },
+  {
+   "code": "baqa-al-gharbiyya",
+   "en": "Baqa al Gharbiyya",
+   "he": "באקה אל-גרביה",
+   "lat": 32.4197,
+   "lng": 35.0428,
+   "aliases": []
+  },
+  {
+   "code": "bartaa",
+   "en": "Barta'a",
+   "he": "ברטעה",
+   "lat": 32.4743,
+   "lng": 35.0903,
+   "aliases": [
+    "Barta`a"
+   ]
+  },
+  {
+   "code": "basmat-tabun",
+   "en": "Basmat Tab'un",
+   "he": "בסמת טבעון",
+   "lat": 32.7362,
+   "lng": 35.1547,
+   "aliases": []
+  },
+  {
+   "code": "beer-yaakov",
+   "en": "Beer Yaakov",
+   "he": "באר יעקב",
+   "lat": 31.9444,
+   "lng": 34.8399,
+   "aliases": []
+  },
+  {
+   "code": "beit-dagan",
+   "en": "Beit Dagan",
+   "he": "בית דגן",
+   "lat": 32.0019,
+   "lng": 34.8302,
+   "aliases": []
+  },
+  {
+   "code": "beit-jann",
+   "en": "Beit Jann",
+   "he": "בית ג'ן",
+   "lat": 32.9645,
+   "lng": 35.3781,
+   "aliases": []
+  },
+  {
+   "code": "biina",
+   "en": "Bi'ina",
+   "he": "בענה",
+   "lat": 32.9281,
+   "lng": 35.2722,
+   "aliases": []
+  },
+  {
+   "code": "binyamina",
+   "en": "Binyamina",
+   "he": "בנימינה",
+   "lat": 32.5203,
+   "lng": 34.9436,
+   "aliases": []
+  },
+  {
+   "code": "bir-al-maksur",
+   "en": "Bir al-Maksur",
+   "he": "ביר אל מכסור",
+   "lat": 32.7757,
+   "lng": 35.2217,
+   "aliases": []
+  },
+  {
+   "code": "bnei-aish",
+   "en": "Bnei Aish",
+   "he": "בני עי\"ש",
+   "lat": 31.7892,
+   "lng": 34.7606,
+   "aliases": []
+  },
+  {
+   "code": "bueine-nujeidat",
+   "en": "Bu'eine Nujeidat",
+   "he": "בעינה נג'ידת",
+   "lat": 32.8056,
+   "lng": 35.3647,
+   "aliases": []
+  },
+  {
+   "code": "buqatha",
+   "en": "Buq'atha",
+   "he": "בוקעאתא",
+   "lat": 33.2008,
+   "lng": 35.778,
+   "aliases": []
+  },
+  {
+   "code": "daburia",
+   "en": "Daburia",
+   "he": "דבוריה",
+   "lat": 32.6928,
+   "lng": 35.3716,
+   "aliases": []
+  },
+  {
+   "code": "daliyat-al-karmel",
+   "en": "Daliyat al-Karmel",
+   "he": "דלית אל-כרמל",
+   "lat": 32.6922,
+   "lng": 35.0483,
+   "aliases": []
+  },
+  {
+   "code": "deir-hanna",
+   "en": "Deir Hanna",
+   "he": "דיר חנא",
+   "lat": 32.8625,
+   "lng": 35.3667,
+   "aliases": []
+  },
+  {
+   "code": "deir-al-asad",
+   "en": "Deir al Asad",
+   "he": "דיר אל אסד",
+   "lat": 32.9348,
+   "lng": 35.2668,
+   "aliases": []
+  },
+  {
+   "code": "ein-mahel",
+   "en": "Ein Mahel",
+   "he": "עין מאהל",
+   "lat": 32.7233,
+   "lng": 35.3527,
+   "aliases": []
+  },
+  {
+   "code": "ein-qiniyye",
+   "en": "Ein Qiniyye",
+   "he": "עין קנייא",
+   "lat": 33.236,
+   "lng": 35.7311,
+   "aliases": []
+  },
+  {
+   "code": "elad",
+   "en": "Elad",
+   "he": "אלעד",
+   "lat": 32.0501,
+   "lng": 34.9522,
+   "aliases": []
+  },
+  {
+   "code": "elyakhin",
+   "en": "Elyakhin",
+   "he": "אליכין",
+   "lat": 32.408,
+   "lng": 34.9249,
+   "aliases": []
+  },
+  {
+   "code": "even-yehuda",
+   "en": "Even Yehuda",
+   "he": "אבן יהודה",
+   "lat": 32.2725,
+   "lng": 34.8868,
+   "aliases": []
+  },
+  {
+   "code": "fassuta",
+   "en": "Fassuta",
+   "he": "פסוטה",
+   "lat": 33.0484,
+   "lng": 35.31,
+   "aliases": []
+  },
+  {
+   "code": "fureidis",
+   "en": "Fureidis",
+   "he": "פוריידיס",
+   "lat": 32.5988,
+   "lng": 34.9542,
+   "aliases": []
+  },
+  {
+   "code": "gan-yavne",
+   "en": "Gan Yavne",
+   "he": "גן יבנה",
+   "lat": 31.7871,
+   "lng": 34.7097,
+   "aliases": []
+  },
+  {
+   "code": "ganei-tikva",
+   "en": "Ganei Tikva",
+   "he": "גני תקווה",
+   "lat": 32.0604,
+   "lng": 34.8761,
+   "aliases": []
+  },
+  {
+   "code": "ghajar",
+   "en": "Ghajar",
+   "he": "ע'ג'ר",
+   "lat": 33.2722,
+   "lng": 35.6239,
+   "aliases": []
+  },
+  {
+   "code": "gish-gush-halav",
+   "en": "Gish (Gush Halav)",
+   "he": "ג'ש",
+   "lat": 33.0244,
+   "lng": 35.4459,
+   "aliases": []
+  },
+  {
+   "code": "givat-harakafot",
+   "en": "Givat HaRakafot",
+   "he": "גבעת הרקפות",
+   "lat": 32.8346,
+   "lng": 35.103,
+   "aliases": []
+  },
+  {
+   "code": "givat-shmuel",
+   "en": "Givat Shmuel",
+   "he": "גבעת שמואל",
+   "lat": 32.0769,
+   "lng": 34.8525,
+   "aliases": []
+  },
+  {
+   "code": "harish",
+   "en": "Harish",
+   "he": "חריש",
+   "lat": 32.4596,
+   "lng": 35.0511,
+   "aliases": []
+  },
+  {
+   "code": "hatzor-haglilit",
+   "en": "Hatzor HaGlilit",
+   "he": "חצור הגלילית",
+   "lat": 32.9792,
+   "lng": 35.5433,
+   "aliases": []
+  },
+  {
+   "code": "hura",
+   "en": "Hura",
+   "he": "חורה",
+   "lat": 31.2972,
+   "lng": 34.9379,
+   "aliases": []
+  },
+  {
+   "code": "hurfeish",
+   "en": "Hurfeish",
+   "he": "חורפיש",
+   "lat": 33.0174,
+   "lng": 35.347,
+   "aliases": []
+  },
+  {
+   "code": "ibilin",
+   "en": "Ibilin",
+   "he": "עיבלין",
+   "lat": 32.8219,
+   "lng": 35.1922,
+   "aliases": []
+  },
+  {
+   "code": "iksal",
+   "en": "Iksal",
+   "he": "איכסל",
+   "lat": 32.6816,
+   "lng": 35.324,
+   "aliases": []
+  },
+  {
+   "code": "ilabun",
+   "en": "Ilabun",
+   "he": "עילבון",
+   "lat": 32.8349,
+   "lng": 35.4011,
+   "aliases": []
+  },
+  {
+   "code": "isfiya",
+   "en": "Isfiya",
+   "he": "עספיא",
+   "lat": 32.7152,
+   "lng": 35.0671,
+   "aliases": []
+  },
+  {
+   "code": "jadeida-makr",
+   "en": "Jadeida-Makr",
+   "he": "ג׳דיידה-מכר",
+   "lat": 32.9295,
+   "lng": 35.1467,
+   "aliases": []
+  },
+  {
+   "code": "jaljulya",
+   "en": "Jaljulya",
+   "he": "ג'לג'וליה",
+   "lat": 32.1523,
+   "lng": 34.9537,
+   "aliases": []
+  },
+  {
+   "code": "jatt",
+   "en": "Jatt",
+   "he": "ג׳ת",
+   "lat": 32.9737,
+   "lng": 35.2329,
+   "aliases": []
+  },
+  {
+   "code": "jisr-az-zarqa",
+   "en": "Jisr az Zarqa",
+   "he": "ג׳סר א־זרקא",
+   "lat": 32.5376,
+   "lng": 34.9132,
+   "aliases": []
+  },
+  {
+   "code": "julis",
+   "en": "Julis",
+   "he": "ג'וליס",
+   "lat": 32.9431,
+   "lng": 35.1869,
+   "aliases": []
+  },
+  {
+   "code": "kaabiyye-tabbash-hajajre",
+   "en": "Ka'abiyye-Tabbash-Hajajre",
+   "he": "כעביה טבאש חג'אג'רה",
+   "lat": 32.7489,
+   "lng": 35.1841,
+   "aliases": []
+  },
+  {
+   "code": "kabul",
+   "en": "Kabul",
+   "he": "כאבול",
+   "lat": 32.8677,
+   "lng": 35.2101,
+   "aliases": []
+  },
+  {
+   "code": "kadima",
+   "en": "Kadima",
+   "he": "קדימה",
+   "lat": 32.2764,
+   "lng": 34.9125,
+   "aliases": []
+  },
+  {
+   "code": "kafr-manda",
+   "en": "Kafr Manda",
+   "he": "כפר מנדא",
+   "lat": 32.8114,
+   "lng": 35.2598,
+   "aliases": []
+  },
+  {
+   "code": "kafr-yasif",
+   "en": "Kafr Yasif",
+   "he": "כפר יאסיף",
+   "lat": 32.9533,
+   "lng": 35.1657,
+   "aliases": []
+  },
+  {
+   "code": "qalansawe",
+   "en": "Qalansawe",
+   "he": "קלנסווה",
+   "lat": 32.2849,
+   "lng": 34.9802,
+   "aliases": [
+    "Kalanswa"
+   ]
+  },
+  {
+   "code": "katzir",
+   "en": "Katzir",
+   "he": "קציר",
+   "lat": 32.4886,
+   "lng": 35.1017,
+   "aliases": []
+  },
+  {
+   "code": "kaukab-abu-al-hija",
+   "en": "Kaukab Abu al-Hija",
+   "he": "כאוכב אבו אל-היג'א",
+   "lat": 32.8309,
+   "lng": 35.2495,
+   "aliases": []
+  },
+  {
+   "code": "kfar-bara",
+   "en": "Kfar Bara",
+   "he": "כפר ברא",
+   "lat": 32.1311,
+   "lng": 34.9703,
+   "aliases": []
+  },
+  {
+   "code": "kfar-kama",
+   "en": "Kfar Kama",
+   "he": "כפר כמא",
+   "lat": 32.7211,
+   "lng": 35.4408,
+   "aliases": []
+  },
+  {
+   "code": "kfar-kanna",
+   "en": "Kfar Kanna",
+   "he": "כפר כנא",
+   "lat": 32.746,
+   "lng": 35.3398,
+   "aliases": []
+  },
+  {
+   "code": "kfar-kara",
+   "en": "Kfar Kara",
+   "he": "כפר קרע",
+   "lat": 32.503,
+   "lng": 35.0505,
+   "aliases": []
+  },
+  {
+   "code": "kfar-kasim",
+   "en": "Kfar Kasim",
+   "he": "כפר קאסם",
+   "lat": 32.1152,
+   "lng": 34.9753,
+   "aliases": []
+  },
+  {
+   "code": "kfar-shmaryahu",
+   "en": "Kfar Shmaryahu",
+   "he": "כפר שמריהו",
+   "lat": 32.1854,
+   "lng": 34.8198,
+   "aliases": []
+  },
+  {
+   "code": "kfar-sumei",
+   "en": "Kfar Sumei",
+   "he": "כפר סומיע",
+   "lat": 32.9803,
+   "lng": 35.3072,
+   "aliases": []
+  },
+  {
+   "code": "kfar-tavor",
+   "en": "Kfar Tavor",
+   "he": "כפר תבור",
+   "lat": 32.6878,
+   "lng": 35.4204,
+   "aliases": []
+  },
+  {
+   "code": "kfar-vradim",
+   "en": "Kfar Vradim",
+   "he": "כפר ורדים",
+   "lat": 32.9957,
+   "lng": 35.2764,
+   "aliases": []
+  },
+  {
+   "code": "kfar-yona",
+   "en": "Kfar Yona",
+   "he": "כפר יונה",
+   "lat": 32.3145,
+   "lng": 34.9321,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-ekron",
+   "en": "Kiryat Ekron",
+   "he": "קרית עקרון",
+   "lat": 31.8608,
+   "lng": 34.8233,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-malachi",
+   "en": "Kiryat Malachi",
+   "he": "קרית מלאכי",
+   "lat": 31.7316,
+   "lng": 34.7446,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-motzkin",
+   "en": "Kiryat Motzkin",
+   "he": "קריית מוצקין",
+   "lat": 32.8364,
+   "lng": 35.0752,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-tivon",
+   "en": "Kiryat Tivon",
+   "he": "קריית טבעון",
+   "lat": 32.7332,
+   "lng": 35.1453,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-yam",
+   "en": "Kiryat Yam",
+   "he": "קריית ים",
+   "lat": 32.8502,
+   "lng": 35.0703,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-yearim",
+   "en": "Kiryat Yearim",
+   "he": "קרית יערים",
+   "lat": 31.8035,
+   "lng": 35.1013,
+   "aliases": []
+  },
+  {
+   "code": "kisra",
+   "en": "Kisra",
+   "he": "כיסרא",
+   "lat": 32.9629,
+   "lng": 35.3022,
+   "aliases": []
+  },
+  {
+   "code": "kokhav-yair-tzur-yigal",
+   "en": "Kokhav Yair-Tzur Yigal",
+   "he": "כוכב יאיר צור יגאל",
+   "lat": 32.2202,
+   "lng": 34.994,
+   "aliases": [
+    "Kochav Yair Tzur Yigal"
+   ]
+  },
+  {
+   "code": "kuseife",
+   "en": "Kuseife",
+   "he": "כסיפה",
+   "lat": 31.2465,
+   "lng": 35.0931,
+   "aliases": []
+  },
+  {
+   "code": "lakiya",
+   "en": "Lakiya",
+   "he": "לקיה",
+   "lat": 31.3247,
+   "lng": 34.8661,
+   "aliases": []
+  },
+  {
+   "code": "lehavim",
+   "en": "Lehavim",
+   "he": "להבים",
+   "lat": 31.3703,
+   "lng": 34.8137,
+   "aliases": []
+  },
+  {
+   "code": "maghar",
+   "en": "Maghar",
+   "he": "מגאר",
+   "lat": 32.8869,
+   "lng": 35.4069,
+   "aliases": []
+  },
+  {
+   "code": "majd-al-kurum",
+   "en": "Majd al Kurum",
+   "he": "מג'ד אל-כרום",
+   "lat": 32.9226,
+   "lng": 35.258,
+   "aliases": []
+  },
+  {
+   "code": "majdal-shams",
+   "en": "Majdal Shams",
+   "he": "מג'דל שמס",
+   "lat": 33.2684,
+   "lng": 35.7694,
+   "aliases": []
+  },
+  {
+   "code": "masade",
+   "en": "Mas'ade",
+   "he": "מסעדה",
+   "lat": 33.2312,
+   "lng": 35.7575,
+   "aliases": []
+  },
+  {
+   "code": "mashhad",
+   "en": "Mashhad",
+   "he": "משהד",
+   "lat": 32.7402,
+   "lng": 35.3245,
+   "aliases": []
+  },
+  {
+   "code": "mazkeret-batya",
+   "en": "Mazkeret Batya",
+   "he": "מזכרת בתיה",
+   "lat": 31.8514,
+   "lng": 34.8412,
+   "aliases": []
+  },
+  {
+   "code": "mazraa",
+   "en": "Mazra'a",
+   "he": "מזרעה",
+   "lat": 32.9833,
+   "lng": 35.0983,
+   "aliases": []
+  },
+  {
+   "code": "meitar",
+   "en": "Meitar",
+   "he": "מיתר",
+   "lat": 31.3271,
+   "lng": 34.9384,
+   "aliases": []
+  },
+  {
+   "code": "metula",
+   "en": "Metula",
+   "he": "מטולה",
+   "lat": 33.28,
+   "lng": 35.5779,
+   "aliases": []
+  },
+  {
+   "code": "migdal",
+   "en": "Migdal",
+   "he": "מגדל",
+   "lat": 32.8387,
+   "lng": 35.4994,
+   "aliases": []
+  },
+  {
+   "code": "miilya",
+   "en": "Miilya",
+   "he": "מעיליא",
+   "lat": 33.0281,
+   "lng": 35.2583,
+   "aliases": []
+  },
+  {
+   "code": "nahf",
+   "en": "Nahf",
+   "he": "נחף",
+   "lat": 32.9346,
+   "lng": 35.3176,
+   "aliases": []
+  },
+  {
+   "code": "nesher",
+   "en": "Nesher",
+   "he": "נשר",
+   "lat": 32.7709,
+   "lng": 35.0381,
+   "aliases": []
+  },
+  {
+   "code": "nof-hagalil",
+   "en": "Nof HaGalil",
+   "he": "נוף הגליל",
+   "lat": 32.7023,
+   "lng": 35.3183,
+   "aliases": []
+  },
+  {
+   "code": "omer",
+   "en": "Omer",
+   "he": "עומר",
+   "lat": 31.2659,
+   "lng": 34.8476,
+   "aliases": []
+  },
+  {
+   "code": "or-akiva",
+   "en": "Or Akiva",
+   "he": "אור עקיבא",
+   "lat": 32.509,
+   "lng": 34.9196,
+   "aliases": []
+  },
+  {
+   "code": "pardesiya",
+   "en": "Pardesiya",
+   "he": "פרדסיה",
+   "lat": 32.307,
+   "lng": 34.9098,
+   "aliases": []
+  },
+  {
+   "code": "pekiin",
+   "en": "Pekiin",
+   "he": "פקיעין",
+   "lat": 32.9772,
+   "lng": 35.334,
+   "aliases": []
+  },
+  {
+   "code": "kiryat-bialik",
+   "en": "Kiryat Bialik",
+   "he": "קריית ביאליק",
+   "lat": 32.8286,
+   "lng": 35.0845,
+   "aliases": [
+    "Qiryat Bialik"
+   ]
+  },
+  {
+   "code": "rama",
+   "en": "Rama",
+   "he": "ראמה",
+   "lat": 32.938,
+   "lng": 35.3676,
+   "aliases": []
+  },
+  {
+   "code": "ramat-yishai",
+   "en": "Ramat Yishai",
+   "he": "רמת ישי",
+   "lat": 32.7025,
+   "lng": 35.1652,
+   "aliases": []
+  },
+  {
+   "code": "reineh",
+   "en": "Reineh",
+   "he": "ריינה",
+   "lat": 32.7236,
+   "lng": 35.3125,
+   "aliases": []
+  },
+  {
+   "code": "rekhasim",
+   "en": "Rekhasim",
+   "he": "רכסים",
+   "lat": 32.751,
+   "lng": 35.1014,
+   "aliases": []
+  },
+  {
+   "code": "rosh-pina",
+   "en": "Rosh Pina",
+   "he": "ראש פינה",
+   "lat": 32.9682,
+   "lng": 35.5438,
+   "aliases": []
+  },
+  {
+   "code": "sajur",
+   "en": "Sajur",
+   "he": "סאג׳ור",
+   "lat": 32.942,
+   "lng": 35.3422,
+   "aliases": []
+  },
+  {
+   "code": "sakhnin",
+   "en": "Sakhnin",
+   "he": "סכנין",
+   "lat": 32.8638,
+   "lng": 35.3023,
+   "aliases": []
+  },
+  {
+   "code": "savyon",
+   "en": "Savyon",
+   "he": "סביון",
+   "lat": 32.0475,
+   "lng": 34.8799,
+   "aliases": []
+  },
+  {
+   "code": "shaab",
+   "en": "Sha'ab",
+   "he": "שעב",
+   "lat": 32.8906,
+   "lng": 35.2384,
+   "aliases": []
+  },
+  {
+   "code": "shaqib-al-salam",
+   "en": "Shaqib al-Salam",
+   "he": "שגב שלום",
+   "lat": 31.2009,
+   "lng": 34.8401,
+   "aliases": []
+  },
+  {
+   "code": "shefaram",
+   "en": "Shefaram",
+   "he": "שפרעם",
+   "lat": 32.8046,
+   "lng": 35.1724,
+   "aliases": []
+  },
+  {
+   "code": "shlomi",
+   "en": "Shlomi",
+   "he": "שלומי",
+   "lat": 33.0721,
+   "lng": 35.1451,
+   "aliases": []
+  },
+  {
+   "code": "tayibe",
+   "en": "Tayibe",
+   "he": "טייבה",
+   "lat": 32.2671,
+   "lng": 35.0089,
+   "aliases": [
+    "Taibe"
+   ]
+  },
+  {
+   "code": "tal-as-sabi",
+   "en": "Tal as-Sabi",
+   "he": "תל שבע",
+   "lat": 31.2456,
+   "lng": 34.8578,
+   "aliases": []
+  },
+  {
+   "code": "tamra",
+   "en": "Tamra",
+   "he": "טמרה",
+   "lat": 32.8535,
+   "lng": 35.1979,
+   "aliases": []
+  },
+  {
+   "code": "tel-mond",
+   "en": "Tel Mond",
+   "he": "תל מונד",
+   "lat": 32.2536,
+   "lng": 34.9185,
+   "aliases": []
+  },
+  {
+   "code": "tira",
+   "en": "Tira",
+   "he": "טירה",
+   "lat": 32.2347,
+   "lng": 34.9545,
+   "aliases": []
+  },
+  {
+   "code": "tirat-karmel",
+   "en": "Tirat Karmel",
+   "he": "טירת כרמל",
+   "lat": 32.7614,
+   "lng": 34.9716,
+   "aliases": []
+  },
+  {
+   "code": "tuba-zangaria",
+   "en": "Tuba Zangaria",
+   "he": "טובא זנגריה",
+   "lat": 32.9663,
+   "lng": 35.5944,
+   "aliases": []
+  },
+  {
+   "code": "turan",
+   "en": "Tur'an",
+   "he": "טורעאן",
+   "lat": 32.7769,
+   "lng": 35.374,
+   "aliases": []
+  },
+  {
+   "code": "tzur-hadassa",
+   "en": "Tzur Hadassa",
+   "he": "צור הדסה",
+   "lat": 31.7157,
+   "lng": 35.0948,
+   "aliases": []
+  },
+  {
+   "code": "tzur-yitzhak",
+   "en": "Tzur Yitzhak",
+   "he": "צור יצחק",
+   "lat": 32.2412,
+   "lng": 34.9984,
+   "aliases": []
+  },
+  {
+   "code": "umm-al-ghanam",
+   "en": "Umm al-Ghanam",
+   "he": "שבלי - אום אל-גנם",
+   "lat": 32.6758,
+   "lng": 35.3919,
+   "aliases": []
+  },
+  {
+   "code": "yafia",
+   "en": "Yafia",
+   "he": "יפיע נצרת",
+   "lat": 32.6866,
+   "lng": 35.2772,
+   "aliases": []
+  },
+  {
+   "code": "yanuh",
+   "en": "Yanuh",
+   "he": "ינוח",
+   "lat": 32.9837,
+   "lng": 35.2519,
+   "aliases": []
+  },
+  {
+   "code": "yarka",
+   "en": "Yarka",
+   "he": "ירכא",
+   "lat": 32.9549,
+   "lng": 35.2088,
+   "aliases": []
+  },
+  {
+   "code": "yavneel",
+   "en": "Yavneel",
+   "he": "יבנאל",
+   "lat": 32.7055,
+   "lng": 35.5053,
+   "aliases": []
+  },
+  {
+   "code": "yehud-monosson",
+   "en": "Yehud-Monosson",
+   "he": "יהוד מונוסון",
+   "lat": 32.0332,
+   "lng": 34.8908,
+   "aliases": [
+    "Yehud Monosson"
+   ]
+  },
+  {
+   "code": "yerucham",
+   "en": "Yerucham",
+   "he": "ירוחם",
+   "lat": 30.9888,
+   "lng": 34.9251,
+   "aliases": []
+  },
+  {
+   "code": "yesud-hamaala",
+   "en": "Yesud HaMaala",
+   "he": "יסוד המעלה",
+   "lat": 33.0584,
+   "lng": 35.6079,
+   "aliases": []
+  },
+  {
+   "code": "zarzir",
+   "en": "Zarzir",
+   "he": "זרזיר",
+   "lat": 32.7274,
+   "lng": 35.2134,
+   "aliases": []
+  }
+ ]
+}

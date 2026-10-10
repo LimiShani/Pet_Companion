@@ -18,6 +18,7 @@ const _modules = {
   'firstdays': 'lib/l10n/features/firstdays',
   'notifications': 'lib/notifications/l10n',
   'findvet': 'lib/l10n/features/findvet',
+  'outdoors': 'lib/l10n/features/outdoors',
 };
 
 const _firstStrongIsolate = '\u{2068}';

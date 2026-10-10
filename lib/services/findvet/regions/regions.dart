@@ -1,7 +1,7 @@
 import 'il.dart';
 import 'region.dart';
 
-export 'il.dart' show israelRegion;
+export 'il.dart' show israelRegion, israelLocalities;
 export 'region.dart';
 
 /// Every country Find a vet works in. To add one, write its module next to

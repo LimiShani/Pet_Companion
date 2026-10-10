@@ -38,6 +38,8 @@ docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file
 if ($LASTEXITCODE -ne 0) { throw 'Community feed and profile tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/community_push_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Community push tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/dog_parks_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Dog park tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/crash_reports_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Crash report tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/delete_my_account_test.sql

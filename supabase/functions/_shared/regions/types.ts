@@ -76,3 +76,17 @@ export interface RegionConfig {
   /** IANA time zone; the weekly job reports local check times in it. */
   timeZone: string;
 }
+
+/**
+ * A city, town or local council of a region (generated lists, e.g.
+ * il_localities.ts). `code` is a stable lowercase slug that dog parks
+ * store; the app has the same list.
+ */
+export interface Locality {
+  code: string;
+  en: string;
+  he: string;
+  lat: number;
+  lng: number;
+  aliases: readonly string[];
+}

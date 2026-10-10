@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../notifications/push.dart';
 import '../../notifications/widgets/notification_settings_card.dart';
+import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -65,6 +66,18 @@ class SettingsScreen extends StatelessWidget {
                   _SectionLabel(l10n.settingsAbout),
                   const LegalLinks(),
                   _Note(l10n.legalOpensInBrowser),
+                  // Credits of the data the installed modules show
+                  // (OpenStreetMap): a licence notice, so not gated.
+                  Consumer(
+                    builder: (context, ref, _) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final module in ref.watch(featureModulesProvider))
+                          if (module.slots['about-credits'] case final slot?)
+                            slot.build(context, const FeatureRequest('')),
+                      ],
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),
                 ],
