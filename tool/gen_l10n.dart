@@ -34,6 +34,7 @@ const modules = [
   L10nModule('notifications', 'lib/notifications/l10n', 'NotificationsL10n'),
   L10nModule('findvet', 'lib/l10n/features/findvet', 'FindVetL10n'),
   L10nModule('outdoors', 'lib/l10n/features/outdoors', 'OutdoorsL10n'),
+  L10nModule('meetups', 'lib/l10n/features/meetups', 'MeetupsL10n'),
 ];
 
 Future<void> main(List<String> args) async {

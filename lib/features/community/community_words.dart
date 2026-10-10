@@ -161,6 +161,7 @@ extension CommunityWords on CommunityL10n {
     ModerationKind.post => kindPost,
     ModerationKind.comment => kindComment,
     ModerationKind.message => kindMessage,
+    ModerationKind.meetup => kindMeetup,
   };
 
   /// A member's name as shown: their own, or a friendly fallback for an

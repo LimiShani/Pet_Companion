@@ -236,6 +236,7 @@
   "kindPost": "פוסט",
   "kindComment": "תגובה",
   "kindMessage": "הודעה בצ׳אט",
+  "kindMeetup": "מודעת שותפים",
   "reportCountLine": "{count, plural, =1{דיווח אחד} =2{שני דיווחים} other{{count} דיווחים}}",
   "hiddenTag": "מוסתר",
   "inRoom": "בחדר ״\u2068{room}\u2069״",

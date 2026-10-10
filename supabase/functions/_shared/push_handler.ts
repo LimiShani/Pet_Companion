@@ -1,6 +1,7 @@
 // Edge Function `community-push`: sends what the database queued in
 // `push_outbox` (comments on a member's posts, likes, answers to their
-// chat messages, messages in their private chats, invitations to a chat)
+// chat messages, messages in their private chats, invitations to a chat,
+// new partner ads at a saved park and the end of a member's own ad)
 // to their phones through FCM, in each phone's language.
 //
 // Called by the database (a trigger pokes it through pg_net) and by a
@@ -23,7 +24,7 @@ export interface PushHandlerOptions {
 export interface ClaimedDevice { token: string; platform: string; language: string }
 export interface ClaimedPush {
   id: number;
-  kind: 'comment' | 'like' | 'reply' | 'message' | 'invite';
+  kind: 'comment' | 'like' | 'reply' | 'message' | 'invite' | 'meetup' | 'meetup_renew';
   target: string;
   preview: string;
   actor_name: string;
@@ -34,6 +35,15 @@ export interface ClaimedPush {
   chat_name?: string;
   /** A private chat of two (0026). */
   direct?: boolean;
+  /** A partner ad's kind, 'walk' or 'play' (0028). */
+  meetup_kind?: string | null;
+  /** The ad's park: names and nearest street in each language (0028). */
+  park_name_he?: string | null;
+  park_name_en?: string | null;
+  park_street_he?: string | null;
+  park_street_en?: string | null;
+  /** The ad's place when it is not at a park (0028). */
+  place?: string | null;
 }
 
 const WORDS = {
@@ -49,6 +59,13 @@ const WORDS = {
     inviteDirect: (name: string) => `${name} wants to chat with you`,
     inviteGroup: (name: string, chat: string) => `${name} invited you to ${chat}`,
     inviteBody: 'Open PetLoop to join or say no thanks',
+    dogPark: 'Dog park',
+    parkOnStreet: (street: string) => `Dog park · ${street}`,
+    newWalk: (place: string) => `A new walk at ${place}`,
+    newPlay: (place: string) => `A new playdate at ${place}`,
+    postedBy: (name: string) => `Posted by ${name}`,
+    renewTitle: 'Your partner ad has ended',
+    renewBody: 'Renew it in PetLoop to show it for 30 more days',
   },
   he: {
     fallbackName: 'אוהבי חיות',
@@ -63,6 +80,13 @@ const WORDS = {
     inviteDirect: (name: string) => `⁨${name}⁩ רוצה לדבר איתך`,
     inviteGroup: (name: string, chat: string) => `הזמנה מ־⁨${name}⁩ לשיחה ״⁨${chat}⁩״`,
     inviteBody: 'אפשר להצטרף או לוותר באפליקציה',
+    dogPark: 'גינת כלבים',
+    parkOnStreet: (street: string) => `גינת כלבים · ⁨${street}⁩`,
+    newWalk: (place: string) => `טיול חדש ב־⁨${place}⁩`,
+    newPlay: (place: string) => `מפגש משחק חדש ב־⁨${place}⁩`,
+    postedBy: (name: string) => `פורסם על ידי ⁨${name}⁩`,
+    renewTitle: 'מודעת השותפים שלך הסתיימה',
+    renewBody: 'אפשר לחדש אותה באפליקציה לעוד 30 יום',
   },
 };
 
@@ -81,6 +105,22 @@ export function wordsFor(item: ClaimedPush, language: string): { title: string; 
     }
     const chat = (item.chat_name ?? '').trim() || words.privateChat;
     return { title: chat, body: count > 1 ? words.newMessages(count) : words.fromIn(name, text) };
+  }
+  if (item.kind === 'meetup') {
+    // "A new walk at Dog park · Ahuza": the park in the phone's language
+    // (else the other one, else its street), then who posted and their note.
+    const he = language !== 'en';
+    const own = (he ? item.park_name_he : item.park_name_en)?.trim();
+    const other = (he ? item.park_name_en : item.park_name_he)?.trim();
+    const street = ((he ? item.park_street_he : item.park_street_en) ?? (he ? item.park_street_en : item.park_street_he))?.trim();
+    const park = own || other || (street ? words.parkOnStreet(street) : words.dogPark);
+    return {
+      title: item.meetup_kind === 'play' ? words.newPlay(park) : words.newWalk(park),
+      body: preview ? words.fromIn(name, preview) : words.postedBy(name),
+    };
+  }
+  if (item.kind === 'meetup_renew') {
+    return { title: words.renewTitle, body: words.renewBody };
   }
   if (item.kind === 'invite') {
     const chat = (item.chat_name ?? '').trim();

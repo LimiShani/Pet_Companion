@@ -5,6 +5,7 @@ import '../../../access/feature_gate.dart';
 import '../../../l10n/l10n.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
+import '../../../services/meetups/data/meetup_models.dart' show localityOfCode;
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/coral_header.dart';
@@ -156,6 +157,12 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
       // Not a topic room: a private chat, of which moderators see only the
       // reported message.
       if (channels != null && where == null) where = l10n.inPrivateChat;
+    }
+    // A partner ad: its city.
+    if (item.kind == ModerationKind.meetup) {
+      where = localityOfCode(item.context)?.nameIn(
+        Localizations.localeOf(context).languageCode == 'he' ? 'he' : 'en',
+      );
     }
     final reasons = [for (final r in item.reasons) l10n.reportReason(r)];
 

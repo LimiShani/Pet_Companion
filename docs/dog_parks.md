@@ -129,7 +129,7 @@ a second run refreshed 704 and added none.
 |---|---|
 | `dog_parks` | `source` (`osm`, `member`, `admin`) + `source_id` (unique together), `name_he`, `name_en`, `street_he`, `street_en`, `lat`, `lng`, `locality_code`, `fenced`, `water`, `shade`, `lighting`, `small_dogs`, `benches` (`yes`/`no`/`unknown`), `opening_hours`, `status` (`active`, `closed` for renovation, `pending_review`, `removed`), `review_reason`, `locked_fields`, `osm_seen_at`, timestamps. Index on `(lat, lng)` for box queries (no PostGIS) and on `locality_code`. |
 | `dog_park_suggestions` | `kind` (`new_park`, `details`), `park_id`, `author_id`, `name`, `lat`/`lng` + `location_kind` (`device`: the phone at the park; `locality`: the city's centre with `place_note`), `locality_code`, `changes` (`{"fenced":"yes", ..., "closed": true}`), `status` (`pending`, `approved`, `rejected`), `reviewer_id`, `decided_at`. |
-| `dog_park_favorites` | `user_id`, `park_id`, `notify_meetups` (default false; stored for meetups, not shown yet). |
+| `dog_park_favorites` | `user_id`, `park_id`, `notify_meetups` (default false; "Tell me about new meetups here", shown and used by meetups, 0028). |
 | `dog_park_import_runs` | one row per UTC month: status, stats, error. Service role only. |
 
 Rules (row level security, every permission check in the
@@ -167,7 +167,8 @@ SQL tests: `supabase/tests/dog_parks_test.sql`, run by
 - **Where:** Community has a fourth section, **Outside / בחוץ** (Feed ·
   Chat · Outside · Guides), filled by the `outdoors` module through the
   `community-outside` slot. Inside it, a **Partners | Parks** switch (like
-  the Store's Deals | My basket); Parks shows first.
+  the Store's Deals | My basket); Partners shows first once the meetups
+  module fills it ([meetups.md](meetups.md)), Parks otherwise.
 - **Where to look:** **Near me** (the phone is asked for one fix only on
   that tap, after saying why; denied, "never" with Open settings, location
   off, outside Israel each have their message) or a city from the bundled
@@ -243,6 +244,7 @@ two files agree. `VetRegion` gains `localityByCode`, `nearestLocality` and
 
 ## Hooks for meetups (Partners)
 
+Filled by the meetups module since 0028: see [meetups.md](meetups.md).
 Everything below is in `package:pet_companion/features/outdoors/outdoors.dart`:
 
 - **The Partners side:** register a `FeatureSlot` named `outside-partners`
@@ -265,8 +267,13 @@ Everything below is in `package:pet_companion/features/outdoors/outdoors.dart`:
   (city only / 10 / 25 km), `coarseBox`, and the localities helpers above.
   `dog_parks.locality_code` uses the same codes.
 - **Saved parks:** `dog_park_favorites.notify_meetups` is stored (false)
-  for "tell me about new meetups here"; show its toggle on the park page
-  from the meetups module.
+  for "tell me about new meetups here"; the meetups module shows its
+  switch on the park page and 0028 sends the push.
+- **Park cards:** `ParkCard.meetupsSlot` (`park-card-meetups`, with
+  `parkId`) under the tags: "Meetup today" / "N meetups this week".
+- **Which side shows first:** `OutsideViewController` opens on Partners
+  when a module fills `outside-partners` for the account; an account
+  without `community.parks.view` sees Partners alone.
 
 ## Tests
 

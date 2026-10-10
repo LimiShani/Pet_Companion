@@ -281,6 +281,7 @@
   "kindPost": "Post",
   "kindComment": "Comment",
   "kindMessage": "Chat message",
+  "kindMeetup": "Partner ad",
   "reportCountLine": "{count, plural, =1{1 report} other{{count} reports}}",
   "@reportCountLine": {"placeholders": {"count": {"type": "int"}}},
   "hiddenTag": "Hidden",

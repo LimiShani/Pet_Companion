@@ -1403,6 +1403,12 @@ abstract class CommunityL10n {
   /// **'Chat message'**
   String get kindMessage;
 
+  /// No description provided for @kindMeetup.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner ad'**
+  String get kindMeetup;
+
   /// No description provided for @reportCountLine.
   ///
   /// In en, this message translates to:

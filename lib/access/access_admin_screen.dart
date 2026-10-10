@@ -52,6 +52,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
     'community.chat' => _text('Community chat', 'צ׳אט בקהילה'),
     'community.guides' => _text('Guides', 'מדריכים'),
     'community.parks' => _text('Dog parks', 'גינות כלבים'),
+    'community.meetups' => _text('Walk and play partners', 'שותפים לטיול ולמשחק'),
     'store' || 'store.deals' => _text('Deals', 'מבצעים'),
     'budget' => _text('Budget', 'תקציב'),
     'basket' => _text('Basket', 'סל קניות'),

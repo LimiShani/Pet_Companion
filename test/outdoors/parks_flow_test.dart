@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_companion/composition/modules.g.dart';
+import 'package:pet_companion/features/meetups/meetups.dart' show PartnersView;
 import 'package:pet_companion/features/outdoors/outdoors.dart';
+import 'package:pet_companion/platform/feature_module.dart';
 import 'package:pet_companion/services/findvet/data/location_service.dart';
 
 import 'outdoors_test_helpers.dart';
@@ -11,10 +14,13 @@ const tall = Size(390, 2400);
 void main() {
   setUpOutdoorsTests();
 
-  testWidgets('Outside sits between Chat and Guides and opens on Parks', (
+  testWidgets('Outside sits between Chat and Guides; Parks is one tap from Partners', (
     tester,
   ) async {
-    await openOutside(tester);
+    await openOutside(tester, parks: false);
+    expect(find.byKey(PartnersView.listKey), findsOneWidget, reason: 'Partners shows first');
+    await tester.tap(find.byKey(OutsideSection.parksKey));
+    await tester.pumpAndSettle();
     final feed = tester.getCenter(find.text(communityEn.sectionFeed));
     final chat = tester.getCenter(find.text(communityEn.sectionChat));
     final outside = tester.getCenter(find.text(en.sectionOutside));
@@ -25,7 +31,22 @@ void main() {
     expect(find.byKey(ParksView.sampleKey), findsOneWidget);
     expect(find.byKey(OsmCredit.creditKey), findsOneWidget);
 
-    // Partners is still to come: a friendly card, and a way back.
+  });
+
+  testWidgets('without the meetups module Outside opens on Parks, Partners says it is coming', (
+    tester,
+  ) async {
+    await openOutside(
+      tester,
+      parks: false,
+      overrides: [
+        featureModulesProvider.overrideWithValue([
+          for (final module in builtInFeatureModules)
+            if (module.id != 'meetups') module,
+        ]),
+      ],
+    );
+    expect(find.byKey(ParksView.listKey), findsOneWidget);
     await tester.tap(find.byKey(OutsideSection.partnersKey));
     await tester.pumpAndSettle();
     expect(find.byKey(OutsideSection.partnersSoonKey), findsOneWidget);

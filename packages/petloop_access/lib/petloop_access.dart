@@ -27,6 +27,8 @@ const capabilityCatalog = <String>[
   'community.parks.view',
   'community.parks.suggest',
   'community.parks.review',
+  'community.meetups.view',
+  'community.meetups.post',
   'store.deals.view',
   'store.deals.share',
   'store.deals.edit',

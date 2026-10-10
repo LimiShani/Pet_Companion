@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
+import '../../../platform/feature_ui.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
 import '../../../services/community/data/members_repository.dart';
@@ -26,6 +27,10 @@ import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/section_state.dart';
 import 'members_providers.dart';
+
+/// The slot another feature (meetups) fills on a member page, above their
+/// posts: their open walk and play ads. It gets `memberId`.
+const memberPageMeetupsSlot = 'member-meetups';
 
 /// A member's page: name, city, since when, the line they wrote about
 /// themselves, and their posts. The member's own page edits that line;
@@ -192,6 +197,7 @@ class MemberScreen extends ConsumerWidget {
             ),
           ),
           if (!blocked) ...[
+            featureSlot(memberPageMeetupsSlot, '', {'memberId': memberId}),
             Padding(
               padding: const EdgeInsets.fromLTRB(4, 20, 4, 8),
               child: Text(

@@ -252,30 +252,34 @@ class SupabaseCommunitySafetyRepository implements CommunitySafetyRepository {
           for (final row in items)
             if (row['photo_path'] case final String path) path,
         ]);
+        final kinds = ModerationKind.values.asNameMap();
         return [
           for (final row in items)
-            ModerationItem(
-              kind: ModerationKind.values.byName(row['kind'] as String),
-              id: row['id'] as String,
-              authorId: row['author_id'] as String,
-              authorName: storedAuthorName(row['author_name'] as String?),
-              text: row['body'] as String? ?? '',
-              photo: switch (row['photo_path']) {
-                final String path when links[path] != null => RemotePostPhoto(
-                  url: links[path]!,
-                  cacheKey: path,
-                ),
-                _ => null,
-              },
-              createdAt: parseTimestamp(row['created_at']),
-              reportCount: (row['report_count'] as num?)?.toInt() ?? 0,
-              reasons: [
-                for (final reason in (row['reasons'] as List?) ?? const [])
-                  ?ReportReason.values.asNameMap()[reason],
-              ],
-              hidden: row['hidden'] as bool? ?? false,
-              context: row['context'] as String?,
-            ),
+            // A kind this version does not know (a newer migration) is left
+            // out rather than failing the whole queue.
+            if (kinds[row['kind']] case final kind?)
+              ModerationItem(
+                kind: kind,
+                id: row['id'] as String,
+                authorId: row['author_id'] as String,
+                authorName: storedAuthorName(row['author_name'] as String?),
+                text: row['body'] as String? ?? '',
+                photo: switch (row['photo_path']) {
+                  final String path when links[path] != null => RemotePostPhoto(
+                    url: links[path]!,
+                    cacheKey: path,
+                  ),
+                  _ => null,
+                },
+                createdAt: parseTimestamp(row['created_at']),
+                reportCount: (row['report_count'] as num?)?.toInt() ?? 0,
+                reasons: [
+                  for (final reason in (row['reasons'] as List?) ?? const [])
+                    ?ReportReason.values.asNameMap()[reason],
+                ],
+                hidden: row['hidden'] as bool? ?? false,
+                context: row['context'] as String?,
+              ),
         ];
       });
 

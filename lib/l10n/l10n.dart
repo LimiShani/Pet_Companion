@@ -18,6 +18,7 @@
 /// | `lib/notifications/l10n/`     | `NotificationsL10n` | `context.notificationsL10n` |
 /// | `lib/l10n/features/findvet/`  | `FindVetL10n`   | `context.findVetL10n`   |
 /// | `lib/l10n/features/outdoors/` | `OutdoorsL10n`  | `context.outdoorsL10n`  |
+/// | `lib/l10n/features/meetups/`  | `MeetupsL10n`   | `context.meetupsL10n`   |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -36,6 +37,7 @@ import 'features/community/gen/community_l10n.dart';
 import 'features/findvet/gen/findvet_l10n.dart';
 import 'features/firstdays/gen/firstdays_l10n.dart';
 import 'features/health/gen/health_l10n.dart';
+import 'features/meetups/gen/meetups_l10n.dart';
 import 'features/outdoors/gen/outdoors_l10n.dart';
 import 'features/pets/gen/pets_l10n.dart';
 import 'features/store/gen/store_l10n.dart';
@@ -52,6 +54,8 @@ export 'features/findvet/gen/findvet_l10n.dart'
 export 'features/firstdays/gen/firstdays_l10n.dart'
     show FirstDaysL10n, lookupFirstDaysL10n;
 export 'features/health/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
+export 'features/meetups/gen/meetups_l10n.dart'
+    show MeetupsL10n, lookupMeetupsL10n;
 export 'features/outdoors/gen/outdoors_l10n.dart'
     show OutdoorsL10n, lookupOutdoorsL10n;
 export 'features/pets/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
@@ -65,7 +69,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the eleven strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the twelve strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -79,6 +83,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   NotificationsL10n.delegate,
   FindVetL10n.delegate,
   OutdoorsL10n.delegate,
+  MeetupsL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -119,6 +124,9 @@ extension L10nContext on BuildContext {
 
   /// Community > Outside: dog parks (and, later, walk and play partners).
   OutdoorsL10n get outdoorsL10n => _strings(this, lookupOutdoorsL10n);
+
+  /// Community > Outside > Partners: walk and play partner ads.
+  MeetupsL10n get meetupsL10n => _strings(this, lookupMeetupsL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;

@@ -109,7 +109,7 @@ without the function secrets the outbox fills and waits.
 
 | Part | Where |
 |---|---|
-| Tables, triggers, claim/finish | `supabase/migrations/0023_community_push.sql`; private chat kinds in `0026_private_chats.sql` |
+| Tables, triggers, claim/finish | `supabase/migrations/0023_community_push.sql`; private chat kinds in `0026_private_chats.sql`; meetup kinds (`meetup`, `meetup_renew`) and the meetups housekeeping in `push_claim` in `0028_meetups.sql` ([meetups.md](meetups.md)) |
 | Vault secrets and the 5-minute schedule | `supabase/scheduling/community_push.sql` |
 | Edge Function | `supabase/functions/community-push/`, `_shared/push_handler.ts`, `_shared/fcm.ts` |
 | Phone side | `lib/notifications/push.dart` (`FirebasePushMessaging`, `PushRegistrar`), `notifications_host.dart` (taps, arrivals) |

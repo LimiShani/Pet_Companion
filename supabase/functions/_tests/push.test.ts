@@ -217,3 +217,53 @@ test('a private message is sent with its room as the tap target and tag', async 
   assert.deepEqual(message.data, { target: privateMessage.target, kind: 'message' });
   assert.equal(message.android.notification.tag, privateMessage.target);
 });
+
+const meetup: ClaimedPush = {
+  id: 9,
+  kind: 'meetup',
+  target: 'meetup:5d1c8f9e-0b7a-4c55-9a43-2f0e7c1d9b11',
+  preview: 'An hour in the morning',
+  actor_name: 'Ron',
+  devices: [{ token: 'token-he', platform: 'android', language: 'he' }],
+  meetup_kind: 'walk',
+  park_name_he: 'גינת אחוזה',
+  park_name_en: null,
+  park_street_he: 'אחוזה',
+  park_street_en: 'Ahuza',
+};
+
+test("a new ad at a saved park names the park in the phone's language", () => {
+  assert.deepEqual(wordsFor(meetup, 'he'), { title: 'טיול חדש ב־⁨גינת אחוזה⁩', body: '⁨Ron⁩: ⁨An hour in the morning⁩' });
+  // No English name: the Hebrew one, then the street.
+  assert.equal(wordsFor(meetup, 'en').title, 'A new walk at גינת אחוזה');
+  assert.equal(wordsFor({ ...meetup, park_name_he: null }, 'en').title, 'A new walk at Dog park · Ahuza');
+  assert.equal(wordsFor({ ...meetup, park_name_he: null, park_street_he: null, park_street_en: null }, 'en').title, 'A new walk at Dog park');
+  assert.deepEqual(wordsFor({ ...meetup, meetup_kind: 'play', park_name_en: 'Meir Garden', preview: '' }, 'en'), {
+    title: 'A new playdate at Meir Garden',
+    body: 'Posted by Ron',
+  });
+  assert.equal(wordsFor({ ...meetup, park_name_he: null }, 'he').title, 'טיול חדש ב־⁨גינת כלבים · ⁨אחוזה⁩⁩');
+});
+
+test('an ended ad asks its author to renew it', () => {
+  const renew: ClaimedPush = { ...meetup, kind: 'meetup_renew' };
+  assert.deepEqual(wordsFor(renew, 'en'), {
+    title: 'Your partner ad has ended',
+    body: 'Renew it in PetLoop to show it for 30 more days',
+  });
+  assert.equal(wordsFor(renew, 'he').title, 'מודעת השותפים שלך הסתיימה');
+});
+
+test('a meetup push opens the ad', async () => {
+  const { account } = await testAccount();
+  const sent: Record<string, unknown>[] = [];
+  const { fetcher } = backend([meetup], (body) => {
+    sent.push(body);
+    return Response.json({ name: 'projects/x/messages/3' });
+  });
+  const handler = createPushHandler({ url: 'https://db.test', serviceKey: 'service', jobSecret: 'job-secret', account, fetcher, now: () => NOW });
+  assert.deepEqual(await (await handler(request())).json(), { sent: 1, dead: 0 });
+  const message = sent[0].message as Record<string, any>;
+  assert.deepEqual(message.data, { target: meetup.target, kind: 'meetup' });
+  assert.equal(message.android.notification.tag, meetup.target);
+});

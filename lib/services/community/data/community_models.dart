@@ -664,7 +664,7 @@ class BlockedMember {
 }
 
 /// What a moderator reviews.
-enum ModerationKind { post, comment, message }
+enum ModerationKind { post, comment, message, meetup }
 
 /// Something members reported, waiting for a moderator.
 class ModerationItem {
