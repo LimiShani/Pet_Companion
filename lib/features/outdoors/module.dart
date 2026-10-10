@@ -13,7 +13,8 @@ final outdoorsModule = FeatureModule(
       capability: ParkCapabilities.view,
       build: (c, r) => const OutsideSection(),
     ),
-    // The OpenStreetMap credit in Settings > About PetLoop.
+    // The OpenStreetMap credit in Settings > About PetLoop. Settings shows
+    // credits whatever the account may use (a licence notice).
     'about-credits': FeatureSlot(
       capability: ParkCapabilities.view,
       build: (c, r) => const OsmAboutCredit(),
