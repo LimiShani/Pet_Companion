@@ -6,13 +6,16 @@ import '../../../platform/session.dart';
 import 'supabase_community_support.dart';
 
 /// What a member wants to hear about on their phones. The server decides
-/// what to send from these (`push_preferences`, 0023_community_push.sql).
+/// what to send from these (`push_preferences`, 0023_community_push.sql;
+/// private chats from 0026_private_chats.sql).
 @immutable
 class PushPreferences {
   const PushPreferences({
     this.replies = true,
     this.comments = true,
     this.likes = false,
+    this.privateMessages = true,
+    this.chatInvites = true,
   });
 
   /// Answers to the member's chat messages.
@@ -25,22 +28,39 @@ class PushPreferences {
   /// hour). Off unless switched on.
   final bool likes;
 
-  PushPreferences copyWith({bool? replies, bool? comments, bool? likes}) =>
-      PushPreferences(
-        replies: replies ?? this.replies,
-        comments: comments ?? this.comments,
-        likes: likes ?? this.likes,
-      );
+  /// Messages in the member's private chats (not the ones they muted);
+  /// several from one chat count up in one notification.
+  final bool privateMessages;
+
+  /// Invitations to a private chat.
+  final bool chatInvites;
+
+  PushPreferences copyWith({
+    bool? replies,
+    bool? comments,
+    bool? likes,
+    bool? privateMessages,
+    bool? chatInvites,
+  }) => PushPreferences(
+    replies: replies ?? this.replies,
+    comments: comments ?? this.comments,
+    likes: likes ?? this.likes,
+    privateMessages: privateMessages ?? this.privateMessages,
+    chatInvites: chatInvites ?? this.chatInvites,
+  );
 
   @override
   bool operator ==(Object other) =>
       other is PushPreferences &&
       other.replies == replies &&
       other.comments == comments &&
-      other.likes == likes;
+      other.likes == likes &&
+      other.privateMessages == privateMessages &&
+      other.chatInvites == chatInvites;
 
   @override
-  int get hashCode => Object.hash(replies, comments, likes);
+  int get hashCode =>
+      Object.hash(replies, comments, likes, privateMessages, chatInvites);
 }
 
 /// Failures surface as `CommunityException`.
@@ -88,9 +108,10 @@ class SupabasePushPreferencesRepository implements PushPreferencesRepository {
   @override
   Future<PushPreferences> fetch({required AppUser viewer}) =>
       guardCommunity(() async {
+        // All columns: the private chat ones arrive with 0026.
         final row = await _client
             .from('push_preferences')
-            .select('replies, comments, likes')
+            .select()
             .eq('user_id', viewer.id)
             .maybeSingle();
         if (row == null) return const PushPreferences();
@@ -98,6 +119,8 @@ class SupabasePushPreferencesRepository implements PushPreferencesRepository {
           replies: row['replies'] as bool? ?? true,
           comments: row['comments'] as bool? ?? true,
           likes: row['likes'] as bool? ?? false,
+          privateMessages: row['private_messages'] as bool? ?? true,
+          chatInvites: row['chat_invites'] as bool? ?? true,
         );
       });
 
@@ -111,6 +134,8 @@ class SupabasePushPreferencesRepository implements PushPreferencesRepository {
       'replies': preferences.replies,
       'comments': preferences.comments,
       'likes': preferences.likes,
+      'private_messages': preferences.privateMessages,
+      'chat_invites': preferences.chatInvites,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     }, onConflict: 'user_id');
   });

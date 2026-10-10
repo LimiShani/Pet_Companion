@@ -9,6 +9,8 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
+import '../chat/private_chat_providers.dart';
+import '../chat/private_chat_widgets.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
 import '../feed/feed_controller.dart';
@@ -18,8 +20,9 @@ import '../widgets/auto_direction_text.dart';
 import '../widgets/section_state.dart';
 import 'members_providers.dart';
 
-/// What happened to the member's posts and messages: comments, likes and
-/// answers, newest first. Opening it clears the header's dot.
+/// What happened to the member's posts and messages: invitations to a
+/// private chat first, then comments, likes and answers, newest first.
+/// Opening it clears the header's dot.
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({super.key});
 
@@ -35,6 +38,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.invalidate(activityProvider);
+      ref.invalidate(chatInvitationsProvider);
       ref
           .read(activitySeenProvider.notifier)
           .markSeen(ref.read(communityClockProvider)());
@@ -65,6 +69,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     final now = ref.watch(communityClockProvider)();
     final activity = ref.watch(activityProvider);
     final list = activity.value;
+    final invitations =
+        ref.watch(chatInvitationsProvider).value ?? const <ChatInvitation>[];
 
     final Widget body;
     if (list == null) {
@@ -77,7 +83,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
               actionLabel: app.commonTryAgain,
               onAction: () => ref.invalidate(activityProvider),
             );
-    } else if (list.isEmpty) {
+    } else if (list.isEmpty && invitations.isEmpty) {
       body = SectionState(
         icon: Icons.notifications_none_rounded,
         title: l10n.activityEmptyTitle,
@@ -96,9 +102,13 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
             AppSpacing.screen,
             24,
           ),
-          itemCount: list.length,
+          itemCount: list.length + (invitations.isEmpty ? 0 : 1),
           separatorBuilder: (context, index) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
+            if (invitations.isNotEmpty) {
+              if (index == 0) return _Invitations(invitations: invitations);
+              index -= 1;
+            }
             final item = list[index];
             final name = l10n.inLine(l10n.memberName(item.actorName));
             final title = switch (item.kind) {
@@ -196,6 +206,41 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
           Expanded(child: body),
         ],
       ),
+    );
+  }
+}
+
+/// The invitations to private chats waiting for the member.
+class _Invitations extends StatelessWidget {
+  const _Invitations({required this.invitations});
+
+  final List<ChatInvitation> invitations;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
+          child: Semantics(
+            header: true,
+            child: Text(
+              context.communityL10n.invitationsTitle,
+              style: AppText.label.copyWith(
+                color: AppColors.brown,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        for (final invitation in invitations)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: ChatInvitationCard(invitation: invitation),
+          ),
+      ],
     );
   }
 }

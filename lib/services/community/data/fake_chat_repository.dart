@@ -23,8 +23,10 @@ class FakeChatRepository implements ChatRepository {
     this.latency = const Duration(milliseconds: 300),
     DateTime Function()? now,
     bool seeded = true,
+    bool seededPrivate = true,
   }) : _now = now ?? DateTime.now {
     if (seeded) _seed();
+    if (seeded && seededPrivate) _seedPrivate(_now());
   }
 
   /// The channels the app ships with, in display order (the migrations
@@ -1205,7 +1207,6 @@ class FakeChatRepository implements ChatRepository {
   void _seed() {
     _channels.addAll(defaultChannels);
     final now = _now();
-    _seedPrivate(now);
 
     String say(
       String channelId,

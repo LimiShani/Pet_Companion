@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
 import '../chat/chat_providers.dart';
+import '../chat/private_chat_providers.dart';
 import '../feed/feed_controller.dart';
 import '../members/members_providers.dart';
 import '../safety/safety_providers.dart';
@@ -52,6 +53,8 @@ class _CommunityKeeperState extends State<CommunityKeeper> {
     keep(blockedIdsProvider);
     keep(visiblePostsProvider);
     keep(chatRoomSummariesProvider);
+    keep(privateChatsProvider);
+    keep(chatInvitationsProvider);
     keep(hasNewActivityProvider);
     if (widget.channelId case final id?) keep(chatConversationProvider(id));
   }
