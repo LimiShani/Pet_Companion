@@ -41,8 +41,10 @@ class CoralSegmentedControl extends StatelessWidget {
                     customBorder: const StadiumBorder(),
                     onTap: () => onChanged(i),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
+                      // Four sections ("Feed | Chat | Outside | Guides")
+                      // need the room on a 320 px phone.
+                      padding: EdgeInsets.symmetric(
+                        horizontal: labels.length > 3 ? 3 : 8,
                         vertical: 9,
                       ),
                       child: Text(

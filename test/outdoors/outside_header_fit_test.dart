@@ -29,9 +29,8 @@ void main() {
   setUpOutdoorsTests();
   setUpAll(_loadAppFonts);
 
-  // Hebrew on the smallest phones; English from 360 px (at 320 px
-  // "Outside" is a few pixels too wide for the shared header control).
-  for (final (language, width) in [(AppLanguage.hebrew, 320.0), (AppLanguage.english, 360.0)]) {
+  // Both languages on the smallest phones.
+  for (final (language, width) in [(AppLanguage.hebrew, 320.0), (AppLanguage.english, 320.0)]) {
     testWidgets('the four Community sections and the Outside switch fit at ${width.toInt()} px (${language.name})', (
       tester,
     ) async {
