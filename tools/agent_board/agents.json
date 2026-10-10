@@ -392,6 +392,43 @@
           "title": "Hebrew + English strings, Hebrew at 320 px, docs, full tests + analyzer green"
         }
       ]
+    },
+    {
+      "id": "meetups",
+      "name": "Meetups agent",
+      "scope": "Walk and play partners by area in Community > Outside > Partners: ads with pet, kind, park or other place, one-off or recurring, join via a private chat, group for responders, park integration, expiry, safety. Migration 0028.",
+      "branch": "feature/meetups",
+      "worktree": "C:/Work/Flutter_projects/pet_companion_worktrees/meetups",
+      "milestones": [
+        {
+          "id": "mu1",
+          "title": "Setup: read AGENTS.md, the outdoors + private chat seams, the approved proposal; baseline green"
+        },
+        {
+          "id": "mu2",
+          "title": "Migration 0028: community_meetups, reports, expiry, rate limits, capability, push for new meetups at saved parks + SQL tests"
+        },
+        {
+          "id": "mu3",
+          "title": "Repository layer: interface, fake, Supabase"
+        },
+        {
+          "id": "mu4",
+          "title": "Partners board: area + radius, filters, cards, My ads"
+        },
+        {
+          "id": "mu5",
+          "title": "New / edit ad with park picker or other place; close, renew"
+        },
+        {
+          "id": "mu6",
+          "title": "I want to join (private chat with a draft), group for responders, park page slots, member page ads, notify toggle"
+        },
+        {
+          "id": "mu7",
+          "title": "Hebrew + English, 320 px, docs, full tests + analyzer green"
+        }
+      ]
     }
   ]
 }
