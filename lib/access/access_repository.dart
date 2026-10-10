@@ -71,7 +71,8 @@ class FakeAccessRepository implements AccessRepository {
         (c) =>
             c != 'access.admin' &&
             c != 'findvet.admin' &&
-            c != 'community.moderate',
+            c != 'community.moderate' &&
+            c != 'community.parks.review',
       ))
         c: AccessRule.allow,
     },

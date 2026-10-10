@@ -51,6 +51,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
     'community.feed' => _text('Community feed', 'פוסטים בקהילה'),
     'community.chat' => _text('Community chat', 'צ׳אט בקהילה'),
     'community.guides' => _text('Guides', 'מדריכים'),
+    'community.parks' => _text('Dog parks', 'גינות כלבים'),
     'store' || 'store.deals' => _text('Deals', 'מבצעים'),
     'budget' => _text('Budget', 'תקציב'),
     'basket' => _text('Basket', 'סל קניות'),
@@ -71,6 +72,8 @@ class _AdministrationState extends ConsumerState<_Administration> {
       'search' => _text('Search', 'חיפוש'),
       'admin' => _text('Review directory', 'ניהול המדריך'),
       'moderate' => _text('Moderate reports', 'בדיקת דיווחים'),
+      'suggest' => _text('Suggest changes', 'הצעת תיקונים'),
+      'review' => _text('Review suggestions', 'בדיקת הצעות'),
       _ => action,
     };
     return '${_featureLabel(parts.join('.'))} · $label';
