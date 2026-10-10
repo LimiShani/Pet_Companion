@@ -65,6 +65,8 @@ class SettingsScreen extends StatelessWidget {
                   _SectionLabel(l10n.settingsAbout),
                   const LegalLinks(),
                   _Note(l10n.legalOpensInBrowser),
+                  // Credits of the data other modules show (OpenStreetMap).
+                  featureSlot('about-credits', ''),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),
                 ],

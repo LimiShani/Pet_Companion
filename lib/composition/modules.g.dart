@@ -9,6 +9,7 @@ import '../features/budget/module.dart';
 import '../features/basket/module.dart';
 import '../features/firstdays/module.dart';
 import '../features/findvet/module.dart';
+import '../features/outdoors/module.dart';
 
 const builtInFeatureIds = <String>{
   'access',
@@ -19,6 +20,7 @@ const builtInFeatureIds = <String>{
   'findvet',
   'firstdays',
   'health',
+  'outdoors',
   'pets',
   'store',
 };
@@ -32,5 +34,6 @@ final builtInFeatureModules = <FeatureModule>[
   basketModule,
   firstDaysModule,
   findVetModule,
+  outdoorsModule,
   const FeatureModule(id: 'access'),
 ];

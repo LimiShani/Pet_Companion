@@ -1,0 +1,245 @@
+{
+  "@@locale": "en",
+  "sectionOutside": "Outside",
+  "@sectionOutside": {
+    "description": "The fourth section of the Community tab: partners and dog parks."
+  },
+  "outsidePartners": "Partners",
+  "@outsidePartners": {
+    "description": "Switch in Outside: people to walk or play with (coming later)."
+  },
+  "outsideParks": "Parks",
+  "@outsideParks": {
+    "description": "Switch in Outside: dog parks."
+  },
+  "partnersSoonTitle": "Walk and play partners are on the way",
+  "partnersSoonBody": "Soon you'll find people nearby for a walk or a playdate, right here. Meanwhile, the dog parks are one tap away.",
+  "partnersShowParks": "Show the parks",
+  "parksIntro": "Dog parks near you, with what is there: a fence, water, shade, lighting.",
+  "areaQuestion": "Where should we look?",
+  "locationWhy": "\"Near me\" asks the phone for your location once, to sort parks by distance on this phone. It is never saved or sent.",
+  "nearMe": "Near me",
+  "locating": "Finding your location…",
+  "orPickCity": "Or pick a city",
+  "cityHint": "City or town",
+  "noCityMatch": "No city by that name. Try another spelling.",
+  "problemDenied": "Location access was not allowed. You can pick a city instead.",
+  "problemDeniedForever": "Location access is off for PetLoop. It can be turned on in the phone's settings, or you can pick a city.",
+  "problemServiceOff": "Location is switched off on this phone. Turn it on, or pick a city.",
+  "problemUnavailable": "We could not get your location. Pick a city instead.",
+  "problemOutsideRegion": "Dog parks are listed in Israel for now. Pick a city in Israel.",
+  "openSettings": "Open settings",
+  "areaNearMe": "Near me",
+  "areaNearMeIn": "Near me · {place}",
+  "@areaNearMeIn": {
+    "description": "\"Near me\" and the town the phone is in.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "changeArea": "Change",
+  "changeAreaLabel": "Change where to look",
+  "approximateLocation": "Your location is approximate (within about {km} km).",
+  "@approximateLocation": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "radiusCityOnly": "City only",
+  "radiusKm": "Up to {km} km",
+  "@radiusKm": {
+    "placeholders": {
+      "km": {
+        "type": "int"
+      }
+    }
+  },
+  "filtersLabel": "Show parks with",
+  "@filtersLabel": {
+    "description": "Label before the filter chips."
+  },
+  "detailFenced": "Fenced",
+  "detailWater": "Water tap",
+  "detailShade": "Shade",
+  "detailLighting": "Lighting",
+  "detailSmallDogs": "Small-dog area",
+  "detailBenches": "Benches",
+  "answerYes": "Yes",
+  "answerNo": "No",
+  "answerUnknown": "Not known",
+  "detailAnswer": "{detail}: {answer}",
+  "@detailAnswer": {
+    "description": "A detail and its answer, read by screen readers.",
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      },
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "myParks": "My parks",
+  "parksInArea": "Parks in the area",
+  "distanceKm": "{km} km",
+  "@distanceKm": {
+    "description": "A distance, e.g. \"0.8 km\".",
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceM": "{m} m",
+  "@distanceM": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "parkDefaultName": "Dog park",
+  "@parkDefaultName": {
+    "description": "The name of a park that has none on the map."
+  },
+  "parkOnStreet": "Dog park · {street}",
+  "@parkOnStreet": {
+    "description": "An unnamed park, named after the nearest street.",
+    "placeholders": {
+      "street": {
+        "type": "String"
+      }
+    }
+  },
+  "parkInCity": "{park}, {city}",
+  "@parkInCity": {
+    "placeholders": {
+      "park": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "closedLabel": "Closed for renovation",
+  "searching": "Looking for parks…",
+  "noParksTitle": "No dog parks found here",
+  "noParksBody": "The map doesn't list a dog park in this area yet. Know one? Tell us about it.",
+  "noParksWider": "Look further",
+  "noFilterMatch": "No park here is known to have all of these.",
+  "clearFilters": "Clear filters",
+  "loadFailed": "We could not load the parks.",
+  "missingPark": "Missing a park?",
+  "suggestPark": "Suggest a park",
+  "sampleData": "Sample parks: made-up places for trying the app.",
+  "reviewEntry": "{count, plural, =1{1 park suggestion to review} other{{count} park suggestions to review}}",
+  "@reviewEntry": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewEntryEmpty": "Park suggestions",
+  "navigate": "Navigate",
+  "navigateWith": "Navigate with",
+  "waze": "Waze",
+  "@waze": {
+    "description": "Brand name: never translated."
+  },
+  "googleMaps": "Google Maps",
+  "@googleMaps": {
+    "description": "Brand name: never translated."
+  },
+  "navigateFailed": "We could not open the navigation app.",
+  "updateDetails": "Update details",
+  "saveToMyParks": "Save to My parks",
+  "removeFromMyParks": "Remove from My parks",
+  "savedToMyParks": "Saved to My parks",
+  "removedFromMyParks": "Removed from My parks",
+  "saveFailed": "That did not save. Try again.",
+  "whatsThere": "What's there",
+  "openingHours": "Opening hours",
+  "unknownNote": "Been there? \"Update details\" helps everyone know what to expect.",
+  "osmCredit": "Map data © OpenStreetMap contributors",
+  "@osmCredit": {
+    "description": "The licence credit; \"OpenStreetMap contributors\" stays in English."
+  },
+  "memberPark": "Added by PetLoop members",
+  "parkGone": "This park is no longer listed.",
+  "updateTitle": "Update details",
+  "updateIntro": "What did you see at the park? A reviewer checks it before it is shown to everyone.",
+  "closedSwitch": "Closed for renovation",
+  "send": "Send",
+  "nothingChanged": "Change at least one detail first.",
+  "sentThanks": "Thanks. A reviewer will check it soon.",
+  "rateLimited": "That's a lot of suggestions for one day. Please try again tomorrow.",
+  "sendFailed": "We could not send it. Try again.",
+  "suggestTitle": "Suggest a park",
+  "suggestIntro": "Tell us about a dog park the list is missing. A reviewer checks it before it is added.",
+  "parkNameLabel": "Park name (optional)",
+  "whereIsIt": "Where is it?",
+  "imHere": "I'm at the park now",
+  "imHereWhy": "Your position is sent with the suggestion as the park's location, and nothing else.",
+  "hereSet": "Location: where you are now",
+  "orTheCity": "Or pick the city",
+  "placeLabel": "Where in the city?",
+  "placeHint": "For example: next to the community centre on Herzl St.",
+  "detailsOptional": "What's there? (optional)",
+  "needLocation": "Add the location: tap \"I'm at the park now\", or pick the city and say where in it.",
+  "suggestSend": "Send the suggestion",
+  "reviewTitle": "Park suggestions",
+  "reviewEmpty": "Nothing to review.",
+  "reviewNewPark": "New park",
+  "reviewDetails": "Details of a park",
+  "reviewVanished": "No longer on OpenStreetMap",
+  "reviewVanishedBody": "Keep it if it is still there, mark it closed, or remove it from the list.",
+  "reviewFromPhone": "Location: the member's phone, at the park",
+  "reviewFromCity": "Location: centre of {city}. Check it on the map.",
+  "@reviewFromCity": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewPlace": "Place: {place}",
+  "@reviewPlace": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewChange": "{detail}: {from} → {to}",
+  "@reviewChange": {
+    "placeholders": {
+      "detail": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewClosed": "Suggested: closed for renovation",
+  "reviewReopened": "Suggested: open again",
+  "showOnMap": "Show on the map",
+  "approve": "Approve",
+  "reject": "Reject",
+  "keepPark": "Keep",
+  "markClosed": "Mark closed",
+  "removePark": "Remove",
+  "reviewDone": "Done.",
+  "reviewFailed": "That didn't work. Try again.",
+  "pickParkTitle": "Choose a park",
+  "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL)."
+}
