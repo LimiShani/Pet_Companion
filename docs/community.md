@@ -27,6 +27,10 @@ Private chats (after 0023, 0024 and 0025 are in):
    ```
    Nothing to change in its secrets or schedule.
 
+Walk and play partners (after 0026 and 0027): backup, run
+`supabase/migrations/0028_meetups.sql`, then deploy `community-push` again
+as in step 5. Details: [meetups.md](meetups.md).
+
 Before 0026 the app still works: the server does not grant
 `community.chat.private` yet, so nothing of private chats shows (no My
 chats, no New chat, no Private message, no new push switches); the topic
@@ -102,6 +106,7 @@ chat with one other person and no name is a chat of two.
 | A conversation: the people line, system lines, the invitation before joining, the closed bar | `chat/chat_screen.dart`, `chat/private_chat_widgets.dart` (`ChatInvitationCard`, `ChatSystemLineTile`, `PrivateChatAvatar`) |
 | Chat details: rename, members, admins, remove, mute, leave | `chat/chat_details_screen.dart` (route `/community/chat/:id/details`) |
 | Private message on a member page | `members/member_screen.dart` |
+| A member's walk and play ads on their page | the `member-meetups` slot (`memberPageMeetupsSlot`) in `members/member_screen.dart`, filled by the meetups module |
 | Invitations on the Activity page and the bell's dot | `members/activity_screen.dart`, `hasNewActivityProvider` |
 | Words of system lines and chat names | `CommunityWords.systemLine`, `privateChatName` in `community_words.dart` |
 | Backend | `ChatRepository` (`fetchPrivateChats`, `fetchInvitations`, `fetchPeople`, `createPrivateChat`, `inviteToPrivateChat`, `answerInvitation`, `leavePrivateChat`, `removeFromPrivateChat`, `makePrivateChatAdmin`, `renamePrivateChat`, `setPrivateChatMuted`); the fake keeps the same rules and seeds a chat with Maya, a group walk and Dana's invitation for the demo account |
@@ -203,7 +208,7 @@ Server rules (0021):
 - Menus offer only what the account may do: reporting a message needs
   `community.chat.send`, reporting a comment `community.feed.post`.
 
-## Outside: dog parks
+## Outside: dog parks and partners
 
 The fourth section, Outside (Feed · Chat · Outside · Guides), comes from
 the `outdoors` module through the `community-outside` slot: a Partners |
@@ -212,6 +217,13 @@ a review queue, and the seams the meetups feature (Partners) plugs into.
 Design, owner steps (migration 0027, the `parks-import` Edge Function, its
 secret and schedule, the first import, appointing reviewers) and tests:
 [dog_parks.md](dog_parks.md).
+
+Partners (shown first) is the `meetups` module: walk and play ads by
+area, answered in a private chat with the author (`openDirectChat` with a
+draft), a group for everyone who answered (`openGroupChat`), meetups on
+park pages and member pages, reports in the moderators' queue (kind
+`meetup`). Design, owner steps (migration 0028, redeploying
+`community-push`) and tests: [meetups.md](meetups.md).
 
 ## Push notifications
 
