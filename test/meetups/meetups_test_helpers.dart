@@ -184,10 +184,11 @@ Future<void> scrollTo(
   WidgetTester tester,
   Finder finder, {
   Finder? within,
+  double delta = 200,
 }) async {
   await tester.scrollUntilVisible(
     finder,
-    200,
+    delta,
     scrollable: find
         .descendant(
           of: within ?? board,

@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_companion/features/community/community_words.dart';
+import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/services/community/data/community_models.dart';
 import 'package:pet_companion/services/meetups/data/fake_meetups_repository.dart';
@@ -269,5 +271,10 @@ void main() {
       expect(SupabaseMeetupsRepository.failureOf('invalid_meetup', '22023'), MeetupFailure.invalid);
       expect(SupabaseMeetupsRepository.failureOf('Meetups access required', '42501'), MeetupFailure.other);
     });
+  });
+
+  test('the queue of the moderators names a partner ad', () {
+    expect(lookupCommunityL10n(englishLocale).moderationKind(ModerationKind.meetup), 'Partner ad');
+    expect(lookupCommunityL10n(hebrewLocale).moderationKind(ModerationKind.meetup), 'מודעת שותפים');
   });
 }
