@@ -149,10 +149,13 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
     final now = ref.watch(communityClockProvider)();
     String? where;
     if (item.kind == ModerationKind.message && item.context != null) {
-      final channels = ref.watch(chatChannelsProvider).value ?? const [];
-      for (final c in channels) {
+      final channels = ref.watch(chatChannelsProvider).value;
+      for (final c in channels ?? const <ChatChannel>[]) {
         if (c.id == item.context) where = l10n.inRoom(l10n.roomName(c));
       }
+      // Not a topic room: a private chat, of which moderators see only the
+      // reported message.
+      if (channels != null && where == null) where = l10n.inPrivateChat;
     }
     final reasons = [for (final r in item.reasons) l10n.reportReason(r)];
 
