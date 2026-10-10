@@ -135,6 +135,18 @@ Rules (enforced by 0026; the fake follows them):
 - **Reports.** Reporting a message sends that message only to the
   moderators' queue (it reads "In a private chat"); moderators cannot read
   private chats.
+- **Photos.** A private chat's photos are stored in the community-photos
+  bucket under `<author>/private/<chat id>/<file>`
+  (`CommunityPhotos.pathFor`). Storage rules let only the members who may
+  read the message carrying a photo read the file (joined, from their
+  invitation on; whoever left or was removed cannot), plus its author and,
+  for a reported message, the moderators; only joined members of an open
+  chat upload there. A private message must use its chat's folder and a
+  room message must not. Room photos are unchanged. The app reads them
+  through the usual short-lived signed links, which storage refuses to
+  anyone else. Because the author's folder comes first, the clean-up of
+  0015/0021 removes them as before: a deleted message, a chat deleted with
+  its last member, a deleted account.
 - **Mute.** The details switch mutes the chat on the server (no pushes) and
   on this phone (no unread count). Topic rooms keep the phone-only mute.
 - **Capability.** `community.chat.private` ("Private chats", needs

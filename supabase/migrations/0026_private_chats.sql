@@ -30,6 +30,16 @@
 --   * The capability community.chat.private ("Private chats"), allowed for
 --     every account through the Standard owners group, so an
 --     administrator can switch it off for one account.
+--   * Photos of a private chat live in the community-photos bucket under
+--     <author>/private/<chat id>/<file>. Only members who may read the
+--     message that carries a photo can read the file (the author can
+--     always reach their own upload; a moderator, a reported one); only
+--     joined members of an open chat upload there; a private chat's
+--     message must use that folder and a room's must not. Topic room
+--     photos are unchanged. The author's folder comes first, so the
+--     owner rules, the clean-up queue and the clean-up worker of 0015 and
+--     0021 cover these files as they are (deleted message, chat deleted
+--     with its last member, deleted account).
 --
 -- Additive and idempotent: running it again changes nothing.
 begin;
@@ -247,6 +257,71 @@ drop policy if exists feature_read on public.chat_channel_members;
 create policy feature_read on public.chat_channel_members as restrictive for select to authenticated
   using ((select public.can_use('community.chat.private')));
 
+-- Photos of private chats: <author>/private/<chat id>/<file>.
+create index if not exists chat_messages_photo_path_idx on public.chat_messages (photo_path) where photo_path is not null;
+
+-- The chat a photo path belongs to; null for any other path.
+create or replace function community_private.private_photo_channel(p_name text)
+returns text language sql immutable set search_path = '' as $$
+  select case
+    when split_part(p_name, '/', 2) = 'private' and split_part(p_name, '/', 3) <> ''
+         and split_part(p_name, '/', 4) <> '' and split_part(p_name, '/', 5) = ''
+    then split_part(p_name, '/', 3)
+  end
+$$;
+revoke all on function community_private.private_photo_channel(text) from public, anon;
+grant execute on function community_private.private_photo_channel(text) to authenticated, service_role;
+
+-- A message's photo is in the right place: a private chat's in that chat's
+-- folder, a room's outside every chat folder.
+create or replace function community_private.chat_photo_fits(p_channel text, p_path text)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select p_path is null or coalesce(community_private.private_photo_channel(p_path), '') =
+    coalesce((select case when c.kind = 'private' then c.id else '' end
+              from public.chat_channels c where c.id = p_channel), '')
+$$;
+revoke all on function community_private.chat_photo_fits(text, text) from public, anon;
+grant execute on function community_private.chat_photo_fits(text, text) to authenticated, service_role;
+
+-- Whether the signed-in member may read the file [p_name] of the
+-- community-photos bucket: any file outside a chat folder (as before);
+-- in a chat folder their own upload, the photo of a message they may read
+-- (joined, from the moment they were brought in), or, for a moderator,
+-- the photo of a reported message.
+create or replace function community_private.photo_open(p_name text, p_private boolean, p_moderator boolean)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select community_private.private_photo_channel(p_name) is null
+    or split_part(p_name, '/', 1) = auth.uid()::text
+    or exists (
+      select 1 from public.chat_messages m
+      where m.photo_path = p_name
+        and m.channel_id = community_private.private_photo_channel(p_name)
+        and (coalesce(m.created_at >= community_private.chat_visible_from(m.channel_id, p_private), false)
+             or (coalesce(p_moderator, false)
+                 and exists (select 1 from public.chat_message_reports r where r.message_id = m.id)))
+    )
+$$;
+revoke all on function community_private.photo_open(text, boolean, boolean) from public, anon;
+grant execute on function community_private.photo_open(text, boolean, boolean) to authenticated, service_role;
+
+drop policy if exists private_chat_photo_read on storage.objects;
+create policy private_chat_photo_read on storage.objects as restrictive for select to authenticated using (
+  objects.bucket_id <> 'community-photos'
+  or community_private.photo_open(objects.name,
+       (select public.can_use('community.chat.private')), (select public.can_use('community.moderate')))
+);
+drop policy if exists private_chat_photo_write on storage.objects;
+create policy private_chat_photo_write on storage.objects as restrictive for insert to authenticated with check (
+  objects.bucket_id <> 'community-photos'
+  or community_private.private_photo_channel(objects.name) is null
+  or community_private.chat_can_post(community_private.private_photo_channel(objects.name),
+       (select public.can_use('community.chat.private')))
+);
+drop policy if exists private_chat_photo_update on storage.objects;
+create policy private_chat_photo_update on storage.objects as restrictive for update to authenticated
+  using (objects.bucket_id <> 'community-photos' or community_private.private_photo_channel(objects.name) is null)
+  with check (objects.bucket_id <> 'community-photos' or community_private.private_photo_channel(objects.name) is null);
+
 -- Messages: a private chat's from the moment the reader was brought in;
 -- only joined members of an open chat write there; system lines only
 -- through the functions below.
@@ -260,10 +335,13 @@ drop policy if exists private_chat_write on public.chat_messages;
 create policy private_chat_write on public.chat_messages as restrictive for insert to authenticated with check (
   chat_messages.system is null
   and community_private.chat_can_post(chat_messages.channel_id, (select public.can_use('community.chat.private')))
+  and community_private.chat_photo_fits(chat_messages.channel_id, chat_messages.photo_path)
 );
 drop policy if exists private_chat_update on public.chat_messages;
 create policy private_chat_update on public.chat_messages as restrictive for update to authenticated
-  using (chat_messages.system is null) with check (chat_messages.system is null);
+  using (chat_messages.system is null)
+  with check (chat_messages.system is null
+              and community_private.chat_photo_fits(chat_messages.channel_id, chat_messages.photo_path));
 drop policy if exists private_chat_delete on public.chat_messages;
 create policy private_chat_delete on public.chat_messages as restrictive for delete to authenticated
   using (chat_messages.system is null);

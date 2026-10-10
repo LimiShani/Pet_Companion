@@ -39,6 +39,25 @@ class SupabaseChatRepository implements ChatRepository {
   /// Messages a reply points at that were not in the same batch.
   final _replyRows = <String, Map<String, dynamic>?>{};
 
+  /// Whether each channel asked about is a private chat.
+  final _private = <String, bool>{};
+
+  /// Whether [channelId] is a private chat, whose photos go to its own
+  /// folder. A room (or a database before 0026) is not.
+  Future<bool> _isPrivate(String channelId) async {
+    if (_private[channelId] case final known?) return known;
+    try {
+      final row = await _client
+          .from('chat_channels')
+          .select('kind')
+          .eq('id', channelId)
+          .maybeSingle();
+      return _private[channelId] = row?['kind'] == 'private';
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// How many of the latest messages a conversation shows.
   static const historySize = 200;
 
@@ -225,7 +244,11 @@ class SupabaseChatRepository implements ChatRepository {
     _names.remember(author.id, author.displayName);
     final photoPath = photo == null
         ? null
-        : await _photos.upload(author.id, photo);
+        : await _photos.upload(
+            author.id,
+            photo,
+            privateChatId: await _isPrivate(channelId) ? channelId : null,
+          );
     final Map<String, dynamic> row;
     try {
       row = await _client

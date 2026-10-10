@@ -12,6 +12,7 @@ import 'package:pet_companion/features/community/data/fake_chat_repository.dart'
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
 import 'package:pet_companion/features/community/members/member_screen.dart';
 import 'package:pet_companion/features/community/members/members_providers.dart';
+import 'package:pet_companion/features/community/widgets/post_photo_view.dart';
 import 'package:pet_companion/features/settings/settings_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/navigation/app_router.dart';
@@ -336,6 +337,30 @@ void main() {
       final chats = await tester.runAsync(() => h.chat.fetchPrivateChats(viewer: demoUser));
       final priya = chats!.firstWhere((c) => c.directWith == 'u-priya');
       expect(priya.member('u-priya')!.joined, isFalse);
+    });
+
+    testWidgets('a photo reaches the members only', (tester) async {
+      final h = await pumpCommunity(tester, harness: withChats());
+      await openChatSection(tester);
+      await tester.tap(find.text('Maya'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Add a photo'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Gallery'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Send message'));
+      await tester.pumpAndSettle();
+      expect(find.byType(PostPhotoView), findsOneWidget);
+
+      Future<int> photosFor(String viewerId) async {
+        final seen = await tester.runAsync(
+          () => h.chat.watchMessages(FakeChatRepository.mayaChatId, viewerId: viewerId).first,
+        );
+        return seen!.where((m) => m.photo != null).length;
+      }
+
+      expect(await photosFor('u-maya'), 1);
+      expect(await photosFor('u-priya'), 0);
     });
 
     testWidgets('a block closes it: blocked by the other, or by me', (tester) async {

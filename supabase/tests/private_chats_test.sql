@@ -440,5 +440,107 @@ reset role;
 do $$ begin
  assert (select count from public.push_outbox where preview='Fourth')=1, 'After reading, the count starts again';
 end $$;
+-- Photos: a private chat's files are for the members who may read their
+-- message; room photos stay readable by everyone.
+select pg_temp.act_as('e1111111-1111-4111-8111-111111111111');
+insert into pg_temp.ids values ('pics', public.create_private_chat(
+ array['e2222222-2222-4222-8222-222222222222','e3333333-3333-4333-8333-333333333333']::uuid[], 'Pics'));
+reset role;
+select pg_temp.act_as('e2222222-2222-4222-8222-222222222222');
+select public.answer_chat_invitation((select id from pg_temp.ids where name='pics'), true);
+reset role;
+insert into pg_temp.ids select 'pic', 'e1111111-1111-4111-8111-111111111111/private/' || id || '/walk.jpg' from pg_temp.ids where name='pics';
+select pg_temp.act_as('e1111111-1111-4111-8111-111111111111');
+do $$
+declare pics text := (select id from pg_temp.ids where name='pics'); pic text := (select id from pg_temp.ids where name='pic');
+begin
+ insert into storage.objects(bucket_id,name,owner) values('community-photos', pic, auth.uid());
+ insert into storage.objects(bucket_id,name,owner) values('community-photos', auth.uid() || '/room.jpg', auth.uid());
+ insert into public.chat_messages(id,channel_id,author_id,body,photo_path) values('f0000000-0000-4000-8000-000000000030', pics, auth.uid(), '', pic);
+ begin
+  insert into public.chat_messages(channel_id,author_id,body,photo_path) values('general', auth.uid(), '', auth.uid() || '/private/' || pics || '/x.jpg');
+  raise exception 'A room message used a chat folder';
+ exception when insufficient_privilege then null; end;
+ begin
+  insert into public.chat_messages(channel_id,author_id,body,photo_path) values(pics, auth.uid(), '', auth.uid() || '/plain.jpg');
+  raise exception 'A private message used a photo outside its chat folder';
+ exception when insufficient_privilege then null; end;
+ begin
+  update public.chat_messages set photo_path = auth.uid() || '/room.jpg' where id='f0000000-0000-4000-8000-000000000030';
+  raise exception 'A private message was moved to a room photo';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+select pg_temp.act_as('e2222222-2222-4222-8222-222222222222');
+do $$
+declare pics text := (select id from pg_temp.ids where name='pics'); pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert (select count(*) from storage.objects where name=pic)=1, 'A joined member reads the photo';
+ insert into storage.objects(bucket_id,name,owner) values('community-photos', auth.uid() || '/private/' || pics || '/mine.jpg', auth.uid());
+ insert into public.chat_message_reports(message_id,reason) values('f0000000-0000-4000-8000-000000000030','other');
+end $$;
+reset role;
+
+select pg_temp.act_as('e3333333-3333-4333-8333-333333333333');
+do $$
+declare pics text := (select id from pg_temp.ids where name='pics'); pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert (select count(*) from storage.objects where name=pic)=0, 'An invitee does not read the photo';
+ assert (select count(*) from storage.objects where name like '%/room.jpg')=1, 'Room photos stay readable';
+ begin
+  insert into storage.objects(bucket_id,name,owner) values('community-photos', auth.uid() || '/private/' || pics || '/x.jpg', auth.uid());
+  raise exception 'An invitee uploaded into the chat folder';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+select pg_temp.act_as('e4444444-4444-4444-8444-444444444444');
+do $$
+declare pics text := (select id from pg_temp.ids where name='pics'); pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert (select count(*) from storage.objects where name=pic)=0, 'Someone outside the chat does not read the photo, path known or not';
+ begin
+  insert into storage.objects(bucket_id,name,owner) values('community-photos', auth.uid() || '/private/' || pics || '/x.jpg', auth.uid());
+  raise exception 'Someone outside the chat uploaded into its folder';
+ exception when insufficient_privilege then null; end;
+end $$;
+reset role;
+
+-- Ben leaves: Ana's photo is gone for him, his own upload is still his.
+select pg_temp.act_as('e2222222-2222-4222-8222-222222222222');
+select public.leave_private_chat((select id from pg_temp.ids where name='pics'));
+do $$
+declare pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert (select count(*) from storage.objects where name=pic)=0, 'Who left does not read the photo';
+ assert (select count(*) from storage.objects where name like auth.uid()::text || '/private/%')=1, 'The author keeps their own upload';
+end $$;
+reset role;
+
+-- The moderator sees the reported photo only.
+select pg_temp.act_as('e6666666-6666-4666-8666-666666666666');
+do $$
+declare pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert (select count(*) from storage.objects where name=pic)=1, 'A moderator reads a reported photo';
+ assert (select count(*) from storage.objects where name like 'e2222222-2222-4222-8222-222222222222/private/%')=0,
+  'A moderator does not read an unreported one';
+end $$;
+reset role;
+
+-- The last member leaves: the chat goes, and its photos are queued for the
+-- storage clean-up.
+select pg_temp.act_as('e1111111-1111-4111-8111-111111111111');
+select public.leave_private_chat((select id from pg_temp.ids where name='pics'));
+reset role;
+do $$
+declare pic text := (select id from pg_temp.ids where name='pic');
+begin
+ assert not exists(select 1 from public.chat_channels where id=(select id from pg_temp.ids where name='pics')), 'The chat is deleted';
+ assert exists(select 1 from public.storage_cleanup_jobs where bucket='community-photos' and path=pic
+               and owner_id='e1111111-1111-4111-8111-111111111111'), 'Its photo is queued for the clean-up';
+ assert access_private.file_is_orphan('community-photos', pic), 'And no longer in use';
+end $$;
 rollback;
 \echo 'Private chat tests passed.'

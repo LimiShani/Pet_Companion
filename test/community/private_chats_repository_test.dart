@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/auth/app_user.dart';
 import 'package:pet_companion/services/community/data/community_models.dart';
 import 'package:pet_companion/services/community/data/fake_chat_repository.dart';
+import 'package:pet_companion/services/community/data/supabase_community_support.dart';
 
 /// The rules of private chats, as the in-memory fake keeps them (the
 /// database keeps the same ones: supabase/tests/private_chats_test.sql).
@@ -358,6 +359,14 @@ void main() {
       ),
       CommunityFailure.cannotInvite,
     );
+  });
+
+  test('a private chat photo goes to the chat folder inside the author folder', () {
+    expect(CommunityPhotos.pathFor('u1', 'jpg', fileName: 'f'), 'u1/f.jpg');
+    expect(CommunityPhotos.pathFor('u1', 'png', privateChatId: 'c-9', fileName: 'f'), 'u1/private/c-9/f.png');
+    final random = CommunityPhotos.pathFor('u1', 'jpg', privateChatId: 'c-9');
+    expect(random, startsWith('u1/private/c-9/'));
+    expect(random.split('/'), hasLength(4));
   });
 
   test('muting is kept on the server', () async {
