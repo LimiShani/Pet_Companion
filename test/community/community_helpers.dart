@@ -112,7 +112,8 @@ class CommunityHarness {
     this.moderator = false,
     FakeCommunitySafetyRepository? safety,
   })  : feed = feed ?? FakeFeedRepository(latency: Duration.zero, now: testClock),
-        chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock),
+        // The demo's private chats only where a test asks for them.
+        chat = chat ?? FakeChatRepository(latency: Duration.zero, now: testClock, seededPrivate: false),
         safety = safety ?? FakeCommunitySafetyRepository(latency: Duration.zero, now: testClock);
 
   final FakeFeedRepository feed;

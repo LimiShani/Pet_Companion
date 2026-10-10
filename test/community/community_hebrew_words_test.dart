@@ -188,6 +188,10 @@ void main() {
       CommunityFailure.photosNotAllowed: 'Cannot open your photos. Check that PetLoop is allowed to see them.',
       CommunityFailure.slowDown: 'That was quick! Please wait a minute before sending more.',
       CommunityFailure.notModerator: 'Only community moderators can do this.',
+      CommunityFailure.chatFull: 'A chat can have up to 30 people.',
+      CommunityFailure.notChatAdmin: "Only the chat's admins can do that.",
+      CommunityFailure.cannotInvite: 'Someone you chose cannot be invited to a chat.',
+      CommunityFailure.chatClosed: 'This chat is closed.',
       CommunityFailure.unknown: 'Something went wrong. Please try again.',
     };
     const hebrewWords = {
@@ -212,6 +216,10 @@ void main() {
           'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.',
       CommunityFailure.slowDown: 'רגע, זה היה מהר. כדאי לחכות דקה לפני שליחה נוספת.',
       CommunityFailure.notModerator: 'רק מנהלי הקהילה יכולים לעשות את זה.',
+      CommunityFailure.chatFull: 'בשיחה יכולים להיות עד 30 משתתפים.',
+      CommunityFailure.notChatAdmin: 'רק מנהלי השיחה יכולים לעשות את זה.',
+      CommunityFailure.cannotInvite: 'את מי שבחרת אי אפשר להזמין לשיחה.',
+      CommunityFailure.chatClosed: 'השיחה הזו סגורה.',
       CommunityFailure.unknown: 'משהו השתבש. אפשר לנסות שוב.',
     };
 

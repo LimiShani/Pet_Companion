@@ -1876,6 +1876,486 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Cannot load your notification choices'**
   String get pushLoadFailed;
+
+  /// No description provided for @errChatFull.
+  ///
+  /// In en, this message translates to:
+  /// **'A chat can have up to 30 people.'**
+  String get errChatFull;
+
+  /// No description provided for @errNotChatAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the chat\'s admins can do that.'**
+  String get errNotChatAdmin;
+
+  /// No description provided for @errCannotInvite.
+  ///
+  /// In en, this message translates to:
+  /// **'Someone you chose cannot be invited to a chat.'**
+  String get errCannotInvite;
+
+  /// No description provided for @errChatClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'This chat is closed.'**
+  String get errChatClosed;
+
+  /// Heading above the private chats in the Chat section.
+  ///
+  /// In en, this message translates to:
+  /// **'My chats'**
+  String get myChats;
+
+  /// Heading above the topic rooms in the Chat section.
+  ///
+  /// In en, this message translates to:
+  /// **'Topic rooms'**
+  String get topicRooms;
+
+  /// The floating button of the Chat section, and the title of the page that starts a private chat.
+  ///
+  /// In en, this message translates to:
+  /// **'New chat'**
+  String get newChat;
+
+  /// Under My chats while the member has no private chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a private chat with someone from the community, or from a member page.'**
+  String get noPrivateChats;
+
+  /// No description provided for @privateChatsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load your chats'**
+  String get privateChatsLoadFailed;
+
+  /// What a private chat is called; also the name of a group chat without one.
+  ///
+  /// In en, this message translates to:
+  /// **'Private chat'**
+  String get privateChat;
+
+  /// How many people are in a private chat, invited ones included.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 participant} other{{count} participants}}'**
+  String participantCount(int count);
+
+  /// On an invitation card, under the chat name.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} invited you'**
+  String invitationFrom(String name);
+
+  /// Title of an invitation to a chat of two.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} wants to chat with you'**
+  String invitationDirect(String name);
+
+  /// Button on an invitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Join'**
+  String get joinChat;
+
+  /// Button on an invitation.
+  ///
+  /// In en, this message translates to:
+  /// **'No thanks'**
+  String get declineInvitation;
+
+  /// No description provided for @invitationDeclined.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation declined'**
+  String get invitationDeclined;
+
+  /// In a chat the member was invited to and has not joined yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Join to see the messages and write.'**
+  String get invitationJoinNote;
+
+  /// Heading above invitations on the Activity page.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitations'**
+  String get invitationsTitle;
+
+  /// A line in a private chat.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} created the chat'**
+  String sysCreated(String name);
+
+  /// No description provided for @sysCreatedMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You created the chat'**
+  String get sysCreatedMine;
+
+  /// A line in a private chat: who invited whom. people is a list of names.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added {people}'**
+  String sysAdded(String name, String people);
+
+  /// No description provided for @sysAddedMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You added {people}'**
+  String sysAddedMine(String people);
+
+  /// No description provided for @sysAddedYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added you'**
+  String sysAddedYou(String name);
+
+  /// No description provided for @sysAddedYouAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added you and {people}'**
+  String sysAddedYouAnd(String name, String people);
+
+  /// No description provided for @sysJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} joined'**
+  String sysJoined(String name);
+
+  /// No description provided for @sysJoinedMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You joined'**
+  String get sysJoinedMine;
+
+  /// No description provided for @sysLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} left'**
+  String sysLeft(String name);
+
+  /// No description provided for @sysLeftMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You left the chat'**
+  String get sysLeftMine;
+
+  /// No description provided for @sysRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed {people}'**
+  String sysRemoved(String name, String people);
+
+  /// No description provided for @sysRemovedMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You removed {people}'**
+  String sysRemovedMine(String people);
+
+  /// No description provided for @sysAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} made {people} admin'**
+  String sysAdmin(String name, String people);
+
+  /// No description provided for @sysAdminMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You made {people} admin'**
+  String sysAdminMine(String people);
+
+  /// No description provided for @sysAdminYou.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} made you admin'**
+  String sysAdminYou(String name);
+
+  /// No description provided for @sysRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} renamed the chat to {title}'**
+  String sysRenamed(String name, String title);
+
+  /// No description provided for @sysRenamedMine.
+  ///
+  /// In en, this message translates to:
+  /// **'You renamed the chat to {title}'**
+  String sysRenamedMine(String title);
+
+  /// Title of the page about a private chat, and the tooltip of its header.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat details'**
+  String get chatDetails;
+
+  /// No description provided for @addParticipants.
+  ///
+  /// In en, this message translates to:
+  /// **'Add participants'**
+  String get addParticipants;
+
+  /// Tag next to a member who manages a private chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get adminTag;
+
+  /// Tag next to someone invited who has not joined yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Invited'**
+  String get invitedTag;
+
+  /// Tag next to the member themselves in the member list.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youTag;
+
+  /// No description provided for @makeAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Make admin'**
+  String get makeAdmin;
+
+  /// No description provided for @removeFromChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from chat'**
+  String get removeFromChat;
+
+  /// No description provided for @cancelInvitation.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel invitation'**
+  String get cancelInvitation;
+
+  /// No description provided for @memberOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Options for {name}'**
+  String memberOptions(String name);
+
+  /// No description provided for @removeMemberTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name} from the chat?'**
+  String removeMemberTitle(String name);
+
+  /// No description provided for @removeMemberBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Whoever is removed no longer sees the chat or its messages.'**
+  String get removeMemberBody;
+
+  /// No description provided for @memberRemovedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from the chat'**
+  String get memberRemovedDone;
+
+  /// No description provided for @muteChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Mute chat'**
+  String get muteChat;
+
+  /// No description provided for @chatMutedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Muted: no notifications and no unread count'**
+  String get chatMutedNote;
+
+  /// No description provided for @leaveChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave chat'**
+  String get leaveChat;
+
+  /// No description provided for @leaveChatTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this chat?'**
+  String get leaveChatTitle;
+
+  /// No description provided for @leaveChatBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You will no longer see it or its messages.'**
+  String get leaveChatBody;
+
+  /// The button that confirms leaving a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
+  /// No description provided for @renameChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameChat;
+
+  /// No description provided for @chatRenamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat renamed'**
+  String get chatRenamed;
+
+  /// No description provided for @chatNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat name'**
+  String get chatNameLabel;
+
+  /// No description provided for @chatNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Morning walks in the park'**
+  String get chatNameHint;
+
+  /// No description provided for @invitationsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Invitation sent} other{Invitations sent}}'**
+  String invitationsSent(int count);
+
+  /// Hint of the search field when starting a chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by name'**
+  String get searchPeople;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedCount(int count);
+
+  /// No description provided for @recentPeople.
+  ///
+  /// In en, this message translates to:
+  /// **'People you talked with recently'**
+  String get recentPeople;
+
+  /// No description provided for @communityMembersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community members'**
+  String get communityMembersTitle;
+
+  /// No description provided for @noPeopleFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No one by that name'**
+  String get noPeopleFound;
+
+  /// No description provided for @peopleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot load community members'**
+  String get peopleLoadFailed;
+
+  /// No description provided for @nextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextStep;
+
+  /// No description provided for @createChat.
+  ///
+  /// In en, this message translates to:
+  /// **'Create chat'**
+  String get createChat;
+
+  /// No description provided for @groupNameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the chat'**
+  String get groupNameTitle;
+
+  /// No description provided for @groupNameNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone in the chat sees its name.'**
+  String get groupNameNote;
+
+  /// Tooltip of the cross on a chosen person.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {name}'**
+  String removePerson(String name);
+
+  /// No description provided for @participantsLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} people in a chat'**
+  String participantsLimit(int count);
+
+  /// Button that invites the chosen people to an existing chat.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get addToChat;
+
+  /// Button on a member page.
+  ///
+  /// In en, this message translates to:
+  /// **'Private message'**
+  String get privateMessage;
+
+  /// No description provided for @chatBlockedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You blocked {name}. Unblock them to write here again.'**
+  String chatBlockedNote(String name);
+
+  /// No description provided for @otherLeftNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is no longer in this chat.'**
+  String otherLeftNote(String name);
+
+  /// No description provided for @inviteAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Invite again'**
+  String get inviteAgain;
+
+  /// No description provided for @chatGoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This chat is no longer here'**
+  String get chatGoneTitle;
+
+  /// No description provided for @chatGoneMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'It may have been deleted, or you left it.'**
+  String get chatGoneMessage;
+
+  /// Where a reported chat message was written, when it was a private chat.
+  ///
+  /// In en, this message translates to:
+  /// **'In a private chat'**
+  String get inPrivateChat;
+
+  /// No description provided for @pushPrivateMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages in my private chats'**
+  String get pushPrivateMessages;
+
+  /// No description provided for @pushChatInvites.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitations to a chat'**
+  String get pushChatInvites;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

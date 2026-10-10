@@ -74,6 +74,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
       'moderate' => _text('Moderate reports', 'בדיקת דיווחים'),
       'suggest' => _text('Suggest changes', 'הצעת תיקונים'),
       'review' => _text('Review suggestions', 'בדיקת הצעות'),
+      'private' => _text('Private chats', 'שיחות פרטיות'),
       _ => action,
     };
     return '${_featureLabel(parts.join('.'))} · $label';

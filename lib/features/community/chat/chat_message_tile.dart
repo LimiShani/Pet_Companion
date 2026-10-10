@@ -27,7 +27,10 @@ class ChatRunPosition {
   static const gap = Duration(minutes: 5);
 
   static ChatRunPosition of(List<ChatEntry> entries, int i) {
+    // A line that says what happened stands apart from every run.
     bool together(ChatMessage a, ChatMessage b) =>
+        a.system == null &&
+        b.system == null &&
         a.authorId == b.authorId &&
         isSameDay(a.sentAt, b.sentAt) &&
         b.sentAt.difference(a.sentAt).abs() <= gap;

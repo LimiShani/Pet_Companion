@@ -21,6 +21,7 @@ const capabilityCatalog = <String>[
   'community.feed.edit',
   'community.chat.view',
   'community.chat.send',
+  'community.chat.private',
   'community.guides.view',
   'community.moderate',
   'community.parks.view',

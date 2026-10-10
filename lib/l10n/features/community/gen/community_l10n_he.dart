@@ -1060,4 +1060,300 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get pushLoadFailed => 'אי אפשר לטעון את הבחירות שלך להתראות';
+
+  @override
+  String get errChatFull => 'בשיחה יכולים להיות עד 30 משתתפים.';
+
+  @override
+  String get errNotChatAdmin => 'רק מנהלי השיחה יכולים לעשות את זה.';
+
+  @override
+  String get errCannotInvite => 'את מי שבחרת אי אפשר להזמין לשיחה.';
+
+  @override
+  String get errChatClosed => 'השיחה הזו סגורה.';
+
+  @override
+  String get myChats => 'השיחות שלי';
+
+  @override
+  String get topicRooms => 'חדרי נושא';
+
+  @override
+  String get newChat => 'שיחה חדשה';
+
+  @override
+  String get noPrivateChats => 'אפשר לפתוח שיחה פרטית עם חברי הקהילה, כאן או מהדף של כל חבר.';
+
+  @override
+  String get privateChatsLoadFailed => 'אי אפשר לטעון את השיחות שלך';
+
+  @override
+  String get privateChat => 'שיחה פרטית';
+
+  @override
+  String participantCount(int count) {
+    return 'משתתפים: $count';
+  }
+
+  @override
+  String invitationFrom(String name) {
+    return 'הזמנה מ־\u2068$name\u2069';
+  }
+
+  @override
+  String invitationDirect(String name) {
+    return '\u2068$name\u2069 רוצה לדבר איתך';
+  }
+
+  @override
+  String get joinChat => 'הצטרפות';
+
+  @override
+  String get declineInvitation => 'לא, תודה';
+
+  @override
+  String get invitationDeclined => 'ההזמנה נדחתה';
+
+  @override
+  String get invitationJoinNote => 'אחרי ההצטרפות אפשר לראות את ההודעות ולכתוב.';
+
+  @override
+  String get invitationsTitle => 'הזמנות';
+
+  @override
+  String sysCreated(String name) {
+    return 'השיחה נפתחה על ידי \u2068$name\u2069';
+  }
+
+  @override
+  String get sysCreatedMine => 'פתחת את השיחה';
+
+  @override
+  String sysAdded(String name, String people) {
+    return 'הזמנה מ־\u2068$name\u2069 אל \u2068$people\u2069';
+  }
+
+  @override
+  String sysAddedMine(String people) {
+    return 'הזמנת את \u2068$people\u2069';
+  }
+
+  @override
+  String sysAddedYou(String name) {
+    return 'קיבלת הזמנה מ־\u2068$name\u2069';
+  }
+
+  @override
+  String sysAddedYouAnd(String name, String people) {
+    return 'קיבלת הזמנה מ־\u2068$name\u2069, יחד עם \u2068$people\u2069';
+  }
+
+  @override
+  String sysJoined(String name) {
+    return '\u2068$name\u2069 בשיחה';
+  }
+
+  @override
+  String get sysJoinedMine => 'הצטרפת לשיחה';
+
+  @override
+  String sysLeft(String name) {
+    return '\u2068$name\u2069 כבר לא בשיחה';
+  }
+
+  @override
+  String get sysLeftMine => 'יצאת מהשיחה';
+
+  @override
+  String sysRemoved(String name, String people) {
+    return 'הסרה של \u2068$people\u2069 מהשיחה, על ידי \u2068$name\u2069';
+  }
+
+  @override
+  String sysRemovedMine(String people) {
+    return 'הסרת את \u2068$people\u2069 מהשיחה';
+  }
+
+  @override
+  String sysAdmin(String name, String people) {
+    return 'ניהול השיחה עבר גם אל \u2068$people\u2069, על ידי \u2068$name\u2069';
+  }
+
+  @override
+  String sysAdminMine(String people) {
+    return 'מינית את \u2068$people\u2069 לניהול השיחה';
+  }
+
+  @override
+  String sysAdminYou(String name) {
+    return 'קיבלת הרשאת ניהול מ־\u2068$name\u2069';
+  }
+
+  @override
+  String sysRenamed(String name, String title) {
+    return 'שם השיחה שונה ל־״\u2068$title\u2069״ על ידי \u2068$name\u2069';
+  }
+
+  @override
+  String sysRenamedMine(String title) {
+    return 'שינית את שם השיחה ל־״\u2068$title\u2069״';
+  }
+
+  @override
+  String get chatDetails => 'פרטי השיחה';
+
+  @override
+  String get addParticipants => 'הוספת משתתפים';
+
+  @override
+  String get adminTag => 'ניהול';
+
+  @override
+  String get invitedTag => 'הזמנה נשלחה';
+
+  @override
+  String get youTag => 'אני';
+
+  @override
+  String get makeAdmin => 'מינוי לניהול השיחה';
+
+  @override
+  String get removeFromChat => 'הסרה מהשיחה';
+
+  @override
+  String get cancelInvitation => 'ביטול ההזמנה';
+
+  @override
+  String memberOptions(String name) {
+    return 'אפשרויות עבור \u2068$name\u2069';
+  }
+
+  @override
+  String removeMemberTitle(String name) {
+    return 'להסיר את \u2068$name\u2069 מהשיחה?';
+  }
+
+  @override
+  String get removeMemberBody => 'מי שמוסר מהשיחה כבר לא רואה אותה ואת ההודעות שבה.';
+
+  @override
+  String get memberRemovedDone => 'ההסרה בוצעה';
+
+  @override
+  String get muteChat => 'השתקת השיחה';
+
+  @override
+  String get chatMutedNote => 'מושתקת: בלי התראות ובלי מספר הודעות שלא נקראו';
+
+  @override
+  String get leaveChat => 'יציאה מהשיחה';
+
+  @override
+  String get leaveChatTitle => 'לצאת מהשיחה?';
+
+  @override
+  String get leaveChatBody => 'השיחה וההודעות שבה לא יופיעו אצלך יותר.';
+
+  @override
+  String get leave => 'יציאה';
+
+  @override
+  String get renameChat => 'שינוי שם';
+
+  @override
+  String get chatRenamed => 'שם השיחה שונה';
+
+  @override
+  String get chatNameLabel => 'שם השיחה';
+
+  @override
+  String get chatNameHint => 'למשל: טיולי בוקר בפארק';
+
+  @override
+  String invitationsSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ההזמנות נשלחו',
+      one: 'ההזמנה נשלחה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchPeople => 'חיפוש לפי שם';
+
+  @override
+  String selectedCount(int count) {
+    return 'נבחרו: $count';
+  }
+
+  @override
+  String get recentPeople => 'דיברת איתם לאחרונה';
+
+  @override
+  String get communityMembersTitle => 'חברי הקהילה';
+
+  @override
+  String get noPeopleFound => 'לא מצאנו אף אחד בשם הזה';
+
+  @override
+  String get peopleLoadFailed => 'אי אפשר לטעון את חברי הקהילה';
+
+  @override
+  String get nextStep => 'המשך';
+
+  @override
+  String get createChat => 'יצירת השיחה';
+
+  @override
+  String get groupNameTitle => 'שם לשיחה';
+
+  @override
+  String get groupNameNote => 'כל המשתתפים רואים את השם.';
+
+  @override
+  String removePerson(String name) {
+    return 'הסרת \u2068$name\u2069';
+  }
+
+  @override
+  String participantsLimit(int count) {
+    return 'עד $count משתתפים בשיחה';
+  }
+
+  @override
+  String get addToChat => 'הוספה';
+
+  @override
+  String get privateMessage => 'הודעה פרטית';
+
+  @override
+  String chatBlockedNote(String name) {
+    return 'חסמת את \u2068$name\u2069. אחרי ביטול החסימה אפשר לכתוב כאן שוב.';
+  }
+
+  @override
+  String otherLeftNote(String name) {
+    return '\u2068$name\u2069 כבר לא בשיחה הזו.';
+  }
+
+  @override
+  String get inviteAgain => 'הזמנה מחדש';
+
+  @override
+  String get chatGoneTitle => 'השיחה הזו כבר לא כאן';
+
+  @override
+  String get chatGoneMessage => 'אולי היא נמחקה, או שיצאת ממנה.';
+
+  @override
+  String get inPrivateChat => 'בשיחה פרטית';
+
+  @override
+  String get pushPrivateMessages => 'הודעות בשיחות הפרטיות שלי';
+
+  @override
+  String get pushChatInvites => 'הזמנות לשיחה';
 }

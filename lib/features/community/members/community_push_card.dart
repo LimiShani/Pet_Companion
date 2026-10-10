@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../notifications/push.dart';
@@ -10,6 +11,7 @@ import '../../../services/community/data/community_providers.dart';
 import '../../../services/community/data/push_preferences_repository.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../chat/private_chat_providers.dart' show privateChatCapability;
 import '../community_words.dart';
 import '../feed/feed_controller.dart' show noRetry;
 import '../feed/post_actions.dart' show showCommunitySnack;
@@ -65,6 +67,7 @@ class CommunityPushCard extends ConsumerWidget {
     final l10n = context.communityL10n;
     final preferences = ref.watch(pushPreferencesProvider);
     final value = preferences.value;
+    final private = ref.watch(capabilityProvider(privateChatCapability));
 
     Future<void> change(PushPreferences next) async {
       final messenger = ScaffoldMessenger.of(context);
@@ -106,6 +109,26 @@ class CommunityPushCard extends ConsumerWidget {
                       ? null
                       : (on) => change(value.copyWith(replies: on)),
                 ),
+                if (private) ...[
+                  SwitchListTile(
+                    key: const ValueKey('push-private-messages'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.pushPrivateMessages),
+                    value: value?.privateMessages ?? true,
+                    onChanged: value == null
+                        ? null
+                        : (on) => change(value.copyWith(privateMessages: on)),
+                  ),
+                  SwitchListTile(
+                    key: const ValueKey('push-chat-invites'),
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.pushChatInvites),
+                    value: value?.chatInvites ?? true,
+                    onChanged: value == null
+                        ? null
+                        : (on) => change(value.copyWith(chatInvites: on)),
+                  ),
+                ],
                 SwitchListTile(
                   key: const ValueKey('push-comments'),
                   contentPadding: EdgeInsets.zero,

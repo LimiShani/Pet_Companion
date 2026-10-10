@@ -35,6 +35,10 @@ CommunityFailure _postgrestFailure(sb.PostgrestException e) {
   // 0021_community_chat_safety.sql refuses a burst of posts, comments or
   // messages with this message.
   if (message.contains('rate_limited')) return CommunityFailure.slowDown;
+  // 0026_private_chats.sql names why a private chat refused a change.
+  if (message.contains('chat_full')) return CommunityFailure.chatFull;
+  if (message.contains('not_chat_admin')) return CommunityFailure.notChatAdmin;
+  if (message.contains('cannot_invite')) return CommunityFailure.cannotInvite;
   switch (e.code) {
     case '42501': // row level security said no
       return CommunityFailure.notAllowed;
@@ -43,6 +47,8 @@ CommunityFailure _postgrestFailure(sb.PostgrestException e) {
     case '23503': // the post or room was deleted meanwhile
       return CommunityFailure.gone;
     case '42P01' || 'PGRST205': // 0003_community.sql has not been run
+      return CommunityFailure.notSetUp;
+    case 'PGRST202': // a function of a migration that has not been run
       return CommunityFailure.notSetUp;
     case 'PGRST301' || 'PGRST303':
       return CommunityFailure.signInAgain;
@@ -131,13 +137,34 @@ class CommunityPhotos {
 
   final _links = <String, ({String url, DateTime until})>{};
 
-  /// Uploads [photo] into [authorId]'s folder and returns its path. The
-  /// upload is registered with the storage clean-up first, so a photo whose
-  /// post or message is never saved does not stay behind; call
-  /// [attached] once the row that uses it exists.
-  Future<String> upload(String authorId, PickedPhoto photo) async {
+  /// Where a photo is stored: in its author's folder, and for a message of
+  /// a private chat in that chat's folder inside it, which only the chat's
+  /// members may read (0026_private_chats.sql). The author's folder comes
+  /// first, so the owner rules and the clean-up cover both.
+  static String pathFor(
+    String authorId,
+    String extension, {
+    String? privateChatId,
+    String? fileName,
+  }) {
+    final file = '${fileName ?? const Uuid().v4()}.$extension';
+    return privateChatId == null
+        ? '$authorId/$file'
+        : '$authorId/private/$privateChatId/$file';
+  }
+
+  /// Uploads [photo] into [authorId]'s folder (into [privateChatId]'s
+  /// folder there for a private chat) and returns its path. The upload is
+  /// registered with the storage clean-up first, so a photo whose post or
+  /// message is never saved does not stay behind; call [attached] once the
+  /// row that uses it exists.
+  Future<String> upload(
+    String authorId,
+    PickedPhoto photo, {
+    String? privateChatId,
+  }) async {
     final extension = extensionOf(photo);
-    final path = '$authorId/${const Uuid().v4()}.$extension';
+    final path = pathFor(authorId, extension, privateChatId: privateChatId);
     final client = _client();
     await StorageCleanup(client).reserve(bucket, path);
     await client.storage

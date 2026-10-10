@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
@@ -24,19 +25,32 @@ import '../widgets/auto_direction_text.dart';
 import '../widgets/community_keeper.dart';
 import '../widgets/message_bar.dart';
 import '../widgets/section_state.dart';
+import '../community_routes.dart';
+import '../safety/safety_providers.dart';
+import '../widgets/author_avatar.dart';
 import 'chat_message_tile.dart';
 import 'chat_providers.dart';
+import 'private_chat_providers.dart';
+import 'private_chat_widgets.dart';
 
-/// A chat room: the live conversation and a message field.
+/// A chat room or a private chat: the live conversation and a message
+/// field.
 ///
 /// Long-press a message to react, answer, copy, delete your own, report or
 /// block someone else's. A message shows at once and says when it failed
 /// to go. Scrolling up loads older messages; while reading them, a button
 /// leads back to the latest and counts what arrived meanwhile.
+///
+/// A private chat shows its people under the header (a tap opens the chat
+/// details) and lines that say what happened. Before the member accepts
+/// an invitation it shows only the invitation.
 class ChatScreen extends ConsumerStatefulWidget {
-  const ChatScreen({super.key, required this.channelId});
+  const ChatScreen({super.key, required this.channelId, this.draft});
 
   final String channelId;
+
+  /// What the message field starts with (another feature opening a chat).
+  final String? draft;
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -66,6 +80,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    if (widget.draft case final draft?) _message.text = draft;
   }
 
   @override
@@ -285,6 +300,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// The long-press menu of a message.
   Future<void> _messageActions(ChatEntry entry) async {
     final message = entry.message;
+    // A line that says what happened has nothing to act on.
+    if (message.system != null) return;
     final l10n = context.communityL10n;
     final app = context.l10n;
     final viewerId = ref.read(authControllerProvider).value?.id;
@@ -484,16 +501,49 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
-    final channels =
-        ref.watch(chatChannelsProvider).value ?? const <ChatChannel>[];
+    final channelsValue = ref.watch(chatChannelsProvider);
+    final channels = channelsValue.value ?? const <ChatChannel>[];
     ChatChannel? channel;
     for (final c in channels) {
       if (c.id == widget.channelId) channel = c;
     }
-    final name = channel == null ? l10n.sectionChat : l10n.roomName(channel);
+    final viewerId = ref.watch(
+      authControllerProvider.select((auth) => auth.value?.id),
+    );
+    final privateChat = ref.watch(privateChatProvider(widget.channelId));
+    final invitation = ref.watch(chatInvitationProvider(widget.channelId));
+    if (privateChat == null && invitation != null) {
+      return _invited(context, invitation);
+    }
+    if (channel == null && privateChat == null && _gone(ref, channelsValue)) {
+      return Scaffold(
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CoralHeader(title: l10n.privateChat, showBack: true),
+            Expanded(
+              child: SectionState(
+                icon: Icons.forum_outlined,
+                title: l10n.chatGoneTitle,
+                message: l10n.chatGoneMessage,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    final name = privateChat != null
+        ? l10n.privateChatName(privateChat, viewerId)
+        : channel == null
+        ? l10n.sectionChat
+        : l10n.roomName(channel);
     final canSend = ref.watch(capabilityProvider('community.chat.send'));
     _noticeHidden ??= ref.read(settingsStoreProvider).read(_noticeKey) == '1';
-    final showNotice = !_noticeDismissible || _noticeHidden != true;
+    final showNotice =
+        privateChat == null && (!_noticeDismissible || _noticeHidden != true);
+    final closedBar = privateChat == null
+        ? null
+        : _closedBar(context, ref, privateChat, viewerId);
 
     ref.listen(chatConversationProvider(widget.channelId), (_, next) {
       if (next.value case final conversation?) _onConversation(conversation);
@@ -509,12 +559,24 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               title: name,
               showBack: true,
               actions: [
-                CoralHeaderAction(
-                  icon: Icons.info_outline_rounded,
-                  tooltip: l10n.roomInfo,
-                  onPressed: () => _showRoomInfo(channel, name),
-                ),
+                if (privateChat != null)
+                  CoralHeaderAction(
+                    icon: Icons.info_outline_rounded,
+                    tooltip: l10n.chatDetails,
+                    onPressed: () => context.push(
+                      CommunityRoutes.chatDetails(widget.channelId),
+                    ),
+                  )
+                else
+                  CoralHeaderAction(
+                    icon: Icons.info_outline_rounded,
+                    tooltip: l10n.roomInfo,
+                    onPressed: () => _showRoomInfo(channel, name),
+                  ),
               ],
+              bottom: privateChat == null
+                  ? null
+                  : _PeopleLine(chat: privateChat, viewerId: viewerId),
             ),
             if (showNotice)
               Padding(
@@ -549,7 +611,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ],
               ),
             ),
-            if (canSend)
+            if (closedBar != null)
+              closedBar
+            else if (canSend)
               MessageBar(
                 controller: _message,
                 hint: l10n.messageHint(l10n.inLine(name)),
@@ -583,6 +647,186 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                       ),
               ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Whether [widget.channelId] is a private chat that is no longer the
+  /// member's (deleted, left, removed): every list has loaded without it.
+  bool _gone(WidgetRef ref, AsyncValue<List<ChatChannel>> channels) {
+    if (!ref.watch(capabilityProvider(privateChatCapability))) return false;
+    final chats = ref.watch(privateChatsProvider);
+    final invitations = ref.watch(chatInvitationsProvider);
+    return channels.hasValue &&
+        !channels.isLoading &&
+        chats.hasValue &&
+        !chats.isLoading &&
+        invitations.hasValue &&
+        !invitations.isLoading;
+  }
+
+  /// A chat the member was invited to and has not joined: the invitation,
+  /// and nothing of the conversation.
+  Widget _invited(BuildContext context, ChatInvitation invitation) {
+    final l10n = context.communityL10n;
+    final title = invitation.direct || invitation.name.trim().isEmpty
+        ? l10n.privateChat
+        : invitation.name;
+    return Scaffold(
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CoralHeader(title: title, showBack: true),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.screen),
+              children: [
+                ChatInvitationCard(invitation: invitation),
+                const SizedBox(height: 12),
+                Text(
+                  l10n.invitationJoinNote,
+                  textAlign: TextAlign.center,
+                  style: AppText.body.copyWith(color: AppColors.brown),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// In place of the message field: why a chat of two takes no message
+  /// (a block, or the other person left), and what can be done.
+  Widget? _closedBar(
+    BuildContext context,
+    WidgetRef ref,
+    PrivateChat chat,
+    String? viewerId,
+  ) {
+    final l10n = context.communityL10n;
+    final other = chat.directWith;
+    if (!chat.direct || other == null) return null;
+    final name = l10n.inLine(l10n.memberName(chat.directName));
+    final blockedByMe = ref.watch(blockedIdsProvider).contains(other);
+    final String text;
+    Widget? action;
+    if (blockedByMe) {
+      text = l10n.chatBlockedNote(name);
+      action = TextButton(
+        onPressed: () =>
+            ref.read(blockedMembersProvider.notifier).unblock(other),
+        child: Text(l10n.unblock),
+      );
+    } else if (chat.closed) {
+      text = l10n.errChatClosed;
+    } else if (chat.member(other) == null) {
+      text = l10n.otherLeftNote(name);
+      action = TextButton(
+        onPressed: () => _inviteAgain(other),
+        child: Text(l10n.inviteAgain),
+      );
+    } else {
+      return null;
+    }
+    return SafeArea(
+      top: false,
+      child: Container(
+        key: const ValueKey('chat-closed-bar'),
+        margin: const EdgeInsets.fromLTRB(
+          AppSpacing.screen,
+          8,
+          AppSpacing.screen,
+          8,
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+        ),
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 8,
+          children: [
+            Text(text, style: AppText.body.copyWith(color: AppColors.brown)),
+            ?action,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _inviteAgain(String memberId) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final errorWords = communityErrorWords(context);
+    final sent = context.communityL10n.invitationsSent(1);
+    try {
+      await ref.read(privateChatControllerProvider.notifier).start([memberId]);
+      showCommunitySnack(messenger, sent);
+    } catch (e) {
+      showCommunitySnack(messenger, errorWords(e));
+    }
+  }
+}
+
+/// Under a private chat's header: who is in it and how many; a tap opens
+/// the chat details.
+class _PeopleLine extends StatelessWidget {
+  const _PeopleLine({required this.chat, required this.viewerId});
+
+  final PrivateChat chat;
+  final String? viewerId;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+    final faces = [
+      for (final m in chat.joinedMembers)
+        if (m.userId != viewerId) m,
+    ].take(3).toList();
+    return Semantics(
+      button: true,
+      label: l10n.chatDetails,
+      excludeSemantics: true,
+      child: InkWell(
+        key: const ValueKey('chat-people'),
+        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+        onTap: () => context.push(CommunityRoutes.chatDetails(chat.id)),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Row(
+            children: [
+              for (final m in faces)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 4),
+                  child: AuthorAvatar(
+                    name: m.name,
+                    authorId: m.userId,
+                    size: 28,
+                  ),
+                ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  chat.direct
+                      ? l10n.privateChat
+                      : dotted([
+                          l10n.privateChat,
+                          l10n.participantCount(chat.participantCount),
+                        ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.label.copyWith(
+                    color: AppColors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const AppIcon(Icons.chevron_right_rounded, color: AppColors.ink),
+            ],
+          ),
         ),
       ),
     );
@@ -704,24 +948,31 @@ class _Messages extends ConsumerWidget {
                   style: AppText.label.copyWith(color: AppColors.brown),
                 ),
               ),
-            ChatMessageTile(
-              key: ValueKey(message.id),
-              entry: entry,
-              mine: message.authorId == viewerId,
-              position: ChatRunPosition.of(entries, i),
-              onLongPress: () => onLongPress(entry),
-              onFailedTap: () => onFailedTap(entry),
-              onAuthorTap: () => openMember(context, message.authorId),
-              onReaction: canReact && entry.pending == null
-                  ? (emoji) async {
-                      try {
-                        await room.toggleReaction(message, emoji);
-                      } catch (e) {
-                        showCommunitySnack(messenger, errorWords(e));
+            if (message.system != null)
+              ChatSystemLineTile(
+                key: ValueKey(message.id),
+                message: message,
+                viewerId: viewerId,
+              )
+            else
+              ChatMessageTile(
+                key: ValueKey(message.id),
+                entry: entry,
+                mine: message.authorId == viewerId,
+                position: ChatRunPosition.of(entries, i),
+                onLongPress: () => onLongPress(entry),
+                onFailedTap: () => onFailedTap(entry),
+                onAuthorTap: () => openMember(context, message.authorId),
+                onReaction: canReact && entry.pending == null
+                    ? (emoji) async {
+                        try {
+                          await room.toggleReaction(message, emoji);
+                        } catch (e) {
+                          showCommunitySnack(messenger, errorWords(e));
+                        }
                       }
-                    }
-                  : null,
-            ),
+                    : null,
+              ),
           ],
         );
       },

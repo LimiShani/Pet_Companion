@@ -47,6 +47,18 @@ enum CommunityFailure {
   /// Only moderators may do this.
   notModerator,
 
+  /// A private chat already has as many people as it can take.
+  chatFull,
+
+  /// Only a private chat's admins may do this.
+  notChatAdmin,
+
+  /// Someone cannot be invited (a block either way, or no private chats).
+  cannotInvite,
+
+  /// A chat of two with a block between them takes no new messages.
+  chatClosed,
+
   /// Anything the app has no words of its own for.
   unknown,
 }
@@ -344,7 +356,78 @@ class ChatReplyPreview {
   final bool hasPhoto;
 }
 
-/// One message in a [ChatChannel].
+/// What a system line of a private chat says happened. [key] is what the
+/// database stores.
+enum ChatEvent {
+  created('created'),
+  added('added'),
+  joined('joined'),
+  left('left'),
+  removed('removed'),
+  admin('admin'),
+  renamed('renamed');
+
+  const ChatEvent(this.key);
+
+  final String key;
+
+  static ChatEvent? fromKey(String? key) {
+    for (final event in values) {
+      if (event.key == key) return event;
+    }
+    return null;
+  }
+}
+
+/// A line in a private chat that says what happened rather than what
+/// someone wrote ("Dana added Ron and Michal"). Its author is who did it.
+class ChatSystemLine {
+  const ChatSystemLine({
+    required this.event,
+    this.userIds = const [],
+    this.userNames = const {},
+    this.name = '',
+  });
+
+  final ChatEvent event;
+
+  /// Who was added, removed or made admin.
+  final List<String> userIds;
+
+  /// The stored names of [userIds], as far as they are known.
+  final Map<String, String> userNames;
+
+  /// The new name, for [ChatEvent.renamed].
+  final String name;
+
+  /// The line as the database stores it (`chat_messages.system`); `null`
+  /// for an ordinary message or an event the app does not know.
+  static ChatSystemLine? fromJson(Object? value) {
+    if (value is! Map) return null;
+    final event = ChatEvent.fromKey(value['event'] as String?);
+    if (event == null) return null;
+    return ChatSystemLine(
+      event: event,
+      userIds: [for (final id in (value['users'] as List?) ?? const []) '$id'],
+      name: value['name'] as String? ?? '',
+    );
+  }
+
+  Map<String, Object> toJson() => {
+    'event': event.key,
+    if (userIds.isNotEmpty) 'users': userIds,
+    if (name.isNotEmpty) 'name': name,
+  };
+
+  ChatSystemLine withNames(Map<String, String> names) => ChatSystemLine(
+    event: event,
+    userIds: userIds,
+    userNames: {for (final id in userIds) id: ?names[id]},
+    name: name,
+  );
+}
+
+/// One message in a [ChatChannel] or a private chat.
 class ChatMessage {
   const ChatMessage({
     required this.id,
@@ -357,6 +440,7 @@ class ChatMessage {
     this.replyToId,
     this.replyTo,
     this.reactions = const [],
+    this.system,
   });
 
   final String id;
@@ -374,6 +458,10 @@ class ChatMessage {
   final String? replyToId;
   final ChatReplyPreview? replyTo;
   final List<ChatReaction> reactions;
+
+  /// Set for a line that says what happened in a private chat; its author
+  /// is who did it.
+  final ChatSystemLine? system;
 
   ChatReplyPreview asReplyPreview() => ChatReplyPreview(
     messageId: id,
@@ -395,6 +483,7 @@ class ChatRoomSummary {
     this.lastHasPhoto = false,
     this.lastMessageAt,
     this.unread = 0,
+    this.lastSystem,
   });
 
   final String channelId;
@@ -403,9 +492,164 @@ class ChatRoomSummary {
   final String lastText;
   final bool lastHasPhoto;
 
+  /// Set when the latest line of a private chat says what happened.
+  final ChatSystemLine? lastSystem;
+
   /// `null` for a room without messages.
   final DateTime? lastMessageAt;
   final int unread;
+}
+
+/// Limits of private chats, shared by the UI, the fakes and the database.
+abstract final class PrivateChatLimits {
+  /// People in a chat, invited and joined, the creator included.
+  static const participants = 30;
+  static const nameLength = 40;
+}
+
+/// What a member of a private chat may do there.
+enum ChatRole { admin, member }
+
+/// Someone in a private chat: invited (not answered yet) or joined.
+class PrivateChatMember {
+  const PrivateChatMember({
+    required this.userId,
+    required this.name,
+    required this.invitedAt,
+    this.role = ChatRole.member,
+    this.joined = true,
+    this.invitedBy,
+    this.joinedAt,
+  });
+
+  final String userId;
+
+  /// As stored; empty for an account without a name.
+  final String name;
+  final ChatRole role;
+
+  /// Accepted the invitation. Until then the member is shown as invited.
+  final bool joined;
+  final String? invitedBy;
+
+  /// When the member was brought in: their history starts here.
+  final DateTime invitedAt;
+  final DateTime? joinedAt;
+
+  bool get isAdmin => role == ChatRole.admin;
+}
+
+/// A chat between a member and people they invited. With [directWith] set
+/// it is a chat of two, which has no name and shows the other person.
+class PrivateChat {
+  const PrivateChat({
+    required this.id,
+    required this.name,
+    required this.createdAt,
+    required this.members,
+    this.createdBy,
+    this.directWith,
+    this.directName = '',
+    this.muted = false,
+    this.closed = false,
+  });
+
+  final String id;
+
+  /// As its admins wrote it; empty for a chat of two.
+  final String name;
+  final String? createdBy;
+  final DateTime createdAt;
+
+  /// The other person of a chat of two.
+  final String? directWith;
+
+  /// Their name as stored, known even after they left the chat.
+  final String directName;
+
+  /// Muted on the server: no push notifications from it.
+  final bool muted;
+
+  /// A chat of two with a block between them: read only.
+  final bool closed;
+
+  /// Joined members first (in the order they joined), then the invited.
+  final List<PrivateChatMember> members;
+
+  bool get direct => directWith != null;
+
+  List<PrivateChatMember> get joinedMembers => [
+    for (final m in members)
+      if (m.joined) m,
+  ];
+
+  PrivateChatMember? member(String? userId) {
+    for (final m in members) {
+      if (m.userId == userId) return m;
+    }
+    return null;
+  }
+
+  bool isAdmin(String? userId) => member(userId)?.isAdmin ?? false;
+
+  /// Invited and joined, as the 30-person limit counts them.
+  int get participantCount => members.length;
+
+  PrivateChat copyWith({String? name, bool? muted, bool? closed}) =>
+      PrivateChat(
+        id: id,
+        name: name ?? this.name,
+        createdAt: createdAt,
+        members: members,
+        createdBy: createdBy,
+        directWith: directWith,
+        directName: directName,
+        muted: muted ?? this.muted,
+        closed: closed ?? this.closed,
+      );
+}
+
+/// An invitation waiting for the member: all they see of the chat until
+/// they join.
+class ChatInvitation {
+  const ChatInvitation({
+    required this.channelId,
+    required this.name,
+    required this.inviterId,
+    required this.inviterName,
+    required this.participantCount,
+    required this.invitedAt,
+    this.direct = false,
+  });
+
+  final String channelId;
+
+  /// Empty for a chat of two.
+  final String name;
+  final bool direct;
+  final String inviterId;
+  final String inviterName;
+  final int participantCount;
+  final DateTime invitedAt;
+}
+
+/// Someone a member can start a chat with.
+class ChatPerson {
+  const ChatPerson({
+    required this.id,
+    required this.name,
+    this.city = '',
+    this.recent = false,
+  });
+
+  final String id;
+
+  /// As stored; empty for an account without a name.
+  final String name;
+  final String city;
+
+  /// The member talked with them recently (a private chat, an answer).
+  final bool recent;
 }
 
 /// A member the viewer blocked: shown in the list where they can be

@@ -14,6 +14,24 @@ the code, and what the owner has to do on the server.
 3. Nothing else: no Edge Function, no secret, no paid service. Realtime picks
    up `chat_message_reactions` from the publication change in 0021.
 
+Private chats (after 0023, 0024 and 0025 are in):
+
+4. Backup, then run `supabase/migrations/0026_private_chats.sql` in the SQL
+   editor. It adds the capability `community.chat.private` to the Standard
+   owners group, so every account has private chats at once; to switch
+   them off for one account: Feature access → Users → the person →
+   *Community chat · Private chats* → Deny.
+5. Deploy the push function again (it words the new kinds):
+   ```bash
+   npx supabase@2.119.0 functions deploy community-push --project-ref rogmiiusncgmxjqpwgsn --use-api
+   ```
+   Nothing to change in its secrets or schedule.
+
+Before 0026 the app still works: the server does not grant
+`community.chat.private` yet, so nothing of private chats shows (no My
+chats, no New chat, no Private message, no new push switches); the topic
+rooms, their pushes and the push card are as before.
+
 Before 0021 is run the app still works: rooms load, text messages send,
 reactions and the room list's unread counts are simply missing. Before 0022
 the feed loads and posts are written (as moments for everyone); filtering by
@@ -71,6 +89,94 @@ so Back returns to where the member was.
   covered subscriptions and flushes them in the middle of a build when the
   route comes back ("setState() called during build").
 
+## Private chats
+
+Chats between a member and people they invite, like a group in WhatsApp; a
+chat with one other person and no name is a chat of two.
+
+| What | Where |
+|---|---|
+| Invitations and "My chats" above the topic rooms, the "New chat" button | `chat/chat_section.dart` (`_PrivateChats`), `community_screen.dart` (the button) |
+| Lists, actions, the way in for other features | `chat/private_chat_providers.dart`: `privateChatsProvider`, `chatInvitationsProvider`, `chatPeopleProvider`, `PrivateChatController`, `openDirectChat`, `openGroupChat` |
+| Choosing people, naming a group, adding people | `chat/new_chat_screen.dart` (`openNewChat`, `openAddParticipants`) |
+| A conversation: the people line, system lines, the invitation before joining, the closed bar | `chat/chat_screen.dart`, `chat/private_chat_widgets.dart` (`ChatInvitationCard`, `ChatSystemLineTile`, `PrivateChatAvatar`) |
+| Chat details: rename, members, admins, remove, mute, leave | `chat/chat_details_screen.dart` (route `/community/chat/:id/details`) |
+| Private message on a member page | `members/member_screen.dart` |
+| Invitations on the Activity page and the bell's dot | `members/activity_screen.dart`, `hasNewActivityProvider` |
+| Words of system lines and chat names | `CommunityWords.systemLine`, `privateChatName` in `community_words.dart` |
+| Backend | `ChatRepository` (`fetchPrivateChats`, `fetchInvitations`, `fetchPeople`, `createPrivateChat`, `inviteToPrivateChat`, `answerInvitation`, `leavePrivateChat`, `removeFromPrivateChat`, `makePrivateChatAdmin`, `renamePrivateChat`, `setPrivateChatMuted`); the fake keeps the same rules and seeds a chat with Maya, a group walk and Dana's invitation for the demo account |
+
+Rules (enforced by 0026; the fake follows them):
+
+- **Joining.** An invitee accepts first; until then they see only the
+  invitation card (name, inviter, how many people) and members see them as
+  *Invited*. *No thanks* drops the invitation.
+- **Admins.** The creator is the first admin. Only admins invite, rename,
+  remove (or take back an invitation) and make another joined member
+  admin. Anyone can leave. The last admin leaving makes the
+  earliest-joined member admin; the last member leaving deletes the chat
+  with its messages.
+- **History.** A member reads the chat from the moment they were brought in
+  (invited), once they joined: so the first message of a chat of two,
+  written before the other person accepted, reaches them. Whoever leaves
+  or is removed loses the whole chat.
+- **Size and limits.** Up to 30 people (invited and joined); 10 new chats
+  and 30 invitations per account per day ("That was quick!"); messages keep
+  the 15 a minute of the rooms. System lines do not count.
+- **Chats of two.** Starting a chat with someone one already has a chat of
+  two with reopens it (`direct_key`; whoever left is brought back, the
+  other person is invited again). It has no name, no more people, no
+  system lines.
+- **Blocking.** Nobody invites, or finds in *New chat*, someone they
+  blocked or who blocked them. In a group a blocked member's messages are
+  hidden (the rule of the rooms). A chat of two with a block between the
+  two is closed: no new messages from either side; the blocker no longer
+  sees it in My chats until they unblock.
+- **Reports.** Reporting a message sends that message only to the
+  moderators' queue (it reads "In a private chat"); moderators cannot read
+  private chats.
+- **Photos.** A private chat's photos are stored in the community-photos
+  bucket under `<author>/private/<chat id>/<file>`
+  (`CommunityPhotos.pathFor`). Storage rules let only the members who may
+  read the message carrying a photo read the file (joined, from their
+  invitation on; whoever left or was removed cannot), plus its author and,
+  for a reported message, the moderators; only joined members of an open
+  chat upload there. A private message must use its chat's folder and a
+  room message must not. Room photos are unchanged. The app reads them
+  through the usual short-lived signed links, which storage refuses to
+  anyone else. Because the author's folder comes first, the clean-up of
+  0015/0021 removes them as before: a deleted message, a chat deleted with
+  its last member, a deleted account.
+- **Mute.** The details switch mutes the chat on the server (no pushes) and
+  on this phone (no unread count). Topic rooms keep the phone-only mute.
+- **Capability.** `community.chat.private` ("Private chats", needs
+  `community.chat.view`); without it nothing of private chats shows and the
+  server refuses every call.
+
+System lines are `chat_messages` rows with `system` set
+(`{"event": "added", "users": [...]}`; events created, added, joined, left,
+removed, admin, renamed), written only by the server functions; the app
+words them in its language (`systemLine`). They follow the same read rule
+as messages, are never unread, and cannot be answered, reacted to or
+deleted from the app.
+
+### Opening a chat from another feature
+
+```dart
+import '../community/chat/private_chat_providers.dart';
+
+// The chat of two with the ad's author, the message field pre-filled.
+await openDirectChat(context, ref, userId: ad.authorId, draft: 'Hi, I saw your ad...');
+
+// One group for everyone who answered.
+await openGroupChat(context, ref, userIds: answered, name: 'Saturday walk');
+```
+
+Both find or create the chat through `PrivateChatController.start`, push
+`/community/chat/<id>` (with a `ChatDraft` as the route's `extra`), say a
+failure in a snack bar and return the chat's id (`null` on failure). The
+other people see the chat once they accept their invitation.
+
 ## Safety
 
 | What | Where |
@@ -109,7 +215,8 @@ secret and schedule, the first import, appointing reviewers) and tests:
 
 ## Push notifications
 
-Comments, likes and chat answers can reach a member's phone: see
+Comments, likes, chat answers, private messages and chat invitations can
+reach a member's phone: see
 [push_notifications.md](push_notifications.md) (migration 0023, the
 `community-push` Edge Function, Firebase setup). The Settings card and the
 `post` / `room` actions that open a tapped notification live in this
@@ -125,6 +232,13 @@ feature.
   replies, reactions, copy and delete, failed sends, photos, paging, the jump
   button, the advice note, rules, reports, blocking, the safety page,
   moderation, Hebrew at 320 px.
-- `supabase/tests/community_chat_safety_test.sql` and
-  `supabase/tests/community_feed_profiles_test.sql`, run by
+- `test/community/private_chats_test.dart`: My chats, invitations (chat
+  section and Activity), joining and declining, a group's system lines and
+  details, an admin's new group (rename, add, make admin, remove), chats of
+  two (New chat, Private message, a draft from another feature, blocks),
+  the push switches, the capability switched off, Hebrew at 320 px.
+- `test/community/private_chats_repository_test.dart`: the fake's rules.
+- `supabase/tests/community_chat_safety_test.sql`,
+  `supabase/tests/community_feed_profiles_test.sql` and
+  `supabase/tests/private_chats_test.sql`, run by
   `tool/test_database.ps1`.

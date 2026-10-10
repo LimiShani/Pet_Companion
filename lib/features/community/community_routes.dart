@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import 'chat/chat_details_screen.dart';
 import 'chat/chat_screen.dart';
+import 'chat/private_chat_providers.dart' show ChatDraft;
 import 'community_screen.dart';
 import 'feed/post_detail_screen.dart';
 import 'members/activity_screen.dart';
@@ -17,6 +19,7 @@ abstract final class CommunityRoutes {
       '$root/post/${Uri.encodeComponent(postId)}';
   static String chat(String channelId) =>
       '$root/chat/${Uri.encodeComponent(channelId)}';
+  static String chatDetails(String channelId) => '${chat(channelId)}/details';
   static String guide(String guideId) =>
       '$root/guide/${Uri.encodeComponent(guideId)}';
   static String member(String memberId) =>
@@ -42,8 +45,21 @@ final List<RouteBase> communityRoutes = [
       ),
       GoRoute(
         path: 'chat/:channelId',
-        builder: (context, state) =>
-            ChatScreen(channelId: state.pathParameters['channelId']!),
+        builder: (context, state) => ChatScreen(
+          channelId: state.pathParameters['channelId']!,
+          draft: switch (state.extra) {
+            ChatDraft(:final text) => text,
+            _ => null,
+          },
+        ),
+        routes: [
+          GoRoute(
+            path: 'details',
+            builder: (context, state) => ChatDetailsScreen(
+              channelId: state.pathParameters['channelId']!,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: 'member/:memberId',

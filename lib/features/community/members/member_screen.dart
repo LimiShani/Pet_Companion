@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../services/community/data/community_models.dart';
@@ -14,6 +15,7 @@ import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../community_routes.dart';
+import '../chat/private_chat_providers.dart';
 import '../community_words.dart';
 import '../feed/feed_controller.dart';
 import '../feed/post_actions.dart' show showCommunitySnack;
@@ -27,7 +29,7 @@ import 'members_providers.dart';
 
 /// A member's page: name, city, since when, the line they wrote about
 /// themselves, and their posts. The member's own page edits that line;
-/// someone else's offers blocking.
+/// someone else's offers a private message and blocking.
 class MemberScreen extends ConsumerWidget {
   const MemberScreen({super.key, required this.memberId});
 
@@ -152,7 +154,22 @@ class MemberScreen extends ConsumerWidget {
                         child: Text(l10n.unblock),
                       ),
                     ),
-                  ] else
+                  ] else ...[
+                    if (ref.watch(
+                      capabilityProvider(privateChatCapability),
+                    )) ...[
+                      FilledButton.icon(
+                        key: const ValueKey('private-message'),
+                        onPressed: () =>
+                            openDirectChat(context, ref, userId: memberId),
+                        icon: const AppIcon(
+                          Icons.chat_bubble_outline_rounded,
+                          size: 18,
+                        ),
+                        label: Text(l10n.privateMessage),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     OutlinedButton.icon(
                       onPressed: () => blockMemberFlow(
                         context,
@@ -169,6 +186,7 @@ class MemberScreen extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
+                  ],
                 ],
               ),
             ),

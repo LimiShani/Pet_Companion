@@ -1,7 +1,8 @@
 import '../../../auth/app_user.dart';
 import 'community_models.dart';
 
-/// Topic chat rooms. Failures surface as [CommunityException].
+/// Topic chat rooms and private chats. Failures surface as
+/// [CommunityException].
 ///
 /// [viewerId] names the member a call is made for: it decides which
 /// reactions are "mine" and hides what they reported. Messages of members
@@ -62,5 +63,80 @@ abstract class ChatRepository {
     required AppUser viewer,
     required String messageId,
     required ReportReason reason,
+  });
+
+  // -------------------------------------------------------------------
+  // Private chats (0026_private_chats.sql). Their messages go through the
+  // calls above, by the chat's id; the summaries include them.
+  // -------------------------------------------------------------------
+
+  /// The private chats [viewer] joined, most recently active first.
+  Future<List<PrivateChat>> fetchPrivateChats({required AppUser viewer});
+
+  /// Invitations waiting for [viewer], newest first.
+  Future<List<ChatInvitation>> fetchInvitations({required AppUser viewer});
+
+  /// People [viewer] can start a chat with, the ones they talked with
+  /// recently first; [search] narrows them by name. Never the viewer,
+  /// anyone blocked either way, or anyone without private chats.
+  Future<List<ChatPerson>> fetchPeople({
+    required AppUser viewer,
+    String search = '',
+  });
+
+  /// Starts a chat with [memberIds] and returns its id. One person and no
+  /// [name]: the chat of the two, reopened when it exists.
+  Future<String> createPrivateChat({
+    required AppUser viewer,
+    required List<String> memberIds,
+    String name = '',
+  });
+
+  /// An admin invites more people to a group chat.
+  Future<void> inviteToPrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required List<String> memberIds,
+  });
+
+  /// Joins a chat [viewer] was invited to, or drops the invitation.
+  Future<void> answerInvitation({
+    required AppUser viewer,
+    required String channelId,
+    required bool accept,
+  });
+
+  /// Leaves a chat: [viewer] loses all of it.
+  Future<void> leavePrivateChat({
+    required AppUser viewer,
+    required String channelId,
+  });
+
+  /// An admin removes a member, or takes back an invitation.
+  Future<void> removeFromPrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required String memberId,
+  });
+
+  /// An admin makes a joined member admin too.
+  Future<void> makePrivateChatAdmin({
+    required AppUser viewer,
+    required String channelId,
+    required String memberId,
+  });
+
+  /// An admin renames a group chat.
+  Future<void> renamePrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required String name,
+  });
+
+  /// Mutes a chat's push notifications for [viewer], or unmutes them.
+  Future<void> setPrivateChatMuted({
+    required AppUser viewer,
+    required String channelId,
+    required bool muted,
   });
 }

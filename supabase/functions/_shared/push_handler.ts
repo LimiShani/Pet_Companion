@@ -1,6 +1,7 @@
 // Edge Function `community-push`: sends what the database queued in
 // `push_outbox` (comments on a member's posts, likes, answers to their
-// chat messages) to their phones through FCM, in each phone's language.
+// chat messages, messages in their private chats, invitations to a chat)
+// to their phones through FCM, in each phone's language.
 //
 // Called by the database (a trigger pokes it through pg_net) and by a
 // schedule, both with the header `x-job-secret`. Rows are claimed with
@@ -22,28 +23,46 @@ export interface PushHandlerOptions {
 export interface ClaimedDevice { token: string; platform: string; language: string }
 export interface ClaimedPush {
   id: number;
-  kind: 'comment' | 'like' | 'reply';
+  kind: 'comment' | 'like' | 'reply' | 'message' | 'invite';
   target: string;
   preview: string;
   actor_name: string;
   devices: ClaimedDevice[];
+  /** How many unread messages a 'message' stands for (0026). */
+  count?: number;
+  /** The private chat's name; empty for a chat of two (0026). */
+  chat_name?: string;
+  /** A private chat of two (0026). */
+  direct?: boolean;
 }
 
 const WORDS = {
   en: {
     fallbackName: 'Pet lover',
     photo: 'Photo',
+    privateChat: 'Private chat',
     comment: (name: string) => `${name} commented on your post`,
     like: (name: string) => `${name} liked your post`,
     reply: (name: string) => `${name} answered your message`,
+    newMessages: (count: number) => `${count} new messages`,
+    fromIn: (name: string, text: string) => `${name}: ${text}`,
+    inviteDirect: (name: string) => `${name} wants to chat with you`,
+    inviteGroup: (name: string, chat: string) => `${name} invited you to ${chat}`,
+    inviteBody: 'Open PetLoop to join or say no thanks',
   },
   he: {
     fallbackName: 'אוהבי חיות',
     photo: 'תמונה',
+    privateChat: 'שיחה פרטית',
     // A name in Latin letters is kept as one unit inside the Hebrew line.
     comment: (name: string) => `תגובה חדשה מ־⁨${name}⁩ לפוסט שלך`,
     like: (name: string) => `לייק מ־⁨${name}⁩ לפוסט שלך`,
     reply: (name: string) => `תשובה מ־⁨${name}⁩ להודעה שלך`,
+    newMessages: (count: number) => `${count} הודעות חדשות`,
+    fromIn: (name: string, text: string) => `⁨${name}⁩: ⁨${text}⁩`,
+    inviteDirect: (name: string) => `⁨${name}⁩ רוצה לדבר איתך`,
+    inviteGroup: (name: string, chat: string) => `הזמנה מ־⁨${name}⁩ לשיחה ״⁨${chat}⁩״`,
+    inviteBody: 'אפשר להצטרף או לוותר באפליקציה',
   },
 };
 
@@ -51,8 +70,27 @@ const WORDS = {
 export function wordsFor(item: ClaimedPush, language: string): { title: string; body: string } {
   const words = language === 'en' ? WORDS.en : WORDS.he;
   const name = item.actor_name.trim() || words.fallbackName;
+  const preview = item.preview.trim();
+  if (item.kind === 'message') {
+    // One notification a chat: several unread messages are counted, one is
+    // shown. A chat of two is titled with the other person.
+    const count = item.count ?? 1;
+    const text = preview || words.photo;
+    if (item.direct) {
+      return { title: name, body: count > 1 ? words.newMessages(count) : text };
+    }
+    const chat = (item.chat_name ?? '').trim() || words.privateChat;
+    return { title: chat, body: count > 1 ? words.newMessages(count) : words.fromIn(name, text) };
+  }
+  if (item.kind === 'invite') {
+    const chat = (item.chat_name ?? '').trim();
+    return {
+      title: item.direct || !chat ? words.inviteDirect(name) : words.inviteGroup(name, chat),
+      body: words.inviteBody,
+    };
+  }
   const title = words[item.kind](name);
-  const body = item.preview.trim() || (item.kind === 'reply' ? words.photo : '');
+  const body = preview || (item.kind === 'reply' ? words.photo : '');
   return { title, body };
 }
 

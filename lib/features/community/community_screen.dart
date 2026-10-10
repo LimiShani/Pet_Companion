@@ -10,7 +10,10 @@ import '../../platform/feature_ui.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
+import 'chat/chat_providers.dart' show chatChannelsProvider;
 import 'chat/chat_section.dart';
+import 'chat/new_chat_screen.dart';
+import 'chat/private_chat_providers.dart' show privateChatCapability;
 import 'community_routes.dart';
 import 'widgets/community_keeper.dart';
 import 'members/members_providers.dart';
@@ -171,6 +174,20 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                 onPressed: () => openPostComposer(context),
                 icon: const AppIcon(Icons.edit_rounded),
                 label: Text(l10n.newPost),
+              )
+            // Likewise "New chat" waits for the rooms (an error block has
+            // its own button where this one floats).
+            : index == 1 &&
+                  ref.watch(
+                    chatChannelsProvider.select(
+                      (rooms) => rooms.value?.isNotEmpty ?? false,
+                    ),
+                  ) &&
+                  ref.watch(capabilityProvider(privateChatCapability))
+            ? FloatingActionButton.extended(
+                onPressed: () => openNewChat(context),
+                icon: const AppIcon(Icons.add_comment_rounded),
+                label: Text(l10n.newChat),
               )
             : null,
       ),

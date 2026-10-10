@@ -160,3 +160,60 @@ test('a service account secret must look like one', () => {
     null,
   );
 });
+
+const privateMessage: ClaimedPush = {
+  id: 7,
+  kind: 'message',
+  target: 'room:2b6f0cc9-1c2d-4a51-9f63-6f1a4bd1f0c1',
+  preview: 'Out at seven?',
+  actor_name: 'Dana',
+  devices: [{ token: 'token-en', platform: 'android', language: 'en' }],
+  count: 1,
+  chat_name: 'Morning walks',
+  direct: false,
+};
+
+test('private messages: the chat as title, then who said what or how many', () => {
+  assert.deepEqual(wordsFor(privateMessage, 'en'), { title: 'Morning walks', body: 'Dana: Out at seven?' });
+  assert.deepEqual(wordsFor({ ...privateMessage, count: 3 }, 'en'), { title: 'Morning walks', body: '3 new messages' });
+  assert.deepEqual(wordsFor({ ...privateMessage, chat_name: '', preview: '' }, 'en'), {
+    title: 'Private chat',
+    body: 'Dana: Photo',
+  });
+  assert.deepEqual(wordsFor(privateMessage, 'he'), { title: 'Morning walks', body: '⁨Dana⁩: ⁨Out at seven?⁩' });
+  assert.equal(wordsFor({ ...privateMessage, count: 4 }, 'he').body, '4 הודעות חדשות');
+});
+
+test('a chat of two is titled with the other person', () => {
+  const direct = { ...privateMessage, direct: true, chat_name: '' };
+  assert.deepEqual(wordsFor(direct, 'en'), { title: 'Dana', body: 'Out at seven?' });
+  assert.deepEqual(wordsFor({ ...direct, count: 2 }, 'en'), { title: 'Dana', body: '2 new messages' });
+  assert.deepEqual(wordsFor({ ...direct, actor_name: ' ' }, 'he'), { title: 'אוהבי חיות', body: 'Out at seven?' });
+});
+
+test('invitations name the inviter and the chat', () => {
+  const invite: ClaimedPush = { ...privateMessage, kind: 'invite', preview: 'Morning walks', count: 1 };
+  assert.deepEqual(wordsFor(invite, 'en'), {
+    title: 'Dana invited you to Morning walks',
+    body: 'Open PetLoop to join or say no thanks',
+  });
+  assert.equal(wordsFor(invite, 'he').title, 'הזמנה מ־⁨Dana⁩ לשיחה ״⁨Morning walks⁩״');
+  assert.deepEqual(wordsFor({ ...invite, direct: true, chat_name: '' }, 'en').title, 'Dana wants to chat with you');
+  assert.equal(wordsFor({ ...invite, direct: true, chat_name: '' }, 'he').title, '⁨Dana⁩ רוצה לדבר איתך');
+});
+
+test('a private message is sent with its room as the tap target and tag', async () => {
+  const { account } = await testAccount();
+  const sent: Record<string, unknown>[] = [];
+  const { fetcher } = backend([{ ...privateMessage, count: 2 }], (body) => {
+    sent.push(body);
+    return Response.json({ name: 'projects/x/messages/2' });
+  });
+  const handler = createPushHandler({ url: 'https://db.test', serviceKey: 'service', jobSecret: 'job-secret', account, fetcher, now: () => NOW });
+  assert.deepEqual(await (await handler(request())).json(), { sent: 1, dead: 0 });
+  const message = sent[0].message as Record<string, any>;
+  assert.equal(message.notification.title, 'Morning walks');
+  assert.equal(message.notification.body, '2 new messages');
+  assert.deepEqual(message.data, { target: privateMessage.target, kind: 'message' });
+  assert.equal(message.android.notification.tag, privateMessage.target);
+});

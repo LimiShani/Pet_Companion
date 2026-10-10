@@ -7,6 +7,7 @@ import '../../../notifications/push.dart';
 import '../../../platform/session.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
+import '../chat/private_chat_providers.dart';
 import '../feed/feed_controller.dart' show noRetry;
 import '../safety/safety_providers.dart';
 
@@ -90,11 +91,15 @@ final activitySeenProvider = NotifierProvider<ActivitySeen, DateTime?>(
   ActivitySeen.new,
 );
 
-/// Something happened since the activity page was last opened.
+/// Something happened since the activity page was last opened: activity,
+/// or an invitation to a private chat.
 final hasNewActivityProvider = Provider<bool>((ref) {
   final items = ref.watch(activityProvider).value ?? const <ActivityItem>[];
+  final invitations =
+      ref.watch(chatInvitationsProvider).value ?? const <ChatInvitation>[];
   final seen = ref.watch(activitySeenProvider);
-  return items.any((item) => seen == null || item.at.isAfter(seen));
+  return items.any((item) => seen == null || item.at.isAfter(seen)) ||
+      invitations.any((i) => seen == null || i.invitedAt.isAfter(seen));
 });
 
 /// The rooms the member muted on this phone: no unread count for them.
