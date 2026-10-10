@@ -241,5 +241,8 @@
   "reviewDone": "Done.",
   "reviewFailed": "That didn't work. Try again.",
   "pickParkTitle": "Choose a park",
+  "reviewerTools": "For park reviewers",
+  "reopenPark": "Open again",
+  "removeConfirm": "Remove this park from the list? It is hidden, not deleted.",
   "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL)."
 }

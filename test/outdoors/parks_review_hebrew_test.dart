@@ -111,6 +111,36 @@ void main() {
       expect(find.text(en.reviewEmpty), findsOneWidget);
     });
 
+    testWidgets('a reviewer closes or removes a park from its page', (tester) async {
+      final kit = await openOutside(tester, size: tall, kit: ParksKit(reviewer: true));
+      await chooseCity(tester, 'raan', 'raanana');
+      await tester.tap(card('demo-raanana-nesiim'));
+      await tester.pumpAndSettle();
+      expect(find.text(en.reviewerTools), findsOneWidget);
+      await tester.tap(find.byKey(ParkScreen.reviewerKey(ParkStatus.closed)));
+      await tester.pumpAndSettle();
+      expect(kit.repo.reviewActions, ['status:demo-raanana-nesiim:closed']);
+      expect(find.text(en.closedLabel), findsOneWidget);
+      expect(find.byKey(ParkScreen.reviewerKey(ParkStatus.active)), findsOneWidget, reason: 'now it can reopen');
+
+      await tester.tap(find.byKey(ParkScreen.reviewerKey(ParkStatus.removed)));
+      await tester.pumpAndSettle();
+      expect(find.text(en.removeConfirm), findsOneWidget);
+      await tester.tap(find.widgetWithText(TextButton, en.removePark));
+      await tester.pumpAndSettle();
+      expect(kit.repo.reviewActions.last, 'status:demo-raanana-nesiim:removed');
+      expect(find.byKey(ParkScreen.screenKey), findsNothing, reason: 'back to the list');
+      expect(card('demo-raanana-nesiim'), findsNothing);
+    });
+
+    testWidgets('members get no reviewer tools on a park page', (tester) async {
+      await openOutside(tester, size: tall);
+      await chooseCity(tester, 'raan', 'raanana');
+      await tester.tap(card('demo-raanana-nesiim'));
+      await tester.pumpAndSettle();
+      expect(find.text(en.reviewerTools), findsNothing);
+    });
+
     testWidgets('the review page is closed to members', (tester) async {
       await openOutside(tester);
       final context = tester.element(find.byKey(OutsideSection.sectionKey));

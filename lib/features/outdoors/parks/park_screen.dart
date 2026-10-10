@@ -6,7 +6,7 @@ import '../../../access/feature_gate.dart';
 import '../../../l10n/l10n.dart';
 import '../../../platform/feature_ui.dart';
 import '../../../presentation/health_widgets.dart'
-    show kHealthTapTarget, showHealthSheet, SheetTitle;
+    show confirmDelete, kHealthTapTarget, showHealthSheet, SheetTitle;
 import '../../../services/outdoors/data/park_area.dart';
 import '../../../services/outdoors/data/park_launcher.dart';
 import '../../../services/outdoors/data/park_models.dart';
@@ -53,6 +53,8 @@ class ParkScreen extends ConsumerWidget {
   static const wazeKey = Key('park-navigate-waze');
   static const googleMapsKey = Key('park-navigate-google');
   static const updateKey = Key('park-update-details');
+  static Key reviewerKey(ParkStatus status) =>
+      Key('park-reviewer-${status.name}');
   static Key detailKey(ParkDetail detail) => Key('park-detail-${detail.name}');
 
   final String parkId;
@@ -123,6 +125,40 @@ class _ParkPage extends ConsumerWidget {
     }
   }
 
+  /// A reviewer closes, reopens or removes the park from its page.
+  Future<void> _setStatus(
+    BuildContext context,
+    WidgetRef ref,
+    ParkStatus status,
+  ) async {
+    final l10n = context.outdoorsL10n;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    if (status == ParkStatus.removed) {
+      final sure = await confirmDelete(
+        context,
+        title: l10n.removePark,
+        message: l10n.removeConfirm,
+        confirmLabel: l10n.removePark,
+      );
+      if (!sure) return;
+    }
+    try {
+      await ref.read(parksRepositoryProvider).setParkStatus(park.id, status);
+      ref.invalidate(parkProvider(park.id));
+      ref.invalidate(parkReviewQueueProvider);
+      await ref.read(parksControllerProvider.notifier).refresh();
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.reviewDone)));
+      if (status == ParkStatus.removed) navigator.maybePop();
+    } catch (_) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(l10n.reviewFailed)));
+    }
+  }
+
   Future<void> _navigate(BuildContext context, WidgetRef ref) async {
     final l10n = context.outdoorsL10n;
     final messenger = ScaffoldMessenger.of(context);
@@ -179,6 +215,7 @@ class _ParkPage extends ConsumerWidget {
         : null;
     final subtitle = [?city, ?distance].join(' · ');
     final canSuggest = ref.watch(capabilityProvider(ParkCapabilities.suggest));
+    final reviewer = ref.watch(capabilityProvider(ParkCapabilities.review));
     final slotValues = <String, Object?>{
       'parkId': park.id,
       'parkName': l10n.parkFullName(park, language),
@@ -283,6 +320,34 @@ class _ParkPage extends ConsumerWidget {
                   ),
                 ],
                 featureSlot(ParkPageSlots.meetups, '', slotValues),
+                if (reviewer) ...[
+                  const SizedBox(height: 20),
+                  Text(
+                    l10n.reviewerTools,
+                    style: AppText.label.copyWith(color: AppColors.brown),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final (status, label) in [
+                        park.isClosed
+                            ? (ParkStatus.active, l10n.reopenPark)
+                            : (ParkStatus.closed, l10n.markClosed),
+                        (ParkStatus.removed, l10n.removePark),
+                      ])
+                        OutlinedButton(
+                          key: ParkScreen.reviewerKey(status),
+                          onPressed: () => _setStatus(context, ref, status),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(0, kHealthTapTarget),
+                          ),
+                          child: Text(label),
+                        ),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 24),
                 if (park.source == ParkSource.member) ...[
                   Text(

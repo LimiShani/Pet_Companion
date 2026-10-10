@@ -797,6 +797,24 @@ abstract class OutdoorsL10n {
   /// **'Choose a park'**
   String get pickParkTitle;
 
+  /// No description provided for @reviewerTools.
+  ///
+  /// In en, this message translates to:
+  /// **'For park reviewers'**
+  String get reviewerTools;
+
+  /// No description provided for @reopenPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Open again'**
+  String get reopenPark;
+
+  /// No description provided for @removeConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this park from the list? It is hidden, not deleted.'**
+  String get removeConfirm;
+
   /// No description provided for @aboutMapData.
   ///
   /// In en, this message translates to:

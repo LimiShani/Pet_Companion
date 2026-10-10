@@ -390,5 +390,14 @@ class OutdoorsL10nEn extends OutdoorsL10n {
   String get pickParkTitle => 'Choose a park';
 
   @override
+  String get reviewerTools => 'For park reviewers';
+
+  @override
+  String get reopenPark => 'Open again';
+
+  @override
+  String get removeConfirm => 'Remove this park from the list? It is hidden, not deleted.';
+
+  @override
   String get aboutMapData => 'Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).';
 }

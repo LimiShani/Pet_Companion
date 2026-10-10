@@ -391,5 +391,14 @@ class OutdoorsL10nHe extends OutdoorsL10n {
   String get pickParkTitle => 'בחירת גינה';
 
   @override
+  String get reviewerTools => 'לבודקי הגינות';
+
+  @override
+  String get reopenPark => 'פתוחה שוב';
+
+  @override
+  String get removeConfirm => 'להסיר את הגינה מהרשימה? היא תוסתר ולא תימחק.';
+
+  @override
   String get aboutMapData => 'גינות כלבים: נתוני מפה © OpenStreetMap contributors, לפי רישיון ODbL.';
 }

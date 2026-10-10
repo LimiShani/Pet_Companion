@@ -117,5 +117,8 @@
   "reviewDone": "בוצע.",
   "reviewFailed": "זה לא הצליח. אפשר לנסות שוב.",
   "pickParkTitle": "בחירת גינה",
+  "reviewerTools": "לבודקי הגינות",
+  "reopenPark": "פתוחה שוב",
+  "removeConfirm": "להסיר את הגינה מהרשימה? היא תוסתר ולא תימחק.",
   "aboutMapData": "גינות כלבים: נתוני מפה © OpenStreetMap contributors, לפי רישיון ODbL."
 }
