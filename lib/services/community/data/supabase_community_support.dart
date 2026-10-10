@@ -35,6 +35,10 @@ CommunityFailure _postgrestFailure(sb.PostgrestException e) {
   // 0021_community_chat_safety.sql refuses a burst of posts, comments or
   // messages with this message.
   if (message.contains('rate_limited')) return CommunityFailure.slowDown;
+  // 0026_private_chats.sql names why a private chat refused a change.
+  if (message.contains('chat_full')) return CommunityFailure.chatFull;
+  if (message.contains('not_chat_admin')) return CommunityFailure.notChatAdmin;
+  if (message.contains('cannot_invite')) return CommunityFailure.cannotInvite;
   switch (e.code) {
     case '42501': // row level security said no
       return CommunityFailure.notAllowed;
@@ -43,6 +47,8 @@ CommunityFailure _postgrestFailure(sb.PostgrestException e) {
     case '23503': // the post or room was deleted meanwhile
       return CommunityFailure.gone;
     case '42P01' || 'PGRST205': // 0003_community.sql has not been run
+      return CommunityFailure.notSetUp;
+    case 'PGRST202': // a function of a migration that has not been run
       return CommunityFailure.notSetUp;
     case 'PGRST301' || 'PGRST303':
       return CommunityFailure.signInAgain;

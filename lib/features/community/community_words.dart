@@ -190,8 +190,64 @@ extension CommunityWords on CommunityL10n {
     CommunityFailure.photosNotAllowed => errPhotosNotAllowed,
     CommunityFailure.slowDown => errSlowDown,
     CommunityFailure.notModerator => errNotModerator,
+    CommunityFailure.chatFull => errChatFull,
+    CommunityFailure.notChatAdmin => errNotChatAdmin,
+    CommunityFailure.cannotInvite => errCannotInvite,
+    CommunityFailure.chatClosed => errChatClosed,
     CommunityFailure.unknown => null,
   };
+
+  /// Names as one part of a line: "Ron, Michal".
+  String nameList(Iterable<String> stored) =>
+      stored.map(memberName).join(', ');
+
+  /// A private chat's name as shown: its own, the other person's for a
+  /// chat of two, or the names of the others in it.
+  String privateChatName(PrivateChat chat, String? viewerId) {
+    if (chat.direct) return memberName(chat.directName);
+    if (chat.name.trim().isNotEmpty) return chat.name;
+    final others = [
+      for (final m in chat.members)
+        if (m.userId != viewerId) m.name,
+    ];
+    return others.isEmpty ? privateChat : nameList(others);
+  }
+
+  /// What a line of a private chat says happened, as [viewerId] reads it:
+  /// "You joined", "Dana added Ron, Michal".
+  String systemLine(
+    ChatSystemLine line, {
+    required String actorId,
+    required String actorName,
+    String? viewerId,
+  }) {
+    final mine = actorId == viewerId;
+    final actor = inLine(memberName(actorName));
+    final others = [
+      for (final id in line.userIds)
+        if (id != viewerId) line.userNames[id] ?? '',
+    ];
+    final people = inLine(nameList(others));
+    final includesMe = viewerId != null && line.userIds.contains(viewerId);
+    return switch (line.event) {
+      ChatEvent.created => mine ? sysCreatedMine : sysCreated(actor),
+      ChatEvent.added when mine => sysAddedMine(people),
+      ChatEvent.added when includesMe =>
+        others.isEmpty ? sysAddedYou(actor) : sysAddedYouAnd(actor, people),
+      ChatEvent.added => sysAdded(actor, people),
+      ChatEvent.joined => mine ? sysJoinedMine : sysJoined(actor),
+      ChatEvent.left => mine ? sysLeftMine : sysLeft(actor),
+      ChatEvent.removed =>
+        mine ? sysRemovedMine(people) : sysRemoved(actor, people),
+      ChatEvent.admin when mine => sysAdminMine(people),
+      ChatEvent.admin when includesMe => sysAdminYou(actor),
+      ChatEvent.admin => sysAdmin(actor, people),
+      ChatEvent.renamed =>
+        mine
+            ? sysRenamedMine(inLine(line.name))
+            : sysRenamed(actor, inLine(line.name)),
+    };
+  }
 
   /// Something a person wrote (a name, a profession), ready to sit in a
   /// line of the screen's language: kept as one unit when it runs the other

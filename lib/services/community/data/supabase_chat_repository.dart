@@ -13,10 +13,13 @@ import 'supabase_community_support.dart';
 /// in `chat_messages` and reactions in `chat_message_reactions`, both live
 /// through Supabase Realtime; read markers through `mark_chat_read` and the
 /// room list from `chat_room_summaries` (`0003_community.sql`,
-/// `0021_community_chat_safety.sql`).
+/// `0021_community_chat_safety.sql`). Private chats, their members and
+/// invitations go through the functions of `0026_private_chats.sql`.
 ///
 /// Row level security leaves out messages of blocked members, messages the
-/// viewer reported and messages hidden by reports.
+/// viewer reported and messages hidden by reports, and keeps a private
+/// chat's messages to its joined members from the moment they were
+/// brought in.
 class SupabaseChatRepository implements ChatRepository {
   SupabaseChatRepository(sb.SupabaseClient client)
     : _backend = client,
@@ -51,12 +54,14 @@ class SupabaseChatRepository implements ChatRepository {
         .order('name', ascending: true);
     return [
       for (final row in rows)
-        ChatChannel(
-          id: row['id'] as String,
-          name: row['name'] as String,
-          description: row['description'] as String? ?? '',
-          audience: Audience.fromKey(row['audience'] as String?),
-        ),
+        // Private chats are listed apart (`kind` arrives with 0026).
+        if (row['kind'] != 'private')
+          ChatChannel(
+            id: row['id'] as String,
+            name: row['name'] as String,
+            description: row['description'] as String? ?? '',
+            audience: Audience.fromKey(row['audience'] as String?),
+          ),
     ];
   });
 
@@ -65,6 +70,15 @@ class SupabaseChatRepository implements ChatRepository {
     required AppUser viewer,
   }) => guardCommunity(() async {
     final rows = await _client.from('chat_room_summaries').select();
+    final lines = {
+      for (final row in rows)
+        row['channel_id'] as String: ?ChatSystemLine.fromJson(
+          row['last_system'],
+        ),
+    };
+    final names = await _names.resolve([
+      for (final line in lines.values) ...line.userIds,
+    ]);
     return {
       for (final row in rows)
         if (row['last_message_id'] != null)
@@ -78,6 +92,7 @@ class SupabaseChatRepository implements ChatRepository {
             lastHasPhoto: row['last_has_photo'] as bool? ?? false,
             lastMessageAt: parseTimestamp(row['last_message_at']),
             unread: (row['unread_count'] as num?)?.toInt() ?? 0,
+            lastSystem: lines[row['channel_id']]?.withNames(names),
           ),
     };
   });
@@ -341,11 +356,16 @@ class SupabaseChatRepository implements ChatRepository {
     Map<String, dynamic>? repliedRow(String? id) =>
         id == null ? null : byId[id] ?? _replyRows[id];
 
+    final lines = {
+      for (final row in rows)
+        row['id'] as String: ?ChatSystemLine.fromJson(row['system']),
+    };
     final names = await _names.resolve([
       for (final row in rows) row['author_id'] as String,
       for (final row in rows)
         if (repliedRow(row['reply_to'] as String?) case final replied?)
           replied['author_id'] as String,
+      for (final line in lines.values) ...line.userIds,
     ]);
     final links = await _photos.links([
       for (final row in rows)
@@ -398,8 +418,186 @@ class SupabaseChatRepository implements ChatRepository {
                     mine: who.contains(viewerId),
                   ),
             ],
+            system: lines[id]?.withNames(names),
           );
         }(),
     ];
   }
+
+  // ---------------------------------------------------------------------
+  // Private chats (0026_private_chats.sql).
+  // ---------------------------------------------------------------------
+
+  List<Map<String, dynamic>> _list(Object? value) => [
+    for (final item in (value as List?) ?? const [])
+      Map<String, dynamic>.from(item as Map),
+  ];
+
+  @override
+  Future<List<PrivateChat>> fetchPrivateChats({required AppUser viewer}) =>
+      guardCommunity(() async {
+        final rows = _list(await _client.rpc('my_private_chats'));
+        return [
+          for (final row in rows)
+            PrivateChat(
+              id: row['id'] as String,
+              name: row['name'] as String? ?? '',
+              createdBy: row['created_by'] as String?,
+              createdAt: parseTimestamp(row['created_at']),
+              directWith: row['direct_with'] as String?,
+              directName: storedAuthorName(row['direct_name'] as String?),
+              muted: row['muted'] as bool? ?? false,
+              closed: row['closed'] as bool? ?? false,
+              members: [
+                for (final m in _list(row['members']))
+                  PrivateChatMember(
+                    userId: m['user_id'] as String,
+                    name: storedAuthorName(m['name'] as String?),
+                    role: m['role'] == 'admin'
+                        ? ChatRole.admin
+                        : ChatRole.member,
+                    joined: m['status'] == 'joined',
+                    invitedBy: m['invited_by'] as String?,
+                    invitedAt: parseTimestamp(m['invited_at']),
+                    joinedAt: m['joined_at'] == null
+                        ? null
+                        : parseTimestamp(m['joined_at']),
+                  ),
+              ],
+            ),
+        ];
+      });
+
+  @override
+  Future<List<ChatInvitation>> fetchInvitations({required AppUser viewer}) =>
+      guardCommunity(() async {
+        final rows = _list(await _client.rpc('my_chat_invitations'));
+        return [
+          for (final row in rows)
+            ChatInvitation(
+              channelId: row['channel_id'] as String,
+              name: row['name'] as String? ?? '',
+              direct: row['direct'] as bool? ?? false,
+              inviterId: row['inviter_id'] as String? ?? '',
+              inviterName: storedAuthorName(row['inviter_name'] as String?),
+              participantCount: (row['participants'] as num?)?.toInt() ?? 0,
+              invitedAt: parseTimestamp(row['invited_at']),
+            ),
+        ];
+      });
+
+  @override
+  Future<List<ChatPerson>> fetchPeople({
+    required AppUser viewer,
+    String search = '',
+  }) => guardCommunity(() async {
+    final rows = _list(
+      await _client.rpc(
+        'chat_people',
+        params: {'p_search': search.trim(), 'p_limit': 40},
+      ),
+    );
+    return [
+      for (final row in rows)
+        ChatPerson(
+          id: row['id'] as String,
+          name: storedAuthorName(row['name'] as String?),
+          city: row['city'] as String? ?? '',
+          recent: row['recent'] as bool? ?? false,
+        ),
+    ];
+  });
+
+  @override
+  Future<String> createPrivateChat({
+    required AppUser viewer,
+    required List<String> memberIds,
+    String name = '',
+  }) => guardCommunity(() async {
+    final id = await _client.rpc(
+      'create_private_chat',
+      params: {'p_invitees': memberIds, 'p_name': name.trim()},
+    );
+    return id as String;
+  });
+
+  @override
+  Future<void> inviteToPrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required List<String> memberIds,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'invite_to_private_chat',
+      params: {'p_channel': channelId, 'p_users': memberIds},
+    );
+  });
+
+  @override
+  Future<void> answerInvitation({
+    required AppUser viewer,
+    required String channelId,
+    required bool accept,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'answer_chat_invitation',
+      params: {'p_channel': channelId, 'p_accept': accept},
+    );
+  });
+
+  @override
+  Future<void> leavePrivateChat({
+    required AppUser viewer,
+    required String channelId,
+  }) => guardCommunity(() async {
+    await _client.rpc('leave_private_chat', params: {'p_channel': channelId});
+  });
+
+  @override
+  Future<void> removeFromPrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required String memberId,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'remove_from_private_chat',
+      params: {'p_channel': channelId, 'p_user': memberId},
+    );
+  });
+
+  @override
+  Future<void> makePrivateChatAdmin({
+    required AppUser viewer,
+    required String channelId,
+    required String memberId,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'make_private_chat_admin',
+      params: {'p_channel': channelId, 'p_user': memberId},
+    );
+  });
+
+  @override
+  Future<void> renamePrivateChat({
+    required AppUser viewer,
+    required String channelId,
+    required String name,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'rename_private_chat',
+      params: {'p_channel': channelId, 'p_name': name.trim()},
+    );
+  });
+
+  @override
+  Future<void> setPrivateChatMuted({
+    required AppUser viewer,
+    required String channelId,
+    required bool muted,
+  }) => guardCommunity(() async {
+    await _client.rpc(
+      'set_private_chat_muted',
+      params: {'p_channel': channelId, 'p_muted': muted},
+    );
+  });
 }

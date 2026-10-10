@@ -1048,4 +1048,306 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get pushLoadFailed => 'Cannot load your notification choices';
+
+  @override
+  String get errChatFull => 'A chat can have up to 30 people.';
+
+  @override
+  String get errNotChatAdmin => 'Only the chat\'s admins can do that.';
+
+  @override
+  String get errCannotInvite => 'Someone you chose cannot be invited to a chat.';
+
+  @override
+  String get errChatClosed => 'This chat is closed.';
+
+  @override
+  String get myChats => 'My chats';
+
+  @override
+  String get topicRooms => 'Topic rooms';
+
+  @override
+  String get newChat => 'New chat';
+
+  @override
+  String get noPrivateChats => 'Start a private chat with someone from the community, or from a member page.';
+
+  @override
+  String get privateChatsLoadFailed => 'Cannot load your chats';
+
+  @override
+  String get privateChat => 'Private chat';
+
+  @override
+  String participantCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count participants',
+      one: '1 participant',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String invitationFrom(String name) {
+    return '$name invited you';
+  }
+
+  @override
+  String invitationDirect(String name) {
+    return '$name wants to chat with you';
+  }
+
+  @override
+  String get joinChat => 'Join';
+
+  @override
+  String get declineInvitation => 'No thanks';
+
+  @override
+  String get invitationDeclined => 'Invitation declined';
+
+  @override
+  String get invitationJoinNote => 'Join to see the messages and write.';
+
+  @override
+  String get invitationsTitle => 'Invitations';
+
+  @override
+  String sysCreated(String name) {
+    return '$name created the chat';
+  }
+
+  @override
+  String get sysCreatedMine => 'You created the chat';
+
+  @override
+  String sysAdded(String name, String people) {
+    return '$name added $people';
+  }
+
+  @override
+  String sysAddedMine(String people) {
+    return 'You added $people';
+  }
+
+  @override
+  String sysAddedYou(String name) {
+    return '$name added you';
+  }
+
+  @override
+  String sysAddedYouAnd(String name, String people) {
+    return '$name added you and $people';
+  }
+
+  @override
+  String sysJoined(String name) {
+    return '$name joined';
+  }
+
+  @override
+  String get sysJoinedMine => 'You joined';
+
+  @override
+  String sysLeft(String name) {
+    return '$name left';
+  }
+
+  @override
+  String get sysLeftMine => 'You left the chat';
+
+  @override
+  String sysRemoved(String name, String people) {
+    return '$name removed $people';
+  }
+
+  @override
+  String sysRemovedMine(String people) {
+    return 'You removed $people';
+  }
+
+  @override
+  String sysAdmin(String name, String people) {
+    return '$name made $people admin';
+  }
+
+  @override
+  String sysAdminMine(String people) {
+    return 'You made $people admin';
+  }
+
+  @override
+  String sysAdminYou(String name) {
+    return '$name made you admin';
+  }
+
+  @override
+  String sysRenamed(String name, String title) {
+    return '$name renamed the chat to $title';
+  }
+
+  @override
+  String sysRenamedMine(String title) {
+    return 'You renamed the chat to $title';
+  }
+
+  @override
+  String get chatDetails => 'Chat details';
+
+  @override
+  String get addParticipants => 'Add participants';
+
+  @override
+  String get adminTag => 'Admin';
+
+  @override
+  String get invitedTag => 'Invited';
+
+  @override
+  String get youTag => 'You';
+
+  @override
+  String get makeAdmin => 'Make admin';
+
+  @override
+  String get removeFromChat => 'Remove from chat';
+
+  @override
+  String get cancelInvitation => 'Cancel invitation';
+
+  @override
+  String memberOptions(String name) {
+    return 'Options for $name';
+  }
+
+  @override
+  String removeMemberTitle(String name) {
+    return 'Remove $name from the chat?';
+  }
+
+  @override
+  String get removeMemberBody => 'Whoever is removed no longer sees the chat or its messages.';
+
+  @override
+  String get memberRemovedDone => 'Removed from the chat';
+
+  @override
+  String get muteChat => 'Mute chat';
+
+  @override
+  String get chatMutedNote => 'Muted: no notifications and no unread count';
+
+  @override
+  String get leaveChat => 'Leave chat';
+
+  @override
+  String get leaveChatTitle => 'Leave this chat?';
+
+  @override
+  String get leaveChatBody => 'You will no longer see it or its messages.';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get renameChat => 'Rename';
+
+  @override
+  String get chatRenamed => 'Chat renamed';
+
+  @override
+  String get chatNameLabel => 'Chat name';
+
+  @override
+  String get chatNameHint => 'For example: Morning walks in the park';
+
+  @override
+  String invitationsSent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Invitations sent',
+      one: 'Invitation sent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get searchPeople => 'Search by name';
+
+  @override
+  String selectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get recentPeople => 'People you talked with recently';
+
+  @override
+  String get communityMembersTitle => 'Community members';
+
+  @override
+  String get noPeopleFound => 'No one by that name';
+
+  @override
+  String get peopleLoadFailed => 'Cannot load community members';
+
+  @override
+  String get nextStep => 'Next';
+
+  @override
+  String get createChat => 'Create chat';
+
+  @override
+  String get groupNameTitle => 'Name the chat';
+
+  @override
+  String get groupNameNote => 'Everyone in the chat sees its name.';
+
+  @override
+  String removePerson(String name) {
+    return 'Remove $name';
+  }
+
+  @override
+  String participantsLimit(int count) {
+    return 'Up to $count people in a chat';
+  }
+
+  @override
+  String get addToChat => 'Add';
+
+  @override
+  String get privateMessage => 'Private message';
+
+  @override
+  String chatBlockedNote(String name) {
+    return 'You blocked $name. Unblock them to write here again.';
+  }
+
+  @override
+  String otherLeftNote(String name) {
+    return '$name is no longer in this chat.';
+  }
+
+  @override
+  String get inviteAgain => 'Invite again';
+
+  @override
+  String get chatGoneTitle => 'This chat is no longer here';
+
+  @override
+  String get chatGoneMessage => 'It may have been deleted, or you left it.';
+
+  @override
+  String get inPrivateChat => 'In a private chat';
+
+  @override
+  String get pushPrivateMessages => 'Messages in my private chats';
+
+  @override
+  String get pushChatInvites => 'Invitations to a chat';
 }

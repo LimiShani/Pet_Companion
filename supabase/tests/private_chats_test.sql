@@ -286,6 +286,7 @@ begin
  assert (select name from public.chat_channels where id=direct)='', 'A direct chat has no name';
  assert (select count(*) from public.chat_messages where channel_id=direct)=0, 'No system lines in a chat of two';
  assert (public.my_private_chats()->0->>'direct_with')='e2222222-2222-4222-8222-222222222222', 'The list names the other person';
+ assert (public.my_private_chats()->0->>'direct_name')='Ben', 'With their name';
  begin
   perform public.invite_to_private_chat(direct, array['e3333333-3333-4333-8333-333333333333']::uuid[]);
   raise exception 'A third person joined a chat of two';

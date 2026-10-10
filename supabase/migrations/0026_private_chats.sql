@@ -662,6 +662,8 @@ begin
         jsonb_build_object(
           'id', c.id, 'name', c.name, 'created_by', c.created_by, 'created_at', c.created_at,
           'direct_with', community_private.direct_other(c.direct_key, me),
+          'direct_name', coalesce((select p.display_name from public.profiles p
+                                   where p.id = community_private.direct_other(c.direct_key, me)), ''),
           'muted', mine.muted,
           'closed', community_private.chat_closed(c.id),
           'members', (
