@@ -36,7 +36,12 @@ Shomron: halfway between its two villages). They are added on every run,
 JSON keeps its names and coordinates and only gains missing aliases. Their
 JSON entries carry "area": "judea-samaria", and the server's list exports
 their codes (IL_JUDEA_SAMARIA_CODES) so the dog parks import searches
-around each of them as well as inside OSM's boundary.
+around each of them as well as inside OSM's boundary. Each of them reaches
+JUDEA_SAMARIA_REACH_M from its centre: the import takes parks that close,
+and a point further out is given another locality when one is within
+15 km (Pisgat Ze'ev, nearer Ma'ale Adumim's centre than Jerusalem's, stays
+in Jerusalem). The app gets it as `reachM` on those entries, the server
+as IL_JUDEA_SAMARIA_REACH_M.
 
 Outputs (generated, do not edit by hand):
     lib/services/findvet/regions/il_localities.dart
@@ -111,6 +116,9 @@ SAME_PLACE_M = 300
 # centre here once released; add aliases freely. Centres: OSM place nodes,
 # read 2026-10-11 (the OSM id is kept for the record).
 JUDEA_SAMARIA = 'judea-samaria'
+# Metres from the centre: enough for the largest (Ma'ale Adumim, Ariel:
+# about 2.5 km from the centre to the edge), short of the next towns.
+JUDEA_SAMARIA_REACH_M = 3500
 EXTRA_ISRAELI_LOCALITIES = [
     # Cities
     {'code': 'ariel', 'en': 'Ariel', 'he': 'אריאל', 'lat': 32.1061, 'lng': 35.1851,
@@ -329,6 +337,8 @@ def write_dart(entries: list[dict]) -> None:
         '',
         "/// Israel's cities, towns and local councils: a stable code (stored by",
         '/// dog parks and meetups), the names, the centre and other spellings.',
+        "/// The Israeli towns of Judea and Samaria (outside OpenStreetMap's",
+        '/// boundary of Israel, added by the generator) carry a `reachM`.',
         'const israelLocalities = <Locality>[',
     ]
     for e in entries:
@@ -337,6 +347,7 @@ def write_dart(entries: list[dict]) -> None:
             f"  Locality(code: {dart_string(e['code'])}, "
             f"names: {{'en': {dart_string(e['en'])}, 'he': {dart_string(e['he'])}}}, "
             f"point: GeoPoint({e['lat']}, {e['lng']})"
+            + (f', reachM: {JUDEA_SAMARIA_REACH_M}' if e.get('area') == JUDEA_SAMARIA else '')
             + (f', aliases: [{aliases}]' if e['aliases'] else '')
             + '),'
         )
@@ -373,6 +384,15 @@ def write_ts(entries: list[dict]) -> None:
     ]
     lines += [f'  {json.dumps(code)},' for code in codes]
     lines += [']);', '']
+    lines += [
+        '/**',
+        ' * How far from its centre each of them reaches, in metres: the parks import',
+        ' * takes the parks that close, and a point further out is given another',
+        " * locality when one is in range (the app's entries say `reachM`).",
+        ' */',
+        f'export const IL_JUDEA_SAMARIA_REACH_M = {JUDEA_SAMARIA_REACH_M};',
+        '',
+    ]
     TS_OUT.write_text('\n'.join(lines), encoding='utf-8', newline='\n')
 
 

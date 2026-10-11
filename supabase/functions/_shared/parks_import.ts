@@ -23,7 +23,7 @@ import { distanceM } from './geo.ts';
 import type { LatLng } from './geo.ts';
 import { errorResponse, json, preflight, readJson } from './http.ts';
 import { localityByCode, nearestLocality } from './localities.ts';
-import { IL_JUDEA_SAMARIA_CODES, IL_LOCALITIES } from './regions/il_localities.ts';
+import { IL_JUDEA_SAMARIA_CODES, IL_JUDEA_SAMARIA_REACH_M, IL_LOCALITIES } from './regions/il_localities.ts';
 import type { Locality } from './regions/types.ts';
 import { constantTimeEqual } from './weekly.ts';
 
@@ -54,9 +54,10 @@ export const LOCALITY_RADIUS_M = 15_000;
  * are imported too: the towns lie outside OSM's boundary of Israel. Large
  * enough for the biggest of them (Ma'ale Adumim, Ariel: about 2.5 km from
  * the centre to the edge), small enough to stay out of the neighbouring
- * towns.
+ * towns. Generated with the list (tool/gen_il_localities.py); the app's
+ * entries carry the same value as `reachM`.
  */
-export const AROUND_LOCALITY_M = 3_500;
+export const AROUND_LOCALITY_M = IL_JUDEA_SAMARIA_REACH_M;
 
 /** The centres of the Israeli localities of Judea and Samaria (il_localities.ts). */
 export const JUDEA_SAMARIA_CENTRES: readonly LatLng[] = Object.freeze(
@@ -285,7 +286,8 @@ const JUDEA_SAMARIA = new Set(IL_JUDEA_SAMARIA_CODES);
  * parks within AROUND_LOCALITY_M of its centre. Further out, the nearest
  * other locality is taken (when there is one), so Jerusalem's eastern
  * neighbourhoods (Pisgat Ze'ev, 7.0 km from Ma'ale Adumim's centre and
- * 7.2 km from Jerusalem's) stay in Jerusalem.
+ * 7.2 km from Jerusalem's) stay in Jerusalem. The app's
+ * VetRegion.nearestLocality applies the same rule.
  */
 export function parkLocality(
   localities: readonly Locality[],

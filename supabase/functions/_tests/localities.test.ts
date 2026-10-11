@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { localityByCode, nearestLocality } from '../_shared/localities.ts';
-import { IL_JUDEA_SAMARIA_CODES, IL_LOCALITIES } from '../_shared/regions/il_localities.ts';
+import { IL_JUDEA_SAMARIA_CODES, IL_JUDEA_SAMARIA_REACH_M, IL_LOCALITIES } from '../_shared/regions/il_localities.ts';
 
 // The app's copy of the list (generated from the same JSON).
 const DART = new URL('../../../lib/services/findvet/regions/il_localities.dart', import.meta.url);
@@ -102,4 +102,14 @@ test('the Israeli cities and local councils of Judea and Samaria are in the list
   // Nearest to a point in Ariel and one in Beitar Illit.
   assert.equal(nearestLocality(IL_LOCALITIES, { lat: 32.105, lng: 35.19 })?.code, 'ariel');
   assert.equal(nearestLocality(IL_LOCALITIES, { lat: 31.7, lng: 35.115 })?.code, 'beitar-illit');
+});
+
+test("the app's entries carry the same reach for the same towns", () => {
+  const lines = readFileSync(DART, 'utf-8').split('\n').filter((l) => l.trim().startsWith('Locality('));
+  const reached = lines
+    .map((l) => [/code: '([^']+)'/.exec(l)![1], /reachM: (\d+)/.exec(l)?.[1]] as const)
+    .filter(([, reach]) => reach !== undefined);
+  assert.deepEqual(reached.map(([code]) => code), [...IL_JUDEA_SAMARIA_CODES]);
+  for (const [, reach] of reached) assert.equal(Number(reach), IL_JUDEA_SAMARIA_REACH_M);
+  assert.equal(IL_JUDEA_SAMARIA_REACH_M, 3500);
 });

@@ -58,6 +58,7 @@ class Locality {
     required this.names,
     required this.point,
     this.aliases = const [],
+    this.reachM,
   });
 
   /// A stable lowercase slug ('raanana', 'tel-aviv-yafo'). Dog parks store
@@ -70,6 +71,13 @@ class Locality {
 
   /// Other spellings people type ("Beer Sheva", "Petach Tikva").
   final List<String> aliases;
+
+  /// When set, the locality is the nearest one only for points within this
+  /// many metres of its centre (the Israeli towns of Judea and Samaria,
+  /// generated with the server's `IL_JUDEA_SAMARIA_REACH_M`): further out
+  /// another locality is preferred, so Pisgat Ze'ev, nearer Ma'ale Adumim's
+  /// centre than Jerusalem's, stays in Jerusalem. `null`: no limit.
+  final double? reachM;
 
   /// The name in [language], else English, else any.
   String nameIn(String language) =>
@@ -150,18 +158,28 @@ class VetRegion {
   }
 
   /// The locality whose centre is nearest to [point], or `null` when none
-  /// is within [maxM] metres.
+  /// is within [maxM] metres. A locality with a [Locality.reachM] counts
+  /// only within that reach, unless no other locality is within [maxM]
+  /// (the same rule as the server's `parkLocality`, which codes dog parks).
   Locality? nearestLocality(GeoPoint point, {double maxM = 15000}) {
     Locality? best;
+    Locality? bestBeyondReach;
     var bestM = maxM;
+    var bestBeyondReachM = maxM;
     for (final locality in localities) {
       final m = locality.point.distanceTo(point);
-      if (m <= bestM) {
+      final reach = locality.reachM;
+      if (reach != null && m > reach) {
+        if (m <= bestBeyondReachM) {
+          bestBeyondReach = locality;
+          bestBeyondReachM = m;
+        }
+      } else if (m <= bestM) {
         best = locality;
         bestM = m;
       }
     }
-    return best;
+    return best ?? bestBeyondReach;
   }
 
   /// Localities whose centre is within [radiusM] metres of [point],

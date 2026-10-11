@@ -279,6 +279,54 @@ void main() {
       expect(ramat, containsAll(['Ramat Gan', 'Ramat HaSharon']));
     });
 
+    test('the Israeli towns of Judea and Samaria are searchable and in the region', () {
+      expect(israelRegion.findLocalities('מעלה אדומים').single.code, 'maale-adumim');
+      expect(israelRegion.findLocalities('maale adumim').single.code, 'maale-adumim');
+      expect(israelRegion.findLocalities('Modiin Illit').single.code, 'modiin-illit');
+      expect(israelRegion.findLocalities('ביתר').single.code, 'beitar-illit');
+      expect(
+        israelRegion.findLocalities('modiin').map((l) => l.code),
+        containsAll(['modiin-maccabim-reut', 'modiin-illit']),
+      );
+      expect(vetRegionAt(const GeoPoint(32.1061, 35.1851))?.code, 'IL', reason: 'Ariel');
+      expect(vetRegionAt(const GeoPoint(31.5278, 35.1192))?.code, 'IL', reason: 'Kiryat Arba');
+    });
+
+    test('a town of Judea and Samaria is the nearest only within its reach', () {
+      // A point in Ma'ale Adumim, 600 m from its centre.
+      expect(israelRegion.nearestLocality(const GeoPoint(31.7758, 35.2988))?.code, 'maale-adumim');
+      // Pisgat Ze'ev: 7.0 km from Ma'ale Adumim's centre, 7.2 km from Jerusalem's.
+      const pisgatZeev = GeoPoint(31.8222, 35.2563);
+      expect(
+        pisgatZeev.distanceTo(israelRegion.localityByCode('maale-adumim')!.point),
+        lessThan(pisgatZeev.distanceTo(israelRegion.localityByCode('jerusalem')!.point)),
+      );
+      expect(israelRegion.nearestLocality(pisgatZeev)?.code, 'jerusalem');
+      expect(israelRegion.nearestLocality(pisgatZeev, maxM: 30000)?.code, 'jerusalem');
+      expect(israelRegion.nearestLocality(const GeoPoint(32.1058, 35.1902))?.code, 'ariel');
+      expect(israelRegion.localityByCode('ariel')?.reachM, 3500);
+      expect(israelRegion.localityByCode('jerusalem')?.reachM, isNull);
+    });
+
+    test('a town beyond its reach still wins when nothing else is in range', () {
+      const near = Locality(code: 'near', names: {'en': 'Near'}, point: GeoPoint(31.0, 35.0), reachM: 1000);
+      const far = Locality(code: 'far', names: {'en': 'Far'}, point: GeoPoint(31.1, 35.0));
+      VetRegion region(List<Locality> localities) => VetRegion(
+        code: 'ZZ',
+        bounds: const GeoBounds(south: 30, west: 34, north: 32, east: 36),
+        languages: const ['en'],
+        center: const GeoPoint(31, 35),
+        localities: localities,
+        emergencyLadderM: const [10000],
+        longTermLadderM: const [5000],
+      );
+      const spot = GeoPoint(31.02, 35.0); // 2.2 km from Near, 8.9 km from Far
+      expect(region([near, far]).nearestLocality(spot)?.code, 'far');
+      expect(region([near]).nearestLocality(spot)?.code, 'near');
+      expect(region([near, far]).nearestLocality(const GeoPoint(31.005, 35.0))?.code, 'near');
+      expect(region([near, far]).nearestLocality(spot, maxM: 5000)?.code, 'near');
+    });
+
     test('a region speaks its own language when the app language has no data', () {
       expect(israelRegion.searchLanguage('he'), 'he');
       expect(israelRegion.searchLanguage('en'), 'en');

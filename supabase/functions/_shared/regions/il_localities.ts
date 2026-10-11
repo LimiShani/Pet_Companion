@@ -241,3 +241,10 @@ export const IL_JUDEA_SAMARIA_CODES: readonly string[] = Object.freeze([
   "oranit",
   "shaar-shomron",
 ]);
+
+/**
+ * How far from its centre each of them reaches, in metres: the parks import
+ * takes the parks that close, and a point further out is given another
+ * locality when one is in range (the app's entries say `reachM`).
+ */
+export const IL_JUDEA_SAMARIA_REACH_M = 3500;

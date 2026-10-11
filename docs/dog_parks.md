@@ -291,9 +291,13 @@ are appended (codes never change), their JSON entries say
 `"area": "judea-samaria"`, and the server's file exports their codes as
 `IL_JUDEA_SAMARIA_CODES` for the parks import. Find a vet's bounds (29.3 to
 33.5 N, 34.2 to 35.95 E, `il.ts` and `il.dart`) and the `dog_parks` checks
-already cover them. In the app, "nearest locality" is plain nearest
-centre, so a phone in Pisgat Ze'ev is told Ma'ale Adumim; the import uses
-the 3.5 km rule above.
+already cover them. Each of them reaches 3.5 km from its centre (the
+generator's `JUDEA_SAMARIA_REACH_M`: `reachM` on the app's entries,
+`IL_JUDEA_SAMARIA_REACH_M` on the server's): the import takes the parks
+that close, and a point further out gets another locality when one is in
+range. The app's `VetRegion.nearestLocality` (parks Near me, Suggest a park,
+meetups Near me) and the import's `parkLocality` apply the same rule, so a
+phone or a park in Pisgat Ze'ev resolves to Jerusalem.
 
 ## Hooks for meetups (Partners)
 
