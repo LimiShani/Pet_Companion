@@ -25,6 +25,11 @@ void main() {
       expect(israelRegion.localityByCode('nowhere'), isNull);
       expect(israelRegion.nearestLocality(raananaSpot)?.code, 'raanana');
       expect(
+        israelRegion.nearestLocality(const GeoPoint(31.8222, 35.2563))?.code,
+        'jerusalem',
+        reason: "Pisgat Ze'ev is beyond the reach of Ma'ale Adumim",
+      );
+      expect(
         israelRegion.nearestLocality(const GeoPoint(32.5, 33.5)),
         isNull,
         reason: 'the sea is near nothing',

@@ -6,6 +6,8 @@ import 'region.dart';
 
 /// Israel's cities, towns and local councils: a stable code (stored by
 /// dog parks and meetups), the names, the centre and other spellings.
+/// The Israeli towns of Judea and Samaria (outside OpenStreetMap's
+/// boundary of Israel, added by the generator) carry a `reachM`.
 const israelLocalities = <Locality>[
   Locality(code: 'jerusalem', names: {'en': 'Jerusalem', 'he': 'ירושלים'}, point: GeoPoint(31.7683, 35.2137), aliases: ['Yerushalayim']),
   Locality(code: 'tel-aviv-yafo', names: {'en': 'Tel Aviv-Yafo', 'he': 'תל אביב-יפו'}, point: GeoPoint(32.0853, 34.7818), aliases: ['Tel Aviv', 'Jaffa', 'Yafo', 'תל אביב', 'יפו']),
@@ -196,4 +198,22 @@ const israelLocalities = <Locality>[
   Locality(code: 'yerucham', names: {'en': 'Yerucham', 'he': 'ירוחם'}, point: GeoPoint(30.9888, 34.9251)),
   Locality(code: 'yesud-hamaala', names: {'en': 'Yesud HaMaala', 'he': 'יסוד המעלה'}, point: GeoPoint(33.0584, 35.6079)),
   Locality(code: 'zarzir', names: {'en': 'Zarzir', 'he': 'זרזיר'}, point: GeoPoint(32.7274, 35.2134)),
+  Locality(code: 'ariel', names: {'en': 'Ariel', 'he': 'אריאל'}, point: GeoPoint(32.1061, 35.1851), reachM: 3500),
+  Locality(code: 'maale-adumim', names: {'en': "Ma'ale Adumim", 'he': 'מעלה אדומים'}, point: GeoPoint(31.7706, 35.2985), reachM: 3500, aliases: ['Maale Adumim', "Ma'ale Edomim"]),
+  Locality(code: 'modiin-illit', names: {'en': "Modi'in Illit", 'he': 'מודיעין עילית'}, point: GeoPoint(31.9324, 35.0433), reachM: 3500, aliases: ['Modiin Illit', 'Modiin Ilit', 'Kiryat Sefer', 'קריית ספר', 'קרית ספר']),
+  Locality(code: 'beitar-illit', names: {'en': 'Beitar Illit', 'he': 'ביתר עילית'}, point: GeoPoint(31.6989, 35.1137), reachM: 3500, aliases: ['Betar Illit', 'Beitar Ilit', 'Betar Ilit']),
+  Locality(code: 'alfei-menashe', names: {'en': 'Alfei Menashe', 'he': 'אלפי מנשה'}, point: GeoPoint(32.1731, 35.0158), reachM: 3500, aliases: ['Alfe Menashe']),
+  Locality(code: 'beit-aryeh-ofarim', names: {'en': 'Beit Aryeh-Ofarim', 'he': 'בית אריה-עופרים'}, point: GeoPoint(32.0341, 35.0502), reachM: 3500, aliases: ['Beit Aryeh', 'Bet Arye', 'Bet Arye - Ofarim', 'Ofarim', 'בית אריה', 'עופרים']),
+  Locality(code: 'beit-el', names: {'en': 'Beit El', 'he': 'בית אל'}, point: GeoPoint(31.9421, 35.2224), reachM: 3500, aliases: ['Bet El']),
+  Locality(code: 'efrat', names: {'en': 'Efrat', 'he': 'אפרת'}, point: GeoPoint(31.6536, 35.1509), reachM: 3500, aliases: ['Efrata', 'אפרתה']),
+  Locality(code: 'elkana', names: {'en': 'Elkana', 'he': 'אלקנה'}, point: GeoPoint(32.1116, 35.0355), reachM: 3500),
+  Locality(code: 'givat-zeev', names: {'en': "Giv'at Ze'ev", 'he': 'גבעת זאב'}, point: GeoPoint(31.8623, 35.1687), reachM: 3500, aliases: ['Givat Zeev', "Givat Ze'ev"]),
+  Locality(code: 'har-adar', names: {'en': 'Har Adar', 'he': 'הר אדר'}, point: GeoPoint(31.8269, 35.1296), reachM: 3500),
+  Locality(code: 'immanuel', names: {'en': 'Immanuel', 'he': 'עמנואל'}, point: GeoPoint(32.1619, 35.1361), reachM: 3500, aliases: ['Emanuel', 'Emmanuel']),
+  Locality(code: 'karnei-shomron', names: {'en': 'Karnei Shomron', 'he': 'קרני שומרון'}, point: GeoPoint(32.171, 35.0892), reachM: 3500, aliases: ['Karne Shomron']),
+  Locality(code: 'kedumim', names: {'en': 'Kedumim', 'he': 'קדומים'}, point: GeoPoint(32.2177, 35.1604), reachM: 3500, aliases: ['Kdumim']),
+  Locality(code: 'kiryat-arba', names: {'en': 'Kiryat Arba', 'he': 'קריית ארבע'}, point: GeoPoint(31.5278, 35.1192), reachM: 3500, aliases: ['Qiryat Arba', 'קרית ארבע']),
+  Locality(code: 'maale-efraim', names: {'en': "Ma'ale Efraim", 'he': 'מעלה אפרים'}, point: GeoPoint(32.0708, 35.4034), reachM: 3500, aliases: ['Maale Efraim', "Ma'ale Ephraim"]),
+  Locality(code: 'oranit', names: {'en': 'Oranit', 'he': 'אורנית'}, point: GeoPoint(32.1309, 34.992), reachM: 3500),
+  Locality(code: 'shaar-shomron', names: {'en': "Sha'ar Shomron", 'he': 'שער שומרון'}, point: GeoPoint(32.1199, 35.0381), reachM: 3500, aliases: ['Shaar Shomron', "Sha'arei Tikva", 'Shaarei Tikva', 'Etz Efraim', 'Ets Efraim', 'שערי תקווה', 'שערי תקוה', 'עץ אפרים']),
 ];

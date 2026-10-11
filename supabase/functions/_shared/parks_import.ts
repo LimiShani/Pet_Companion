@@ -1,7 +1,8 @@
 // The monthly dog parks import (docs/dog_parks.md, "Import").
 //
 // One Overpass query asks OpenStreetMap for every leisure=dog_park inside
-// Israel's boundary and the named streets around them. Each
+// Israel's boundary and around the Israeli localities of Judea and Samaria
+// (outside that boundary), and the named streets around them. Each
 // park becomes one row: its names, the nearest named street (an unnamed
 // park shows as "Dog park · <street>"), its centre, the nearest locality
 // of the app's list, the six details OSM may know (fence, water, shade,
@@ -21,7 +22,8 @@
 import { distanceM } from './geo.ts';
 import type { LatLng } from './geo.ts';
 import { errorResponse, json, preflight, readJson } from './http.ts';
-import { nearestLocality } from './localities.ts';
+import { localityByCode, nearestLocality } from './localities.ts';
+import { IL_JUDEA_SAMARIA_CODES, IL_JUDEA_SAMARIA_REACH_M, IL_LOCALITIES } from './regions/il_localities.ts';
 import type { Locality } from './regions/types.ts';
 import { constantTimeEqual } from './weekly.ts';
 
@@ -47,6 +49,25 @@ export const STREET_RADIUS_M = 100;
 /** A park further than this from every locality gets no locality code. */
 export const LOCALITY_RADIUS_M = 15_000;
 
+/**
+ * Parks within this distance of an Israeli locality of Judea and Samaria
+ * are imported too: the towns lie outside OSM's boundary of Israel. Large
+ * enough for the biggest of them (Ma'ale Adumim, Ariel: about 2.5 km from
+ * the centre to the edge), small enough to stay out of the neighbouring
+ * towns. Generated with the list (tool/gen_il_localities.py); the app's
+ * entries carry the same value as `reachM`.
+ */
+export const AROUND_LOCALITY_M = IL_JUDEA_SAMARIA_REACH_M;
+
+/** The centres of the Israeli localities of Judea and Samaria (il_localities.ts). */
+export const JUDEA_SAMARIA_CENTRES: readonly LatLng[] = Object.freeze(
+  IL_JUDEA_SAMARIA_CODES.map((code) => {
+    const l = localityByCode(IL_LOCALITIES, code);
+    if (!l) throw new Error(`unknown locality ${code}`);
+    return { lat: l.lat, lng: l.lng };
+  }),
+);
+
 /** The vehicle and pedestrian streets that may name a park (not paths or service roads). */
 const STREET_KINDS = 'primary|secondary|tertiary|residential|living_street|unclassified|pedestrian';
 /** Asked of Overpass up front; a smaller budget is admitted sooner on a busy server. */
@@ -59,12 +80,17 @@ export const OVERPASS_MAXSIZE_BYTES = 64 * 1024 * 1024;
  * park polygons themselves, or park by park in a foreach, it is slow
  * enough that the public servers refuse it (504, checked 2026-10-10).
  * Each park's nearest street is picked afterwards (parseOverpass).
+ *
+ * The parks are those inside the country's boundary plus those within
+ * AROUND_LOCALITY_M of each point of [around] (by default the Israeli
+ * localities of Judea and Samaria); a park in both is listed once.
  */
-export function overpassQuery(countryCode = 'IL'): string {
+export function overpassQuery(countryCode = 'IL', around: readonly LatLng[] = JUDEA_SAMARIA_CENTRES): string {
+  const near = around.map((p) => `nwr[leisure=dog_park](around:${AROUND_LOCALITY_M},${p.lat},${p.lng});`).join('');
   return [
     `[out:json][timeout:${OVERPASS_TIMEOUT_S}][maxsize:${OVERPASS_MAXSIZE_BYTES}];`,
     `area["ISO3166-1"="${countryCode}"][admin_level=2]->.country;`,
-    'nwr[leisure=dog_park](area.country)->.parks;',
+    `(nwr[leisure=dog_park](area.country);${near})->.parks;`,
     '.parks out tags center;',
     'node.parks->.p1;',
     'node(w.parks)->.p2;',
@@ -252,6 +278,27 @@ export function nearestStreet(park: OsmPark): OsmStreet | undefined {
 
 const round = (n: number) => Math.round(n * 1e6) / 1e6;
 
+const JUDEA_SAMARIA = new Set(IL_JUDEA_SAMARIA_CODES);
+
+/**
+ * The park's locality: the nearest centre within LOCALITY_RADIUS_M, except
+ * that a locality of Judea and Samaria ([reachLimited]) claims only the
+ * parks within AROUND_LOCALITY_M of its centre. Further out, the nearest
+ * other locality is taken (when there is one), so Jerusalem's eastern
+ * neighbourhoods (Pisgat Ze'ev, 7.0 km from Ma'ale Adumim's centre and
+ * 7.2 km from Jerusalem's) stay in Jerusalem. The app's
+ * VetRegion.nearestLocality applies the same rule.
+ */
+export function parkLocality(
+  localities: readonly Locality[],
+  point: LatLng,
+  reachLimited: ReadonlySet<string> = JUDEA_SAMARIA,
+): Locality | undefined {
+  const nearest = nearestLocality(localities, point, LOCALITY_RADIUS_M);
+  if (!nearest || !reachLimited.has(nearest.code) || distanceM(point, nearest) <= AROUND_LOCALITY_M) return nearest;
+  return nearestLocality(localities.filter((l) => !reachLimited.has(l.code)), point, LOCALITY_RADIUS_M) ?? nearest;
+}
+
 export function parkRow(park: OsmPark, localities: readonly Locality[]): ParkRow {
   const names = namesOf(park.tags);
   const street = nearestStreet(park);
@@ -265,7 +312,7 @@ export function parkRow(park: OsmPark, localities: readonly Locality[]): ParkRow
     street_en: streetNames.en,
     lat: round(park.center.lat),
     lng: round(park.center.lng),
-    locality_code: nearestLocality(localities, park.center, LOCALITY_RADIUS_M)?.code ?? null,
+    locality_code: parkLocality(localities, park.center)?.code ?? null,
     ...detailsOf(park.tags),
     opening_hours: hours ? hours.slice(0, 200) : null,
   };
