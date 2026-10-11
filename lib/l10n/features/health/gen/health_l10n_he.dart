@@ -318,6 +318,9 @@ class HealthL10nHe extends HealthL10n {
   String get noVetSavedNote => 'כדאי להוסיף עכשיו את הטלפון של הווטרינר, כדי שחיוג או הודעה יהיו במרחק שתי לחיצות ברגע שצריך.';
 
   @override
+  String get homeNoVet => 'עדיין לא נשמר וטרינר. כדאי להוסיף את הטלפון של הווטרינר, כדי שחיוג יהיה במרחק שתי לחיצות.';
+
+  @override
   String get useSavedVet => 'בחירה בווטרינר שכבר שמרת';
 
   @override

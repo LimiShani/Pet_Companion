@@ -11,12 +11,19 @@ import 'feeding_card.dart';
 
 /// Today's walks (or play sessions for a pet that is not a dog) and
 /// active minutes, the next walk, and a "Walk" button. While a walk runs
-/// the last line shows its clock and Finish. Tapping the card opens the
-/// activity page.
+/// the last line shows its clock and Finish. A pet with nothing planned
+/// and nothing logged gets one invitation line and a "Set up" button
+/// instead. Tapping the card opens the activity page.
 class ActivityCard extends ConsumerWidget {
   const ActivityCard({super.key, required this.pet});
 
   static const walkKey = Key('home-walk');
+  static const setUpKey = Key('home-activity-set-up');
+
+  /// Nothing to follow yet: no walk (or play) time planned, today or
+  /// later, and nothing logged today.
+  static bool needsSetUp(ActivityDay day) =>
+      day.walks.isEmpty && day.next == null;
 
   final Pet pet;
 
@@ -29,6 +36,7 @@ class ActivityCard extends ConsumerWidget {
     final day = value.value;
     final walks = walksPet(pet.species);
     final running = ref.watch(runningWalkProvider(pet.id)) != null;
+    final setUp = day != null && !running && needsSetUp(day);
 
     return DashboardCard(
       color: AppColors.yellow,
@@ -79,6 +87,15 @@ class ActivityCard extends ConsumerWidget {
                 const SizedBox(height: 6),
                 if (running)
                   RunningWalkBox(pet: pet, onCard: true)
+                else if (setUp)
+                  CardActionRow.alone(
+                    action: CarePillButton(
+                      key: setUpKey,
+                      label: care.setUp,
+                      filled: true,
+                      onPressed: () => openActivity(context, pet),
+                    ),
+                  )
                 else
                   CardActionRow(
                     text: _nextLine(context, day),
@@ -126,10 +143,11 @@ class _Metric extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(isolate(value), style: AppText.metricSmall),
+        // Two lines on a narrow phone rather than "active min…".
         Text(
           label,
           style: AppText.label.copyWith(color: AppColors.brown),
-          maxLines: 1,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
       ],

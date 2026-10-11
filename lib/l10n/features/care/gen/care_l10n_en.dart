@@ -42,13 +42,21 @@ class CareL10nEn extends CareL10n {
   }
 
   @override
-  String get inviteWalkTimes => 'Add walk times to follow the activity';
+  String get inviteWalkTimes => 'Add walk times to follow the activity.';
 
   @override
-  String get invitePlay => 'Log play to follow the activity';
+  String get invitePlay => 'Log play to follow the activity.';
 
   @override
   String get addFoodToCount => 'Add the food to count calories';
+
+  @override
+  String feedingSetUpLine(String name) {
+    return 'Add $name\'s food and meal times to count calories.';
+  }
+
+  @override
+  String get setUp => 'Set up';
 
   @override
   String walkRunning(String time) {
@@ -244,12 +252,10 @@ class CareL10nEn extends CareL10n {
   }
 
   @override
-  String get goalNoWeight =>
-      'Add the weight in the profile for an estimate, or set a goal of your own.';
+  String get goalNoWeight => 'Add the weight in the profile for an estimate, or set a goal of your own.';
 
   @override
-  String get goalNoSpecies =>
-      'There is no estimate for this kind of animal. Set a goal of your own.';
+  String get goalNoSpecies => 'There is no estimate for this kind of animal. Set a goal of your own.';
 
   @override
   String get goalByEstimate => 'By the estimate';
@@ -338,8 +344,7 @@ class CareL10nEn extends CareL10n {
   String get startPlayNow => 'Starting to play now';
 
   @override
-  String get startNowNote =>
-      'The clock keeps running even when the app is closed. Finish saves the minutes.';
+  String get startNowNote => 'The clock keeps running even when the app is closed. Finish saves the minutes.';
 
   @override
   String get logPast => 'Or log one that already happened';

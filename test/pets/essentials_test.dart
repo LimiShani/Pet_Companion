@@ -60,18 +60,34 @@ void main() {
       expect(dot, findsNothing);
     });
 
-    testWidgets('the compact size is one line with the same action', (tester) async {
+    testWidgets('the compact size is one row: title, count and one "Add" pill', (tester) async {
       await pumpPetsHost(tester, reminder(soya, compact: true));
-      expect(find.text("Add the vet's phone"), findsOneWidget);
+      expect(find.text("Finish Soya's profile"), findsOneWidget);
       expect(find.text('5 of 5 essentials still to add'), findsOneWidget);
-      expect(find.text('Not now'), findsOneWidget);
-      expect(find.text("Finish Soya's profile"), findsNothing);
-      // One line: about 60 px of card plus the margin it was given.
-      expect(tester.getSize(find.byType(PetReminderCard)).height, lessThanOrEqualTo(64 + 12));
+      expect(find.widgetWithText(OutlinedButton, 'Add'), findsOneWidget);
+      // "Not now" lives in the checklist the row opens, not on the row.
+      expect(find.text('Not now'), findsNothing);
+      expect(find.bySemanticsLabel("Soya's profile: 5 of 5 essentials still to add"), findsOneWidget);
+      expect(find.bySemanticsLabel("Add the vet's phone"), findsOneWidget);
+      // One row: the pill sits beside the title, at the end. (The title
+      // wraps rather than being cut short, so the height depends on the
+      // font.)
+      expect(tester.getRect(find.byKey(PetReminderCard.addKey)).left,
+          greaterThan(tester.getRect(find.text("Finish Soya's profile")).right));
 
-      await tester.tap(find.text("Add the vet's phone"));
+      // The pill opens the next missing item.
+      await tester.tap(find.byKey(PetReminderCard.addKey));
       await tester.pumpAndSettle();
       expect(find.text('Choose the regular vet'), findsOneWidget);
+    });
+
+    testWidgets('the compact row itself opens the checklist, with "Remind me in a week"', (tester) async {
+      await pumpPetsHost(tester, reminder(soya, compact: true));
+      await tester.tap(find.text("Finish Soya's profile"));
+      await tester.pumpAndSettle();
+      expect(find.text("Soya's essentials"), findsOneWidget);
+      expect(find.text('Remind me in a week'), findsOneWidget);
+      expect(find.text('Choose the regular vet'), findsNothing);
     });
 
     testWidgets('one tap opens the next missing item; then the one after it is offered', (tester) async {

@@ -39,15 +39,22 @@ void main() {
     await pumpHome(tester);
 
     // Kelly is complete: the reminder is in the tree but draws nothing.
-    expect(find.text('Not now'), findsNothing);
+    expect(find.text("Finish Kelly's profile"), findsNothing);
+    expect(find.byKey(PetReminderCard.addKey), findsNothing);
 
     await tapAndSettle(tester, find.text('Soya'));
-    expect(find.text('Not now'), findsOneWidget);
+    expect(find.text("Finish Soya's profile"), findsOneWidget);
     expect(find.textContaining('essentials still to add'), findsOneWidget);
-
-    // "Not now" puts the line away; the dashboard is still there.
-    await tapAndSettle(tester, find.text('Not now'));
+    expect(find.byKey(PetReminderCard.addKey), findsOneWidget);
+    // One pill on the row; "Not now" is in the checklist the row opens.
     expect(find.text('Not now'), findsNothing);
+
+    // "Remind me in a week" in the checklist puts the row away; the
+    // dashboard is still there.
+    await tapAndSettle(tester, find.text("Finish Soya's profile"));
+    await tester.ensureVisible(find.text('Remind me in a week'));
+    await tapAndSettle(tester, find.text('Remind me in a week'));
+    expect(find.text("Finish Soya's profile"), findsNothing);
     expect(find.text('Feeding'), findsOneWidget);
   });
 

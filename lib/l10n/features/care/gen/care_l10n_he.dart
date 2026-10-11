@@ -42,13 +42,21 @@ class CareL10nHe extends CareL10n {
   }
 
   @override
-  String get inviteWalkTimes => 'הוסיפו שעות טיול כדי לעקוב אחרי הפעילות';
+  String get inviteWalkTimes => 'הוסיפו שעות טיול כדי לעקוב אחרי הפעילות.';
 
   @override
-  String get invitePlay => 'רשמו משחק כדי לעקוב אחרי הפעילות';
+  String get invitePlay => 'רשמו משחק כדי לעקוב אחרי הפעילות.';
 
   @override
   String get addFoodToCount => 'הוסיפו את המזון כדי לספור קלוריות';
+
+  @override
+  String feedingSetUpLine(String name) {
+    return 'הוסיפו את המזון ואת שעות הארוחות של \u2068$name\u2069 כדי לספור קלוריות.';
+  }
+
+  @override
+  String get setUp => 'הגדרה';
 
   @override
   String walkRunning(String time) {
@@ -244,8 +252,7 @@ class CareL10nHe extends CareL10n {
   }
 
   @override
-  String get goalNoWeight =>
-      'הוסיפו משקל בפרופיל כדי לקבל הערכה, או קבעו יעד משלכם.';
+  String get goalNoWeight => 'הוסיפו משקל בפרופיל כדי לקבל הערכה, או קבעו יעד משלכם.';
 
   @override
   String get goalNoSpecies => 'אין הערכה לסוג החיה הזה. קבעו יעד משלכם.';
@@ -337,8 +344,7 @@ class CareL10nHe extends CareL10n {
   String get startPlayNow => 'מתחילים לשחק עכשיו';
 
   @override
-  String get startNowNote =>
-      'השעון ממשיך גם כשהאפליקציה סגורה. ״סיום״ שומר את הדקות.';
+  String get startNowNote => 'השעון ממשיך גם כשהאפליקציה סגורה. ״סיום״ שומר את הדקות.';
 
   @override
   String get logPast => 'או: רישום של מה שכבר היה';

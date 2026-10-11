@@ -8,6 +8,19 @@ import '../widgets/app_icon.dart';
 /// Shared shell of the feeding / activity / health cards: colored rounded
 /// box, illustrated icon disc at the start (an SVG drawing), content after
 /// it (mirrored by itself on a right-to-left screen).
+///
+/// Every Home card follows one contract (this shell, `MoneyCard` and the
+/// first 30 days card alike):
+///
+/// * a 64 px illustrated icon at the start;
+/// * the title owns its line ([CardTitleRow]): it is never cut short;
+/// * at most one small label beside the title, when it fits (else under it);
+/// * one metric block (a number, a progress bar, or one invitation line);
+/// * at most one pill, always the house outlined pill (`CarePillButton`
+///   with `filled: true`), at the end of the last line ([CardActionRow],
+///   which drops it under the line when both do not fit);
+/// * a card with nothing to do has no pill, and the whole card is the
+///   button ([onTap]).
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
     super.key,
@@ -100,16 +113,35 @@ class DashboardCard extends StatelessWidget {
 /// The title owns its line: a label that does not fit beside it moves
 /// under it instead of cutting the title short.
 class CardTitleRow extends StatelessWidget {
-  const CardTitleRow({super.key, required this.title, this.trailing});
+  const CardTitleRow({
+    super.key,
+    required this.title,
+    this.trailing,
+    this.labelBelow = false,
+  });
 
   final String title;
   final String? trailing;
+
+  /// Always put the label on its own line under the title (a label that
+  /// names the scope of the whole card, "All the home").
+  final bool labelBelow;
 
   @override
   Widget build(BuildContext context) {
     final label = trailing;
     final titleText = Text(title, style: AppText.cardTitle, softWrap: true);
     if (label == null) return titleText;
+    final labelStyle = AppText.label.copyWith(fontWeight: FontWeight.w600);
+    Widget below() => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        titleText,
+        const SizedBox(height: 2),
+        Text(label, style: labelStyle, softWrap: true),
+      ],
+    );
+    if (labelBelow) return below();
     return LayoutBuilder(
       builder: (context, constraints) {
         final scaler = MediaQuery.textScalerOf(context);
@@ -120,25 +152,18 @@ class CardTitleRow extends StatelessWidget {
           textScaler: scaler,
           maxLines: 1,
         )..layout()).width;
-        final labelStyle = AppText.label.copyWith(fontWeight: FontWeight.w600);
         final fits =
             width(title, AppText.cardTitle) + 8 + width(label, labelStyle) + 4 <=
             constraints.maxWidth;
-        final labelText = Text(label, style: labelStyle, softWrap: true);
-        if (fits) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.baseline,
-            textBaseline: TextBaseline.alphabetic,
-            children: [
-              Expanded(child: titleText),
-              const SizedBox(width: 8),
-              labelText,
-            ],
-          );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [titleText, const SizedBox(height: 2), labelText],
+        if (!fits) return below();
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.baseline,
+          textBaseline: TextBaseline.alphabetic,
+          children: [
+            Expanded(child: titleText),
+            const SizedBox(width: 8),
+            Text(label, style: labelStyle, softWrap: true),
+          ],
         );
       },
     );
@@ -148,9 +173,12 @@ class CardTitleRow extends StatelessWidget {
 /// "Next feeding · 19:30" style line with a small clock. [text] is the
 /// whole line, already in the screen's language.
 class NextEventLine extends StatelessWidget {
-  const NextEventLine({super.key, required this.text});
+  const NextEventLine({super.key, required this.text, this.maxLines = 1});
 
   final String text;
+
+  /// Lines the text may take before it is cut short.
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +190,7 @@ class NextEventLine extends StatelessWidget {
           child: Text(
             text,
             style: AppText.body,
-            maxLines: 1,
+            maxLines: maxLines,
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -178,20 +206,36 @@ class NextEventLine extends StatelessWidget {
 class CardActionRow extends StatelessWidget {
   const CardActionRow({
     super.key,
-    required this.text,
+    required String this.text,
     required this.actionLabel,
     required this.action,
+    this.maxLines = 1,
   });
 
+  /// Only the action, at the end of its own line (under a card's
+  /// invitation, "Add walk times to follow the activity.").
+  const CardActionRow.alone({super.key, required this.action})
+    : text = null,
+      actionLabel = '',
+      maxLines = 1;
+
   /// The whole line next to the clock, as in [NextEventLine].
-  final String text;
+  final String? text;
 
   /// The action's label, measured to decide whether both fit.
   final String actionLabel;
   final Widget action;
 
+  /// Lines the text may take before it is cut short, once the action has
+  /// moved under it (beside the action it is always one line).
+  final int maxLines;
+
   @override
   Widget build(BuildContext context) {
+    final text = this.text;
+    if (text == null) {
+      return Align(alignment: AlignmentDirectional.centerEnd, child: action);
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         final scaler = MediaQuery.textScalerOf(context);
@@ -219,7 +263,7 @@ class CardActionRow extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            NextEventLine(text: text),
+            NextEventLine(text: text, maxLines: maxLines),
             const SizedBox(height: 4),
             Align(alignment: AlignmentDirectional.centerEnd, child: action),
           ],

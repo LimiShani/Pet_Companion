@@ -629,6 +629,12 @@ abstract class HealthL10n {
   /// **'Add the vet\'s phone now, so a call or a message is two taps away when you need it.'**
   String get noVetSavedNote;
 
+  /// Home's Health card when nothing is coming up and the pet has no regular vet; tapping the card adds one.
+  ///
+  /// In en, this message translates to:
+  /// **'No vet saved yet. Add the vet\'s phone so a call is two taps away.'**
+  String get homeNoVet;
+
   /// No description provided for @useSavedVet.
   ///
   /// In en, this message translates to:

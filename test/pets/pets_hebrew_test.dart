@@ -182,15 +182,19 @@ void main() {
         size: size,
       );
 
-      // The reminder in both sizes.
-      expect(find.text(he.finishProfile('Soya')), findsOneWidget);
+      // The reminder in both sizes. The compact row has one "Add" pill and
+      // no "Not now"; the card has the action and "Not now".
+      expect(find.text(he.finishProfile('Soya')), findsNWidgets(2));
       expect(find.text('חסרים 5 מתוך 5 פרטים חיוניים'), findsNWidgets(2));
-      expect(find.text(he.actionVetPhone), findsNWidgets(2));
-      expect(find.text('לא עכשיו'), findsNWidgets(2));
+      expect(find.text(he.actionVetPhone), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, appHe.commonAdd), findsOneWidget);
+      // The card's action button and the row's "Add" pill both say it.
+      expect(find.bySemanticsLabel(he.actionVetPhone), findsNWidgets(2));
+      expect(find.text('לא עכשיו'), findsOneWidget);
       expect(find.bySemanticsLabel(he.reminderSemantics('Soya', 5, 5)), findsNWidgets(2));
-      expect(directionOf(tester, find.text(he.finishProfile('Soya'))), TextDirection.rtl);
-      // "Not now" ends the line: on the left in Hebrew.
-      expect(tester.getCenter(find.text(he.notNow).first).dx, lessThan(size.width / 2));
+      expect(directionOf(tester, find.text(he.finishProfile('Soya')).first), TextDirection.rtl);
+      // "Add" ends the compact row: on the left in Hebrew.
+      expect(tester.getCenter(find.byKey(PetReminderCard.addKey)).dx, lessThan(size.width / 2));
 
       // The checklist, and an answer given from it.
       await tapVisible(tester, find.text('checklist'));

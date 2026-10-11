@@ -11,11 +11,19 @@ import '../care.dart';
 import '../../../presentation/dashboard_card.dart';
 
 /// Today's calories toward the goal, the next feeding, and a "Fed" button.
-/// Tapping the card opens the feeding page.
+/// A pet with nothing set up yet (no food, no meal times, nothing logged
+/// today) gets one invitation line and a "Set up" button instead. Tapping
+/// the card opens the feeding page.
 class FeedingCard extends ConsumerWidget {
   const FeedingCard({super.key, required this.pet});
 
   static const fedKey = Key('home-fed');
+  static const setUpKey = Key('home-feeding-set-up');
+
+  /// Nothing to count and nothing to log against: no food, no meal times
+  /// and no meal logged today.
+  static bool needsSetUp(FeedingDay day) =>
+      !day.hasFood && !day.hasTimes && day.meals.isEmpty;
 
   final Pet pet;
 
@@ -26,12 +34,13 @@ class FeedingCard extends ConsumerWidget {
     final value = ref.watch(feedingDayProvider(pet.id));
     final day = value.value;
     final goal = day?.goal;
+    final setUp = day != null && needsSetUp(day);
 
     return DashboardCard(
       color: AppColors.sage,
       iconAsset: 'assets/images/icon_feeding.svg',
       title: l10n.homeFeeding,
-      trailing: day == null
+      trailing: day == null || setUp
           ? null
           : (goal == null
                 ? l10n.homeNoGoal
@@ -40,6 +49,25 @@ class FeedingCard extends ConsumerWidget {
       tapLabel: care.openFeeding,
       child: day == null
           ? HomeCardState(value: value, petId: pet.id)
+          : setUp
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  care.feedingSetUpLine(pet.name),
+                  style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                CardActionRow.alone(
+                  action: CarePillButton(
+                    key: setUpKey,
+                    label: care.setUp,
+                    filled: true,
+                    onPressed: () => openFeeding(context, pet),
+                  ),
+                ),
+              ],
+            )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [

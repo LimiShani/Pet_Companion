@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../presentation/care_widgets.dart';
+import '../../../presentation/dashboard_card.dart';
 import '../first_days_screen.dart';
 import '../first_days_words.dart';
 import '../../../services/firstdays/state/first_days_logic.dart';
 import '../../../services/firstdays/state/first_days_providers.dart';
 import 'first_days_keeper.dart';
 
-/// Home's "The first 30 days of Mitzi" card: the day, the progress and the
-/// next task, with "Open". Shown for [pet] only while its path runs (day 1
-/// to 30, not closed, not finished); otherwise it takes no room at all.
+/// Home's "The first 30 days of Mitzi" card: the day and the progress as
+/// the title's label ("Day 10 · 2/12"), the progress bar, and the next
+/// task with "Open" at the end of its line (the `DashboardCard` contract).
+/// Shown for [pet] only while its path runs (day 1 to 30, not closed, not
+/// finished); otherwise it takes no room at all.
 ///
 /// [margin] is the gap kept above the card when it shows.
 class FirstDaysHomeCard extends StatelessWidget {
@@ -59,106 +61,42 @@ class _Card extends StatelessWidget {
     final next = view.next;
     void open() => openFirstDays(context, view.pet.id);
 
-    return Material(
+    final pill = CarePillButton(
+      key: FirstDaysHomeCard.openKey,
+      label: l10n.open,
+      filled: true,
+      onPressed: open,
+    );
+
+    return DashboardCard(
       key: FirstDaysHomeCard.cardKey,
       color: AppColors.yellow,
-      borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: open,
-        child: Semantics(
-          onTapHint: l10n.openTapLabel,
-          child: Padding(
-            padding: AppSpacing.card,
-            child: Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.white.withValues(alpha: 0.6),
-                      width: 3,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: SvgPicture.asset(
-                      'assets/images/icon_first_days.svg',
-                      fit: BoxFit.cover,
-                      excludeFromSemantics: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        l10n.cardTitle(view.pet.name),
-                        style: AppText.cardTitle,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              l10n.cardDay(format.integer(view.shownDay)),
-                              style: AppText.body.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${format.integer(view.doneCount)}/${format.integer(view.total)}',
-                            style: AppText.body.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      CareProgress(
-                        value: view.progress,
-                        track: AppColors.white.withValues(alpha: 0.7),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              next == null
-                                  ? ''
-                                  : l10n.cardNext(
-                                      firstDaysTaskText(l10n, next.task.id),
-                                    ),
-                              style: AppText.body,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          CarePillButton(
-                            key: FirstDaysHomeCard.openKey,
-                            label: l10n.open,
-                            filled: true,
-                            onPressed: open,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      iconAsset: 'assets/images/icon_first_days.svg',
+      iconRing: true,
+      title: l10n.cardTitle(view.pet.name),
+      trailing:
+          '${l10n.cardDay(format.integer(view.shownDay))} · '
+          '${isolate('${format.integer(view.doneCount)}/${format.integer(view.total)}')}',
+      onTap: open,
+      tapLabel: l10n.openTapLabel,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CareProgress(
+            value: view.progress,
+            track: AppColors.white.withValues(alpha: 0.7),
           ),
-        ),
+          const SizedBox(height: 8),
+          if (next == null)
+            CardActionRow.alone(action: pill)
+          else
+            CardActionRow(
+              text: l10n.cardNext(firstDaysTaskText(l10n, next.task.id)),
+              actionLabel: l10n.open,
+              action: pill,
+              maxLines: 3,
+            ),
+        ],
       ),
     );
   }

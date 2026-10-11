@@ -62,8 +62,7 @@ import 'care_l10n_he.dart';
 /// be consistent with the languages listed in the CareL10n.supportedLocales
 /// property.
 abstract class CareL10n {
-  CareL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  CareL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -83,18 +82,17 @@ abstract class CareL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// Home feeding card button: log a meal now.
@@ -154,13 +152,13 @@ abstract class CareL10n {
   /// Home activity card of a dog with no walk times and nothing logged today.
   ///
   /// In en, this message translates to:
-  /// **'Add walk times to follow the activity'**
+  /// **'Add walk times to follow the activity.'**
   String get inviteWalkTimes;
 
   /// Home activity card of a pet that does not go for walks, with nothing logged today.
   ///
   /// In en, this message translates to:
-  /// **'Log play to follow the activity'**
+  /// **'Log play to follow the activity.'**
   String get invitePlay;
 
   /// No description provided for @addFoodToCount.
@@ -168,6 +166,18 @@ abstract class CareL10n {
   /// In en, this message translates to:
   /// **'Add the food to count calories'**
   String get addFoodToCount;
+
+  /// Home feeding card of a pet with no food and no meal times set up yet; the Set up button opens the feeding page.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {name}\'s food and meal times to count calories.'**
+  String feedingSetUpLine(String name);
+
+  /// Button on a Home card with nothing set up yet (feeding, activity): opens the card's page.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up'**
+  String get setUp;
 
   /// A walk in progress and how long it has run.
   ///
@@ -737,26 +747,25 @@ class _CareL10nDelegate extends LocalizationsDelegate<CareL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_CareL10nDelegate old) => false;
 }
 
 CareL10n lookupCareL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return CareL10nEn();
-    case 'he':
-      return CareL10nHe();
+    case 'en': return CareL10nEn();
+    case 'he': return CareL10nHe();
   }
 
   throw FlutterError(
     'CareL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }
