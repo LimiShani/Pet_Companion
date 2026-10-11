@@ -382,10 +382,7 @@ class _ComingUp extends StatelessWidget {
               Expanded(
                 child: Text(
                   l10n.comingUp,
-                  style: AppText.cardTitle.copyWith(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: AppText.sectionTitle,
                 ),
               ),
               HealthLink(

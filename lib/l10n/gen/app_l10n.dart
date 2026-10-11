@@ -383,6 +383,48 @@ abstract class AppL10n {
   /// **'Hide password'**
   String get authHidePassword;
 
+  /// Header of the screen a password-recovery link opens.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get resetPasswordTitle;
+
+  /// No description provided for @resetPasswordIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a new password for your account.'**
+  String get resetPasswordIntro;
+
+  /// No description provided for @resetPasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'New password'**
+  String get resetPasswordLabel;
+
+  /// No description provided for @resetPasswordConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get resetPasswordConfirm;
+
+  /// No description provided for @resetPasswordTooShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Use at least 8 characters'**
+  String get resetPasswordTooShort;
+
+  /// No description provided for @resetPasswordMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get resetPasswordMismatch;
+
+  /// No description provided for @resetPasswordSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save password'**
+  String get resetPasswordSave;
+
   /// No description provided for @validEmailEmpty.
   ///
   /// In en, this message translates to:

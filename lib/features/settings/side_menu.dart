@@ -122,9 +122,7 @@ class AppSideMenu extends ConsumerWidget {
                 if (ref.watch(capabilityProvider('access.admin')))
                   MenuEntry(
                     icon: const Icon(Icons.admin_panel_settings_outlined),
-                    title: Localizations.localeOf(context).languageCode == 'he'
-                        ? 'הרשאות לתכונות'
-                        : 'Feature access',
+                    title: context.accessL10n.title,
                     onTap: () {
                       close();
                       openAccessAdministration(context);

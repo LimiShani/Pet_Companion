@@ -265,10 +265,7 @@ class _Summary extends StatelessWidget {
         children: [
           Text(
             label,
-            style: AppText.cardTitle.copyWith(
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
+            style: AppText.sectionTitle,
           ),
           const SizedBox(height: 2),
           Text(l10n.kitSummaryNote, style: AppText.secondary),

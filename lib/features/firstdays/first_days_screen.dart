@@ -153,7 +153,7 @@ class _Body extends ConsumerWidget {
                               format.integer(view.shownDay),
                               format.integer(firstDaysLength),
                             ),
-                      style: AppText.cardTitle.copyWith(fontSize: 17),
+                      style: AppText.sectionTitle,
                     ),
                   ),
                   const SizedBox(width: 8),

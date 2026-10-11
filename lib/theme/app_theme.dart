@@ -73,6 +73,31 @@ abstract final class AppText {
     fontSize: 18,
     fontWeight: FontWeight.w800,
   );
+
+  /// The name of the thing a page is about (a record, a chat, a member,
+  /// a deal), under the page title.
+  static const heading = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 20,
+    fontWeight: FontWeight.w800,
+  );
+
+  /// A section inside a page ("Today", "This week", a sheet's title).
+  static const sectionTitle = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 18,
+    fontWeight: FontWeight.w800,
+  );
+
+  /// The first line of a list row or tile (a room, a guide, a product).
+  static const rowTitle = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 16,
+    fontWeight: FontWeight.w800,
+  );
   static const cardTitle = TextStyle(
     fontFamily: AppFonts.latin,
     fontFamilyFallback: [AppFonts.hebrew],
@@ -83,6 +108,17 @@ abstract final class AppText {
     fontFamily: AppFonts.latin,
     fontFamilyFallback: [AppFonts.hebrew],
     fontSize: 14,
+    fontWeight: FontWeight.w600,
+  );
+
+  /// Running text the reader lingers on or types into: what a text field
+  /// shows, a guide's paragraphs, a post being written, the value of a
+  /// form row. One step up from [body] so it is comfortable to read and
+  /// large enough that phones do not zoom a focused field.
+  static const bodyLarge = TextStyle(
+    fontFamily: AppFonts.latin,
+    fontFamilyFallback: [AppFonts.hebrew],
+    fontSize: 16,
     fontWeight: FontWeight.w600,
   );
   static const secondary = TextStyle(
@@ -218,8 +254,7 @@ abstract final class AppTheme {
           horizontal: 18,
           vertical: 16,
         ),
-        hintStyle: AppText.body.copyWith(
-          fontSize: 16,
+        hintStyle: AppText.bodyLarge.copyWith(
           color: AppColors.brown.withValues(alpha: 0.55),
         ),
         labelStyle: AppText.body.copyWith(color: AppColors.brown),

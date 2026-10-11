@@ -187,9 +187,16 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
         path != '/welcome';
   }
 
+  /// On a page other than the dashboard: the sheet never covers the first
+  /// Home an owner sees.
+  bool get _awayFromHome {
+    final path = _router?.routerDelegate.currentConfiguration.uri.path ?? '';
+    return path != AppRoutes.home;
+  }
+
   void _onRoute() {
     _openWaitingTap();
-    _maybeAsk();
+    if (_awayFromHome) _maybeAsk();
   }
 
   void _openWaitingTap() {
@@ -225,13 +232,16 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
   }
 
   /// Asks once per phone, the first time the signed-in account has
-  /// something that would ring. Never again afterwards: Settings shows what
-  /// the phone allows, with a button.
+  /// something that would ring and the owner is on a page other than Home:
+  /// right after saving the first meal time or medicine, or on the first
+  /// move to another tab for an account that already had reminders. Never
+  /// again afterwards: Settings shows what the phone allows, with a button.
   Future<void> _maybeAsk() async {
     final platform = _platform;
     if (platform == null ||
         _asking ||
         !_ready ||
+        !_awayFromHome ||
         !ref.read(somethingToRemindProvider)) {
       return;
     }
@@ -275,10 +285,7 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
       ref.listen(notificationTapsProvider, (_, target) {
         if (target != null) _openWaitingTap();
       });
-      ref.listen(petsGateProvider, (_, _) {
-        _openWaitingTap();
-        _maybeAsk();
-      });
+      ref.listen(petsGateProvider, (_, _) => _openWaitingTap());
       ref.listen(somethingToRemindProvider, (_, something) {
         if (something) _maybeAsk();
       });

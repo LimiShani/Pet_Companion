@@ -243,12 +243,12 @@ class _GuideCard extends StatelessWidget {
     ]);
     final small = AppText.label.copyWith(color: AppColors.brown);
     final audienceTag = showAudience
-        ? SmallTag.forAudience(l10n, guide.audience)
+        ? tagForAudience(l10n, guide.audience)
         : null;
-    final tags = [
+    final tags = <Widget>[
       ?audienceTag,
-      if (guide.review != null) SmallTag.reviewed(l10n),
-      if (!guide.translated) SmallTag.englishOnly(l10n),
+      if (guide.review != null) tagReviewed(l10n),
+      if (!guide.translated) tagEnglishOnly(l10n),
     ];
 
     return Card(
@@ -276,10 +276,7 @@ class _GuideCard extends StatelessWidget {
                         children: [
                           Text(
                             guide.title,
-                            style: AppText.cardTitle.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: AppText.rowTitle,
                           ),
                           const SizedBox(height: 2),
                           Text(

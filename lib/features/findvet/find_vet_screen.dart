@@ -755,7 +755,7 @@ class _CallFirstBanner extends StatelessWidget {
                 children: [
                   Text(
                     l10n.callFirstTitle,
-                    style: AppText.cardTitle.copyWith(fontSize: 16),
+                    style: AppText.rowTitle,
                   ),
                   Text(l10n.callFirstBody, style: AppText.body),
                 ],
@@ -821,7 +821,7 @@ class _SectionTitle extends StatelessWidget {
         children: [
           Semantics(
             header: true,
-            child: Text(title, style: AppText.cardTitle.copyWith(fontSize: 16)),
+            child: Text(title, style: AppText.rowTitle),
           ),
           if (note != null)
             Text(

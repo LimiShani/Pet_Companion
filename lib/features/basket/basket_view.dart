@@ -158,7 +158,7 @@ class BasketLineTile extends ConsumerWidget {
                   ),
               ],
             ),
-            style: AppText.cardTitle.copyWith(fontSize: 16),
+            style: AppText.rowTitle,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

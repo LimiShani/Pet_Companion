@@ -1,0 +1,146 @@
+{
+  "@@locale": "en",
+  "title": "Feature access",
+  "@title": {
+    "description": "The side-menu entry and the header of the administration screen."
+  },
+  "refresh": "Refresh",
+  "@refresh": {
+    "description": "Tooltip of the header button that reloads the administration data."
+  },
+  "tabUsers": "Users",
+  "tabGroups": "Groups",
+  "tabFeatures": "Features",
+  "tabAudit": "Audit",
+  "loadFailed": "Could not load the access settings. Try again.",
+  "@loadFailed": {
+    "description": "Shown when the administration data could not be loaded or a change could not be saved."
+  },
+  "retry": "Retry",
+  "user": "User",
+  "@user": {
+    "description": "Label of the drop-down that picks the user to manage."
+  },
+  "groupMembership": "Group membership",
+  "individualOverrides": "Individual overrides",
+  "@individualOverrides": {
+    "description": "Heading of a user's own permission rules, which override the group rules."
+  },
+  "group": "Group",
+  "@group": {
+    "description": "Label of the drop-down that picks the group to manage."
+  },
+  "newGroup": "New group",
+  "groupName": "Group name",
+  "create": "Create",
+  "featuresNote": "A disabled feature is blocked for everyone. Individual rules override group rules; group denial wins over group allowance.",
+  "publicVetSearch": "Public vet search",
+  "@publicVetSearch": {
+    "description": "Switch that lets people search for a vet without an account."
+  },
+  "ruleInherit": "Inherit",
+  "ruleAllow": "Allow",
+  "ruleDeny": "Deny",
+  "allowed": "Allowed",
+  "blocked": "Blocked",
+  "ruleSummary": "{status} · {reason}",
+  "@ruleSummary": {
+    "description": "Under a capability: whether the user may use it (allowed/blocked) and why.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "capabilityLabel": "{feature} · {action}",
+  "@capabilityLabel": {
+    "description": "A capability named by its feature and the action it allows, e.g. \"Health · Edit\".",
+    "placeholders": {
+      "feature": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "featurePets": "Pet profiles",
+  "featureCare": "Daily care",
+  "featureHealth": "Health",
+  "featureHealthRecords": "Health records",
+  "featureHealthSchedule": "Health schedule",
+  "featureHealthEmergency": "Emergency tools",
+  "featureCommunity": "Community",
+  "featureCommunityFeed": "Community feed",
+  "featureCommunityChat": "Community chat",
+  "featureCommunityGuides": "Guides",
+  "featureCommunityParks": "Dog parks",
+  "featureCommunityMeetups": "Walk and play partners",
+  "featureDeals": "Deals",
+  "featureBudget": "Budget",
+  "featureBasket": "Basket",
+  "featureFirstDays": "First days",
+  "featureFindVet": "Find a vet",
+  "actionView": "View",
+  "actionEdit": "Edit",
+  "actionExport": "Export",
+  "actionPost": "Post",
+  "actionSend": "Send",
+  "actionShare": "Share",
+  "actionSearch": "Search",
+  "actionAdmin": "Review directory",
+  "actionModerate": "Moderate reports",
+  "actionSuggest": "Suggest changes",
+  "actionReview": "Review suggestions",
+  "actionPrivate": "Private chats",
+  "auditIntroDemo": "Demo history resets when the app closes. Tap an entry for details.",
+  "auditIntroSaved": "Saved administration history. Tap an entry for details.",
+  "auditActorFilter": "Administrator email or ID",
+  "auditActionType": "Action type",
+  "auditAllActions": "All actions",
+  "auditAnyDate": "Any date",
+  "auditSearch": "Search history",
+  "auditClearFilters": "Clear filters",
+  "auditLoadFailed": "Could not load saved history. Check the connection and migration 0017.",
+  "auditEmpty": "No administration actions found.",
+  "auditLoadOlder": "Load older actions",
+  "auditSystemActor": "System / database owner",
+  "@auditSystemActor": {
+    "description": "Who made a change when no signed-in administrator did."
+  },
+  "auditEntryNumber": "Entry #{id}",
+  "@auditEntryNumber": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "auditBefore": "Before",
+  "auditAfter": "After",
+  "auditNoPreviousValue": "No previous value",
+  "auditRemoved": "Removed",
+  "categoryFeatureSettings": "Feature settings",
+  "categoryGroups": "Groups",
+  "categoryGroupMembership": "Group membership",
+  "categoryUserRules": "Individual permissions",
+  "categoryGroupRules": "Group permissions",
+  "categoryAdmins": "Administrators",
+  "categoryCapabilities": "Capability catalog",
+  "categoryVetDirectory": "Vet directory review",
+  "unavailableTitle": "Could not load account permissions",
+  "@unavailableTitle": {
+    "description": "Full-screen message when the app cannot find out what the account may use."
+  },
+  "unavailableMessage": "Check the connection and try again.",
+  "signOut": "Sign out",
+  "gateTitle": "Feature access",
+  "@gateTitle": {
+    "description": "Header of the page shown instead of a feature the account may not use."
+  },
+  "gateUnavailable": "Feature unavailable",
+  "gateMessage": "Your account does not have access to this feature right now."
+}

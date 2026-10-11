@@ -17,10 +17,11 @@ import '../../../widgets/app_icon.dart';
 import '../../community/chat/private_chat_providers.dart'
     show privateChatCapability;
 import '../../community/community_words.dart';
-import '../../outdoors/outdoors.dart' show ParkTag, parkDetailIcon;
+import '../../outdoors/outdoors.dart' show parkDetailIcon;
 import '../../outdoors/outdoors_words.dart';
 import '../meetup_actions.dart';
 import '../meetups_words.dart';
+import '../../../widgets/app_tag.dart';
 
 /// One ad: the pet, the kind, the place (a park opens its page), when, how
 /// far, the note, the author, and "I want to join" (or, on one's own ad,
@@ -75,13 +76,13 @@ class MeetupCard extends ConsumerWidget {
     final park = ad.park;
 
     final tags = [
-      if (own) _Tag(l10n.yourAd, color: AppColors.peach),
-      if (own && ad.hidden) _Tag(l10n.hiddenTag, color: AppColors.yellow),
+      if (own) _Tag(l10n.yourAd, tone: AppTagTone.peach),
+      if (own && ad.hidden) _Tag(l10n.hiddenTag, tone: AppTagTone.yellow),
       if (closed)
-        _Tag(l10n.closedTag, color: AppColors.cream)
+        _Tag(l10n.closedTag, tone: AppTagTone.ink)
       else if (ended)
-        _Tag(l10n.endedTag, color: AppColors.cream),
-      if (!own && ad.answered) _Tag(l10n.answeredTag, color: AppColors.sage),
+        _Tag(l10n.endedTag, tone: AppTagTone.ink),
+      if (!own && ad.answered) _Tag(l10n.answeredTag, tone: AppTagTone.sage),
     ];
 
     return Material(
@@ -143,12 +144,12 @@ class MeetupCard extends ConsumerWidget {
                         spacing: 6,
                         runSpacing: 6,
                         children: [
-                          ParkTag(
+                          AppTag(
                             l10n.kind(ad.kind),
+                            tone: AppTagTone.yellow,
                             icon: ad.kind == MeetupKind.walk
                                 ? Icons.directions_walk_rounded
                                 : Icons.sports_baseball_rounded,
-                            color: AppColors.yellow,
                           ),
                           ...tags,
                         ],
@@ -236,7 +237,7 @@ class MeetupCard extends ConsumerWidget {
                         runSpacing: 6,
                         children: [
                           for (final detail in park.has)
-                            ParkTag(
+                            AppTag(
                               context.outdoorsL10n.detail(detail),
                               icon: parkDetailIcon(detail),
                             ),
@@ -332,13 +333,13 @@ class MeetupCard extends ConsumerWidget {
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag(this.label, {required this.color});
+  const _Tag(this.label, {required this.tone});
 
   final String label;
-  final Color color;
+  final AppTagTone tone;
 
   @override
-  Widget build(BuildContext context) => ParkTag(label, color: color);
+  Widget build(BuildContext context) => AppTag(label, tone: tone);
 }
 
 /// A line with an icon at the start.

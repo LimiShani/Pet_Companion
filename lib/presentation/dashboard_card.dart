@@ -84,31 +84,63 @@ class DashboardCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  Text(title, style: AppText.cardTitle),
-                  if (trailing != null) ...[
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        trailing!,
-                        style: AppText.label.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.end,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
+              CardTitleRow(title: title, trailing: trailing),
               const SizedBox(height: 6),
               child,
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The first line of a card: the title, and a small label after it
+/// ("Goal 1,030 cal/day", "Upcoming", "All the home") when there is room.
+/// The title owns its line: a label that does not fit beside it moves
+/// under it instead of cutting the title short.
+class CardTitleRow extends StatelessWidget {
+  const CardTitleRow({super.key, required this.title, this.trailing});
+
+  final String title;
+  final String? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = trailing;
+    final titleText = Text(title, style: AppText.cardTitle, softWrap: true);
+    if (label == null) return titleText;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final scaler = MediaQuery.textScalerOf(context);
+        final direction = Directionality.of(context);
+        double width(String s, TextStyle style) => (TextPainter(
+          text: TextSpan(text: s, style: style),
+          textDirection: direction,
+          textScaler: scaler,
+          maxLines: 1,
+        )..layout()).width;
+        final labelStyle = AppText.label.copyWith(fontWeight: FontWeight.w600);
+        final fits =
+            width(title, AppText.cardTitle) + 8 + width(label, labelStyle) + 4 <=
+            constraints.maxWidth;
+        final labelText = Text(label, style: labelStyle, softWrap: true);
+        if (fits) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Expanded(child: titleText),
+              const SizedBox(width: 8),
+              labelText,
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [titleText, const SizedBox(height: 2), labelText],
+        );
+      },
     );
   }
 }

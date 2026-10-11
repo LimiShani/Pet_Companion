@@ -80,12 +80,13 @@ class _ItemRow extends StatelessWidget {
         : format.dateTime(item.when);
     return LayoutBuilder(
       builder: (context, constraints) => Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             child: Text(
               title,
               style: AppText.cardTitle,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),

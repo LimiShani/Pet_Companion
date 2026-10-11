@@ -237,7 +237,7 @@ class _ItemCard extends ConsumerWidget {
       children: [
         Text(
           l10n.reviewKind(item.kind),
-          style: AppText.cardTitle.copyWith(fontSize: 16),
+          style: AppText.rowTitle,
         ),
         Text(
           '${l10n.severity(item.severity)} · ${item.facilityName ?? ''} · ${AppFormat.of(context).date(item.createdAt.toLocal())}',
@@ -345,7 +345,7 @@ class _FacilityCard extends ConsumerWidget {
       children: [
         Text(
           f.nameHe == null ? f.name : '${f.name} · ${f.nameHe}',
-          style: AppText.cardTitle.copyWith(fontSize: 16),
+          style: AppText.rowTitle,
         ),
         Text(
           [

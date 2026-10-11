@@ -94,8 +94,7 @@ class _CropPhotoScreenState extends State<CropPhotoScreen> {
                       context.petsL10n.cropTitle,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppText.appTitle.copyWith(
-                        fontSize: 20,
+                      style: AppText.heading.copyWith(
                         color: AppColors.white,
                       ),
                     ),

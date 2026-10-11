@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../l10n/l10n.dart';
 import '../platform/session.dart';
+import '../theme/app_theme.dart';
 import 'access_provider.dart';
 import 'feature_gate.dart';
 
@@ -27,28 +29,25 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
   bool _failed = false;
   int _request = 0;
 
-  bool get _hebrew => Localizations.localeOf(context).languageCode == 'he';
-  String _text(String en, String he) => _hebrew ? he : en;
+  AccessL10n get _l10n => context.accessL10n;
   String _category(String action) => switch (action.split(':').first) {
-    'feature_catalog' => _text('Feature settings', 'הגדרות תכונות'),
-    'access_groups' => _text('Groups', 'קבוצות'),
-    'access_group_members' => _text('Group membership', 'חברות בקבוצות'),
-    'user_capability_rules' => _text('Individual permissions', 'הרשאות אישיות'),
-    'group_capability_rules' => _text('Group permissions', 'הרשאות קבוצתיות'),
-    'access_admins' => _text('Administrators', 'מנהלי הרשאות'),
-    'access_capabilities' => _text('Capability catalog', 'קטלוג הרשאות'),
-    'vet_directory' => _text('Vet directory review', 'סקירת מדריך וטרינרים'),
+    'feature_catalog' => _l10n.categoryFeatureSettings,
+    'access_groups' => _l10n.categoryGroups,
+    'access_group_members' => _l10n.categoryGroupMembership,
+    'user_capability_rules' => _l10n.categoryUserRules,
+    'group_capability_rules' => _l10n.categoryGroupRules,
+    'access_admins' => _l10n.categoryAdmins,
+    'access_capabilities' => _l10n.categoryCapabilities,
+    'vet_directory' => _l10n.categoryVetDirectory,
     _ => action,
   };
 
   String _actorLabel(AccessAuditEntry entry) =>
-      entry.actorEmail ??
-      entry.actorId ??
-      _text('System / database owner', 'מערכת / בעל מסד הנתונים');
+      entry.actorEmail ?? entry.actorId ?? _l10n.auditSystemActor;
 
   String _time(AccessAuditEntry entry) => DateFormat(
     'dd.MM.yyyy HH:mm:ss',
-    _hebrew ? 'he' : 'en',
+    Localizations.localeOf(context).languageCode,
   ).format(entry.createdAt.toLocal());
 
   @override
@@ -132,6 +131,8 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
   }
 
   void _details(AccessAuditEntry entry) {
+    final l10n = _l10n;
+    final close = context.l10n.commonClose;
     const json = JsonEncoder.withIndent('  ');
     showDialog<void>(
       context: context,
@@ -146,27 +147,21 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SelectableText(
-                    '${_actorLabel(entry)}\n${_time(entry)}\n${entry.action}\n${_text('Entry', 'רשומה')} #${entry.id}',
+                    '${_actorLabel(entry)}\n${_time(entry)}\n${entry.action}\n${l10n.auditEntryNumber(entry.id)}',
                   ),
                   if (entry.actorId != null) SelectableText(entry.actorId!),
                   const SizedBox(height: 16),
-                  Text(
-                    _text('Before', 'לפני'),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text(l10n.auditBefore, style: AppText.sectionTitle),
                   SelectableText(
                     entry.before == null
-                        ? _text('No previous value', 'אין ערך קודם')
+                        ? l10n.auditNoPreviousValue
                         : json.convert(entry.before),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    _text('After', 'אחרי'),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
+                  Text(l10n.auditAfter, style: AppText.sectionTitle),
                   SelectableText(
                     entry.after == null
-                        ? _text('Removed', 'הוסר')
+                        ? l10n.auditRemoved
                         : json.convert(entry.after),
                   ),
                 ],
@@ -176,7 +171,7 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text(_text('Close', 'סגירה')),
+              child: Text(close),
             ),
           ],
         ),
@@ -185,21 +180,18 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
   }
 
   @override
-  Widget build(BuildContext context) => Column(
+  Widget build(BuildContext context) {
+    final l10n = _l10n;
+    return Column(
     children: [
       Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Text(
-              _text(
-                ref.read(accessRepositoryProvider) is FakeAccessRepository
-                    ? 'Demo history resets when the app closes. Tap an entry for details.'
-                    : 'Saved administration history. Tap an entry for details.',
-                ref.read(accessRepositoryProvider) is FakeAccessRepository
-                    ? 'היסטוריית ההדגמה מתאפסת בסגירת האפליקציה. לחצו על רשומה לפרטים.'
-                    : 'היסטוריית ניהול שמורה. לחצו על רשומה לפרטים.',
-              ),
+              ref.read(accessRepositoryProvider) is FakeAccessRepository
+                  ? l10n.auditIntroDemo
+                  : l10n.auditIntroSaved,
             ),
             const SizedBox(height: 8),
             TextField(
@@ -207,10 +199,7 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
               enabled: !_loading,
               onSubmitted: (_) => _apply(),
               decoration: InputDecoration(
-                labelText: _text(
-                  'Administrator email or ID',
-                  'דוא״ל או מזהה מנהל',
-                ),
+                labelText: l10n.auditActorFilter,
               ),
             ),
             const SizedBox(height: 8),
@@ -219,12 +208,12 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
               key: ValueKey(_action),
               isExpanded: true,
               decoration: InputDecoration(
-                labelText: _text('Action type', 'סוג פעולה'),
+                labelText: l10n.auditActionType,
               ),
               items: [
                 DropdownMenuItem(
                   value: '',
-                  child: Text(_text('All actions', 'כל הפעולות')),
+                  child: Text(l10n.auditAllActions),
                 ),
                 for (final action in [
                   'feature_catalog',
@@ -254,13 +243,13 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
                   icon: const Icon(Icons.date_range),
                   label: Text(
                     _dates == null
-                        ? _text('Any date', 'כל תאריך')
+                        ? l10n.auditAnyDate
                         : '${DateFormat('dd.MM.yy').format(_dates!.start)} – ${DateFormat('dd.MM.yy').format(_dates!.end)}',
                   ),
                 ),
                 FilledButton(
                   onPressed: _loading ? null : _apply,
-                  child: Text(_text('Search history', 'חיפוש בהיסטוריה')),
+                  child: Text(l10n.auditSearch),
                 ),
                 TextButton(
                   onPressed: _loading
@@ -273,7 +262,7 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
                           });
                           _apply();
                         },
-                  child: Text(_text('Clear filters', 'ניקוי מסננים')),
+                  child: Text(l10n.auditClearFilters),
                 ),
               ],
             ),
@@ -286,17 +275,12 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
           padding: const EdgeInsets.all(8),
           child: Column(
             children: [
-              Text(
-                _text(
-                  'Could not load saved history. Check the connection and migration 0017.',
-                  'טעינת ההיסטוריה נכשלה. בדקו את החיבור ואת עדכון מסד הנתונים 0017.',
-                ),
-              ),
+              Text(l10n.auditLoadFailed),
               TextButton(
                 onPressed: _loading
                     ? null
                     : () => _load(reset: _entries.isEmpty),
-                child: Text(_text('Retry', 'נסו שוב')),
+                child: Text(l10n.retry),
               ),
             ],
           ),
@@ -304,12 +288,7 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
       Expanded(
         child: _entries.isEmpty && !_loading && !_failed
             ? Center(
-                child: Text(
-                  _text(
-                    'No administration actions found.',
-                    'לא נמצאו פעולות ניהול.',
-                  ),
-                ),
+                child: Text(l10n.auditEmpty),
               )
             : ListView.builder(
                 key: const Key('access-audit-list'),
@@ -320,9 +299,7 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
                       padding: const EdgeInsets.all(16),
                       child: OutlinedButton(
                         onPressed: _loading ? null : () => _load(reset: false),
-                        child: Text(
-                          _text('Load older actions', 'טעינת פעולות קודמות'),
-                        ),
+                        child: Text(l10n.auditLoadOlder),
                       ),
                     );
                   }
@@ -350,4 +327,5 @@ class _AccessAuditViewState extends ConsumerState<AccessAuditView> {
       ),
     ],
   );
+  }
 }

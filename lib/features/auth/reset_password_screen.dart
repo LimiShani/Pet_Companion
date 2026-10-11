@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../platform/session.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_theme.dart';
+import '../../widgets/coral_header.dart';
+import '../../widgets/primary_button.dart';
+import 'widgets/auth_text_field.dart';
 
 class ResetPasswordScreen extends ConsumerStatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -44,76 +49,101 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final he = Localizations.localeOf(context).languageCode == 'he';
+    final l10n = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: Text(he ? 'סיסמה חדשה' : 'New password')),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Form(
-              key: _form,
-              child: Column(
-                children: [
-                  Text(
-                    he
-                        ? 'בחרו סיסמה חדשה לחשבון שלכם.'
-                        : 'Choose a new password for your account.',
-                  ),
-                  const SizedBox(height: 24),
-                  TextFormField(
-                    controller: _password,
-                    obscureText: true,
-                    enabled: !_busy,
-                    autofillHints: const [AutofillHints.newPassword],
-                    decoration: InputDecoration(
-                      labelText: he ? 'סיסמה חדשה' : 'New password',
-                    ),
-                    validator: (value) => (value?.length ?? 0) >= 8
-                        ? null
-                        : (he ? 'לפחות 8 תווים' : 'Use at least 8 characters'),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _confirm,
-                    obscureText: true,
-                    enabled: !_busy,
-                    decoration: InputDecoration(
-                      labelText: he ? 'אימות סיסמה' : 'Confirm password',
-                    ),
-                    validator: (value) => value == _password.text
-                        ? null
-                        : (he
-                              ? 'הסיסמאות אינן זהות'
-                              : 'Passwords do not match'),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_error != null)
-                    Text(
-                      _error!,
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
+      backgroundColor: AppColors.cream,
+      body: Column(
+        children: [
+          // No back arrow: the screen is opened by a recovery link, and
+          // Cancel below signs out instead.
+          CoralHeader(title: l10n.resetPasswordTitle),
+          Expanded(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.screen,
+                28,
+                AppSpacing.screen,
+                24,
+              ),
+              child: AutofillGroup(
+                child: Form(
+                  key: _form,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        l10n.resetPasswordIntro,
+                        style: AppText.body.copyWith(color: AppColors.brown),
                       ),
-                    ),
-                  FilledButton(
-                    onPressed: _busy ? null : _save,
-                    child: _busy
-                        ? const CircularProgressIndicator()
-                        : Text(he ? 'שמירת הסיסמה' : 'Save password'),
+                      const SizedBox(height: 22),
+                      AuthTextField(
+                        label: l10n.resetPasswordLabel,
+                        controller: _password,
+                        obscure: true,
+                        enabled: !_busy,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.newPassword],
+                        validator: (value) => (value?.length ?? 0) >= 8
+                            ? null
+                            : l10n.resetPasswordTooShort,
+                        leftToRight: true,
+                      ),
+                      const SizedBox(height: 14),
+                      AuthTextField(
+                        label: l10n.resetPasswordConfirm,
+                        controller: _confirm,
+                        obscure: true,
+                        enabled: !_busy,
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.newPassword],
+                        validator: (value) => value == _password.text
+                            ? null
+                            : l10n.resetPasswordMismatch,
+                        onSubmitted: (_) => _save(),
+                        leftToRight: true,
+                      ),
+                      const SizedBox(height: 22),
+                      if (_error != null) ...[
+                        Text(
+                          _error!,
+                          style: AppText.body.copyWith(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      PrimaryButton(
+                        label: l10n.resetPasswordSave,
+                        onPressed: _save,
+                        loading: _busy,
+                      ),
+                      const SizedBox(height: 8),
+                      Center(
+                        child: TextButton(
+                          onPressed: _busy
+                              ? null
+                              : () => ref
+                                    .read(authControllerProvider.notifier)
+                                    .signOut(),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.coralDark,
+                          ),
+                          child: Text(
+                            l10n.commonCancel,
+                            style: AppText.body.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  TextButton(
-                    onPressed: _busy
-                        ? null
-                        : () => ref
-                              .read(authControllerProvider.notifier)
-                              .signOut(),
-                    child: Text(he ? 'ביטול' : 'Cancel'),
-                  ),
-                ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -265,7 +265,7 @@ class _LogMealSheetState extends ConsumerState<LogMealSheet> {
             title: Text(l10n.time, style: AppText.body),
             trailing: Text(
               format.timeOfDay(_time!),
-              style: AppText.cardTitle.copyWith(fontSize: 16),
+              style: AppText.rowTitle,
             ),
             onTap: _pickTime,
           ),

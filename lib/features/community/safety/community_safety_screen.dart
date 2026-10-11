@@ -178,10 +178,7 @@ class _LinkCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: AppText.cardTitle.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
+                      style: AppText.rowTitle,
                     ),
                     if (subtitle != null)
                       Text(

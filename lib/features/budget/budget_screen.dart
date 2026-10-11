@@ -334,7 +334,7 @@ class BudgetEntryTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppText.cardTitle.copyWith(fontSize: 16),
+                  style: AppText.rowTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textDirection: directionOfText(
@@ -369,7 +369,7 @@ class BudgetEntryTile extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             format.money(entry.amount, entry.currency),
-            style: AppText.cardTitle.copyWith(fontSize: 16),
+            style: AppText.rowTitle,
           ),
         ],
       ),

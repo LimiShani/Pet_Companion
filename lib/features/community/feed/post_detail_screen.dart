@@ -21,9 +21,9 @@ import '../../../auth/auth_controller.dart';
 import '../../../widgets/app_icon.dart';
 import '../safety/safety_flows.dart';
 import '../safety/safety_providers.dart';
-import '../widgets/small_tag.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
+import '../../../widgets/app_tag.dart';
 
 /// One post with its comments and an add-comment field.
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -427,9 +427,9 @@ class _CommentRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SmallTag(
+          AppTag(
             l10n.helpfulAnswer,
-            color: AppColors.sage,
+            tone: AppTagTone.sage,
             icon: Icons.check_rounded,
           ),
           row,

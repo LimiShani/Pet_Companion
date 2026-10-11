@@ -159,6 +159,27 @@ class AppL10nHe extends AppL10n {
   String get authHidePassword => 'הסתרת הסיסמה';
 
   @override
+  String get resetPasswordTitle => 'סיסמה חדשה';
+
+  @override
+  String get resetPasswordIntro => 'בחרו סיסמה חדשה לחשבון שלכם.';
+
+  @override
+  String get resetPasswordLabel => 'סיסמה חדשה';
+
+  @override
+  String get resetPasswordConfirm => 'אימות סיסמה';
+
+  @override
+  String get resetPasswordTooShort => 'לפחות 8 תווים';
+
+  @override
+  String get resetPasswordMismatch => 'הסיסמאות אינן זהות';
+
+  @override
+  String get resetPasswordSave => 'שמירת הסיסמה';
+
+  @override
   String get validEmailEmpty => 'צריך להזין כתובת אימייל.';
 
   @override

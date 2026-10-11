@@ -11,6 +11,7 @@ import '../../services/outdoors/state/parks_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
+import '../../widgets/coral_segmented_control.dart';
 import 'parks/parks_view.dart';
 
 /// The slot the meetups feature fills with its Partners side. Until a
@@ -62,12 +63,12 @@ class OutsideSection extends ConsumerWidget {
               AppSpacing.screen,
               0,
             ),
-            child: _InnerSwitch(
+            child: CoralSegmentedControl(
+              onSurface: true,
               labels: [l10n.outsidePartners, l10n.outsideParks],
               keys: const [partnersKey, parksKey],
-              selected: view == OutsideView.partners ? 0 : 1,
-              onChanged: (i) =>
-                  controller.show(OutsideView.values[i]),
+              selectedIndex: view == OutsideView.partners ? 0 : 1,
+              onChanged: (i) => controller.show(OutsideView.values[i]),
             ),
           ),
           Expanded(
@@ -79,74 +80,6 @@ class OutsideSection extends ConsumerWidget {
                     onShowParks: () => controller.show(OutsideView.parks),
                   ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// A two-pill switch on the cream page (the header already holds the
-/// Community sections).
-class _InnerSwitch extends StatelessWidget {
-  const _InnerSwitch({
-    required this.labels,
-    required this.keys,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  final List<String> labels;
-  final List<Key> keys;
-  final int selected;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: AppColors.peach.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Expanded(
-              child: Semantics(
-                button: true,
-                selected: i == selected,
-                child: Material(
-                  key: keys[i],
-                  color: i == selected ? AppColors.yellow : Colors.transparent,
-                  shape: const StadiumBorder(),
-                  child: InkWell(
-                    customBorder: const StadiumBorder(),
-                    onTap: () => onChanged(i),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(minHeight: 40),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
-                        ),
-                        child: Center(
-                          child: Text(
-                            labels[i],
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.body.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: AppColors.ink,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

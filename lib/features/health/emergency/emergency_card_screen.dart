@@ -207,7 +207,7 @@ class _Card extends StatelessWidget {
                       children: [
                         TypedText(
                           pet.name,
-                          style: AppText.petName.copyWith(fontSize: 20),
+                          style: AppText.heading,
                         ),
                         Text(line, style: AppText.secondary),
                       ],
@@ -227,11 +227,7 @@ class _Card extends StatelessWidget {
                     : profile.notChipped
                     ? l10n.notChipped
                     : l10n.notAddedYet,
-                style: AppText.cardTitle.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
+                style: AppText.sectionTitle.copyWith(letterSpacing: 0.5),
               ),
             ],
           ),

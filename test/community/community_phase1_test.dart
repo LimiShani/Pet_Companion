@@ -5,7 +5,7 @@ import 'package:pet_companion/features/community/data/audience.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/features/community/widgets/scope_bar.dart';
-import 'package:pet_companion/features/community/widgets/small_tag.dart';
+import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
@@ -16,7 +16,7 @@ import 'guide_fixtures.dart';
 Finder headerTitle(String title) => find.descendant(of: find.byType(CoralHeader), matching: find.text(title));
 
 /// A small tag with [label] (not the chip of the same name).
-Finder tag(String label) => find.widgetWithText(SmallTag, label);
+Finder tag(String label) => find.widgetWithText(AppTag, label);
 
 /// The advice line (its words are one rich text).
 final adviceLine = find.byType(AdviceNotice);
@@ -47,7 +47,7 @@ void main() {
         expect(find.text(name), findsNothing);
       }
       // Nothing is tagged while only one animal is shown.
-      expect(find.byType(SmallTag), findsNothing);
+      expect(find.byType(AppTag), findsNothing);
     });
 
     testWidgets('a cat room opens and takes a message', (tester) async {

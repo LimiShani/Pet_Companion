@@ -41,4 +41,4 @@ export 'review/parks_review_screen.dart'
     show ParksReviewScreen, openParksReview;
 export 'widgets/about_credit.dart' show OsmAboutCredit;
 export 'widgets/park_widgets.dart'
-    show OsmCredit, ParkCard, ParkTag, ParkTags, parkDetailIcon;
+    show OsmCredit, ParkCard, ParkTags, parkDetailIcon;

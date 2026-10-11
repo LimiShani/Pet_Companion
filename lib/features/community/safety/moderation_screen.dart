@@ -16,8 +16,8 @@ import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
 import '../widgets/section_state.dart';
-import '../widgets/small_tag.dart';
 import 'safety_providers.dart';
+import '../../../widgets/app_tag.dart';
 
 /// The moderators' review: what members reported, newest report first.
 /// Keep shows it again (and starts a fresh count); Remove deletes it.
@@ -176,12 +176,12 @@ class _ItemCardState extends ConsumerState<_ItemCard> {
               spacing: 6,
               runSpacing: 6,
               children: [
-                SmallTag(
+                AppTag(
                   l10n.moderationKind(item.kind),
-                  color: AppColors.yellow,
+                  tone: AppTagTone.yellow,
                 ),
                 if (item.hidden)
-                  SmallTag(l10n.hiddenTag, color: AppColors.peach),
+                  AppTag(l10n.hiddenTag, tone: AppTagTone.peach),
               ],
             ),
             const SizedBox(height: 10),

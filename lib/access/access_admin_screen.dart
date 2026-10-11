@@ -2,7 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../l10n/l10n.dart';
 import '../platform/session.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_theme.dart';
+import '../widgets/coral_header.dart';
+import '../widgets/coral_segmented_control.dart';
 import 'access_provider.dart';
 import 'access_audit_view.dart';
 import 'feature_gate.dart';
@@ -29,6 +34,8 @@ class _Administration extends ConsumerStatefulWidget {
   ConsumerState<_Administration> createState() => _AdministrationState();
 }
 
+enum _Section { users, groups, features, audit }
+
 class _AdministrationState extends ConsumerState<_Administration> {
   Map<String, dynamic>? _data;
   Object? _error;
@@ -37,48 +44,48 @@ class _AdministrationState extends ConsumerState<_Administration> {
   String? _group;
   AccessSnapshot? _preview;
   int _request = 0;
+  _Section _section = _Section.users;
 
-  bool get _hebrew => Localizations.localeOf(context).languageCode == 'he';
-  String _text(String en, String he) => _hebrew ? he : en;
+  AccessL10n get _l10n => context.accessL10n;
   String _featureLabel(String id) => switch (id) {
-    'pets' => _text('Pet profiles', 'פרופילי חיות'),
-    'care' => _text('Daily care', 'טיפול יומי'),
-    'health' => _text('Health', 'בריאות'),
-    'health.records' => _text('Health records', 'רישומי בריאות'),
-    'health.schedule' => _text('Health schedule', 'תזמון בריאות'),
-    'health.emergency' => _text('Emergency tools', 'כלי חירום'),
-    'community' => _text('Community', 'קהילה'),
-    'community.feed' => _text('Community feed', 'פוסטים בקהילה'),
-    'community.chat' => _text('Community chat', 'צ׳אט בקהילה'),
-    'community.guides' => _text('Guides', 'מדריכים'),
-    'community.parks' => _text('Dog parks', 'גינות כלבים'),
-    'community.meetups' => _text('Walk and play partners', 'שותפים לטיול ולמשחק'),
-    'store' || 'store.deals' => _text('Deals', 'מבצעים'),
-    'budget' => _text('Budget', 'תקציב'),
-    'basket' => _text('Basket', 'סל קניות'),
-    'firstdays' => _text('First days', 'הימים הראשונים'),
-    'findvet' => _text('Find a vet', 'חיפוש וטרינר'),
+    'pets' => _l10n.featurePets,
+    'care' => _l10n.featureCare,
+    'health' => _l10n.featureHealth,
+    'health.records' => _l10n.featureHealthRecords,
+    'health.schedule' => _l10n.featureHealthSchedule,
+    'health.emergency' => _l10n.featureHealthEmergency,
+    'community' => _l10n.featureCommunity,
+    'community.feed' => _l10n.featureCommunityFeed,
+    'community.chat' => _l10n.featureCommunityChat,
+    'community.guides' => _l10n.featureCommunityGuides,
+    'community.parks' => _l10n.featureCommunityParks,
+    'community.meetups' => _l10n.featureCommunityMeetups,
+    'store' || 'store.deals' => _l10n.featureDeals,
+    'budget' => _l10n.featureBudget,
+    'basket' => _l10n.featureBasket,
+    'firstdays' => _l10n.featureFirstDays,
+    'findvet' => _l10n.featureFindVet,
     _ => id,
   };
   String _capabilityLabel(String id) {
     final parts = id.split('.');
     final action = parts.removeLast();
     final label = switch (action) {
-      'view' => _text('View', 'צפייה'),
-      'edit' => _text('Edit', 'עריכה'),
-      'export' => _text('Export', 'ייצוא'),
-      'post' => _text('Post', 'פרסום'),
-      'send' => _text('Send', 'שליחה'),
-      'share' => _text('Share', 'שיתוף'),
-      'search' => _text('Search', 'חיפוש'),
-      'admin' => _text('Review directory', 'ניהול המדריך'),
-      'moderate' => _text('Moderate reports', 'בדיקת דיווחים'),
-      'suggest' => _text('Suggest changes', 'הצעת תיקונים'),
-      'review' => _text('Review suggestions', 'בדיקת הצעות'),
-      'private' => _text('Private chats', 'שיחות פרטיות'),
+      'view' => _l10n.actionView,
+      'edit' => _l10n.actionEdit,
+      'export' => _l10n.actionExport,
+      'post' => _l10n.actionPost,
+      'send' => _l10n.actionSend,
+      'share' => _l10n.actionShare,
+      'search' => _l10n.actionSearch,
+      'admin' => _l10n.actionAdmin,
+      'moderate' => _l10n.actionModerate,
+      'suggest' => _l10n.actionSuggest,
+      'review' => _l10n.actionReview,
+      'private' => _l10n.actionPrivate,
       _ => action,
     };
-    return '${_featureLabel(parts.join('.'))} · $label';
+    return _l10n.capabilityLabel(_featureLabel(parts.join('.')), label);
   }
 
   List<Map<String, dynamic>> _rows(String key) => ((_data?[key] as List?) ?? [])
@@ -108,6 +115,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
         _error = null;
       });
     } catch (error) {
+      _report(error);
       if (mounted && ticket.current && request == _request) {
         setState(() => _error = error);
       }
@@ -127,30 +135,39 @@ class _AdministrationState extends ConsumerState<_Administration> {
       await ref.read(accessProvider.notifier).refresh();
       if (mounted) await _load();
     } catch (error) {
+      _report(error);
       if (mounted) setState(() => _error = error);
     } finally {
       if (mounted) setState(() => _busy = false);
     }
   }
 
+  /// The screen only says the settings could not be loaded; the cause
+  /// (usually the connection, or migration 0014 not applied) goes to the
+  /// log.
+  void _report(Object error) => debugPrint(
+    'Feature access administration failed (is migration 0014 applied?): '
+    '$error',
+  );
+
   Future<void> _addGroup() async {
+    final l10n = _l10n;
+    final cancel = context.l10n.commonCancel;
     final controller = TextEditingController();
     final route = DialogRoute<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(_text('New group', 'קבוצה חדשה')),
+        title: Text(l10n.newGroup),
         content: TextField(
           controller: controller,
           maxLength: 80,
           autofocus: true,
-          decoration: InputDecoration(
-            labelText: _text('Group name', 'שם הקבוצה'),
-          ),
+          decoration: InputDecoration(labelText: l10n.groupName),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(_text('Cancel', 'ביטול')),
+            child: Text(cancel),
           ),
           FilledButton(
             onPressed: () {
@@ -158,7 +175,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
                 Navigator.pop(context, controller.text.trim());
               }
             },
-            child: Text(_text('Create', 'יצירה')),
+            child: Text(l10n.create),
           ),
         ],
       ),
@@ -171,6 +188,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
   }
 
   Widget _rules({required String kind, required String id}) {
+    final l10n = _l10n;
     final rows = _rows(kind == 'user' ? 'user_rules' : 'group_rules');
     final key = '${kind}_id';
     return Column(
@@ -182,7 +200,12 @@ class _AdministrationState extends ConsumerState<_Administration> {
             title: Text(_capabilityLabel(capability)),
             subtitle: kind == 'user'
                 ? Text(
-                    '${_preview?.can(capability) == true ? _text('Allowed', 'מותר') : _text('Blocked', 'חסום')} · ${_preview?.reasons[capability] ?? ''}',
+                    l10n.ruleSummary(
+                      _preview?.can(capability) == true
+                          ? l10n.allowed
+                          : l10n.blocked,
+                      _preview?.reasons[capability] ?? '',
+                    ),
                   )
                 : null,
             trailing: DropdownButton<String>(
@@ -207,16 +230,10 @@ class _AdministrationState extends ConsumerState<_Administration> {
               items: [
                 DropdownMenuItem(
                   value: 'inherit',
-                  child: Text(_text('Inherit', 'ירושה')),
+                  child: Text(l10n.ruleInherit),
                 ),
-                DropdownMenuItem(
-                  value: 'allow',
-                  child: Text(_text('Allow', 'אישור')),
-                ),
-                DropdownMenuItem(
-                  value: 'deny',
-                  child: Text(_text('Deny', 'חסימה')),
-                ),
+                DropdownMenuItem(value: 'allow', child: Text(l10n.ruleAllow)),
+                DropdownMenuItem(value: 'deny', child: Text(l10n.ruleDeny)),
               ],
               onChanged: _busy
                   ? null
@@ -237,7 +254,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
       DropdownButtonFormField<String>(
         initialValue: _user,
         isExpanded: true,
-        decoration: InputDecoration(labelText: _text('User', 'משתמש')),
+        decoration: InputDecoration(labelText: _l10n.user),
         items: [
           for (final user in _rows('users'))
             DropdownMenuItem(
@@ -260,10 +277,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
       ),
       if (_user != null) ...[
         const SizedBox(height: 16),
-        Text(
-          _text('Group membership', 'חברות בקבוצות'),
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        Text(_l10n.groupMembership, style: AppText.sectionTitle),
         for (final group in _rows('groups'))
           CheckboxListTile(
             title: Text(group['name'] as String),
@@ -278,10 +292,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
                     'member': member,
                   }),
           ),
-        Text(
-          _text('Individual overrides', 'הרשאות אישיות'),
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
+        Text(_l10n.individualOverrides, style: AppText.sectionTitle),
         _rules(kind: 'user', id: _user!),
       ],
     ],
@@ -293,12 +304,12 @@ class _AdministrationState extends ConsumerState<_Administration> {
       OutlinedButton.icon(
         onPressed: _busy ? null : _addGroup,
         icon: const Icon(Icons.group_add_outlined),
-        label: Text(_text('New group', 'קבוצה חדשה')),
+        label: Text(_l10n.newGroup),
       ),
       DropdownButtonFormField<String>(
         initialValue: _group,
         isExpanded: true,
-        decoration: InputDecoration(labelText: _text('Group', 'קבוצה')),
+        decoration: InputDecoration(labelText: _l10n.group),
         items: [
           for (final group in _rows('groups'))
             DropdownMenuItem(
@@ -317,10 +328,8 @@ class _AdministrationState extends ConsumerState<_Administration> {
       Padding(
         padding: const EdgeInsets.all(16),
         child: Text(
-          _text(
-            'A disabled feature is blocked for everyone. Individual rules override group rules; group denial wins over group allowance.',
-            'תכונה כבויה חסומה לכולם. הרשאות אישיות גוברות על קבוצות; חסימה בקבוצה גוברת על אישור בקבוצה.',
-          ),
+          _l10n.featuresNote,
+          style: AppText.body.copyWith(color: AppColors.brown),
         ),
       ),
       for (final feature in _rows(
@@ -336,7 +345,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
         ),
         if (feature['id'] == 'findvet')
           SwitchListTile(
-            title: Text(_text('Public vet search', 'חיפוש וטרינר לציבור')),
+            title: Text(_l10n.publicVetSearch),
             value: feature['public_enabled'] == true,
             onChanged: _busy
                 ? null
@@ -351,37 +360,42 @@ class _AdministrationState extends ConsumerState<_Administration> {
   );
 
   @override
-  Widget build(BuildContext context) => DefaultTabController(
-    length: 4,
-    child: Scaffold(
-      appBar: AppBar(
-        title: Text(_text('Feature access', 'הרשאות לתכונות')),
-        actions: [
-          IconButton(
-            onPressed: _busy ? null : _load,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
-        bottom: TabBar(
-          isScrollable: true,
-          tabs: [
-            Tab(text: _text('Users', 'משתמשים')),
-            Tab(text: _text('Groups', 'קבוצות')),
-            Tab(text: _text('Features', 'תכונות')),
-            Tab(text: _text('Audit', 'היסטוריה')),
-          ],
-        ),
-      ),
+  Widget build(BuildContext context) {
+    final l10n = _l10n;
+    return Scaffold(
+      backgroundColor: AppColors.cream,
       body: Column(
         children: [
+          CoralHeader(
+            title: l10n.title,
+            showBack: true,
+            actions: [
+              CoralHeaderAction(
+                icon: Icons.refresh_rounded,
+                tooltip: l10n.refresh,
+                onPressed: _busy ? null : _load,
+              ),
+            ],
+            bottom: CoralSegmentedControl(
+              labels: [
+                l10n.tabUsers,
+                l10n.tabGroups,
+                l10n.tabFeatures,
+                l10n.tabAudit,
+              ],
+              selectedIndex: _section.index,
+              onChanged: (index) =>
+                  setState(() => _section = _Section.values[index]),
+            ),
+          ),
           if (_busy) const LinearProgressIndicator(),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                _text(
-                  'Could not update access. Check the connection and that migration 0014 has been applied.',
-                  'עדכון ההרשאות נכשל. יש לבדוק את החיבור ואת התקנת עדכון מסד הנתונים 0014.',
+                l10n.loadFailed,
+                style: AppText.body.copyWith(
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
             ),
@@ -392,20 +406,18 @@ class _AdministrationState extends ConsumerState<_Administration> {
                         ? const CircularProgressIndicator()
                         : TextButton(
                             onPressed: _load,
-                            child: Text(_text('Retry', 'נסו שוב')),
+                            child: Text(l10n.retry),
                           ),
                   )
-                : TabBarView(
-                    children: [
-                      _users(),
-                      _groups(),
-                      _features(),
-                      AccessAuditView(reloadToken: _request),
-                    ],
-                  ),
+                : switch (_section) {
+                    _Section.users => _users(),
+                    _Section.groups => _groups(),
+                    _Section.features => _features(),
+                    _Section.audit => AccessAuditView(reloadToken: _request),
+                  },
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 }

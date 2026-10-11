@@ -417,7 +417,7 @@ class _SearchField extends StatelessWidget {
         controller: controller,
         onChanged: onChanged,
         textInputAction: TextInputAction.search,
-        style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
+        style: AppText.bodyLarge.copyWith(color: AppColors.ink),
         decoration: InputDecoration(
           hintText: context.storeL10n.searchHint,
           contentPadding: const EdgeInsets.symmetric(
@@ -472,8 +472,6 @@ class _CategoryChips extends StatelessWidget {
           label: Text(label),
           selected: on,
           showCheckmark: false,
-          selectedColor: AppColors.sage,
-          side: on ? const BorderSide(color: AppColors.sage) : null,
           onSelected: (_) => onSelected(category),
         ),
       );

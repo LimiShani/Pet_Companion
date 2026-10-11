@@ -22,22 +22,17 @@ class FeatureGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (ref.watch(capabilityProvider(capability))) return builder(context);
     if (hidden) return const SizedBox.shrink();
-    final hebrew = context.isRtl;
+    final l10n = context.accessL10n;
     return Scaffold(
       body: Column(
         children: [
-          CoralHeader(
-            title: hebrew ? 'גישה לתכונה' : 'Feature access',
-            showBack: true,
-          ),
+          CoralHeader(title: l10n.gateTitle, showBack: true),
           Expanded(
             child: Center(
               child: EmptyState(
                 icon: Icons.lock_outline_rounded,
-                title: hebrew ? 'התכונה אינה זמינה' : 'Feature unavailable',
-                message: hebrew
-                    ? 'אין לחשבון שלך גישה לתכונה הזאת כרגע.'
-                    : 'Your account does not have access to this feature right now.',
+                title: l10n.gateUnavailable,
+                message: l10n.gateMessage,
               ),
             ),
           ),

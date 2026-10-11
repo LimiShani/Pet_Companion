@@ -99,10 +99,7 @@ class _ChatInvitationCardState extends ConsumerState<ChatInvitationCard> {
                     children: [
                       AutoDirectionText(
                         title,
-                        style: AppText.cardTitle.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: AppText.rowTitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),

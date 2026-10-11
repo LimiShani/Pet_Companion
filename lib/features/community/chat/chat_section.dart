@@ -137,7 +137,7 @@ class ChatSection extends ConsumerWidget {
                 muted: muted.contains(channel.id),
                 // Under Everything each room says which animal it is for.
                 tag: scope == CommunityScope.everything
-                    ? SmallTag.forAudience(l10n, channel.audience)
+                    ? tagForAudience(l10n, channel.audience)
                     : null,
               ),
             ),
@@ -220,10 +220,7 @@ class _ChannelCard extends StatelessWidget {
                         Expanded(
                           child: AutoDirectionText(
                             l10n.roomName(channel),
-                            style: AppText.cardTitle.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: AppText.rowTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -519,10 +516,7 @@ class _PrivateChatCard extends ConsumerWidget {
                         Expanded(
                           child: AutoDirectionText(
                             l10n.privateChatName(chat, viewerId),
-                            style: AppText.cardTitle.copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
+                            style: AppText.rowTitle,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

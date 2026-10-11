@@ -8,6 +8,7 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../outdoors_words.dart';
+import '../../../widgets/app_tag.dart';
 
 /// The icon of each detail, on tags, chips and the details grid.
 IconData parkDetailIcon(ParkDetail detail) => switch (detail) {
@@ -18,46 +19,6 @@ IconData parkDetailIcon(ParkDetail detail) => switch (detail) {
   ParkDetail.smallDogs => Icons.pets_rounded,
   ParkDetail.benches => Icons.chair_alt_rounded,
 };
-
-/// A small rounded label: "Fenced", "Water tap", "Closed for renovation".
-class ParkTag extends StatelessWidget {
-  const ParkTag(this.label, {super.key, this.icon, this.color});
-
-  final String label;
-  final IconData? icon;
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: ShapeDecoration(
-        color: color ?? AppColors.sage.withValues(alpha: 0.45),
-        shape: const StadiumBorder(),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            AppIcon(icon, size: 13, color: AppColors.ink),
-            const SizedBox(width: 4),
-          ],
-          Flexible(
-            child: Text(
-              label,
-              style: AppText.navLabel.copyWith(
-                fontWeight: FontWeight.w800,
-                color: AppColors.ink,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 /// The tags of what a park is known to have (unknown details are simply
 /// not shown), and "Closed for renovation" first when it is.
@@ -71,13 +32,13 @@ class ParkTags extends StatelessWidget {
     final l10n = context.outdoorsL10n;
     final tags = [
       if (park.isClosed)
-        ParkTag(
+        AppTag(
           l10n.closedLabel,
+          tone: AppTagTone.yellow,
           icon: Icons.construction_rounded,
-          color: AppColors.yellow,
         ),
       for (final detail in park.has)
-        ParkTag(l10n.detail(detail), icon: parkDetailIcon(detail)),
+        AppTag(l10n.detail(detail), icon: parkDetailIcon(detail)),
     ];
     if (tags.isEmpty) return const SizedBox.shrink();
     return Wrap(spacing: 6, runSpacing: 6, children: tags);

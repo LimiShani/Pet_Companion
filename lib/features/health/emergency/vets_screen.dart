@@ -136,10 +136,7 @@ class _VetBlock extends StatelessWidget {
                     Expanded(
                       child: TypedText(
                         current.name,
-                        style: AppText.cardTitle.copyWith(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                        ),
+                        style: AppText.sectionTitle,
                       ),
                     ),
                     IconButton(
