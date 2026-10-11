@@ -48,6 +48,12 @@ Nothing here costs money: the free plan's Edge Functions, `pg_cron` and
    Overpass server was busy: run the call again later (or set
    `OVERPASS_URL`). A month that succeeded is never downloaded again unless
    the body is `{"force": true}`.
+   After a change to the query or the localities (the Judea and Samaria
+   towns, 2026-10-11): deploy the function again
+   (`supabase functions deploy parks-import --no-verify-jwt`) and run the
+   same call with the body `{"force": true}`, since the month already
+   succeeded. Expected on 2026-10-11 data: about 10 parks added and the
+   rest refreshed.
 5. **Reviewers.** Permission administrators already review. Anyone else:
    Feature access → Users → the person → *Dog parks · Review suggestions* →
    Allow. Everyone else keeps *Dog parks · View* and *Dog parks · Suggest
@@ -61,13 +67,23 @@ could not load the parks"); the rest of Community is unaffected.
 ## Data source and licence
 
 - **OpenStreetMap**, `leisure=dog_park`, inside OSM's boundary of Israel
-  (`area["ISO3166-1"="IL"][admin_level=2]`). Probe on 2026-10-10: 704
+  (`area["ISO3166-1"="IL"][admin_level=2]`, the Golan included) and within
+  3.5 km of the centre of each Israeli city and local council of Judea and
+  Samaria (the 18 in "Localities" below). Probe on 2026-10-10: 704
   parks; 34 have a name, 661 get one from the nearest street, 9 stay "Dog
   park"; fences are known for 72 and lighting for 9, water, shade, benches
   and small-dog areas for none. Tel Aviv-Yafo has 41, fewer than it really
   has: coverage is partial, which is why members can suggest parks.
-- Parks in the West Bank settlements and outside Israel's OSM boundary are
-  not imported (the same boundary as the localities list). Members can still
+- **Judea and Samaria** (owner decision 2026-10-11): the Israeli towns
+  there are part of the app's list, so their parks are imported too. OSM's
+  boundary of Israel leaves them out, so the query adds one "around" per
+  town (3.5 km: enough for Ma'ale Adumim and Ariel, about 2.5 km from the
+  centre to the edge). Probe on 2026-10-11: 714 parks in all, 10 of them
+  new from these areas (Ariel 4, Alfei Menashe 3, Ma'ale Adumim 2,
+  Oranit 1; the other 6 parks within 3.5 km of a town were already inside
+  OSM's boundary: Mevaseret Zion, Tzur Hadassa, Kfar Bara). Regional
+  councils' villages and Palestinian localities are not in the list; a park
+  further than 3.5 km from the 18 towns is not imported. Members can still
   suggest one; it is kept if a reviewer approves it.
 - **Licence:** OpenStreetMap data is © OpenStreetMap contributors, under the
   Open Database License (ODbL). The app says "Map data © OpenStreetMap
@@ -94,16 +110,23 @@ could not load the parks"); the rest of Community is unaffected.
 
 1. If this UTC month already succeeded (`dog_park_import_runs`), answer its
    stats (unless forced).
-2. One Overpass query: the parks with their centres, then the named
-   vehicle and pedestrian streets within 100 m of any point of a park (node
-   parks and the nodes of park outlines). "around" over the park polygons
-   themselves, or park by park in a `foreach`, is refused by the public
-   servers (HTTP 504, checked 2026-10-10); around the points answers the
-   whole country in about 36 s (3.9 MB), inside the function's 150 s.
+2. One Overpass query: the parks with their centres (inside OSM's
+   boundary of Israel, plus within 3.5 km of each Israeli town of Judea and
+   Samaria: `IL_JUDEA_SAMARIA_CODES`, one `around` each, merged in one set),
+   then the named vehicle and pedestrian streets within 100 m of any point
+   of a park (node parks and the nodes of park outlines), these parks
+   included. "around" over the park polygons themselves, or park by park in
+   a `foreach`, is refused by the public servers (HTTP 504, checked
+   2026-10-10); around the points answers the whole country in about 36 s
+   (3.9 MB), inside the function's 150 s; with the 18 extra areas, 41 s
+   (3.8 MB) on 2026-10-11.
 3. Each park becomes a row: names (`name:he`, `name:en`, else `name` by its
    script), the nearest street (distance to the street's closest segment,
    from the streets whose box comes within 400 m of the park's centre), the
-   centre, the nearest locality code within 15 km, the six details from the
+   centre, the nearest locality code within 15 km (a town of Judea and
+   Samaria claims only parks within 3.5 km of its centre, so Jerusalem's
+   Pisgat Ze'ev, nearer Ma'ale Adumim's centre than Jerusalem's, stays
+   `jerusalem`; `parkLocality`), the six details from the
    usual tags (`fence`/`barrier=fence`, `drinking_water`, `shade`/`covered`,
    `lit`, `small_dog`, `bench`), `opening_hours`.
 4. `dog_parks_import(period, rows, force)` (service role only) merges them
@@ -234,9 +257,10 @@ the forms or the review page cover the section, for the reason given on
 ## Localities (shared with Find a vet, and meetups next)
 
 `lib/services/findvet/regions/il_localities.dart` (app) and
-`supabase/functions/_shared/regions/il_localities.ts` (server) hold 189
+`supabase/functions/_shared/regions/il_localities.ts` (server) hold 207
 localities: every city and town inside OSM's boundary of Israel plus the
-local councils OSM tags as villages, each with a **stable lowercase code**
+local councils OSM tags as villages (189), and the Israeli cities and local
+councils of Judea and Samaria (18, below), each with a **stable lowercase code**
 (`raanana`, `tel-aviv-yafo`), Hebrew and English names, the centre and the
 other spellings. Both are generated by `python tool/gen_il_localities.py`
 from `tool/data/il_localities.json` (the source of truth): a run fetches
@@ -245,6 +269,31 @@ coordinates already there never change. The 60 hand-written cities Find a
 vet had kept their names, coordinates and aliases. A node test checks the
 two files agree. `VetRegion` gains `localityByCode`, `nearestLocality` and
 `localitiesWithin`.
+
+**Judea and Samaria** (owner decision 2026-10-11). OSM's boundary of
+Israel (the Golan included) leaves out the Israeli towns there, so the
+generator adds them from an explicit list, `EXTRA_ISRAELI_LOCALITIES`, with
+the same criterion as the rest (cities and local councils; no regional
+councils, no Palestinian localities), checked against the local
+authorities of the Judea and Samaria Area on 2026-10-11:
+
+- cities: `ariel`, `maale-adumim`, `modiin-illit`, `beitar-illit`;
+- local councils: `alfei-menashe`, `beit-aryeh-ofarim`, `beit-el`,
+  `efrat`, `elkana`, `givat-zeev` (on its way to city status), `har-adar`,
+  `immanuel`, `karnei-shomron`, `kedumim`, `kiryat-arba`, `maale-efraim`,
+  `oranit`, `shaar-shomron` (Sha'arei Tikva and Etz Efraim, a council
+  since 2022; both names are aliases).
+
+Their centres are fixed, read from OSM's place nodes that day (Sha'ar
+Shomron halfway between its two villages); the usual spellings are aliases
+("Maale Adumim", "Modiin Illit", "Kiryat Sefer", "Betar Illit"...). They
+are appended (codes never change), their JSON entries say
+`"area": "judea-samaria"`, and the server's file exports their codes as
+`IL_JUDEA_SAMARIA_CODES` for the parks import. Find a vet's bounds (29.3 to
+33.5 N, 34.2 to 35.95 E, `il.ts` and `il.dart`) and the `dog_parks` checks
+already cover them. In the app, "nearest locality" is plain nearest
+centre, so a phone in Pisgat Ze'ev is told Ma'ale Adumim; the import uses
+the 3.5 km rule above.
 
 ## Hooks for meetups (Partners)
 

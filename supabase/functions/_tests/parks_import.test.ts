@@ -6,6 +6,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  AROUND_LOCALITY_M,
   createParksImportHandler,
   createPostgrestParksStore,
   detailsOf,
@@ -14,6 +15,7 @@ import {
   namesOf,
   nearestStreet,
   overpassQuery,
+  parkLocality,
   parkRow,
   parseOverpass,
   periodKey,
@@ -23,7 +25,7 @@ import {
   USER_AGENT,
 } from '../_shared/parks_import.ts';
 import type { ParksImportDeps } from '../_shared/parks_import.ts';
-import { IL_LOCALITIES } from '../_shared/regions/il_localities.ts';
+import { IL_JUDEA_SAMARIA_CODES, IL_LOCALITIES } from '../_shared/regions/il_localities.ts';
 
 const NOW = new Date('2026-10-03T01:00:00Z');
 
@@ -58,10 +60,47 @@ test('the query asks for dog parks in Israel and the named streets near their po
   const q = overpassQuery();
   assert.match(q, /^\[out:json\]\[timeout:90\]\[maxsize:67108864\];/);
   assert.match(q, /area\["ISO3166-1"="IL"\]\[admin_level=2\]/);
-  assert.match(q, /nwr\[leisure=dog_park\]\(area\.country\)->\.parks;\.parks out tags center;/);
+  assert.match(q, /\(nwr\[leisure=dog_park\]\(area\.country\);nwr\[leisure=dog_park\]\(around:/);
+  assert.match(q, /;\)->\.parks;\.parks out tags center;/);
   assert.match(q, /node\(w\.parks\)->\.p2;way\(r\.parks\)->\.rw;node\(w\.rw\)->\.p3;/);
   assert.match(q, /way\(around\.points:100\)\[highway~"\^\(primary\|/);
   assert.doesNotMatch(q, /foreach/);
+});
+
+test('the query also asks for the parks around each Israeli locality of Judea and Samaria', () => {
+  const q = overpassQuery();
+  assert.equal(AROUND_LOCALITY_M, 3500);
+  const around = [...q.matchAll(/nwr\[leisure=dog_park\]\(around:(\d+),([\d.]+),([\d.]+)\);/g)];
+  assert.equal(around.length, IL_JUDEA_SAMARIA_CODES.length);
+  assert.ok(around.every((m) => m[1] === '3500'));
+  for (const code of ['ariel', 'maale-adumim', 'modiin-illit', 'beitar-illit']) {
+    const l = IL_LOCALITIES.find((x) => x.code === code)!;
+    assert.ok(around.some((m) => Number(m[2]) === l.lat && Number(m[3]) === l.lng), code);
+  }
+  // The streets are looked up around every park, these included: one request.
+  assert.equal(q.match(/out /g)?.length, 2);
+  assert.ok(q.indexOf('(around:') < q.indexOf('->.parks;'));
+  // Another list (or none) is honoured.
+  assert.doesNotMatch(overpassQuery('IL', []), /around:3500/);
+  assert.match(overpassQuery('IL', [{ lat: 1.5, lng: 2.5 }]), /\(around:3500,1\.5,2\.5\);\)->\.parks;/);
+});
+
+test('parks around Judea and Samaria towns get their codes; Jerusalem keeps its east', () => {
+  const at = (lat: number, lng: number) => parkLocality(IL_LOCALITIES, { lat, lng })?.code;
+  // Points inside the towns (invented, a few hundred metres from the centres).
+  assert.equal(at(32.1058, 35.1902), 'ariel');
+  assert.equal(at(31.7758, 35.2988), 'maale-adumim');
+  assert.equal(at(31.9300, 35.0450), 'modiin-illit');
+  assert.equal(at(31.7000, 35.1150), 'beitar-illit');
+  assert.equal(at(32.1711, 35.0200), 'alfei-menashe');
+  // Pisgat Ze'ev: 7.0 km from Ma'ale Adumim's centre, 7.2 km from Jerusalem's.
+  assert.equal(at(31.8222, 35.2563), 'jerusalem');
+  // A row uses the same rule.
+  const row = parkRow({ sourceId: 'way/9', center: { lat: 32.1058, lng: 35.1902 }, tags: { leisure: 'dog_park' }, streets: [] }, IL_LOCALITIES);
+  assert.equal(row.locality_code, 'ariel');
+  // Without another locality in reach, the far one is still better than none.
+  const only = IL_LOCALITIES.filter((l) => l.code === 'maale-adumim');
+  assert.equal(parkLocality(only, { lat: 31.8222, lng: 35.2563 })?.code, 'maale-adumim');
 });
 
 test('parsing finds the parks and the streets near each one', () => {
