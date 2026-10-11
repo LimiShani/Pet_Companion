@@ -217,6 +217,7 @@ class ParkAreaBar extends StatelessWidget {
     required this.area,
     required this.onChange,
     required this.onRadius,
+    this.showRadius = true,
   });
 
   static const changeKey = Key('parks-change-area');
@@ -225,6 +226,10 @@ class ParkAreaBar extends StatelessWidget {
   final ParkArea area;
   final VoidCallback onChange;
   final ValueChanged<ParkRadius> onRadius;
+
+  /// `false` leaves the radius chips out (the partners board has them in
+  /// its filters).
+  final bool showRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -294,21 +299,23 @@ class ParkAreaBar extends StatelessWidget {
               style: AppText.secondary.copyWith(color: AppColors.ink),
             ),
           ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            for (final radius in radii)
-              ChoiceChip(
-                key: radiusKey(radius),
-                label: Text(l10n.radius(radius)),
-                selected: area.radius == radius,
-                showCheckmark: false,
-                onSelected: (_) => onRadius(radius),
-              ),
-          ],
-        ),
+        if (showRadius) ...[
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              for (final radius in radii)
+                ChoiceChip(
+                  key: radiusKey(radius),
+                  label: Text(l10n.radius(radius)),
+                  selected: area.radius == radius,
+                  showCheckmark: false,
+                  onSelected: (_) => onRadius(radius),
+                ),
+            ],
+          ),
+        ],
       ],
     );
   }

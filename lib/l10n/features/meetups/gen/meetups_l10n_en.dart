@@ -53,6 +53,65 @@ class MeetupsL10nEn extends MeetupsL10n {
   String get atMyParks => 'At my parks';
 
   @override
+  String get filters => 'Filters';
+
+  @override
+  String filtersCount(int count) {
+    return 'Filters · $count';
+  }
+
+  @override
+  String filtersLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Filters: $count on',
+      one: 'Filters: 1 on',
+      zero: 'Filters: none on',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filtersClear => 'Clear';
+
+  @override
+  String get filtersTitle => 'Which ads to show';
+
+  @override
+  String get filterDistance => 'Distance';
+
+  @override
+  String get filterKind => 'Walk or play';
+
+  @override
+  String get filterAnimal => 'Animal';
+
+  @override
+  String get filterWhen => 'When';
+
+  @override
+  String get filterWhere => 'Where';
+
+  @override
+  String get filtersClearAll => 'Clear all';
+
+  @override
+  String filtersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Show $count ads',
+      one: 'Show 1 ad',
+      zero: 'No ads to show',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filtersDone => 'Done';
+
+  @override
   String get sampleAds => 'Sample ads';
 
   @override

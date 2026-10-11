@@ -6,6 +6,7 @@ import '../../services/community/data/audience.dart';
 import '../../services/meetups/data/meetup_models.dart';
 import '../../services/meetups/state/meetups_providers.dart';
 import '../../services/outdoors/state/parks_providers.dart';
+import '../../state/pets_provider.dart';
 import '../community/safety/safety_providers.dart' show blockedIdsProvider;
 
 /// One ad on the board, with how far it is from the area's centre.
@@ -75,6 +76,33 @@ final partnersListingProvider = Provider<AsyncValue<List<MeetupListing>>>((
     ),
   );
 });
+
+/// How many of the board's filters differ from where it starts: the
+/// distance (up to 10 km), walk or play, the animal (the selected pet's
+/// kind, as in the rest of the Community), when, and "At my parks".
+final partnersFilterCountProvider = Provider<int>((ref) {
+  final radius = ref.watch(meetupsAreaProvider.select((s) => s.area?.radius));
+  final filters = ref.watch(meetupFiltersProvider);
+  final scope = ref.watch(communityScopeProvider);
+  final species = ref.watch(selectedPetProvider.select((pet) => pet.species));
+  return [
+    radius != null && radius != MeetupsArea.defaultRadius,
+    filters.kind != null,
+    scope != CommunityScope.forSpecies(species),
+    filters.when != MeetupWhen.any,
+    filters.atMyParks,
+  ].where((on) => on).length;
+});
+
+/// "Clear": every filter back to where the board starts (the distance is
+/// kept on the phone, as when it is chosen).
+void clearPartnersFilters(WidgetRef ref) {
+  ref.read(meetupFiltersProvider.notifier).clear();
+  ref
+      .read(communityScopeProvider.notifier)
+      .select(CommunityScope.forSpecies(ref.read(selectedPetProvider).species));
+  ref.read(meetupsAreaProvider.notifier).setRadius(MeetupsArea.defaultRadius);
+}
 
 /// What a park card says about meetups there.
 class ParkMeetupSummary {

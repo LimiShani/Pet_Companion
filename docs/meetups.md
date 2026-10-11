@@ -51,12 +51,23 @@ Before 0028 is run the app still works: the server does not grant
   the nearest city; the position is forgotten at once) or a city from the
   list. The choice is kept on the phone (`meetups.area.<user id>` =
   `raanana|km10`), never the position. Radius **City only / Up to 10 km /
-  Up to 25 km** (10 km by default). The server is sent only the locality
+  Up to 25 km** (10 km by default), chosen in the filters sheet (the area
+  row itself is the city and **Change**). The server is sent only the locality
   codes in range (`MeetupsArea.codes`: the cities whose centres are within
   the radius of the chosen city's centre).
 - **The board:** the fixed line "Meet in a public place and don't share a
-  home address", **New ad**, **My ads (n)**, the filters, then the open ads,
-  the soonest first, then the nearest:
+  home address", **New ad**, **My ads (n)**, the area row, one **Filters**
+  button ("סינון"; "Filters · 2" when two differ from where the board
+  starts, with **Clear** beside it), then the open ads, the soonest first,
+  then the nearest. The first ads show on an ordinary phone without
+  scrolling. The button opens a bottom sheet with the groups below as
+  chips under headings, **Clear all** and **Show N ads** (**Done** while
+  loading). A choice applies at once, so the ads behind the sheet follow
+  it and the button only closes the sheet. "Where the board starts":
+  10 km, all kinds, the selected pet's animal, any time, not only my
+  parks; **Clear** / **Clear all** go back there (the distance is kept on
+  the phone as when it is chosen). The groups:
+  - distance: City only / Up to 10 km / Up to 25 km;
   - kind: All / Walk / Play;
   - animal: Dogs / Cats / Everything, the Community's shared chips
     (`communityScopeProvider`, starting on the selected pet's kind); an ad
@@ -64,8 +75,9 @@ Before 0028 is run the app still works: the server does not grant
   - when: Today / This week (the next seven days) / Regular;
   - **At my parks** (one of the saved parks).
   - Empty: "No ads around here yet", or "No ads match these filters" with
-    **Clear filters**, and **Look up to 25 km**. Demo data says "Sample
-    ads".
+    **Clear filters** (which also widens the animal to Everything, so the
+    button then counts one), and **Look up to 25 km**. Demo data says
+    "Sample ads".
 - **The card:** the pet (avatar from its icon, or the real photo on one's
   own ad; name; "Dog · Mixed · about 3 years · medium-sized"), Walk/Play,
   the place (a park with its city and its tags; a tap opens the park page,
@@ -115,7 +127,7 @@ Before 0028 is run the app still works: the server does not grant
   week".
 - **Member page:** "Walk and play ads": the member's open ads.
 - **Strings:** `lib/l10n/features/meetups/` (`MeetupsL10n`,
-  `context.meetupsL10n`), 139 strings, Hebrew gender-neutral per
+  `context.meetupsL10n`), 152 strings, Hebrew gender-neutral per
   `lib/l10n/GLOSSARY.md` (rows use "שותפים", the kinds "טיול" and "משחק";
   messages in the first person: "אשמח להצטרף"). The generic words of the
   area picker (Near me, Change, the radii, the location problems) come
@@ -131,10 +143,10 @@ Before 0028 is run the app still works: the server does not grant
 | `lib/services/meetups/state/meetups_providers.dart` | repository, clock, `MeetupsArea` and `MeetupsAreaController`, filters (`passesFilters`), the lists (area, mine, a park, parks, a member, one ad, responders), the notify switches, `MeetupsController` (each change bumps `meetupsRevisionProvider`, so every list reloads) |
 | `lib/features/meetups/module.dart` | slots `outside-partners`, `park-meetups`, `park-meetup-post`, `park-card-meetups`, `member-meetups`; actions `meetup` (an ad's page, a push's target) and `new-meetup` |
 | `lib/features/meetups/meetups.dart` | the public import |
-| `lib/features/meetups/meetups_state.dart` | the board's listing (`buildMeetupListing`: blocks, filters, chips, order), the park cards' summaries, `MeetupsKeeper` |
+| `lib/features/meetups/meetups_state.dart` | the board's listing (`buildMeetupListing`: blocks, filters, chips, order), the filters count and Clear (`partnersFilterCountProvider`, `clearPartnersFilters`), the park cards' summaries, `MeetupsKeeper` |
 | `lib/features/meetups/meetups_words.dart` | `MeetupsWords`, `MeetupText` (pet line, place, when, days, distance, the first message, the group's name) |
 | `lib/features/meetups/meetup_actions.dart` | open the form, an ad, My ads; join (`JoinMeetupSheet`), group, close, renew, report, block |
-| `lib/features/meetups/board/` | `PartnersView`, `MeetupCard`, `MeetupsAreaPicker` |
+| `lib/features/meetups/board/` | `PartnersView`, `PartnersFiltersSheet` (`openPartnersFilters`), `MeetupCard`, `MeetupsAreaPicker` |
 | `lib/features/meetups/form/meetup_form_screen.dart` | the form |
 | `lib/features/meetups/mine/` | `MyMeetupsScreen`, `MeetupScreen` |
 | `lib/features/meetups/slots/meetup_slots.dart` | `PostMeetupHereButton`, `ParkMeetupsSection`, `MeetupRow`, `ParkCardMeetups`, `MemberMeetupsSection` |
@@ -219,14 +231,17 @@ security-definer functions with `search_path = ''`):
   (limits, parks, editing, closing, renewing, answers, blocks, reports),
   the Supabase rows and refusals, the moderation word.
 - `test/meetups/partners_board_test.dart`: Partners first, the profile
-  city, the order, the card, radii, filters and chips, empty areas, asking
+  city, the order, the card, radii, filters and chips (through the sheet),
+  the Filters count, Clear and Clear all, the first ad above the fold,
+  empty areas, asking
   once and remembering, Near me (only the city is kept), refused location,
   joining (the sheet, the chat of two with the draft, the answer), report
   and block, member pages, the push action, the capabilities switched off.
 - `test/meetups/meetup_ads_test.dart`: a new ad at a park and at another
   place, the daily limit, My ads (renew, close, group, edit, post again),
   park cards, the park page's meetups, posting there and the switch,
-  Hebrew at 320 px (board, card, join sheet, form, My ads, park page).
+  Hebrew at 320 px (board, card, join sheet, form, My ads, the filters
+  button and sheet, park page).
 - `supabase/tests/meetups_test.sql` (`tool/test_database.ps1`): grants and
   refusals, the pet snapshot, places and times, the limits, reading rules,
   answers and responders, blocks, editing, closing, renewing, reports and

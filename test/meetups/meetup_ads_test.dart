@@ -299,6 +299,33 @@ void main() {
       expect(find.text(he.renew), findsOneWidget);
     });
 
+    testWidgets('the Filters button and its sheet fit', (tester) async {
+      await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
+      expect(find.text(he.filters), findsOneWidget);
+      await openFilters(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.text(he.filtersTitle), findsOneWidget);
+      for (final heading in [he.filterDistance, he.filterKind, he.filterAnimal, he.filterWhen, he.filterWhere]) {
+        expect(find.text(heading), findsOneWidget);
+      }
+      await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.km25)));
+      await tapOn(tester, find.byKey(PartnersView.kindKey(MeetupKind.walk)));
+      await tapOn(tester, find.byKey(PartnersView.myParksKey));
+      expect(tester.takeException(), isNull);
+      expect(find.text(he.filtersShow(0)), findsOneWidget, reason: 'no saved parks');
+      await tapOn(tester, find.byKey(PartnersView.myParksKey));
+      await closeFilters(tester);
+      expect(tester.takeException(), isNull);
+      expect(find.text(he.filtersCount(2)), findsOneWidget);
+      expect(find.text(he.filtersClear), findsOneWidget);
+      // A plain tap: the button is on screen (scrolling it to the top first
+      // would leave it above the shorter list).
+      await tester.tap(find.byKey(PartnersView.filtersClearKey));
+      await tester.pumpAndSettle();
+      expect(find.text(he.filters), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('a park page with its meetups fits', (tester) async {
       await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       await tester.tap(find.byKey(OutsideSection.parksKey));
