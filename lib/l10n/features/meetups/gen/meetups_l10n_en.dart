@@ -65,9 +65,9 @@ class MeetupsL10nEn extends MeetupsL10n {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Filters, $count on',
-      one: 'Filters, 1 on',
-      zero: 'Filters',
+      other: 'Filters: $count on',
+      one: 'Filters: 1 on',
+      zero: 'Filters: none on',
     );
     return '$_temp0';
   }

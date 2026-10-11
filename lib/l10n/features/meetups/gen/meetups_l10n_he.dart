@@ -65,10 +65,10 @@ class MeetupsL10nHe extends MeetupsL10n {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'סינון, $count מסננים פעילים',
-      two: 'סינון, שני מסננים פעילים',
-      one: 'סינון, מסנן אחד פעיל',
-      zero: 'סינון',
+      other: 'סינון: $count מסננים פעילים',
+      two: 'סינון: שני מסננים פעילים',
+      one: 'סינון: מסנן אחד פעיל',
+      zero: 'סינון: אין מסננים פעילים',
     );
     return '$_temp0';
   }

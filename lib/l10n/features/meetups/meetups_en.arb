@@ -49,7 +49,7 @@
       }
     }
   },
-  "filtersLabel": "{count, plural, =0{Filters} =1{Filters, 1 on} other{Filters, {count} on}}",
+  "filtersLabel": "{count, plural, =0{Filters: none on} =1{Filters: 1 on} other{Filters: {count} on}}",
   "@filtersLabel": {
     "description": "What a screen reader says for the filters button.",
     "placeholders": {

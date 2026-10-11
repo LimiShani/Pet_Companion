@@ -194,7 +194,7 @@ abstract class MeetupsL10n {
   /// What a screen reader says for the filters button.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =0{Filters} =1{Filters, 1 on} other{Filters, {count} on}}'**
+  /// **'{count, plural, =0{Filters: none on} =1{Filters: 1 on} other{Filters: {count} on}}'**
   String filtersLabel(int count);
 
   /// Beside the filters button: every filter back to the start.

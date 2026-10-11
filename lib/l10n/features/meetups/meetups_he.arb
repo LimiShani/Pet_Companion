@@ -16,7 +16,7 @@
   "atMyParks": "בגינות שלי",
   "filters": "סינון",
   "filtersCount": "סינון · {count}",
-  "filtersLabel": "{count, plural, =0{סינון} =1{סינון, מסנן אחד פעיל} =2{סינון, שני מסננים פעילים} other{סינון, {count} מסננים פעילים}}",
+  "filtersLabel": "{count, plural, =0{סינון: אין מסננים פעילים} =1{סינון: מסנן אחד פעיל} =2{סינון: שני מסננים פעילים} other{סינון: {count} מסננים פעילים}}",
   "filtersClear": "ניקוי",
   "filtersTitle": "אילו מודעות להציג",
   "filterDistance": "מרחק",
