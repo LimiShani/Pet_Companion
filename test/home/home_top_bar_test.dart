@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/home/widgets/home_header.dart';
-import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_colors.dart';
+import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/brand.dart';
 
 import 'home_test_helpers.dart';
@@ -17,10 +17,10 @@ void main() {
   // The logo's two pieces: the paw-and-loop mark and the lettering.
   final titleText = find.byKey(HomeTopBar.brandWordmarkKey);
   final paw = find.byKey(HomeTopBar.brandMarkKey);
-  final menu = find.byTooltip('Menu');
   // Semantics finders need the test binding, so they are built on demand.
   Finder brandFinder() => find.bySemanticsLabel(title);
-  Finder avatarFinder() => find.bySemanticsLabel(RegExp('^Account'));
+  // The avatar that opens the You page.
+  Finder avatarFinder() => find.bySemanticsLabel(RegExp('^You'));
 
   /// True when [inner] lies inside [outer] (with a hair of rounding slack).
   bool within(Rect inner, Rect outer) => outer.inflate(0.01).contains(inner.topLeft) && outer.inflate(0.01).contains(inner.bottomRight);
@@ -35,16 +35,15 @@ void main() {
       expect(bar.height, HomeTopBar.height);
       final pill = tester.getRect(emergencyPill);
       expect(pill.height, 48);
-      // Menu, pill and avatar share the row's centre line.
-      expect(tester.getCenter(menu).dy, moreOrLessEquals(pill.center.dy));
+      // Pill and avatar share the row's centre line.
       expect(tester.getCenter(avatarFinder()).dy, moreOrLessEquals(pill.center.dy));
     });
 
-    testWidgets('keeps menu, title, pill and avatar in that order', (tester) async {
+    testWidgets('keeps title, pill and avatar in that order, the title at the start', (tester) async {
       await pumpTopBar(tester, width: 390);
 
       final pill = tester.getRect(emergencyPill);
-      expect(tester.getRect(menu).right, lessThanOrEqualTo(tester.getRect(brandFinder()).left));
+      expect(tester.getRect(brandFinder()).left, moreOrLessEquals(AppSpacing.screen));
       expect(tester.getRect(brandFinder()).right, lessThanOrEqualTo(pill.left));
       expect(pill.right, lessThanOrEqualTo(tester.getRect(avatarFinder()).left));
     });
@@ -55,7 +54,7 @@ void main() {
       final pill = tester.getRect(emergencyPill);
       expect(tester.getRect(avatarFinder()).right, lessThanOrEqualTo(pill.left));
       expect(pill.right, lessThanOrEqualTo(tester.getRect(brandFinder()).left));
-      expect(tester.getRect(brandFinder()).right, lessThanOrEqualTo(tester.getRect(menu).left));
+      expect(tester.getRect(brandFinder()).right, moreOrLessEquals(390 - AppSpacing.screen));
       // The dot moves to the pill's other top corner.
       expect(tester.getCenter(emergencyDot).dx, lessThan(pill.center.dx));
       expect(tester.takeException(), isNull);
@@ -66,7 +65,16 @@ void main() {
       final steps = <double, int>{};
       Size? pillSize;
 
-      for (final width in <double>[320, 360, 390, 430, 480, 540, 600, 700, 840]) {
+      // The narrowest width: the brand's room (the bar less its side
+      // padding, the gaps, the avatar and the pill) is just under what the
+      // lettering needs at its smallest, so only the paw is drawn.
+      await pumpTopBar(tester, width: 390);
+      final wordmarkWidth = const PetLoopWordmark(height: 22, tone: BrandTone.white).width;
+      final narrowest =
+          (2 * AppSpacing.screen + 4 + 8 + 40 + tester.getSize(emergencyPill).width + wordmarkWidth * 0.45 - 6)
+              .floorToDouble();
+
+      for (final width in <double>[narrowest, 320, 360, 390, 430, 480, 540, 600, 700, 840]) {
         await pumpTopBar(tester, width: width);
         expect(tester.takeException(), isNull, reason: 'overflow at $width px');
 
@@ -113,13 +121,12 @@ void main() {
       expect(natural.right, lessThanOrEqualTo(tester.getRect(avatarFinder()).left));
 
       // Huge text on a small phone: the whole pill is scaled to the room
-      // there is, still between the menu and the avatar, still tappable.
+      // there is, still before the avatar, still tappable.
       await pumpTopBar(tester, width: 320, textScale: 2);
       expect(tester.takeException(), isNull);
       final pill = tester.getRect(emergencyPill);
       expect(within(pill, tester.getRect(topBar)), isTrue);
       expect(within(tester.getRect(find.text('Emergency')), pill), isTrue);
-      expect(tester.getRect(menu).right, lessThanOrEqualTo(pill.left));
       expect(pill.right, lessThanOrEqualTo(tester.getRect(avatarFinder()).left));
       expect(emergencyPill.hitTestable(), findsOneWidget);
       expect(tester.getSize(topBar).height, HomeTopBar.height);
@@ -158,19 +165,10 @@ void main() {
     variant: TargetPlatformVariant.only(TargetPlatform.iOS),
   );
 
-  group('the pet counter', () {
-    testWidgets('counts pets, not dogs', (tester) async {
-      await pumpHome(tester);
-      expect(find.text('2 pets'), findsOneWidget);
-      expect(find.textContaining('dog'), findsNothing);
-    });
-
-    testWidgets('says "1 pet" for a single pet', (tester) async {
-      await pumpHome(tester, pets: const [Pet(id: soyaId, name: 'Soya', species: PetSpecies.cat)]);
-
-      expect(find.text('1 pet'), findsOneWidget);
-      expect(find.textContaining('pets'), findsNothing);
-      expect(pillPetId(tester), soyaId);
-    });
+  testWidgets('the pet row holds the selector alone: no pet count beside it', (tester) async {
+    await pumpHome(tester);
+    expect(find.text('2 pets'), findsNothing);
+    expect(find.textContaining('dog'), findsNothing);
+    expect(pillPetId(tester), kellyId);
   });
 }

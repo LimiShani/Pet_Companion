@@ -54,9 +54,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    // The pet pills look up each pet's essentials in Health's sample data,
-    // which answers in steps of 300 ms. Let those finish, so no timer is
-    // left over when the test ends.
+    // The Store's data answers in steps of 300 ms. Let those finish, so no
+    // timer is left over when the test ends.
     for (var i = 0; i < 6; i++) {
       await tester.pump(const Duration(milliseconds: 400));
     }
@@ -85,8 +84,8 @@ void main() {
     expect(centerX(tester, badge), greaterThan(centerX(tester, first)));
     expect(centerX(tester, heart), lessThan(centerX(tester, first)));
 
-    // The pet pills and the category chips start at the right.
-    expect(centerX(tester, find.text('Kelly')), greaterThan(centerX(tester, find.text('Soya'))));
+    // The category row starts at the right: the animals chip, then "All".
+    expect(centerX(tester, animalsChip), greaterThan(centerX(tester, find.widgetWithText(ChoiceChip, 'All'))));
     expect(
       centerX(tester, find.widgetWithText(ChoiceChip, 'All')),
       greaterThan(centerX(tester, find.widgetWithText(ChoiceChip, 'Food'))),

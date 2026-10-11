@@ -1,18 +1,28 @@
+import 'package:go_router/go_router.dart';
+
+import '../../l10n/l10n.dart';
 import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
+import '../../widgets/petloop_icon.dart';
 import 'outdoors.dart';
 
-/// Community > Outside: dog parks, and walk and play partners from the
-/// meetups module. The Community tab shows the section through the
-/// 'community-outside' slot, for anyone who may see either side; see
-/// docs/dog_parks.md for the seams meetups plugs into.
+/// The Outside tab: dog parks, and walk and play partners from the meetups
+/// module, for anyone who may see either side; see docs/dog_parks.md for
+/// the seams meetups plugs into.
 final outdoorsModule = FeatureModule(
   id: 'outdoors',
+  tab: FeatureTab(
+    capability: OutsideScreen.capability,
+    glyph: PetLoopGlyph.walk,
+    label: (c) => c.outdoorsL10n.sectionOutside,
+    routes: [
+      GoRoute(
+        path: '/outside',
+        builder: (context, state) => const OutsideScreen(),
+      ),
+    ],
+  ),
   slots: {
-    'community-outside': FeatureSlot(
-      capability: '${ParkCapabilities.view}|community.meetups.view',
-      build: (c, r) => const OutsideSection(),
-    ),
     // The OpenStreetMap credit in Settings > About PetLoop. Settings shows
     // credits whatever the account may use (a licence notice).
     'about-credits': FeatureSlot(

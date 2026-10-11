@@ -70,8 +70,7 @@ class StoreL10nHe extends StoreL10n {
   String get noDealsYetTitle => 'עדיין אין מבצעים';
 
   @override
-  String get noDealsYetMessage =>
-      'מבצעים חדשים יופיעו כאן. מצאת מבצע טוב? אפשר לשתף אותו עם בעלי חיות אחרים.';
+  String get noDealsYetMessage => 'מבצעים חדשים יופיעו כאן. מצאת מבצע טוב? אפשר לשתף אותו עם בעלי חיות אחרים.';
 
   @override
   String get noDealsFoundTitle => 'לא נמצאו מבצעים';
@@ -118,11 +117,7 @@ class StoreL10nHe extends StoreL10n {
   }
 
   @override
-  String noneForAnimalsMatchingInCategory(
-    String animals,
-    String query,
-    String category,
-  ) {
+  String noneForAnimalsMatchingInCategory(String animals, String query, String category) {
     return 'לא נמצא דבר עבור \u2068$animals\u2069 שמתאים לחיפוש ״\u2068$query\u2069״ בקטגוריה \u2068$category\u2069.';
   }
 
@@ -518,8 +513,7 @@ class StoreL10nHe extends StoreL10n {
   String get removedFromSaved => 'הוסר מהמבצעים ששמרת';
 
   @override
-  String get couldNotUpdateSaved =>
-      'לא הצלחנו לעדכן את המבצעים ששמרת. אפשר לנסות שוב.';
+  String get couldNotUpdateSaved => 'לא הצלחנו לעדכן את המבצעים ששמרת. אפשר לנסות שוב.';
 
   @override
   String get couldNotLoadSaved => 'לא הצלחנו לטעון את המבצעים ששמרת';
@@ -546,8 +540,7 @@ class StoreL10nHe extends StoreL10n {
   }
 
   @override
-  String get shareIntro =>
-      'מצאת מבצע טוב? כדאי לספר לבעלי חיות אחרים איפה הוא.';
+  String get shareIntro => 'מצאת מבצע טוב? כדאי לספר לבעלי חיות אחרים איפה הוא.';
 
   @override
   String get fieldTitle => 'כותרת';
@@ -565,8 +558,7 @@ class StoreL10nHe extends StoreL10n {
   String get fieldAnimals => 'לאילו חיות';
 
   @override
-  String get fieldAnimalsHelp =>
-      'הבחירה מתחילה מסוג החיה שנבחרה. אפשר לסמן יותר מסוג אחד.';
+  String get fieldAnimalsHelp => 'הבחירה מתחילה מסוג החיה שנבחרה. אפשר לסמן יותר מסוג אחד.';
 
   @override
   String fieldPriceNow(String symbol) {
@@ -593,8 +585,7 @@ class StoreL10nHe extends StoreL10n {
   String get fieldPackageUnitHint => 'יחידת מידה';
 
   @override
-  String get fieldPackageHelp =>
-      'במארז של כמה יחידות מזינים את הסך הכול. לדוגמה: 12 × 85 גרם הם 1020 גרם.';
+  String get fieldPackageHelp => 'במארז של כמה יחידות מזינים את הסך הכול. לדוגמה: 12 × 85 גרם הם 1020 גרם.';
 
   @override
   String hintUnitPrice(String unitPrice) {
@@ -684,8 +675,7 @@ class StoreL10nHe extends StoreL10n {
   String get validPriceAboveZero => 'המחיר צריך להיות גדול מאפס.';
 
   @override
-  String get validPriceBelowOriginal =>
-      'מחיר המבצע צריך להיות נמוך מהמחיר הקודם.';
+  String get validPriceBelowOriginal => 'מחיר המבצע צריך להיות נמוך מהמחיר הקודם.';
 
   @override
   String get validLinkRequired => 'צריך להדביק את הקישור למבצע.';
@@ -699,19 +689,16 @@ class StoreL10nHe extends StoreL10n {
   String get validPackageAmount => 'צריך להזין גודל גדול מאפס, למשל 2.5.';
 
   @override
-  String get validPackageUnit =>
-      'צריך לבחור יחידת מידה: ק״ג, גרם, ליטר, מ״ל או יחידות.';
+  String get validPackageUnit => 'צריך לבחור יחידת מידה: ק״ג, גרם, ליטר, מ״ל או יחידות.';
 
   @override
   String get validDeliveryCostRequired => 'צריך להזין את עלות המשלוח.';
 
   @override
-  String get validDeliveryCostInvalid =>
-      'צריך להזין מספר גדול מאפס, או לבחור ״חינם״.';
+  String get validDeliveryCostInvalid => 'צריך להזין מספר גדול מאפס, או לבחור ״חינם״.';
 
   @override
-  String get errNetwork =>
-      'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
+  String get errNetwork => 'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
 
   @override
   String get errSignInToShare => 'כדי לשתף מבצע צריך להיכנס לחשבון.';
@@ -743,8 +730,7 @@ class StoreL10nHe extends StoreL10n {
   String get errNotAllowed => 'אין הרשאה לפעולה הזאת. כדאי להיכנס שוב לחשבון.';
 
   @override
-  String get errDetailsNotValid =>
-      'חלק מהפרטים לא תקינים. כדאי לבדוק אותם ולנסות שוב.';
+  String get errDetailsNotValid => 'חלק מהפרטים לא תקינים. כדאי לבדוק אותם ולנסות שוב.';
 
   @override
   String get errDealNoLongerAvailable => 'המבצע הזה כבר לא זמין.';
@@ -753,6 +739,8 @@ class StoreL10nHe extends StoreL10n {
   String get errSessionEnded => 'החיבור לחשבון הסתיים. צריך להיכנס שוב.';
 
   @override
-  String get errStoreNeedsUpdate =>
-      'החנות מתעדכנת כרגע. אפשר לנסות שוב מאוחר יותר.';
+  String get errStoreNeedsUpdate => 'החנות מתעדכנת כרגע. אפשר לנסות שוב מאוחר יותר.';
+
+  @override
+  String get kindMenuTooltip => 'בחירת סוג החיה';
 }

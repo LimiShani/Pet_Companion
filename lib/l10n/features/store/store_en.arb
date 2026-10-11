@@ -11,7 +11,7 @@
   "shareADeal": "Share a deal",
   "@shareADeal": {"description": "The floating button on the Store tab and the title of the form it opens."},
   "allAnimals": "All animals",
-  "@allAnimals": {"description": "The pill after the pet pills: shows the deals for every kind of animal."},
+  "@allAnimals": {"description": "The choice in the Store's animals menu (and the chip's label once chosen): shows the deals for every kind of animal."},
   "allCategories": "All",
   "@allCategories": {"description": "The first category chip: every category."},
   "sortTooltip": "Sort deals",
@@ -289,5 +289,8 @@
   "errDetailsNotValid": "Some of the details are not valid. Please check them and try again.",
   "errDealNoLongerAvailable": "This deal is no longer available.",
   "errSessionEnded": "Your session has ended. Please sign in again.",
-  "errStoreNeedsUpdate": "The Store is being updated. Please try again later."
+  "errStoreNeedsUpdate": "The Store is being updated. Please try again later.",
+
+  "kindMenuTooltip": "Choose who to shop for",
+  "@kindMenuTooltip": {"description": "Tooltip of the chip at the start of the category row ('For dogs', 'All animals') that opens the menu of kinds of animal."}
 }

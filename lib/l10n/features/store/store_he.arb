@@ -200,5 +200,7 @@
   "errDetailsNotValid": "חלק מהפרטים לא תקינים. כדאי לבדוק אותם ולנסות שוב.",
   "errDealNoLongerAvailable": "המבצע הזה כבר לא זמין.",
   "errSessionEnded": "החיבור לחשבון הסתיים. צריך להיכנס שוב.",
-  "errStoreNeedsUpdate": "החנות מתעדכנת כרגע. אפשר לנסות שוב מאוחר יותר."
+  "errStoreNeedsUpdate": "החנות מתעדכנת כרגע. אפשר לנסות שוב מאוחר יותר.",
+
+  "kindMenuTooltip": "בחירת סוג החיה"
 }

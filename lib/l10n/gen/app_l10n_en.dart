@@ -284,6 +284,26 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
+  String get youTitle => 'You';
+
+  @override
+  String get youCommunitySafetySummary => 'Rules, blocked members';
+
+  @override
+  String get youAdminTools => 'Admin tools';
+
+  @override
+  String get youAdminToolsSummary => 'Feature access, directory review, park suggestions';
+
+  @override
+  String get aboutTitle => 'About PetLoop';
+
+  @override
+  String aboutVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
   String get menuMyPets => 'My pets';
 
   @override
@@ -328,9 +348,6 @@ class AppL10nEn extends AppL10n {
   String get settingsSavedNote => 'These settings are saved on this phone.';
 
   @override
-  String get settingsAbout => 'About PetLoop';
-
-  @override
   String get legalTerms => 'Terms of Use';
 
   @override
@@ -341,12 +358,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get legalOpenFailed => 'The page could not be opened. Try again later.';
-
-  @override
-  String get homeMenu => 'Menu';
-
-  @override
-  String get homeAccount => 'Account';
 
   @override
   String homePetCount(int count) {

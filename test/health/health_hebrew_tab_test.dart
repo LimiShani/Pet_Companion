@@ -106,8 +106,7 @@ void main() {
 
       testWidgets('an empty pet gets its first steps', (tester) async {
         await pumpHealth(tester, harness: hebrewHealth(), size: size);
-        await tester.tap(find.text('Soya').first);
-        await tester.pumpAndSettle();
+        await switchPet(tester, 'Soya');
 
         expect(find.text(he.overviewNoCareDue), findsOneWidget);
         expect(find.text(he.startWithOneThing), findsOneWidget);

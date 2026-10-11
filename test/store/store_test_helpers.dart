@@ -13,7 +13,6 @@ import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
-import 'package:pet_companion/widgets/pet_selector.dart';
 
 import '../helpers.dart';
 
@@ -128,14 +127,27 @@ Future<FakeStoreRepository> pumpStore(
   return store;
 }
 
-/// Taps a pill of the pet row in the Store header ("Kelly", "All animals"),
-/// sliding the row to it first: in the wide test font the row is longer
-/// than the screen.
-Future<void> tapPetPill(WidgetTester tester, String label) async {
-  final pill = find.descendant(of: find.byType(PetSelector), matching: find.text(label));
-  await tester.ensureVisible(pill);
+/// The chip at the start of the category row that says who the Store shops
+/// for ("For dogs", "All animals") and opens the animals menu.
+final animalsChip = find.byKey(const Key('store-kind-chip'));
+
+/// What [animalsChip] reads.
+String animalsChipLabel(WidgetTester tester) =>
+    tester.widget<Text>(find.descendant(of: animalsChip, matching: find.byType(Text))).data!;
+
+/// Picks who the Store shops for in the animals menu: a kind as the menu
+/// names it ("Cats", "חתולים") or "All animals". Scrolls the chip into
+/// view first: far down the grid it is not even built.
+Future<void> pickAnimals(WidgetTester tester, String label) async {
+  if (animalsChip.evaluate().isEmpty) {
+    tester.state<ScrollableState>(gridScrollable).position.jumpTo(0);
+    await tester.pumpAndSettle();
+  }
+  await tester.ensureVisible(animalsChip);
   await tester.pumpAndSettle();
-  await tester.tap(pill);
+  await tester.tap(animalsChip);
+  await tester.pumpAndSettle();
+  await tester.tap(find.descendant(of: find.byType(PopupMenuItem<String>), matching: find.text(label)));
   await tester.pumpAndSettle();
 }
 

@@ -11,6 +11,7 @@ class StoreFilter {
     this.category,
     this.sort = DealSort.biggestDiscount,
     this.allAnimals = false,
+    this.kind,
   });
 
   /// Free text matched against the title, description, seller and category.
@@ -20,9 +21,14 @@ class StoreFilter {
   final DealCategory? category;
   final DealSort sort;
 
-  /// With `false` the Store shows what suits the selected pet's kind; with
-  /// `true` it shows the deals for every kind of animal.
+  /// With `false` the Store shows what suits the selected pet's kind (or
+  /// [kind]); with `true` it shows the deals for every kind of animal.
   final bool allAnimals;
+
+  /// A kind of animal to shop for instead of the selected pet's, picked in
+  /// the Store's animals menu; `null` follows the selected pet. Not used
+  /// while [allAnimals] is on.
+  final PetSpecies? kind;
 
   /// True when a search or a category narrows the list.
   bool get isNarrowed => query.trim().isNotEmpty || category != null;
@@ -32,6 +38,7 @@ class StoreFilter {
     category: category,
     sort: sort,
     allAnimals: allAnimals,
+    kind: kind,
   );
 
   StoreFilter withCategory(DealCategory? value) => StoreFilter(
@@ -39,6 +46,7 @@ class StoreFilter {
     category: value,
     sort: sort,
     allAnimals: allAnimals,
+    kind: kind,
   );
 
   StoreFilter withSort(DealSort value) => StoreFilter(
@@ -46,13 +54,26 @@ class StoreFilter {
     category: category,
     sort: value,
     allAnimals: allAnimals,
+    kind: kind,
   );
 
+  /// Every animal (`true`), or what suits the selected pet (`false`): the
+  /// kind picked in the menu, if any, is dropped either way.
   StoreFilter withAllAnimals(bool value) => StoreFilter(
     query: query,
     category: category,
     sort: sort,
     allAnimals: value,
+  );
+
+  /// What suits [value] rather than the selected pet; `null` follows the
+  /// selected pet again. Leaves "all animals".
+  StoreFilter withKind(PetSpecies? value) => StoreFilter(
+    query: query,
+    category: category,
+    sort: sort,
+    allAnimals: false,
+    kind: value,
   );
 
   @override
@@ -61,10 +82,11 @@ class StoreFilter {
       other.query == query &&
       other.category == category &&
       other.sort == sort &&
-      other.allAnimals == allAnimals;
+      other.allAnimals == allAnimals &&
+      other.kind == kind;
 
   @override
-  int get hashCode => Object.hash(query, category, sort, allAnimals);
+  int get hashCode => Object.hash(query, category, sort, allAnimals, kind);
 }
 
 /// The deals matching [filter], in its sort order. Deals that are over at

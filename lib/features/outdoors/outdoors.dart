@@ -30,6 +30,7 @@ export '../../services/outdoors/state/parks_providers.dart';
 export 'outdoors_words.dart';
 export 'outside_section.dart'
     show OutsideSection, OutdoorsKeeper, outsidePartnersSlot, slotAvailable;
+export 'outside_screen.dart' show OutsideScreen;
 export 'parks/park_area_picker.dart' show ParkAreaPicker, ParkAreaBar;
 export 'parks/park_picker.dart' show PickedPark, ParkPickerScreen, pickPark;
 export 'parks/park_screen.dart' show ParkScreen, ParkPageSlots, openParkPage;

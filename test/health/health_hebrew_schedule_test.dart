@@ -302,7 +302,7 @@ void main() {
 
       testWidgets('an empty schedule offers to add something', (tester) async {
         await openSchedule(tester, size: size);
-        await selectPet(tester, 'Soya');
+        await switchPet(tester, 'Soya');
 
         expect(find.text(he.scheduleEmpty), findsOneWidget);
         expect(find.text(he.scheduleEmptyNote('Soya')), findsOneWidget);

@@ -211,7 +211,7 @@ Server rules (0021):
 ## Outside: dog parks and partners
 
 The fourth section, Outside (Feed · Chat · Outside · Guides), comes from
-the `outdoors` module through the `community-outside` slot: a Partners |
+the `outdoors` module, since the streamline of Oct 2026, as its own Outside tab (`/outside`): a Partners |
 Parks switch, dog parks from OpenStreetMap with members' suggestions and
 a review queue, and the seams the meetups feature (Partners) plugs into.
 Design, owner steps (migration 0027, the `parks-import` Edge Function, its

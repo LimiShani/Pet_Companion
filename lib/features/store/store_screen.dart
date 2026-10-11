@@ -1,5 +1,4 @@
 import '../../access/feature_gate.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,7 +12,6 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/empty_state.dart';
-import '../../widgets/pet_selector.dart';
 import '../../services/budget/state/budget_providers.dart'
     show StoreView, storeViewProvider;
 import '../../platform/feature_ui.dart';
@@ -30,9 +28,10 @@ import 'widgets/store_messages.dart';
 /// The Store tab: a marketplace of bargain pet products. Each deal links
 /// out to its seller; nothing is bought inside the app.
 ///
-/// It opens on what suits the selected pet; "All animals" in the header
-/// shows the deals for every kind of animal. A switch at the top turns it
-/// to "My basket", the owner's regular products (the budget feature).
+/// It opens on what suits the selected pet; the chip at the start of the
+/// category row picks another kind of animal, or "All animals", without
+/// changing the app's selected pet. A switch at the top turns it to "My
+/// basket", the owner's regular products (the budget feature).
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
@@ -94,6 +93,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final filter = ref.watch(storeFilterProvider);
     final deals = ref.watch(visibleDealsProvider);
     final species = ref.watch(storePetSpeciesProvider);
+    // The kinds of animal the owner keeps, for the animals menu; the kind
+    // on show stays listed even when no pet of it is left.
+    final kinds = <PetSpecies>{
+      for (final pet in ref.watch(petsProvider)) pet.species,
+      if (!filter.allAnimals) species,
+    }.toList();
     final basket =
         ref.watch(capabilityProvider('basket.view')) &&
         ref.watch(storeViewProvider) == StoreView.basket;
@@ -101,8 +106,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // without rebuilding the whole tab when they change.
     ref.listen(savedDealIdsProvider, (_, _) {});
     ref.listen(reportedDealIdsProvider, (_, _) {});
-    // Picking another pet, here or on any other tab, is a choice to shop
-    // for that pet: "All animals" gives way to it.
+    // Picking another pet on Home (or anywhere else) is a choice to shop
+    // for that pet: "All animals" and a kind picked in the menu give way.
     ref.listen(selectedPetProvider.select((pet) => pet.id), (previous, next) {
       if (previous != next) {
         ref.read(storeFilterProvider.notifier).setAllAnimals(false);
@@ -163,11 +168,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                   ),
                 if (!basket) ...[
                   const SizedBox(height: 10),
-                  _PetScope(
-                    allAnimals: filter.allAnimals,
-                    onChanged: filters.setAllAnimals,
-                  ),
-                  const SizedBox(height: 10),
                   _SearchField(
                     controller: _search,
                     onChanged: filters.setQuery,
@@ -223,6 +223,12 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                         child: _CategoryChips(
                           selected: filter.category,
                           onSelected: filters.setCategory,
+                          kinds: kinds,
+                          allAnimals: filter.allAnimals,
+                          species: species,
+                          onKind: (kind) => kind == null
+                              ? filters.setAllAnimals(true)
+                              : filters.setKind(kind),
                         ),
                       ),
                       SliverToBoxAdapter(
@@ -266,76 +272,30 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   }
 }
 
-/// Who the Store is shopping for: the shared row of pet pills, followed by
-/// an "All animals" pill. A pet pill selects that pet for the whole app and
-/// narrows the Store to its kind; "All animals" shows every deal and leaves
-/// no pet highlighted.
-class _PetScope extends StatefulWidget {
-  const _PetScope({required this.allAnimals, required this.onChanged});
-
-  final bool allAnimals;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  State<_PetScope> createState() => _PetScopeState();
-}
-
-class _PetScopeState extends State<_PetScope> {
-  final _allAnimalsKey = GlobalKey();
-  Offset? _pressedAt;
-
-  bool _isOnAllAnimals(Offset position) {
-    final box = _allAnimalsKey.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return false;
-    return (box.localToGlobal(Offset.zero) & box.size).contains(position);
-  }
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability: 'store.deals.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    // The selector handles taps on its pet pills itself and only reports a
-    // change of pet, so tapping the pet that is already selected would not
-    // be noticed. Watching for a tap on the row (not a scroll, not on "All
-    // animals") catches every way back from "All animals" to a pet.
-    return Listener(
-      onPointerDown: (event) => _pressedAt = event.position,
-      onPointerCancel: (_) => _pressedAt = null,
-      onPointerUp: (event) {
-        final pressedAt = _pressedAt;
-        _pressedAt = null;
-        if (!widget.allAnimals || pressedAt == null) return;
-        if ((event.position - pressedAt).distance > kTouchSlop) return;
-        if (_isOnAllAnimals(event.position)) return;
-        widget.onChanged(false);
-      },
-      child: PetSelector(
-        highlightSelected: !widget.allAnimals,
-        trailing: _AllAnimalsPill(
-          key: _allAnimalsKey,
-          selected: widget.allAnimals,
-          onTap: () => widget.onChanged(true),
-        ),
-      ),
-    );
-  }
-}
-
-/// Drawn to match the pet pills of [PetSelector], with a paw for a picture.
-class _AllAnimalsPill extends StatelessWidget {
-  const _AllAnimalsPill({
-    super.key,
-    required this.selected,
-    required this.onTap,
+/// The chip at the start of the category row: who the Store is shopping
+/// for ("For dogs", "All animals"), with a menu of the kinds of animal
+/// among the owner's pets and "All animals". Picking a kind narrows the
+/// Store without changing the app's selected pet.
+class _KindChip extends StatelessWidget {
+  const _KindChip({
+    required this.kinds,
+    required this.allAnimals,
+    required this.species,
+    required this.onKind,
   });
 
-  final bool selected;
-  final VoidCallback onTap;
+  static const chipKey = Key('store-kind-chip');
+  static const _allValue = 'all';
+
+  /// The kinds to list, in the order of the owner's pets.
+  final List<PetSpecies> kinds;
+  final bool allAnimals;
+
+  /// The kind on show while [allAnimals] is off.
+  final PetSpecies species;
+
+  /// A kind, or `null` for all animals.
+  final ValueChanged<PetSpecies?> onKind;
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -346,50 +306,67 @@ class _AllAnimalsPill extends StatelessWidget {
   );
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        color: selected ? AppColors.yellow : AppColors.onCoralPill,
-        shape: StadiumBorder(
-          side: BorderSide(
-            color: selected ? AppColors.yellow : AppColors.onCoralOutline,
-            width: 2,
-          ),
-        ),
-        child: InkWell(
-          customBorder: const StadiumBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected
-                        ? AppColors.coral
-                        : AppColors.white.withValues(alpha: 0.55),
-                  ),
-                  child: AppIcon(
-                    Icons.pets_rounded,
-                    size: 13,
-                    color: selected ? AppColors.white : AppColors.coralDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  context.storeL10n.allAnimals,
-                  style: AppText.cardTitle.copyWith(
-                    color: selected ? AppColors.ink : AppColors.white,
-                  ),
-                ),
-              ],
+    final l10n = context.storeL10n;
+    final label = allAnimals
+        ? l10n.allAnimals
+        : l10n.forAnimals(l10n.animalsInSentence(species));
+    TextStyle itemStyle(bool on) => AppText.body.copyWith(
+      color: AppColors.ink,
+      fontWeight: on ? FontWeight.w800 : FontWeight.w600,
+    );
+
+    return PopupMenuButton<String>(
+      key: chipKey,
+      tooltip: l10n.kindMenuTooltip,
+      color: AppColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+      ),
+      onSelected: (value) =>
+          onKind(value == _allValue ? null : PetSpecies.fromName(value)),
+      itemBuilder: (context) => [
+        for (final kind in kinds)
+          PopupMenuItem(
+            key: ValueKey('store-kind-${kind.name}'),
+            value: kind.name,
+            child: Text(
+              l10n.animals(kind),
+              style: itemStyle(!allAnimals && kind == species),
             ),
           ),
+        PopupMenuItem(
+          key: const Key('store-kind-all'),
+          value: _allValue,
+          child: Text(l10n.allAnimals, style: itemStyle(allAnimals)),
+        ),
+      ],
+      // Drawn as a chosen ChoiceChip, so it sits in the row as one of them.
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 32),
+        padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 6, 6),
+        decoration: const ShapeDecoration(
+          color: AppColors.yellow,
+          shape: StadiumBorder(),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: AppText.secondary.copyWith(
+                color: AppColors.ink,
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: 2),
+            const AppIcon(
+              Icons.expand_more_rounded,
+              size: 18,
+              color: AppColors.ink,
+            ),
+          ],
         ),
       ),
     );
@@ -447,11 +424,23 @@ class _SearchField extends StatelessWidget {
   }
 }
 
+/// The animals chip, then one chip per category ("All" first).
 class _CategoryChips extends StatelessWidget {
-  const _CategoryChips({required this.selected, required this.onSelected});
+  const _CategoryChips({
+    required this.selected,
+    required this.onSelected,
+    required this.kinds,
+    required this.allAnimals,
+    required this.species,
+    required this.onKind,
+  });
 
   final DealCategory? selected;
   final ValueChanged<DealCategory?> onSelected;
+  final List<PetSpecies> kinds;
+  final bool allAnimals;
+  final PetSpecies species;
+  final ValueChanged<PetSpecies?> onKind;
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -487,6 +476,15 @@ class _CategoryChips extends StatelessWidget {
       ),
       child: Row(
         children: [
+          Padding(
+            padding: const EdgeInsetsDirectional.only(end: 8),
+            child: _KindChip(
+              kinds: kinds,
+              allAnimals: allAnimals,
+              species: species,
+              onKind: onKind,
+            ),
+          ),
           chip(l10n.allCategories, null),
           for (final category in DealCategory.values)
             chip(l10n.category(category), category),

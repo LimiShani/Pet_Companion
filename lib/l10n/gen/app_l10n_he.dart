@@ -284,6 +284,26 @@ class AppL10nHe extends AppL10n {
   }
 
   @override
+  String get youTitle => 'החשבון שלי';
+
+  @override
+  String get youCommunitySafetySummary => 'כללים, חברים שחסמתי';
+
+  @override
+  String get youAdminTools => 'כלי ניהול';
+
+  @override
+  String get youAdminToolsSummary => 'הרשאות לתכונות, בדיקת המאגר, הצעות לגינות';
+
+  @override
+  String get aboutTitle => 'על PetLoop';
+
+  @override
+  String aboutVersion(String version) {
+    return 'גרסה \u2068$version\u2069';
+  }
+
+  @override
   String get menuMyPets => 'החיות שלי';
 
   @override
@@ -328,9 +348,6 @@ class AppL10nHe extends AppL10n {
   String get settingsSavedNote => 'ההגדרות נשמרות בטלפון הזה.';
 
   @override
-  String get settingsAbout => 'על PetLoop';
-
-  @override
   String get legalTerms => 'תנאי השימוש';
 
   @override
@@ -341,12 +358,6 @@ class AppL10nHe extends AppL10n {
 
   @override
   String get legalOpenFailed => 'לא הצלחנו לפתוח את הדף. נסו שוב מאוחר יותר.';
-
-  @override
-  String get homeMenu => 'תפריט';
-
-  @override
-  String get homeAccount => 'חשבון';
 
   @override
   String homePetCount(int count) {

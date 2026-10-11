@@ -31,19 +31,20 @@ void main() {
 
   // Both languages on the smallest phones.
   for (final (language, width) in [(AppLanguage.hebrew, 320.0), (AppLanguage.english, 320.0)]) {
-    testWidgets('the four Community sections and the Outside switch fit at ${width.toInt()} px (${language.name})', (
+    testWidgets('the five tabs and the Outside switch fit at ${width.toInt()} px (${language.name})', (
       tester,
     ) async {
       await openOutside(tester, language: language, size: Size(width, 640));
       expect(tester.takeException(), isNull);
       final locale = language == AppLanguage.hebrew ? hebrewLocale : englishLocale;
-      final community = lookupCommunityL10n(locale);
+      final app = lookupAppL10n(locale);
       final outdoors = lookupOutdoorsL10n(locale);
       for (final label in [
-        community.sectionFeed,
-        community.sectionChat,
+        app.navHome,
+        app.navHealth,
+        app.navCommunity,
         outdoors.sectionOutside,
-        community.sectionGuides,
+        app.navStore,
         outdoors.outsidePartners,
         outdoors.outsideParks,
       ]) {

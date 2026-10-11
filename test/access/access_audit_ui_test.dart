@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/access/access_admin_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
+import 'package:pet_companion/features/settings/admin_tools_screen.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import '../helpers.dart';
 
 class HistoryRepository extends FakeAccessRepository {
@@ -22,9 +24,15 @@ class HistoryRepository extends FakeAccessRepository {
   }
 }
 
+/// From Home: through the You page and Admin tools to Feature access and
+/// its Audit tab. Back from Feature access, Admin tools is already open.
 Future<void> openHistory(WidgetTester tester) async {
-  await tester.tap(find.byTooltip('Menu'));
-  await tester.pumpAndSettle();
+  if (find.byKey(AdminToolsScreen.screenKey).evaluate().isEmpty) {
+    await tester.tap(find.byTooltip('You'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(YouScreen.adminKey));
+    await tester.pumpAndSettle();
+  }
   await tester.ensureVisible(find.text('Feature access'));
   await tester.tap(find.text('Feature access'));
   await tester.pumpAndSettle();

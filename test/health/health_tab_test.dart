@@ -58,8 +58,7 @@ void main() {
 
     testWidgets('an empty pet gets first steps, not empty blocks', (tester) async {
       await pumpHealth(tester);
-      await tester.tap(find.text('Soya').first);
-      await tester.pumpAndSettle();
+      await switchPet(tester, 'Soya');
 
       expect(find.text('No scheduled care due'), findsOneWidget);
       expect(find.text('Start with one thing'), findsOneWidget);
@@ -170,8 +169,7 @@ void main() {
 
     testWidgets('another saved vet can be chosen for a pet', (tester) async {
       final h = await pumpHealth(tester);
-      await tester.tap(find.text('Soya').first);
-      await tester.pumpAndSettle();
+      await switchPet(tester, 'Soya');
 
       await tapVisible(tester, find.text("Add Soya's vet"));
       expect(find.text('Choose the regular vet'), findsOneWidget);

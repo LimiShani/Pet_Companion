@@ -14,8 +14,8 @@ import 'package:pet_companion/widgets/primary_button.dart';
 
 import '../helpers.dart';
 
-// The shared screens (sign-in, sign-up, Home, the bottom bar, the account
-// sheet) in Hebrew and right to left. An overflow anywhere fails the test
+// The shared screens (sign-in, sign-up, Home, the bottom bar, the You
+// page) in Hebrew and right to left. An overflow anywhere fails the test
 // by itself, and the test font makes Hebrew letters as wide as Latin ones,
 // so these layouts are checked as strictly as the English ones.
 
@@ -34,7 +34,8 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _openAccountSheet(WidgetTester tester) async {
+/// Opens the You page from the avatar of the header.
+Future<void> _openYou(WidgetTester tester) async {
   await tester.tap(find.text('A')); // the avatar of the demo user, Alex
   await _settle(tester);
 }
@@ -204,7 +205,6 @@ void main() {
 
       // The header and the hero.
       expect(find.bySemanticsLabel('PetLoop'), findsOneWidget);
-      expect(find.text('2 חיות'), findsOneWidget);
       expect(find.text('גזע'), findsOneWidget);
       expect(find.text('גיל'), findsOneWidget);
       expect(find.text('משקל'), findsOneWidget);
@@ -249,14 +249,14 @@ void main() {
       final tabs = [for (final label in ['בית', 'בריאות', 'קהילה', 'חנות']) _centerX(tester, find.text(label).last)];
       expect(tabs, orderedEquals([...tabs]..sort((a, b) => b.compareTo(a))));
 
-      // Top bar: menu on the right, the account on the left, the Emergency
-      // pill beside the account.
-      final menu = _centerX(tester, find.byTooltip('תפריט'));
-      // (Announced as "חשבון" followed by the initial.)
-      final account = _centerX(tester, find.bySemanticsLabel(RegExp('^חשבון')));
+      // Top bar: the brand on the right, the account avatar (which opens
+      // the You page) on the left, the Emergency pill beside the avatar.
+      final brand = _centerX(tester, find.bySemanticsLabel('PetLoop'));
+      final account = _centerX(tester, find.bySemanticsLabel(RegExp('^${_he.youTitle}')));
       final emergency = _centerX(tester, find.byType(EmergencyButton));
-      expect(menu, greaterThan(emergency));
+      expect(brand, greaterThan(emergency));
       expect(emergency, greaterThan(account));
+      expect(account, lessThan(60));
 
       // Hero: the picture on the right, the details to its left.
       final photo = _centerX(tester, find.byType(PetAvatar).last);
@@ -264,9 +264,8 @@ void main() {
       // In each pill the label is to the right of its value.
       expect(_centerX(tester, find.text('משקל')), greaterThan(_centerX(tester, find.text(_he.homeWeightKg('23')))));
 
-      // Pet pills start from the right; the count is at the left end.
+      // Pet pills start from the right.
       expect(_centerX(tester, find.text('Kelly').first), greaterThan(_centerX(tester, find.text('Soya'))));
-      expect(_centerX(tester, find.text('2 חיות')), lessThan(_centerX(tester, find.text('Soya'))));
 
       // The feeding progress bar fills from the right by itself.
       expect(_directionOf(tester, find.byType(LinearProgressIndicator)), TextDirection.rtl);
@@ -304,17 +303,17 @@ void main() {
       await _settle(tester);
       expect(find.text('האכלה'), findsOneWidget);
 
-      await _openAccountSheet(tester);
+      await _openYou(tester);
       expect(find.text('הגדרות'), findsOneWidget);
     });
   });
 
-  group('the account sheet in Hebrew', () {
+  group('the You page in Hebrew', () {
     testWidgets('shows the account, the way to Settings and sign-out', (tester) async {
       await pumpApp(tester, language: AppLanguage.hebrew);
       await signInAsDemo(tester);
       await _settle(tester);
-      await _openAccountSheet(tester);
+      await _openYou(tester);
 
       expect(find.text('Alex'), findsOneWidget);
       final email = find.text(FakeAuthRepository.demoEmail);
@@ -381,7 +380,7 @@ void main() {
   group('both languages fit', () {
     for (final size in const [Size(390, 844), Size(320, 568)]) {
       for (final textScale in const [1.0, 1.3]) {
-        testWidgetsInBothLanguages('sign-in, sign-up, Home and the account sheet at '
+        testWidgetsInBothLanguages('sign-in, sign-up, Home and the You page at '
             '${size.width.toInt()}x${size.height.toInt()}, text x$textScale', (tester, language) async {
           final l10n = lookupAppL10n(language == AppLanguage.hebrew ? hebrewLocale : englishLocale);
           await pumpApp(tester, language: language, size: size, textScale: textScale);
@@ -414,9 +413,10 @@ void main() {
           await _settle(tester);
           expect(find.text(l10n.homeFeeding), findsOneWidget);
 
-          await _openAccountSheet(tester);
+          await _openYou(tester);
           expect(find.text(l10n.settingsTitle), findsOneWidget);
-          await tester.ensureVisible(find.text(l10n.accountSignOut));
+          // Sign out is below the fold of a small phone: scrolled to.
+          await tester.ensureVisible(find.text(l10n.accountSignOut, skipOffstage: false));
           await tester.pumpAndSettle();
           expect(find.text(l10n.accountSignOut), findsOneWidget);
         });

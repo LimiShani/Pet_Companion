@@ -36,8 +36,7 @@ class StoreL10nEn extends StoreL10n {
   String get couldNotLoadDeals => 'Could not load deals';
 
   @override
-  String get couldNotRefresh =>
-      'Could not refresh the deals. Please try again.';
+  String get couldNotRefresh => 'Could not refresh the deals. Please try again.';
 
   @override
   String get dealIsLive => 'Thanks! Your deal is live.';
@@ -68,8 +67,7 @@ class StoreL10nEn extends StoreL10n {
   String get noDealsYetTitle => 'No deals yet';
 
   @override
-  String get noDealsYetMessage =>
-      'New bargains will show up here. Found one yourself? Share it with other pet owners.';
+  String get noDealsYetMessage => 'New bargains will show up here. Found one yourself? Share it with other pet owners.';
 
   @override
   String get noDealsFoundTitle => 'No deals found';
@@ -116,11 +114,7 @@ class StoreL10nEn extends StoreL10n {
   }
 
   @override
-  String noneForAnimalsMatchingInCategory(
-    String animals,
-    String query,
-    String category,
-  ) {
+  String noneForAnimalsMatchingInCategory(String animals, String query, String category) {
     return 'Nothing for $animals matches \"$query\" in $category.';
   }
 
@@ -314,8 +308,7 @@ class StoreL10nEn extends StoreL10n {
   String get dealGoneTitle => 'This deal is gone';
 
   @override
-  String get dealGoneMessage =>
-      'It may have been removed by the person who shared it.';
+  String get dealGoneMessage => 'It may have been removed by the person who shared it.';
 
   @override
   String get backToStore => 'Back to the Store';
@@ -364,8 +357,7 @@ class StoreL10nEn extends StoreL10n {
   String get endsLabel => 'Ends';
 
   @override
-  String get priceMayHaveChanged =>
-      'This price was checked a while ago. It may have changed.';
+  String get priceMayHaveChanged => 'This price was checked a while ago. It may have changed.';
 
   @override
   String dealEndedOn(String date) {
@@ -402,8 +394,7 @@ class StoreL10nEn extends StoreL10n {
   String get deleteDealTitle => 'Delete this deal?';
 
   @override
-  String get deleteDealMessage =>
-      'It will be removed from the Store for everyone.';
+  String get deleteDealMessage => 'It will be removed from the Store for everyone.';
 
   @override
   String get dealDeleted => 'Your deal was deleted.';
@@ -513,8 +504,7 @@ class StoreL10nEn extends StoreL10n {
   String get removedFromSaved => 'Removed from saved deals';
 
   @override
-  String get couldNotUpdateSaved =>
-      'Could not update your saved deals. Please try again.';
+  String get couldNotUpdateSaved => 'Could not update your saved deals. Please try again.';
 
   @override
   String get couldNotLoadSaved => 'Could not load your saved deals';
@@ -540,8 +530,7 @@ class StoreL10nEn extends StoreL10n {
   }
 
   @override
-  String get shareIntro =>
-      'Found a bargain? Tell other pet owners where to get it.';
+  String get shareIntro => 'Found a bargain? Tell other pet owners where to get it.';
 
   @override
   String get fieldTitle => 'Title';
@@ -559,8 +548,7 @@ class StoreL10nEn extends StoreL10n {
   String get fieldAnimals => 'For which animals';
 
   @override
-  String get fieldAnimalsHelp =>
-      'Starts on your selected pet. Pick more than one if it fits.';
+  String get fieldAnimalsHelp => 'Starts on your selected pet. Pick more than one if it fits.';
 
   @override
   String fieldPriceNow(String symbol) {
@@ -587,8 +575,7 @@ class StoreL10nEn extends StoreL10n {
   String get fieldPackageUnitHint => 'Unit';
 
   @override
-  String get fieldPackageHelp =>
-      'For a multi-pack enter the total, for example 12 × 85 g is 1020 g.';
+  String get fieldPackageHelp => 'For a multi-pack enter the total, for example 12 × 85 g is 1020 g.';
 
   @override
   String hintUnitPrice(String unitPrice) {
@@ -666,8 +653,7 @@ class StoreL10nEn extends StoreL10n {
   String get validCategoryRequired => 'Pick a category.';
 
   @override
-  String get validOriginalPriceRequired =>
-      'Enter the price before the discount.';
+  String get validOriginalPriceRequired => 'Enter the price before the discount.';
 
   @override
   String get validPriceRequired => 'Enter the price now.';
@@ -679,8 +665,7 @@ class StoreL10nEn extends StoreL10n {
   String get validPriceAboveZero => 'The price must be above zero.';
 
   @override
-  String get validPriceBelowOriginal =>
-      'The deal price must be below the original price.';
+  String get validPriceBelowOriginal => 'The deal price must be below the original price.';
 
   @override
   String get validLinkRequired => 'Paste the link to the offer.';
@@ -700,12 +685,10 @@ class StoreL10nEn extends StoreL10n {
   String get validDeliveryCostRequired => 'Enter the delivery cost.';
 
   @override
-  String get validDeliveryCostInvalid =>
-      'Enter a number above zero, or pick Free.';
+  String get validDeliveryCostInvalid => 'Enter a number above zero, or pick Free.';
 
   @override
-  String get errNetwork =>
-      'Cannot reach the server. Check your connection and try again.';
+  String get errNetwork => 'Cannot reach the server. Check your connection and try again.';
 
   @override
   String get errSignInToShare => 'Please sign in to share a deal.';
@@ -734,12 +717,10 @@ class StoreL10nEn extends StoreL10n {
   String get errOnlyDeleteOwn => 'You can only delete deals you shared.';
 
   @override
-  String get errNotAllowed =>
-      'You are not allowed to do that. Please sign in again.';
+  String get errNotAllowed => 'You are not allowed to do that. Please sign in again.';
 
   @override
-  String get errDetailsNotValid =>
-      'Some of the details are not valid. Please check them and try again.';
+  String get errDetailsNotValid => 'Some of the details are not valid. Please check them and try again.';
 
   @override
   String get errDealNoLongerAvailable => 'This deal is no longer available.';
@@ -748,6 +729,8 @@ class StoreL10nEn extends StoreL10n {
   String get errSessionEnded => 'Your session has ended. Please sign in again.';
 
   @override
-  String get errStoreNeedsUpdate =>
-      'The Store is being updated. Please try again later.';
+  String get errStoreNeedsUpdate => 'The Store is being updated. Please try again later.';
+
+  @override
+  String get kindMenuTooltip => 'Choose who to shop for';
 }

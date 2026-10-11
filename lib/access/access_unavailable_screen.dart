@@ -17,7 +17,7 @@ class AccessUnavailableScreen extends ConsumerWidget {
       backgroundColor: AppColors.cream,
       body: Column(
         children: [
-          CoralHeader(title: context.l10n.appName),
+          CoralHeader(title: context.l10n.appName, showAccount: false),
           Expanded(
             child: SingleChildScrollView(
               child: Column(

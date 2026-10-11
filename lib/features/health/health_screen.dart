@@ -11,7 +11,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
-import '../../widgets/pet_selector.dart';
+import '../../widgets/pet_switcher.dart';
 import '../../services/pet_records/data/health_models.dart';
 import 'emergency/emergency_button.dart';
 import 'insights/quick_log_sheet.dart';
@@ -87,28 +87,27 @@ class HealthScreen extends ConsumerWidget {
           children: [
             CoralHeader(
               title: l10n.tabTitle,
-              actions: [EmergencyButton(petId: pet.id)],
-              bottom: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const PetSelector(),
-                  const SizedBox(height: 12),
-                  CoralSegmentedControl(
-                    labels: [
-                      for (final s in visible)
-                        switch (s) {
-                          HealthSection.overview => l10n.sectionOverview,
-                          HealthSection.schedule => l10n.sectionSchedule,
-                          HealthSection.history => l10n.sectionHistory,
-                          HealthSection.insights => l10n.sectionInsights,
-                        },
-                    ],
-                    selectedIndex: visible.indexOf(section),
-                    onChanged: (index) => ref
-                        .read(healthSectionProvider.notifier)
-                        .show(visible[index]),
-                  ),
+              // The pet switcher and the Emergency pill fill the row; the
+              // avatar (the You page) is on every other tab.
+              showAccount: false,
+              actions: [
+                const PetSwitcher(),
+                const SizedBox(width: 8),
+                EmergencyButton(petId: pet.id),
+              ],
+              bottom: CoralSegmentedControl(
+                labels: [
+                  for (final s in visible)
+                    switch (s) {
+                      HealthSection.overview => l10n.sectionOverview,
+                      HealthSection.schedule => l10n.sectionSchedule,
+                      HealthSection.history => l10n.sectionHistory,
+                      HealthSection.insights => l10n.sectionInsights,
+                    },
                 ],
+                selectedIndex: visible.indexOf(section),
+                onChanged: (index) =>
+                    ref.read(healthSectionProvider.notifier).show(visible[index]),
               ),
             ),
             Expanded(

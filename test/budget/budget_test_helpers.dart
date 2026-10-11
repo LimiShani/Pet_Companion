@@ -9,6 +9,7 @@ import 'package:pet_companion/features/care/data/care_repository.dart';
 import 'package:pet_companion/features/care/state/care_providers.dart';
 import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/health/state/health_providers.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
@@ -93,9 +94,11 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 
 /// Opens the budget page from the side menu.
 Future<void> openBudgetFromMenu(WidgetTester tester) async {
-  await tester.tap(find.byTooltip(lookupAppL10n(const Locale('en')).homeMenu));
+  // The You page behind the header's avatar lists the budget.
+  await tester.tap(find.byTooltip(lookupAppL10n(const Locale('en')).youTitle));
   await settle(tester);
-  await tester.tap(find.byKey(const Key('side-menu-budget')));
+  await tester.ensureVisible(find.byKey(YouScreen.budgetKey));
+  await tester.tap(find.byKey(YouScreen.budgetKey));
   await settle(tester);
   expect(find.byKey(BudgetScreen.screenKey), findsOneWidget);
 }

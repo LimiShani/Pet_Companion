@@ -93,11 +93,9 @@ Future<ParksKit> openOutside(
   await tester.tap(
     find.descendant(
       of: find.byType(AppBottomNav),
-      matching: find.text(hebrew ? appHe.navCommunity : appEn.navCommunity),
+      matching: find.text(hebrew ? he.sectionOutside : en.sectionOutside),
     ),
   );
-  await tester.pumpAndSettle();
-  await tester.tap(find.text(hebrew ? he.sectionOutside : en.sectionOutside));
   await tester.pumpAndSettle();
   expect(find.byKey(OutsideSection.sectionKey), findsOneWidget);
   if (parks) {

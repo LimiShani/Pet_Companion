@@ -121,8 +121,7 @@ class PetsL10nHe extends PetsL10n {
   }
 
   @override
-  String get welcomeIntro =>
-      'הגיע הזמן להכיר את החיה הראשונה שלך. מספיק שם וסוג כדי להתחיל; השאר לוקח בערך דקה.';
+  String get welcomeIntro => 'הגיע הזמן להכיר את החיה הראשונה שלך. מספיק שם וסוג כדי להתחיל; השאר לוקח בערך דקה.';
 
   @override
   String get welcomeWhyPhoto => 'תמונה, או אייקון חמוד';
@@ -173,8 +172,7 @@ class PetsL10nHe extends PetsL10n {
   String get whoIsJoining => 'את מי מצרפים למשפחה?';
 
   @override
-  String get whoIsJoiningNote =>
-      'מספיק שם וסוג כדי להתחיל. כל השאר יכול לחכות.';
+  String get whoIsJoiningNote => 'מספיק שם וסוג כדי להתחיל. כל השאר יכול לחכות.';
 
   @override
   String get addPhotoOrIcon => 'הוספת תמונה או בחירת אייקון';
@@ -202,8 +200,7 @@ class PetsL10nHe extends PetsL10n {
   }
 
   @override
-  String get savedOnContinueNoName =>
-      'הפרטים של החיה שלך נשמרים בלחיצה על ״המשך״. אפשר לשנות הכול אחר כך.';
+  String get savedOnContinueNoName => 'הפרטים של החיה שלך נשמרים בלחיצה על ״המשך״. אפשר לשנות הכול אחר כך.';
 
   @override
   String pictureNotSaved(String name) {
@@ -227,8 +224,7 @@ class PetsL10nHe extends PetsL10n {
   }
 
   @override
-  String get vetStepNote =>
-      'כשהטלפון של הווטרינר שמור, חיוג או הודעה במקרה חירום נמצאים במרחק שתי לחיצות.';
+  String get vetStepNote => 'כשהטלפון של הווטרינר שמור, חיוג או הודעה במקרה חירום נמצאים במרחק שתי לחיצות.';
 
   @override
   String get regularVet => 'וטרינר קבוע';
@@ -248,8 +244,7 @@ class PetsL10nHe extends PetsL10n {
   String get whatAVetAsksFirst => 'מה שווטרינר שואל קודם';
 
   @override
-  String get healthStepNote =>
-      'אם אין מה לרשום, אפשר לסמן ״לא ידוע על כאלה״. גם זו תשובה.';
+  String get healthStepNote => 'אם אין מה לרשום, אפשר לסמן ״לא ידוע על כאלה״. גם זו תשובה.';
 
   @override
   String get finish => 'סיום';
@@ -533,8 +528,7 @@ class PetsL10nHe extends PetsL10n {
   String get unitMonths => 'חודשים';
 
   @override
-  String get ageGuessNote =>
-      'גם ניחוש מספיק. יוצג כ״בערך 3 שנים״, והגיל ימשיך להתעדכן.';
+  String get ageGuessNote => 'גם ניחוש מספיק. יוצג כ״בערך 3 שנים״, והגיל ימשיך להתעדכן.';
 
   @override
   String get birthday => 'תאריך לידה';
@@ -774,8 +768,7 @@ class PetsL10nHe extends PetsL10n {
   String get archived => 'בארכיון';
 
   @override
-  String get archivedNote =>
-      'חיות בארכיון שומרות על כל הרשומות שלהן ומוסתרות משאר האפליקציה.';
+  String get archivedNote => 'חיות בארכיון שומרות על כל הרשומות שלהן ומוסתרות משאר האפליקציה.';
 
   @override
   String archivedRow(String kind, String date) {
@@ -788,15 +781,13 @@ class PetsL10nHe extends PetsL10n {
   }
 
   @override
-  String get errNotYours =>
-      'אפשר לשנות רק את החיות שלך. כדאי להיכנס שוב לחשבון.';
+  String get errNotYours => 'אפשר לשנות רק את החיות שלך. כדאי להיכנס שוב לחשבון.';
 
   @override
   String get errInvalid => 'חלק מהפרטים לא תקינים. כדאי לבדוק ולנסות שוב.';
 
   @override
-  String get errDatabaseOutdated =>
-      'מסד הנתונים עדיין לא מעודכן לחיות (מיגרציה 0005 עוד לא הורצה).';
+  String get errDatabaseOutdated => 'מסד הנתונים עדיין לא מעודכן לחיות (מיגרציה 0005 עוד לא הורצה).';
 
   @override
   String get errSignInAgain => 'צריך להיכנס שוב לחשבון.';
@@ -826,27 +817,39 @@ class PetsL10nHe extends PetsL10n {
   String get errPhotoUnsupported => 'סוג התמונה הזה לא נתמך.';
 
   @override
-  String get errPhotoUnsupportedChooseAnother =>
-      'סוג התמונה הזה לא נתמך. אפשר לבחור תמונה אחרת.';
+  String get errPhotoUnsupportedChooseAnother => 'סוג התמונה הזה לא נתמך. אפשר לבחור תמונה אחרת.';
 
   @override
   String get errPhotoGone => 'התמונה הזאת כבר לא זמינה.';
 
   @override
-  String get errOffline =>
-      'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
+  String get errOffline => 'אין חיבור לשרת. כדאי לבדוק את החיבור לאינטרנט ולנסות שוב.';
 
   @override
-  String get errCameraNotAllowed =>
-      'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.';
+  String get errCameraNotAllowed => 'אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.';
 
   @override
-  String get errPhotosNotAllowed =>
-      'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.';
+  String get errPhotosNotAllowed => 'אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.';
 
   @override
   String get errCamera => 'לא הצלחנו לפתוח את המצלמה.';
 
   @override
   String get errPhotos => 'לא הצלחנו לפתוח את התמונות שלך.';
+
+  @override
+  String get switcherTitle => 'איזו חיה?';
+
+  @override
+  String switcherOpenProfile(String name) {
+    return 'פתיחת הפרופיל של \u2068$name\u2069';
+  }
+
+  @override
+  String get switcherAddPet => 'הוספת חיה';
+
+  @override
+  String switcherSemantics(String name) {
+    return 'החלפת חיה: \u2068$name\u2069';
+  }
 }

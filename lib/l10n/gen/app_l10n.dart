@@ -617,6 +617,42 @@ abstract class AppL10n {
   /// **'Change the language: {language}'**
   String languageSwitchTo(String language);
 
+  /// The page behind the avatar in every header: the account, My pets, Budget, Settings, Sign out. Also the avatar's label.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get youTitle;
+
+  /// No description provided for @youCommunitySafetySummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Rules, blocked members'**
+  String get youCommunitySafetySummary;
+
+  /// No description provided for @youAdminTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin tools'**
+  String get youAdminTools;
+
+  /// No description provided for @youAdminToolsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Feature access, directory review, park suggestions'**
+  String get youAdminToolsSummary;
+
+  /// No description provided for @aboutTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About PetLoop'**
+  String get aboutTitle;
+
+  /// No description provided for @aboutVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String aboutVersion(String version);
+
   /// No description provided for @menuMyPets.
   ///
   /// In en, this message translates to:
@@ -701,12 +737,6 @@ abstract class AppL10n {
   /// **'These settings are saved on this phone.'**
   String get settingsSavedNote;
 
-  /// No description provided for @settingsAbout.
-  ///
-  /// In en, this message translates to:
-  /// **'About PetLoop'**
-  String get settingsAbout;
-
   /// No description provided for @legalTerms.
   ///
   /// In en, this message translates to:
@@ -730,18 +760,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'The page could not be opened. Try again later.'**
   String get legalOpenFailed;
-
-  /// No description provided for @homeMenu.
-  ///
-  /// In en, this message translates to:
-  /// **'Menu'**
-  String get homeMenu;
-
-  /// No description provided for @homeAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Account'**
-  String get homeAccount;
 
   /// No description provided for @homePetCount.
   ///

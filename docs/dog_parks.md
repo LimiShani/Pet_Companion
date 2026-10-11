@@ -193,7 +193,7 @@ SQL tests: `supabase/tests/dog_parks_test.sql`, run by
 
 - **Where:** Community has a fourth section, **Outside / בחוץ** (Feed ·
   Chat · Outside · Guides), filled by the `outdoors` module through the
-  `community-outside` slot. Inside it, a **Partners | Parks** switch (like
+  Outside tab (`/outside`, a `FeatureTab` of the outdoors module since the streamline of Oct 2026; before that a `community-outside` slot inside Community). In its header, a **Partners | Parks** switch (like
   the Store's Deals | My basket); Partners shows first once the meetups
   module fills it ([meetups.md](meetups.md)), Parks otherwise.
 - **Where to look:** **Near me** (the phone is asked for one fix only on
@@ -243,7 +243,7 @@ SQL tests: `supabase/tests/dog_parks_test.sql`, run by
 | `lib/services/outdoors/data/parks_repository.dart` | the interface; `fake_parks_repository.dart` (made-up parks around Ra'anana, Kfar Saba, Tel Aviv-Yafo, Jerusalem; one pending suggestion), `supabase_parks_repository.dart` |
 | `lib/services/outdoors/data/park_launcher.dart` | Waze / Google Maps links |
 | `lib/services/outdoors/state/parks_providers.dart` | repository, area and filters (`ParksController`), My parks, the listing, the park, the review queue |
-| `lib/features/outdoors/module.dart` | slots `community-outside`, `about-credits`; actions `park`, `pick-park`, `suggest-park`, `parks-review` |
+| `lib/features/outdoors/module.dart` | the Outside tab (`OutsideScreen`), slot `about-credits`; actions `park`, `pick-park`, `suggest-park`, `parks-review` |
 | `lib/features/outdoors/outdoors.dart` | the public import for other features |
 | `lib/features/outdoors/outside_section.dart` | Partners \| Parks, `OutdoorsKeeper` |
 | `lib/features/outdoors/parks/` | list, area picker, park page, update sheet, suggestion form, park picker |
@@ -309,7 +309,7 @@ Everything below is in `package:pet_companion/features/outdoors/outdoors.dart`:
   the "coming soon" card. Default the switch with
   `ref.read(outsideViewProvider.notifier).show(OutsideView.partners)` if
   wanted. When meetups has its own capability, widen the
-  `community-outside` slot's capability in `outdoors/module.dart` to
+  Outside tab's capability (`OutsideScreen.capability`) in `outdoors/module.dart` to
   `community.parks.view|community.meetups.view`.
 - **On the park page:** two empty slots, `ParkPageSlots.meetups`
   (`park-meetups`: "Meetups at this park", under the details) and

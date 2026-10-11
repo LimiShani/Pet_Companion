@@ -79,7 +79,7 @@ void main() {
 
     testWidgets('a pet with nothing logged is invited to the Quick log', (tester) async {
       await openInsights(tester);
-      await selectPet(tester, 'Soya');
+      await switchPet(tester, 'Soya');
 
       expect(find.text('Nothing logged yet'), findsOneWidget);
       await tapVisible(tester, find.text('Open the Quick log'));
@@ -279,7 +279,7 @@ void main() {
 
     testWidgets('a pet with almost nothing still gets an honest summary', (tester) async {
       final h = await pumpHealth(tester);
-      await selectPet(tester, 'Soya');
+      await switchPet(tester, 'Soya');
       await tapVisible(tester, find.byKey(const Key('overview-share')));
 
       final report = h.pdf.last;

@@ -321,5 +321,14 @@
   "errCameraNotAllowed": "Cannot open the camera. Check that PetLoop is allowed to use it.",
   "errPhotosNotAllowed": "Cannot open your photos. Check that PetLoop is allowed to see them.",
   "errCamera": "Could not open the camera.",
-  "errPhotos": "Could not open your photos."
+  "errPhotos": "Could not open your photos.",
+
+  "switcherTitle": "Which pet?",
+  "@switcherTitle": {"description": "Title of the sheet opened by the pet chip in a coral header (Health): switches the selected pet."},
+  "switcherOpenProfile": "Open {name}'s profile",
+  "@switcherOpenProfile": {"description": "Row at the end of the pet switcher sheet.", "placeholders": {"name": {"type": "String"}}},
+  "switcherAddPet": "Add a pet",
+  "@switcherAddPet": {"description": "Last row of the pet switcher sheet."},
+  "switcherSemantics": "Switch pet: {name}",
+  "@switcherSemantics": {"description": "Screen-reader label of the chip that shows the selected pet and opens the switcher sheet.", "placeholders": {"name": {"type": "String"}}}
 }

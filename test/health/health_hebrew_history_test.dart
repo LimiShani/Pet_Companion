@@ -203,7 +203,7 @@ void main() {
 
       testWidgets('a pet without records, and the documents page of the emergency kit', (tester) async {
         await openHistory(tester, size: size);
-        await selectPet(tester, 'Soya');
+        await switchPet(tester, 'Soya');
         expect(find.text('עדיין אין רשומות'), findsOneWidget);
         expect(find.text(he.historyEmptyNote('Soya')), findsOneWidget);
         await tapVisible(tester, find.text(he.addARecord));

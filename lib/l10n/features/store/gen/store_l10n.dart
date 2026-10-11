@@ -62,8 +62,7 @@ import 'store_l10n_he.dart';
 /// be consistent with the languages listed in the StoreL10n.supportedLocales
 /// property.
 abstract class StoreL10n {
-  StoreL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  StoreL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -83,18 +82,17 @@ abstract class StoreL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// Title of the Store tab's header.
@@ -127,7 +125,7 @@ abstract class StoreL10n {
   /// **'Share a deal'**
   String get shareADeal;
 
-  /// The pill after the pet pills: shows the deals for every kind of animal.
+  /// The choice in the Store's animals menu (and the chip's label once chosen): shows the deals for every kind of animal.
   ///
   /// In en, this message translates to:
   /// **'All animals'**
@@ -251,11 +249,7 @@ abstract class StoreL10n {
   ///
   /// In en, this message translates to:
   /// **'Nothing for {animals} matches \"{query}\" in {category}.'**
-  String noneForAnimalsMatchingInCategory(
-    String animals,
-    String query,
-    String category,
-  );
+  String noneForAnimalsMatchingInCategory(String animals, String query, String category);
 
   /// Second sentence of the empty list of one pet: what the other animals have with the same search and category.
   ///
@@ -1240,6 +1234,12 @@ abstract class StoreL10n {
   /// In en, this message translates to:
   /// **'The Store is being updated. Please try again later.'**
   String get errStoreNeedsUpdate;
+
+  /// Tooltip of the chip at the start of the category row ('For dogs', 'All animals') that opens the menu of kinds of animal.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose who to shop for'**
+  String get kindMenuTooltip;
 }
 
 class _StoreL10nDelegate extends LocalizationsDelegate<StoreL10n> {
@@ -1251,26 +1251,25 @@ class _StoreL10nDelegate extends LocalizationsDelegate<StoreL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_StoreL10nDelegate old) => false;
 }
 
 StoreL10n lookupStoreL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return StoreL10nEn();
-    case 'he':
-      return StoreL10nHe();
+    case 'en': return StoreL10nEn();
+    case 'he': return StoreL10nHe();
   }
 
   throw FlutterError(
     'StoreL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

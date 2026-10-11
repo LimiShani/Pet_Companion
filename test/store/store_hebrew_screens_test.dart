@@ -83,7 +83,7 @@ void main() {
       // The tab's name: once in the header, once in the bottom bar.
       expect(find.text('חנות'), findsNWidgets(2));
       expect(find.text('חיפוש מבצעים'), findsOneWidget);
-      expect(find.text('כל החיות'), findsOneWidget);
+      expect(_plain(animalsChipLabel(tester)), 'עבור כלבים');
       expect(find.widgetWithText(ChoiceChip, 'הכול'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'מזון'), findsOneWidget);
       expect(_reads('23 מבצעים עבור כלבים'), findsOneWidget);
@@ -91,13 +91,13 @@ void main() {
       expect(find.text('שיתוף מבצע'), findsOneWidget);
 
       // Nothing of the English screen is left.
-      for (final english in ['Search deals', 'All animals', 'Food', 'Biggest discount', 'Share a deal']) {
+      for (final english in ['Search deals', 'For dogs', 'Food', 'Biggest discount', 'Share a deal']) {
         expect(find.text(english), findsNothing, reason: english);
       }
       expect(find.textContaining('deals for dogs'), findsNothing);
 
-      // The pets keep their names; the row starts at the right.
-      expect(_centerX(tester, find.text('Kelly')), greaterThan(_centerX(tester, find.text('Soya'))));
+      // The animals chip leads the category row, so it is at the right.
+      expect(_centerX(tester, animalsChip), greaterThan(_centerX(tester, find.widgetWithText(ChoiceChip, 'הכול'))));
       // The count is at the right end of its row.
       expect(tester.getTopRight(find.byKey(const Key('store-deal-count'))).dx, greaterThan(350));
     });
@@ -172,7 +172,7 @@ void main() {
       expect(_reads('שני מבצעים עבור כלבים'), findsOneWidget);
 
       // For every animal the count stands alone.
-      await tapPetPill(tester, 'כל החיות');
+      await pickAnimals(tester, 'כל החיות');
       expect(find.text('שני מבצעים'), findsOneWidget);
       await _search(tester, 'rope');
       expect(find.text('מבצע אחד'), findsOneWidget);
@@ -216,7 +216,7 @@ void main() {
       expect(shownDealIds(tester), ['d-waste-bags-300', 'd-odour-remover-spray']);
 
       await _pickCategory(tester, 'הכול');
-      await tapPetPill(tester, 'כל החיות');
+      await pickAnimals(tester, 'כל החיות');
       await _search(tester, 'חול');
       expect(find.text('6 מבצעים'), findsOneWidget);
       // The English name of the category no longer matches.
@@ -226,7 +226,7 @@ void main() {
 
     testWidgets('"All animals" tags the deals in Hebrew', (tester) async {
       await _pumpHebrewStore(tester);
-      await tapPetPill(tester, 'כל החיות');
+      await pickAnimals(tester, 'כל החיות');
 
       expect(find.text('36 מבצעים'), findsOneWidget);
       expect(_on(find.byKey(const ValueKey('animals-d-rope-tug-toy')), find.text('כלבים')), findsOneWidget);
@@ -236,7 +236,7 @@ void main() {
 
     testWidgets('nothing for this pet: the message and the way out are in Hebrew', (tester) async {
       await _pumpHebrewStore(tester, extraPets: [const Pet(id: 'tweety', name: 'Tweety', species: PetSpecies.bird)]);
-      await tapPetPill(tester, 'Tweety');
+      await pickAnimals(tester, 'ציפורים');
       expect(_reads('4 מבצעים עבור ציפורים'), findsOneWidget);
 
       await _pickCategory(tester, 'צעצועים');
@@ -280,7 +280,7 @@ void main() {
   group('the deal page in Hebrew', () {
     Future<void> openLitter(WidgetTester tester) async {
       await _pumpHebrewStore(tester);
-      await tapPetPill(tester, 'כל החיות');
+      await pickAnimals(tester, 'כל החיות');
       await _search(tester, 'clumping');
       await openDeal(tester, 'd-clumping-litter-10kg');
     }
@@ -682,12 +682,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Every animal, with the tags on the cards.
-      await tapPetPill(tester, 'כל החיות');
+      await pickAnimals(tester, 'כל החיות');
       // Back to the top of the grid, where the count is.
       tester.state<ScrollableState>(gridScrollable).position.jumpTo(0);
       await tester.pumpAndSettle();
       expect(find.text('36 מבצעים'), findsOneWidget);
-      await tapPetPill(tester, 'Kelly');
+      await pickAnimals(tester, 'כלבים');
 
       await tester.tap(find.byTooltip('מבצעים ששמרתי'));
       await tester.pumpAndSettle();

@@ -181,17 +181,17 @@ void main() {
     });
   });
 
-  testWidgets('Settings credits OpenStreetMap', (tester) async {
+  testWidgets('About PetLoop credits OpenStreetMap', (tester) async {
     await pumpApp(tester, size: tall);
     await signInAsDemo(tester);
     final context = tester.element(find.byType(AppBottomNav));
-    openSettings(context);
+    openAbout(context);
     await tester.pumpAndSettle();
     expect(find.byKey(OsmAboutCredit.creditKey), findsOneWidget);
   });
 
   group('Hebrew at 320 px', () {
-    testWidgets('the four Community sections fit and the parks read right to left', (tester) async {
+    testWidgets('the Outside tab fits and the parks read right to left', (tester) async {
       await openOutside(
         tester,
         language: AppLanguage.hebrew,
@@ -199,7 +199,8 @@ void main() {
         kit: ParksKit(favorites: {'demo-raanana-park'}),
       );
       expect(tester.takeException(), isNull);
-      expect(find.text(he.sectionOutside), findsOneWidget);
+      // The tab's title and its label in the bottom bar.
+      expect(find.text(he.sectionOutside), findsNWidgets(2));
       expect(find.text(he.outsideParks), findsOneWidget);
       expect(find.text(he.outsidePartners), findsOneWidget);
       expect(Directionality.of(tester.element(find.byKey(ParksView.listKey))), TextDirection.rtl);

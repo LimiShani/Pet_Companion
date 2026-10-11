@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/findvet/findvet.dart';
-import 'package:pet_companion/features/settings/side_menu.dart';
+import 'package:pet_companion/features/settings/admin_tools_screen.dart';
 
 import '../helpers.dart';
 import 'findvet_test_helpers.dart';
@@ -20,10 +20,7 @@ void main() {
   Future<void> openEmergencyResults(WidgetTester tester, FindVetKit kit) async {
     await pumpApp(tester, overrides: kit.overrides, size: tallPhone);
     await signInAsDemo(tester);
-    await tester.tap(find.byTooltip(appEn.homeMenu));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(AppSideMenu.findVetKey));
-    await tester.pumpAndSettle();
+    await openFindVetFromHealth(tester);
     await tester.tap(find.byKey(FindVetScreen.emergencyChoiceKey));
     await tester.pumpAndSettle();
     await pickPlace(tester, 'Rehov', 'Rehovot');
@@ -108,9 +105,8 @@ void main() {
       );
     await pumpApp(tester, overrides: kit.overrides, size: tallPhone);
     await signInAsDemo(tester);
-    await tester.tap(find.byTooltip(appEn.homeMenu));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(AppSideMenu.directoryReviewKey));
+    await openAdminToolsFromHome(tester);
+    await tester.tap(find.byKey(AdminToolsScreen.directoryReviewKey));
     await tester.pumpAndSettle();
 
     expect(find.text(en.adminKindLinkCandidate), findsOneWidget);
@@ -125,9 +121,8 @@ void main() {
     final kit = FindVetKit(admin: true);
     await pumpApp(tester, overrides: kit.overrides, size: tallPhone);
     await signInAsDemo(tester);
-    await tester.tap(find.byTooltip(appEn.homeMenu));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(AppSideMenu.directoryReviewKey));
+    await openAdminToolsFromHome(tester);
+    await tester.tap(find.byKey(AdminToolsScreen.directoryReviewKey));
     await tester.pumpAndSettle();
     expect(find.text(en.adminLink), findsNothing);
   });

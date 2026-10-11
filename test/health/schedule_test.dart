@@ -89,7 +89,7 @@ void main() {
 
     testWidgets('an empty schedule offers to add something', (tester) async {
       await openSchedule(tester);
-      await selectPet(tester, 'Soya');
+      await switchPet(tester, 'Soya');
 
       expect(find.text('Nothing scheduled yet'), findsOneWidget);
       await tapVisible(tester, find.text('Add to the schedule'));

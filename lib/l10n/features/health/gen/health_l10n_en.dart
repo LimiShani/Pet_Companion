@@ -32,8 +32,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get safetyLine =>
-      'PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
+  String get safetyLine => 'PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
 
   @override
   String clearField(String label) {
@@ -92,8 +91,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get couldNotOpenShareSheet =>
-      'Could not open the share sheet on this device.';
+  String get couldNotOpenShareSheet => 'Could not open the share sheet on this device.';
 
   @override
   String fileSizeMb(String value) {
@@ -191,30 +189,25 @@ class HealthL10nEn extends HealthL10n {
   String get loadFailedPhoto => 'Could not load the photo';
 
   @override
-  String get errOffline =>
-      'Could not reach the server. Check your connection and try again.';
+  String get errOffline => 'Could not reach the server. Check your connection and try again.';
 
   @override
   String get errSessionEnded => 'Your session has ended. Please sign in again.';
 
   @override
-  String get errNotAllowed =>
-      'You are not allowed to do that. Please sign in again.';
+  String get errNotAllowed => 'You are not allowed to do that. Please sign in again.';
 
   @override
-  String get errInvalid =>
-      'Some of the details are not valid. Please check them and try again.';
+  String get errInvalid => 'Some of the details are not valid. Please check them and try again.';
 
   @override
-  String get errPetNotStored =>
-      'This pet is not saved to your account yet, so nothing can be stored for it.';
+  String get errPetNotStored => 'This pet is not saved to your account yet, so nothing can be stored for it.';
 
   @override
   String get errPetGone => 'That pet is no longer in your list.';
 
   @override
-  String get errItemGone =>
-      'That item no longer exists. Go back and open it again.';
+  String get errItemGone => 'That item no longer exists. Go back and open it again.';
 
   @override
   String get errRecordGone => 'That record no longer exists.';
@@ -232,22 +225,19 @@ class HealthL10nEn extends HealthL10n {
   String get errEntryGone => 'That entry no longer exists.';
 
   @override
-  String get errFileType =>
-      'Only photos (JPEG, PNG, WebP) and PDF files can be attached.';
+  String get errFileType => 'Only photos (JPEG, PNG, WebP) and PDF files can be attached.';
 
   @override
   String get errFileEmpty => 'That file is empty.';
 
   @override
-  String get errFileTooLarge =>
-      'That file is larger than 5 MB. Please choose a smaller one.';
+  String get errFileTooLarge => 'That file is larger than 5 MB. Please choose a smaller one.';
 
   @override
   String get errFileGone => 'That file is no longer available.';
 
   @override
-  String get errFileNotStored =>
-      'The file could not be stored. Please try again.';
+  String get errFileNotStored => 'The file could not be stored. Please try again.';
 
   @override
   String get errFileUnreadable => 'Could not read that file.';
@@ -279,8 +269,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get emergencyContactsNoPhone =>
-      'Emergency contacts. No phone number saved yet';
+  String get emergencyContactsNoPhone => 'Emergency contacts. No phone number saved yet';
 
   @override
   String emergencyContactsForNoPhone(String name) {
@@ -293,8 +282,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get emergencySheetSubtitle =>
-      'Call or message. You make the call or send the message yourself.';
+  String get emergencySheetSubtitle => 'Call or message. You make the call or send the message yourself.';
 
   @override
   String openEmergencyCardOf(String name) {
@@ -319,13 +307,15 @@ class HealthL10nEn extends HealthL10n {
   String get vetPromptNote => 'Phone and address, ready for an emergency';
 
   @override
+  String get overviewFindVet => 'Find a vet nearby';
+
+  @override
   String noVetSavedFor(String name) {
     return 'No vet saved for $name yet';
   }
 
   @override
-  String get noVetSavedNote =>
-      'Add the vet\'s phone now, so a call or a message is two taps away when you need it.';
+  String get noVetSavedNote => 'Add the vet\'s phone now, so a call or a message is two taps away when you need it.';
 
   @override
   String get useSavedVet => 'Use a vet you already saved';
@@ -425,8 +415,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get messageDetailsNotLoadedNoPet =>
-      'The pet\'s details could not be loaded, so only your own words will be sent.';
+  String get messageDetailsNotLoadedNoPet => 'The pet\'s details could not be loaded, so only your own words will be sent.';
 
   @override
   String get removeThisLine => 'Remove this line';
@@ -441,8 +430,7 @@ class HealthL10nEn extends HealthL10n {
   String get openInWhatsApp => 'Open in WhatsApp';
 
   @override
-  String get messageFinePrint =>
-      'Nothing is sent until you press send in that app. In an emergency, calling is faster.';
+  String get messageFinePrint => 'Nothing is sent until you press send in that app. In an emergency, calling is faster.';
 
   @override
   String get couldNotOpenWhatsApp => 'Could not open WhatsApp';
@@ -481,8 +469,7 @@ class HealthL10nEn extends HealthL10n {
   String get allergiesAndConditions => 'Allergies and conditions';
 
   @override
-  String get nothingSavedTapProfile =>
-      'Nothing saved yet. Tap to fill in the health profile.';
+  String get nothingSavedTapProfile => 'Nothing saved yet. Tap to fill in the health profile.';
 
   @override
   String petsVets(String name) {
@@ -493,8 +480,7 @@ class HealthL10nEn extends HealthL10n {
   String get editHealthProfile => 'Edit health profile';
 
   @override
-  String get emergencyCardFinePrint =>
-      'You make the call or send the message yourself. PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
+  String get emergencyCardFinePrint => 'You make the call or send the message yourself. PetLoop never contacts anyone on its own, and it does not replace veterinary advice.';
 
   @override
   String get emergencyKit => 'Emergency kit';
@@ -518,8 +504,7 @@ class HealthL10nEn extends HealthL10n {
   String get kitWhatToHaveReady => 'What to have ready';
 
   @override
-  String get kitSummaryNote =>
-      'For sirens, a quick move to the protected room, or leaving home in a hurry.';
+  String get kitSummaryNote => 'For sirens, a quick move to the protected room, or leaving home in a hurry.';
 
   @override
   String get kitCarrierDog => 'Carrier or crate, lead and harness';
@@ -549,12 +534,10 @@ class HealthL10nEn extends HealthL10n {
   String get kitDocuments => 'Documents';
 
   @override
-  String get kitDocumentsNoteDog =>
-      'Vaccination booklet and licence, on paper or as photos.';
+  String get kitDocumentsNoteDog => 'Vaccination booklet and licence, on paper or as photos.';
 
   @override
-  String get kitDocumentsNote =>
-      'Vaccination booklet and vet papers, on paper or as photos.';
+  String get kitDocumentsNote => 'Vaccination booklet and vet papers, on paper or as photos.';
 
   @override
   String get kitMicrochip => 'Microchip details up to date';
@@ -565,8 +548,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get kitMicrochipNotChipped =>
-      'Marked as not chipped in the health profile.';
+  String get kitMicrochipNotChipped => 'Marked as not chipped in the health profile.';
 
   @override
   String get kitMicrochipNone => 'No microchip number saved yet.';
@@ -610,8 +592,7 @@ class HealthL10nEn extends HealthL10n {
   String get kitOurPlan => 'Our plan (optional)';
 
   @override
-  String get kitFinePrint =>
-      'Your own list, not official guidance. During an emergency follow the Home Front Command\'s instructions.';
+  String get kitFinePrint => 'Your own list, not official guidance. During an emergency follow the Home Front Command\'s instructions.';
 
   @override
   String petsHealthProfile(String name) {
@@ -642,8 +623,7 @@ class HealthL10nEn extends HealthL10n {
   String get validKeepShorter => 'Please keep this shorter.';
 
   @override
-  String get emergencyContactHeading =>
-      'Emergency contact (someone who can help)';
+  String get emergencyContactHeading => 'Emergency contact (someone who can help)';
 
   @override
   String get nameOptional => 'Name (optional)';
@@ -661,8 +641,7 @@ class HealthL10nEn extends HealthL10n {
   String get saveProfile => 'Save profile';
 
   @override
-  String get profileFinePrint =>
-      'Everything here is optional. It fills the Emergency card and the message to the vet.';
+  String get profileFinePrint => 'Everything here is optional. It fills the Emergency card and the message to the vet.';
 
   @override
   String get vet => 'Vet';
@@ -736,8 +715,7 @@ class HealthL10nEn extends HealthL10n {
   String get saveVet => 'Save vet';
 
   @override
-  String get vetFormFinePrint =>
-      'Saved once for your account, so your other pets can use the same vet.';
+  String get vetFormFinePrint => 'Saved once for your account, so your other pets can use the same vet.';
 
   @override
   String get chooseRegularVet => 'Choose the regular vet';
@@ -746,8 +724,7 @@ class HealthL10nEn extends HealthL10n {
   String get chooseEmergencyVet => 'Choose the emergency vet';
 
   @override
-  String get vetPickerNote =>
-      'Vets you saved before can be used for any of your pets.';
+  String get vetPickerNote => 'Vets you saved before can be used for any of your pets.';
 
   @override
   String removeVetFromPet(String name) {
@@ -767,12 +744,10 @@ class HealthL10nEn extends HealthL10n {
   String get addEmergencyVet => 'Add an emergency vet';
 
   @override
-  String get emergencyVetPromptNote =>
-      'A 24-hour clinic for nights and weekends';
+  String get emergencyVetPromptNote => 'A 24-hour clinic for nights and weekends';
 
   @override
-  String get vetsFinePrint =>
-      'Vets are saved once for your account, so your other pets can use the same ones.';
+  String get vetsFinePrint => 'Vets are saved once for your account, so your other pets can use the same ones.';
 
   @override
   String editNamed(String name) {
@@ -816,12 +791,10 @@ class HealthL10nEn extends HealthL10n {
   String get lostArea => 'Last seen: area';
 
   @override
-  String get lostAreaExact =>
-      'This looks like an exact address. A neighbourhood or a street corner is safer.';
+  String get lostAreaExact => 'This looks like an exact address. A neighbourhood or a street corner is safer.';
 
   @override
-  String get lostAreaHint =>
-      'A neighbourhood or a street corner is enough. Not your home address.';
+  String get lostAreaHint => 'A neighbourhood or a street corner is enough. Not your home address.';
 
   @override
   String get lostWhen => 'Last seen: when';
@@ -853,8 +826,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get lostAddPhoneFirst =>
-      'Add your phone number, then confirm it here.';
+  String get lostAddPhoneFirst => 'Add your phone number, then confirm it here.';
 
   @override
   String get shareAsImage => 'Share as image';
@@ -871,8 +843,7 @@ class HealthL10nEn extends HealthL10n {
   String get lostGoodNews => 'Good news. The card is put away.';
 
   @override
-  String get lostFinePrint =>
-      'Nothing is posted by the app. You choose where the card goes. The microchip number and your vet are never on it.';
+  String get lostFinePrint => 'Nothing is posted by the app. You choose where the card goes. The microchip number and your vet are never on it.';
 
   @override
   String lostCardHeading(String name) {
@@ -991,8 +962,7 @@ class HealthL10nEn extends HealthL10n {
   String get startDocument => 'Add a document you already have';
 
   @override
-  String get startDocumentNote =>
-      'A photo or PDF of the vaccination booklet or a vet letter';
+  String get startDocumentNote => 'A photo or PDF of the vaccination booklet or a vet letter';
 
   @override
   String get startAppointment => 'Enter an upcoming appointment';
@@ -1019,8 +989,7 @@ class HealthL10nEn extends HealthL10n {
   String get medicine => 'Medicine';
 
   @override
-  String get addMedicineNote =>
-      'The vet\'s instructions and the reminder times';
+  String get addMedicineNote => 'The vet\'s instructions and the reminder times';
 
   @override
   String get routine => 'Routine';
@@ -1266,16 +1235,13 @@ class HealthL10nEn extends HealthL10n {
   String get addATime => 'Add a time';
 
   @override
-  String get medicineNoTimesNote =>
-      'No reminder times: a medicine given only when needed.';
+  String get medicineNoTimesNote => 'No reminder times: a medicine given only when needed.';
 
   @override
-  String get medicineReminderNote =>
-      'A reminder nobody answers waits under Needs review. It is never counted as missed.';
+  String get medicineReminderNote => 'A reminder nobody answers waits under Needs review. It is never counted as missed.';
 
   @override
-  String get validLastBeforeFirst =>
-      'The last day should not be before the first day.';
+  String get validLastBeforeFirst => 'The last day should not be before the first day.';
 
   @override
   String get validReminderDays => 'Choose at least one day for the reminders.';
@@ -1284,8 +1250,7 @@ class HealthL10nEn extends HealthL10n {
   String get saveMedicine => 'Save medicine';
 
   @override
-  String get medicineFinePrint =>
-      'The app stores what you enter. It never suggests a dose.';
+  String get medicineFinePrint => 'The app stores what you enter. It never suggests a dose.';
 
   @override
   String get doseLog => 'Dose log';
@@ -1352,8 +1317,7 @@ class HealthL10nEn extends HealthL10n {
   String get doseNoteHint => 'For example: hidden in cheese';
 
   @override
-  String get validTimeAhead =>
-      'That time is still ahead. Record the dose once it is given.';
+  String get validTimeAhead => 'That time is still ahead. Record the dose once it is given.';
 
   @override
   String get doseRecordedGiven => 'Dose recorded as given.';
@@ -1370,8 +1334,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get doseFinePrintYou =>
-      'Saved as logged by you, with the time. If you are unsure about a dose, ask your vet.';
+  String get doseFinePrintYou => 'Saved as logged by you, with the time. If you are unsure about a dose, ask your vet.';
 
   @override
   String get newRoutine => 'New routine';
@@ -1598,8 +1561,7 @@ class HealthL10nEn extends HealthL10n {
   String get fieldDate => 'Date';
 
   @override
-  String get recordAheadNote =>
-      'This date is still ahead, so it is saved as an upcoming item in the Schedule.';
+  String get recordAheadNote => 'This date is still ahead, so it is saved as an upcoming item in the Schedule.';
 
   @override
   String get nextDueOptional => 'Next due (optional)';
@@ -1608,15 +1570,13 @@ class HealthL10nEn extends HealthL10n {
   String get nextDueHelp => 'Next due date, from your vet';
 
   @override
-  String get nextDueNote =>
-      'Enter the date your vet gave you. It will appear in the Schedule.';
+  String get nextDueNote => 'Enter the date your vet gave you. It will appear in the Schedule.';
 
   @override
   String get nextDueFromVet => 'Next due (from the vet)';
 
   @override
-  String get validNextDueAfter =>
-      'The next due date should be after the date given.';
+  String get validNextDueAfter => 'The next due date should be after the date given.';
 
   @override
   String get vetOrClinicOptional => 'Vet or clinic (optional)';
@@ -1640,12 +1600,10 @@ class HealthL10nEn extends HealthL10n {
   String get validAmount => 'Enter an amount, like 120 or 89.90.';
 
   @override
-  String get costNotePaid =>
-      'What you paid. It stays with your records and is left out of anything you share with a vet.';
+  String get costNotePaid => 'What you paid. It stays with your records and is left out of anything you share with a vet.';
 
   @override
-  String get costNoteExpected =>
-      'What you expect to pay. It stays with your records and is left out of anything you share with a vet.';
+  String get costNoteExpected => 'What you expect to pay. It stays with your records and is left out of anything you share with a vet.';
 
   @override
   String get notesHint => 'Anything worth remembering';
@@ -1703,19 +1661,16 @@ class HealthL10nEn extends HealthL10n {
   String get markAsDone => 'Mark as done';
 
   @override
-  String get noAttachmentsNote =>
-      'No photos or PDFs yet. A photo opens full screen; a PDF opens in the phone\'s viewer.';
+  String get noAttachmentsNote => 'No photos or PDFs yet. A photo opens full screen; a PDF opens in the phone\'s viewer.';
 
   @override
   String get shareThisRecord => 'Share this record';
 
   @override
-  String get deleteInsideEdit =>
-      'Delete is inside Edit, and always asks first.';
+  String get deleteInsideEdit => 'Delete is inside Edit, and always asks first.';
 
   @override
-  String get attachSheetNote =>
-      'A booklet page, a vet letter, a lab result. Up to 5 MB.';
+  String get attachSheetNote => 'A booklet page, a vet letter, a lab result. Up to 5 MB.';
 
   @override
   String get takeAPhoto => 'Take a photo';
@@ -1756,12 +1711,10 @@ class HealthL10nEn extends HealthL10n {
   String get noDocumentsYet => 'No documents yet';
 
   @override
-  String get noDocumentsNote =>
-      'Photos and PDFs you attach to a record show here.';
+  String get noDocumentsNote => 'Photos and PDFs you attach to a record show here.';
 
   @override
-  String get documentsFinePrint =>
-      'A photo opens full screen; a PDF opens in the phone\'s viewer.';
+  String get documentsFinePrint => 'A photo opens full screen; a PDF opens in the phone\'s viewer.';
 
   @override
   String get insightsEmpty => 'Nothing logged yet';
@@ -1784,8 +1737,7 @@ class HealthL10nEn extends HealthL10n {
   String get groupBehaviour => 'Behaviour';
 
   @override
-  String get insightsFinePrint =>
-      'What you noticed, in your own words. The app does not interpret it.';
+  String get insightsFinePrint => 'What you noticed, in your own words. The app does not interpret it.';
 
   @override
   String get logWeight => 'Log weight';
@@ -1815,12 +1767,7 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String weightTrendSemantics(
-    String from,
-    String fromDate,
-    String to,
-    String toDate,
-  ) {
+  String weightTrendSemantics(String from, String fromDate, String to, String toDate) {
     return 'Weight trend from $from on $fromDate to $to on $toDate';
   }
 
@@ -1955,8 +1902,7 @@ class HealthL10nEn extends HealthL10n {
   String get whenDidYouNotice => 'When did you notice it?';
 
   @override
-  String get validWeight =>
-      'That weight does not look right. Please check the number.';
+  String get validWeight => 'That weight does not look right. Please check the number.';
 
   @override
   String get saveToJournal => 'Save to journal';
@@ -1977,15 +1923,13 @@ class HealthL10nEn extends HealthL10n {
   String get deleteEntryTitle => 'Delete this entry?';
 
   @override
-  String get deleteEntryMessage =>
-      'It is removed from the journal. This cannot be undone.';
+  String get deleteEntryMessage => 'It is removed from the journal. This cannot be undone.';
 
   @override
   String get looksUrgent => 'Looks urgent? Contact the vet';
 
   @override
-  String get quickLogFinePrint =>
-      'A record of what you noticed. The app does not interpret it.';
+  String get quickLogFinePrint => 'A record of what you noticed. The app does not interpret it.';
 
   @override
   String reportSummaryTitle(String name) {
@@ -2028,6 +1972,5 @@ class HealthL10nEn extends HealthL10n {
   String get reportColumnKind => 'Kind';
 
   @override
-  String get reportFooter =>
-      'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.';
+  String get reportFooter => 'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.';
 }

@@ -87,7 +87,7 @@ void main() {
 
     testWidgets('a pet without records gets a friendly empty state', (tester) async {
       await openHistory(tester);
-      await selectPet(tester, 'Soya');
+      await switchPet(tester, 'Soya');
 
       expect(find.text('No records yet'), findsOneWidget);
       await tapVisible(tester, find.text('Add a record'));
@@ -323,7 +323,7 @@ void main() {
 
     testWidgets('a date that is still ahead becomes an upcoming item', (tester) async {
       final h = await pumpHealth(tester);
-      await selectPet(tester, 'Soya');
+      await switchPet(tester, 'Soya');
       await tapVisible(tester, find.byKey(const Key('start-appointment')));
       expect(find.text('New appointment'), findsOneWidget);
       expect(find.text('Planned for'), findsOneWidget);

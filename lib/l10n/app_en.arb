@@ -119,6 +119,16 @@
     "placeholders": {"language": {"type": "String"}}
   },
 
+  "youTitle": "You",
+  "@youTitle": {"description": "The page behind the avatar in every header: the account, My pets, Budget, Settings, Sign out. Also the avatar's label."},
+  "youCommunitySafetySummary": "Rules, blocked members",
+  "youAdminTools": "Admin tools",
+  "youAdminToolsSummary": "Feature access, directory review, park suggestions",
+  "aboutTitle": "About PetLoop",
+  "aboutVersion": "Version {version}",
+  "@aboutVersion": {
+    "placeholders": {"version": {"type": "String"}}
+  },
   "menuMyPets": "My pets",
   "settingsTitle": "Settings",
   "settingsSummary": "Language, week, notifications",
@@ -138,14 +148,11 @@
   },
   "settingsWeekNote": "Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.",
   "settingsSavedNote": "These settings are saved on this phone.",
-  "settingsAbout": "About PetLoop",
   "legalTerms": "Terms of Use",
   "legalPrivacy": "Privacy Policy",
   "legalOpensInBrowser": "Opens in the browser.",
   "legalOpenFailed": "The page could not be opened. Try again later.",
 
-  "homeMenu": "Menu",
-  "homeAccount": "Account",
   "homePetCount": "{count, plural, =1{1 pet} other{{count} pets}}",
   "@homePetCount": {"placeholders": {"count": {"type": "int"}}},
   "homeBreed": "Breed",

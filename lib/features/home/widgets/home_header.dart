@@ -2,27 +2,20 @@ import '../../../platform/feature_ui.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../auth/auth_controller.dart';
-import '../../../l10n/l10n.dart';
-import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/brand.dart';
+import '../../../widgets/coral_header.dart';
 import '../../../widgets/pet_selector.dart';
-import '../../../widgets/petloop_icon.dart';
-import '../../auth/widgets/account_sheet.dart';
 
-import '../../settings/side_menu.dart';
-
-/// The pinned top bar of the dashboard: the button of the side menu,
-/// branding, the Emergency pill for the selected pet and the account avatar.
+/// The pinned top bar of the dashboard: branding, the Emergency pill for
+/// the selected pet and the account avatar that opens the You page.
 ///
 /// It stays in place while the dashboard scrolls under it, so the emergency
 /// actions are always one tap away. The pill and everything it opens belong
 /// to the Health feature; Home only places it.
-class HomeTopBar extends ConsumerWidget {
+class HomeTopBar extends StatelessWidget {
   const HomeTopBar({super.key, required this.petId, this.raised = false});
 
   /// The pet the Emergency pill acts for.
@@ -41,8 +34,6 @@ class HomeTopBar extends ConsumerWidget {
   /// Height of the bar below the status-bar inset.
   static const height = _paddingTop + rowHeight + _paddingBottom;
 
-  static const _menuSize = 44.0;
-  static const _avatarSize = 40.0;
   static const _gapBeforePill = 4.0;
   static const _gapAfterPill = 8.0;
 
@@ -51,9 +42,7 @@ class HomeTopBar extends ConsumerWidget {
   static const brandWordmarkKey = ValueKey('home-brand-wordmark');
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authControllerProvider).value;
-
+  Widget build(BuildContext context) {
     // A Material (not a plain coloured box) so the ripples of the buttons
     // on it are visible.
     return Material(
@@ -79,24 +68,13 @@ class HomeTopBar extends ConsumerWidget {
             height: rowHeight,
             child: Row(
               children: [
-                IconButton(
-                  onPressed: () => AppSideMenu.open(context),
-                  tooltip: context.l10n.homeMenu,
-                  icon: const PetLoopIcon(PetLoopGlyph.menu, size: 26),
-                  color: AppColors.white,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints.tightFor(
-                    width: _menuSize,
-                    height: _menuSize,
-                  ),
-                ),
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       // The pill keeps its natural size and the title takes
                       // what is left. Only when the pill alone is wider than
-                      // the room between menu and avatar (a tiny phone with
-                      // very large text) is the pill scaled down to fit.
+                      // the room before the avatar (a tiny phone with very
+                      // large text) is the pill scaled down to fit.
                       final pillRoom = math.max(
                         0.0,
                         constraints.maxWidth - _gapBeforePill,
@@ -118,12 +96,7 @@ class HomeTopBar extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: _gapAfterPill),
-                _AccountAvatar(
-                  initial: user?.initial ?? '?',
-                  onTap: user == null
-                      ? null
-                      : () => AccountSheet.show(context, user),
-                ),
+                const HeaderAvatar(),
               ],
             ),
           ),
@@ -196,11 +169,11 @@ class _Brand extends StatelessWidget {
 }
 
 /// The part of the coral header that scrolls with the dashboard: the pet
-/// selector and the pet count.
+/// selector.
 ///
 /// Square-bottomed: the hero below it paints the rest of the coral band and
 /// its rounded bottom edge.
-class HomePetRow extends ConsumerWidget {
+class HomePetRow extends StatelessWidget {
   const HomePetRow({super.key, this.topInset = 0});
 
   /// Coral space left at the top for the pinned [HomeTopBar], which is
@@ -213,9 +186,7 @@ class HomePetRow extends ConsumerWidget {
   static const _overscrollCover = 600.0;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final count = ref.watch(petsProvider.select((pets) => pets.length));
-
+  Widget build(BuildContext context) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
@@ -238,69 +209,18 @@ class HomePetRow extends ConsumerWidget {
                 AppSpacing.screen,
                 10,
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: PetSelector(
-                      onAdd: () => openFeature<Object>(context, 'add-pet', ''),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    context.l10n.homePetCount(count),
-                    style: AppText.label.copyWith(
-                      color: AppColors.white.withValues(alpha: 0.9),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _AccountAvatar extends StatelessWidget {
-  const _AccountAvatar({required this.initial, required this.onTap});
-
-  final String initial;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: context.l10n.homeAccount,
-      child: Material(
-        color: AppColors.yellow,
-        shape: CircleBorder(
-          side: BorderSide(
-            color: AppColors.white.withValues(alpha: 0.85),
-            width: 2,
-          ),
-        ),
-        child: InkWell(
-          customBorder: const CircleBorder(),
-          onTap: onTap,
-          child: SizedBox(
-            width: HomeTopBar._avatarSize,
-            height: HomeTopBar._avatarSize,
-            child: Center(
-              child: Text(
-                initial,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
+              // Full width: the coral band runs edge to edge whatever the
+              // number of pets.
+              child: SizedBox(
+                width: double.infinity,
+                child: PetSelector(
+                  onAdd: () => openFeature<Object>(context, 'add-pet', ''),
                 ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

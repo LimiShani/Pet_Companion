@@ -19,7 +19,7 @@ void main() {
     await pumpApp(tester);
     await signInAsDemo(tester);
 
-    for (final tab in ['Health', 'Community', 'Store']) {
+    for (final tab in ['Health', 'Community', 'Outside', 'Store']) {
       await tester.tap(find.text(tab).last);
       await tester.pumpAndSettle();
       expect(find.text('Feeding'), findsNothing, reason: tab);

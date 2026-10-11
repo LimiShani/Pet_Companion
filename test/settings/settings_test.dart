@@ -5,10 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/app.dart';
 import 'package:pet_companion/auth/auth_controller.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
-import 'package:pet_companion/features/auth/widgets/account_sheet.dart';
 import 'package:pet_companion/config/app_config.dart';
 import 'package:pet_companion/features/settings/widgets/legal_links.dart';
 import 'package:pet_companion/features/settings/widgets/week_choice.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/platform/link_opener.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/language_choice.dart';
@@ -16,8 +16,8 @@ import 'package:pet_companion/widgets/language_choice.dart';
 import '../helpers.dart';
 import 'settings_test_helpers.dart';
 
-// The Settings page (Language and Week) and the account sheet that leads
-// to it, in English and in Hebrew.
+// The Settings page (Language and Week), reached through the You page, in
+// English and in Hebrew. The About page (legal links) is here too.
 
 final _en = lookupAppL10n(englishLocale);
 final _he = lookupAppL10n(hebrewLocale);
@@ -37,7 +37,7 @@ void main() {
       final l10n = stringsOf(language);
       final hebrew = language == AppLanguage.hebrew;
       await pumpHome(tester, language: language);
-      await openSettingsFromMenu(tester, l10n);
+      await openSettingsFromYou(tester, l10n);
 
       expect(find.text(l10n.settingsTitle), findsOneWidget);
       expect(Directionality.of(tester.element(settingsPage)), hebrew ? TextDirection.rtl : TextDirection.ltr);
@@ -72,7 +72,7 @@ void main() {
 
     testWidgets('the day letters run from Sunday, with Friday and Saturday as the weekend', (tester) async {
       await pumpHome(tester);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
 
       expect(previewLetters(tester), ['S', 'M', 'T', 'W', 'T', 'F', 'S']);
       expect(find.bySemanticsLabel(_en.settingsWeekendIs('Fri, Sat')), findsOneWidget);
@@ -80,7 +80,7 @@ void main() {
 
     testWidgets('in Hebrew the day letters start with Sunday on the right', (tester) async {
       await pumpHome(tester, language: AppLanguage.hebrew);
-      await openSettingsFromMenu(tester, _he);
+      await openSettingsFromYou(tester, _he);
 
       // Read from the right: א׳ (Sunday) to ש׳ (Saturday).
       expect(previewLetters(tester).reversed, ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳']);
@@ -94,7 +94,7 @@ void main() {
     testWidgets('a choice switches the whole app at once and survives a restart', (tester) async {
       final store = MemorySettingsStore();
       await pumpHome(tester, settings: store);
-      await openSettingsFromAccountSheet(tester);
+      await openSettingsFromYou(tester, _en);
 
       expect(find.text('Settings'), findsOneWidget);
       // No choice was made yet: the app follows the phone, English here.
@@ -112,7 +112,10 @@ void main() {
       expect(isChosen(tester, _language(AppLanguage.hebrew)), isTrue);
       expect(store.values, {languageSettingKey: 'he'});
 
-      // And so is the app behind it.
+      // And so are the You page and Home behind it.
+      await tester.tap(find.byTooltip('חזרה'));
+      await settle(tester);
+      expect(find.text('יציאה מהחשבון'), findsOneWidget);
       await tester.tap(find.byTooltip('חזרה'));
       await settle(tester);
       expect(find.text('האכלה'), findsOneWidget);
@@ -122,8 +125,8 @@ void main() {
       await pumpHome(tester, settings: store);
       expect(find.text('האכלה'), findsOneWidget);
 
-      // Back to English, through the side menu this time.
-      await openSettingsFromMenu(tester, _he);
+      // Back to English.
+      await openSettingsFromYou(tester, _he);
       await tapOnSettings(tester, find.byKey(_language(AppLanguage.english)));
       expect(find.text('Settings'), findsOneWidget);
       expect(store.values, {languageSettingKey: 'en'});
@@ -131,7 +134,7 @@ void main() {
 
     testWidgets('"Follow the phone" is offered and Hebrew is no longer tagged as a preview', (tester) async {
       await pumpHome(tester);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
 
       expect(find.byKey(_language(AppLanguage.system)), findsOneWidget);
       expect(find.text('Preview'), findsNothing);
@@ -162,7 +165,7 @@ void main() {
 
       await signInAsDemo(tester);
       await settle(tester);
-      await openSettingsFromMenu(tester, _he);
+      await openSettingsFromYou(tester, _he);
 
       // Three choices now, and no "preview" tag.
       expect(find.text('לפי שפת המכשיר'), findsOneWidget);
@@ -185,7 +188,7 @@ void main() {
     testWidgets('the first day reorders the week at once and is remembered', (tester) async {
       final store = MemorySettingsStore();
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
 
       await tapOnSettings(tester, find.byKey(WeekChoice.firstDayKey(DateTime.monday)));
       expect(_firstDayChosen(tester, DateTime.monday), isTrue);
@@ -204,7 +207,7 @@ void main() {
     testWidgets('the weekdays move the weekend at once and are remembered', (tester) async {
       final store = MemorySettingsStore();
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
       expect(find.bySemanticsLabel(_en.settingsWeekendIs('Fri, Sat')), findsOneWidget);
 
       await tapOnSettings(tester, find.byKey(WeekChoice.mondayToFridayKey));
@@ -225,13 +228,13 @@ void main() {
     testWidgets('both choices survive a restart', (tester) async {
       final store = MemorySettingsStore();
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
       await tapOnSettings(tester, find.byKey(WeekChoice.firstDayKey(DateTime.monday)));
       await tapOnSettings(tester, find.byKey(WeekChoice.mondayToFridayKey));
 
       // Close the app and open it again with the same saved choices.
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
 
       expect(_firstDayChosen(tester, DateTime.monday), isTrue);
       expect(isChosen(tester, WeekChoice.mondayToFridayKey), isTrue);
@@ -247,7 +250,7 @@ void main() {
         weekWeekdaysSettingKey: '1,2,3,4,5',
       });
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _he);
+      await openSettingsFromYou(tester, _he);
 
       expect(_firstDayChosen(tester, DateTime.monday), isTrue);
       expect(isChosen(tester, WeekChoice.mondayToFridayKey), isTrue);
@@ -258,7 +261,7 @@ void main() {
     testWidgets('the language does not change the week', (tester) async {
       final store = MemorySettingsStore();
       await pumpHome(tester, settings: store);
-      await openSettingsFromMenu(tester, _en);
+      await openSettingsFromYou(tester, _en);
       await tapOnSettings(tester, find.byKey(_language(AppLanguage.hebrew)));
 
       expect(weekOf(tester), WeekSettings.israeli);
@@ -267,69 +270,54 @@ void main() {
     });
   });
 
-  group('the account sheet', () {
-    testWidgetsInBothLanguages('holds the account, a way to Settings and Sign out', (tester, language) async {
+  group('the You page', () {
+    testWidgetsInBothLanguages('holds the account and the way to Settings; the language list is not there', (
+      tester,
+      language,
+    ) async {
       final l10n = stringsOf(language);
       await pumpHome(tester, language: language);
-      await tester.tap(find.text('A'));
-      await settle(tester);
+      await openYou(tester, l10n);
 
       expect(find.text('Alex'), findsOneWidget);
       expect(find.text(FakeAuthRepository.demoEmail), findsOneWidget);
-      expect(find.byKey(AccountSheet.settingsKey), findsOneWidget);
+      expect(find.byKey(YouScreen.settingsKey), findsOneWidget);
       expect(find.text(l10n.settingsTitle), findsOneWidget);
       expect(find.text(l10n.settingsSummary), findsOneWidget);
-      expect(find.text(l10n.accountSignOut), findsOneWidget);
       // The language list lives on the Settings page only.
       expect(find.byType(LanguageChoice), findsNothing);
       expect(find.text(l10n.accountLanguage), findsNothing);
-
-      // The Settings row comes before Sign out.
-      expect(
-        tester.getCenter(find.byKey(AccountSheet.settingsKey)).dy,
-        lessThan(tester.getCenter(find.text(l10n.accountSignOut)).dy),
-      );
     });
 
-    testWidgetsInBothLanguages('its Settings row closes the sheet and opens the page', (tester, language) async {
+    testWidgetsInBothLanguages('its Settings row opens the page; one step back is the You page', (
+      tester,
+      language,
+    ) async {
       final l10n = stringsOf(language);
       await pumpHome(tester, language: language);
-      await openSettingsFromAccountSheet(tester);
+      await openSettingsFromYou(tester, l10n);
 
-      expect(find.byType(AccountSheet), findsNothing);
+      expect(youPage, findsNothing);
       expect(find.byType(LanguageChoice), findsOneWidget);
 
-      // One step back is Home, not the sheet.
       await tester.binding.handlePopRoute();
       await settle(tester);
       expect(settingsPage, findsNothing);
-      expect(find.byType(AccountSheet), findsNothing);
-      expect(find.text(l10n.homeFeeding), findsOneWidget);
-    });
-
-    testWidgets('Sign out still signs out', (tester) async {
-      await pumpHome(tester);
-      await tester.tap(find.text('A'));
-      await settle(tester);
-      await tester.tap(find.text('Sign out'));
-      await settle(tester);
-      expect(find.text('Welcome back'), findsOneWidget);
+      expect(youPage, findsOneWidget);
+      expect(find.byType(LanguageChoice), findsNothing);
     });
   });
 
   group('fits', () {
     for (final textScale in const [1.0, 1.3]) {
-      testWidgetsInBothLanguages('Settings and the account sheet on a small phone, text x$textScale', (
-        tester,
-        language,
-      ) async {
+      testWidgetsInBothLanguages('Settings on a small phone, text x$textScale', (tester, language) async {
         final l10n = stringsOf(language);
         await pumpHome(tester, language: language, size: smallPhone, textScale: textScale);
 
-        await tester.tap(find.text('A'));
-        await settle(tester);
-        expect(find.text(l10n.accountSignOut), findsOneWidget);
-        await tester.tap(find.byKey(AccountSheet.settingsKey));
+        await openYou(tester, l10n);
+        await tester.ensureVisible(find.byKey(YouScreen.settingsKey));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(YouScreen.settingsKey));
         await settle(tester);
         expect(settingsPage, findsOneWidget);
 
@@ -357,9 +345,9 @@ void main() {
       await pumpApp(tester, overrides: [linkOpenerProvider.overrideWithValue(opener)]);
       await signInAsDemo(tester);
       await settle(tester);
-      await openSettingsFromMenu(tester, _en);
+      await openAboutFromYou(tester, _en);
 
-      expect(find.text(_en.settingsAbout), findsOneWidget);
+      expect(find.text(_en.aboutTitle), findsOneWidget);
       await tester.ensureVisible(find.byKey(LegalLinks.termsKey));
       await tester.tap(find.byKey(LegalLinks.termsKey));
       await tester.tap(find.byKey(LegalLinks.privacyKey));
@@ -377,7 +365,7 @@ void main() {
       );
       await signInAsDemo(tester);
       await settle(tester);
-      await openSettingsFromMenu(tester, _he);
+      await openAboutFromYou(tester, _he);
 
       await tester.ensureVisible(find.byKey(LegalLinks.privacyKey));
       await tester.tap(find.byKey(LegalLinks.privacyKey));
