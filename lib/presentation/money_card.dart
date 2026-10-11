@@ -4,6 +4,8 @@ import '../theme/app_theme.dart';
 import '../widgets/app_icon.dart';
 import 'dashboard_card.dart';
 
+/// A Home card about money (this month's spending, what runs low): the
+/// `DashboardCard` contract with a drawn icon instead of an illustration.
 class MoneyCard extends StatelessWidget {
   const MoneyCard({
     super.key,
@@ -14,12 +16,16 @@ class MoneyCard extends StatelessWidget {
     required this.onTap,
     required this.tapLabel,
     this.trailing,
+    this.labelBelow = false,
   });
 
   final Color color;
   final IconData icon;
   final String title;
   final String? trailing;
+
+  /// Put [trailing] on its own line under the title (see [CardTitleRow]).
+  final bool labelBelow;
   final Widget child;
   final VoidCallback onTap;
   final String tapLabel;
@@ -52,7 +58,11 @@ class MoneyCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      CardTitleRow(title: title, trailing: trailing),
+                      CardTitleRow(
+                        title: title,
+                        trailing: trailing,
+                        labelBelow: labelBelow,
+                      ),
                       const SizedBox(height: 6),
                       child,
                     ],

@@ -6,11 +6,13 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../budget_screen.dart';
-import '../../../presentation/budget_words.dart';
 import '../../../services/budget/state/budget_providers.dart';
 
 import '../../../presentation/money_card.dart';
 
+/// Home's "This month's spending" card: the month's total for the whole
+/// home and the change from the month before, on one line. No pill: the
+/// whole card opens the budget page (the categories are there).
 class SpendingCard extends ConsumerWidget {
   const SpendingCard({super.key});
 
@@ -30,13 +32,6 @@ class SpendingCard extends ConsumerWidget {
     final format = AppFormat.of(context);
     final change = month.change;
     final previous = format.month(month.previousMonth);
-    final top = month.byCategory.entries
-        .take(2)
-        .map(
-          (e) =>
-              '${l10n.category(e.key)} ${format.money(e.value, month.currency)}',
-        )
-        .join(' · ');
 
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.cardGap),
@@ -46,6 +41,7 @@ class SpendingCard extends ConsumerWidget {
         icon: Icons.account_balance_wallet_rounded,
         title: l10n.spendingTitle,
         trailing: l10n.allHome,
+        labelBelow: true,
         tapLabel: l10n.openBudget,
         onTap: () {
           ref.read(budgetFilterProvider.notifier)
@@ -53,30 +49,27 @@ class SpendingCard extends ConsumerWidget {
             ..showMonth(month.month);
           openBudget(context);
         },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              format.money(month.total, month.currency),
-              style: AppText.metric,
-            ),
-            if (change != null)
-              Text(
-                change > 0
-                    ? l10n.changeUp(format.integer(change), previous)
-                    : change < 0
-                    ? l10n.changeDown(format.integer(-change), previous)
-                    : l10n.changeSame(previous),
-                style: AppText.body.copyWith(fontWeight: FontWeight.w700),
-              ),
-            if (top.isNotEmpty)
-              Text(
-                top,
-                style: AppText.body,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-          ],
+        // One line: the total, and the change after it, smaller (it wraps
+        // under the total on a narrow phone with large text).
+        child: Text.rich(
+          TextSpan(
+            text: isolate(format.money(month.total, month.currency)),
+            style: AppText.metric,
+            children: [
+              if (change != null)
+                TextSpan(
+                  text:
+                      ' ${change > 0
+                          ? l10n.changeUp(format.integer(change), previous)
+                          : change < 0
+                          ? l10n.changeDown(format.integer(-change), previous)
+                          : l10n.changeSame(previous)}',
+                  style: AppText.secondary.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

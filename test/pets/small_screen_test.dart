@@ -99,8 +99,10 @@ void main() {
       ),
       size: small,
     );
-    expect(find.text("Finish Soya's profile"), findsOneWidget);
-    expect(find.text("Add the vet's phone"), findsNWidgets(2));
-    expect(find.text('Not now'), findsNWidgets(2));
+    expect(find.text("Finish Soya's profile"), findsNWidgets(2));
+    expect(find.text("Add the vet's phone"), findsOneWidget);
+    expect(find.byKey(PetReminderCard.addKey), findsOneWidget);
+    // "Not now" is on the card only; the compact row has the "Add" pill.
+    expect(find.text('Not now'), findsOneWidget);
   });
 }

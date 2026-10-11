@@ -48,15 +48,28 @@
       }
     }
   },
-  "inviteWalkTimes": "Add walk times to follow the activity",
+  "inviteWalkTimes": "Add walk times to follow the activity.",
   "@inviteWalkTimes": {
     "description": "Home activity card of a dog with no walk times and nothing logged today."
   },
-  "invitePlay": "Log play to follow the activity",
+  "invitePlay": "Log play to follow the activity.",
   "@invitePlay": {
     "description": "Home activity card of a pet that does not go for walks, with nothing logged today."
   },
   "addFoodToCount": "Add the food to count calories",
+  "feedingSetUpLine": "Add {name}'s food and meal times to count calories.",
+  "@feedingSetUpLine": {
+    "description": "Home feeding card of a pet with no food and no meal times set up yet; the Set up button opens the feeding page.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "setUp": "Set up",
+  "@setUp": {
+    "description": "Button on a Home card with nothing set up yet (feeding, activity): opens the card's page."
+  },
   "walkRunning": "Walking · {time}",
   "@walkRunning": {
     "placeholders": {

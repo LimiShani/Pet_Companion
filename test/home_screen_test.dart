@@ -52,13 +52,19 @@ void main() {
 
     expect(find.text('Soya'), findsNWidgets(2));
     expect(find.text('Mix'), findsNothing);
-    // Nothing set up yet: invitations rather than zeros.
-    expect(find.text('No goal set'), findsOneWidget);
-    expect(find.text('Add the food to count calories'), findsOneWidget);
-    expect(find.text('Next feeding · not set'), findsOneWidget);
-    expect(find.text('Add walk times to follow the activity'), findsOneWidget);
+    // The hero invites to fill in what is missing instead of showing dashes.
+    expect(find.text('—'), findsNothing);
+    expect(find.bySemanticsLabel("Add Soya's breed"), findsOneWidget);
+    expect(find.bySemanticsLabel("Add Soya's age"), findsOneWidget);
+    expect(find.bySemanticsLabel("Add Soya's weight"), findsOneWidget);
+    // Nothing set up yet: invitations rather than zeros, one pill each.
+    expect(find.text("Add Soya's food and meal times to count calories."), findsOneWidget);
+    expect(find.text('Add walk times to follow the activity.'), findsOneWidget);
+    expect(find.text('Set up'), findsNWidgets(2));
     expect(find.text(isolate('0/0')), findsNothing);
-    expect(find.text('No health events yet'), findsOneWidget);
+    // No health events and no vet: the card asks for the vet's phone.
+    expect(find.text("No vet saved yet. Add the vet's phone so a call is two taps away."), findsOneWidget);
+    expect(find.text('No health events yet'), findsNothing);
   });
 
   testWidgets('bottom navigation switches tabs', (tester) async {

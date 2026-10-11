@@ -47,11 +47,19 @@ void main() {
 
       final spending = find.byKey(SpendingCard.cardKey);
       await tester.ensureVisible(spending);
-      expect(find.descendant(of: spending, matching: plain("This month's spending")), findsOneWidget);
-      expect(find.descendant(of: spending, matching: plain('All the home')), findsOneWidget);
-      expect(find.descendant(of: spending, matching: plain('₪280')), findsOneWidget);
-      expect(find.descendant(of: spending, matching: plain('↓ 83% from May')), findsOneWidget);
-      expect(find.descendant(of: spending, matching: plain('Services ₪200 · Equipment ₪45')), findsOneWidget);
+      final title = find.descendant(of: spending, matching: plain("This month's spending"));
+      final scope = find.descendant(of: spending, matching: plain('All the home'));
+      final money = find.descendant(of: spending, matching: plain('₪280 ↓ 83% from May'));
+      expect(title, findsOneWidget);
+      expect(scope, findsOneWidget);
+      expect(money, findsOneWidget);
+      // The title on its own line, "All the home" as the label under it.
+      expect(tester.getRect(scope).top, greaterThanOrEqualTo(tester.getRect(title).bottom));
+      // One money line: the total and the change after it, in one text
+      // (on one line with the real fonts: test/care/home_cards_fit_test.dart).
+      // No categories on Home: the budget page has them.
+      expect(find.descendant(of: spending, matching: find.textContaining('Services')), findsNothing);
+      expect(find.descendant(of: spending, matching: find.textContaining('Equipment')), findsNothing);
 
       final low = find.byKey(RunningLowCard.cardKey);
       await tester.ensureVisible(low);
@@ -81,7 +89,15 @@ void main() {
       expect(plain('₪240 added to the budget'), findsOneWidget);
       expect(find.byKey(RunningLowCard.cardKey), findsNothing);
       final spending = find.byKey(SpendingCard.cardKey);
-      expect(find.descendant(of: spending, matching: plain('₪520')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: spending,
+          matching: find.byWidgetPredicate(
+            (w) => w is Text && stripBidiMarks(w.textSpan?.toPlainText() ?? w.data ?? '').startsWith('₪520 '),
+          ),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('neither card shows without expenses or products', (tester) async {

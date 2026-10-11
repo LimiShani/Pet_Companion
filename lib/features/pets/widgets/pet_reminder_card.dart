@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
+import '../../../presentation/care_widgets.dart' show CarePillButton;
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -72,10 +73,11 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 ///
 /// `compact: false` is the card: the title, "2 of 5 essentials still to
 /// add", a progress line, the action button and "Not now". `compact: true`
-/// is one line about 60 px tall: the action, the count and "Not now".
+/// is one row for Home: the title, the count and an "Add" pill; there,
+/// "Not now" is in the checklist it opens.
 ///
-/// The action opens the next missing item; the rest of the card opens the
-/// checklist. "Not now" hides the reminder everywhere for 7 days.
+/// The action ("Add") opens the next missing item; the rest of the card
+/// opens the checklist. "Not now" hides the reminder everywhere for 7 days.
 ///
 /// Shows nothing at all, and takes no space including [margin], when there
 /// is nothing to remind of: no `if` is needed around it.
@@ -90,6 +92,9 @@ class PetReminderCard extends ConsumerWidget {
   final String petId;
   final bool compact;
   final EdgeInsetsGeometry margin;
+
+  /// The "Add" pill of the compact row.
+  static const addKey = Key('reminder-add');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,10 +122,11 @@ class PetReminderCard extends ConsumerWidget {
         child: compact
             ? _Line(
                 label: label,
+                title: l10n.finishProfile(name),
                 action: action,
                 count: count,
                 onOpen: openNext,
-                onNotNow: notNow,
+                onChecklist: () => showPetChecklist(context, petId),
               )
             : _Card(
                 label: label,
@@ -156,55 +162,77 @@ class _NotNow extends StatelessWidget {
   }
 }
 
-/// The one-line reminder for the Home dashboard.
+/// The one-row reminder for the Home dashboard: a white card like Home's
+/// other cards, "Finish Soya's profile", the count and one "Add" pill.
 class _Line extends StatelessWidget {
   const _Line({
     required this.label,
+    required this.title,
     required this.action,
     required this.count,
     required this.onOpen,
-    required this.onNotNow,
+    required this.onChecklist,
   });
 
   final String label;
+  final String title;
+
+  /// What "Add" does ("Add the vet's phone"), for screen readers.
   final String action;
   final String count;
   final VoidCallback onOpen;
-  final VoidCallback onNotNow;
+  final VoidCallback onChecklist;
 
   @override
   Widget build(BuildContext context) {
-    return PetsCard(
-      shadow: true,
-      onTap: onOpen,
-      semanticLabel: label,
-      padding: const EdgeInsetsDirectional.fromSTEB(10, 6, 4, 6),
-      child: Row(
-        children: [
-          const PetsDisc(Icons.fact_check_rounded),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+    return Semantics(
+      container: true,
+      explicitChildNodes: true,
+      label: label,
+      child: Material(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onChecklist,
+          child: Padding(
+            padding: const EdgeInsetsDirectional.fromSTEB(16, 6, 10, 6),
+            child: Row(
               children: [
-                Text(
-                  action,
-                  style: AppText.cardTitle,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const PetsDisc(Icons.fact_check_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title, style: AppText.cardTitle),
+                      Text(
+                        count,
+                        style: AppText.secondary.copyWith(
+                          color: AppColors.brown,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  count,
-                  style: AppText.secondary.copyWith(color: AppColors.brown),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 8),
+                Semantics(
+                  button: true,
+                  label: action,
+                  excludeSemantics: true,
+                  onTap: onOpen,
+                  child: CarePillButton(
+                    key: PetReminderCard.addKey,
+                    label: context.l10n.commonAdd,
+                    filled: true,
+                    onPressed: onOpen,
+                  ),
                 ),
               ],
             ),
           ),
-          _NotNow(onPressed: onNotNow),
-        ],
+        ),
       ),
     );
   }

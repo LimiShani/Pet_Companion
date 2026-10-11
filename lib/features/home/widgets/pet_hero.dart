@@ -1,6 +1,9 @@
+import '../../../access/access_provider.dart';
 import '../../../platform/feature_ui.dart';
 import '../../../presentation/pet_avatar.dart';
+import '../../../services/pets/state/pet_completeness.dart' show PetInfoItem;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
@@ -9,9 +12,13 @@ import '../../../theme/app_theme.dart';
 
 /// Large circular photo with the pet's name and Breed / Age / Weight pills.
 ///
+/// A detail the owner has not filled in shows "Add" on a lighter pill, which
+/// opens the sheet for that one detail; for an account that may not edit
+/// pets it shows "—".
+///
 /// The coral header continues behind the top [coralRise] px of this widget,
 /// so the photo appears to sit half on the header and half on the page.
-class PetHero extends StatelessWidget {
+class PetHero extends ConsumerWidget {
   const PetHero({super.key, required this.pet, this.coralRise = 84});
 
   final Pet pet;
@@ -25,12 +32,37 @@ class PetHero extends StatelessWidget {
   /// Where the pet's name starts, measured from the top of the hero.
   static const nameTop = 30.0;
 
+  /// Key of the "Add" pill of [item] (breed, age or weight).
+  static Key addKey(PetInfoItem item) => Key('hero-add-${item.name}');
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final format = AppFormat.of(context);
     final age = pet.ageYears;
     final weight = pet.weightKg;
+    final breed = (pet.breed ?? '').trim().isEmpty ? null : pet.breed;
+    final canAdd =
+        ref.watch(capabilityProvider('pets.edit')) &&
+        canOpenFeature(context, 'pet-info-item');
+
+    /// The pill of one detail: its [value], or "Add" when it is missing.
+    Widget pill(String label, String? value, PetInfoItem item, String add) {
+      if (value != null) return _InfoPill(label: label, value: value);
+      if (!canAdd) return _InfoPill(label: label, value: _unknown);
+      return _InfoPill(
+        key: addKey(item),
+        label: label,
+        value: l10n.commonAdd,
+        missing: true,
+        semanticLabel: add,
+        onTap: () => openFeature<Object>(context, 'pet-info-item', pet.id, {
+          'item': item,
+        }),
+      );
+    }
+
+    final words = context.petsL10n;
 
     return Stack(
       children: [
@@ -71,22 +103,29 @@ class PetHero extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      _InfoPill(
-                        label: l10n.homeBreed,
-                        value: pet.breed ?? _unknown,
+                      // 8 px under the name and 6 px between the pills, as
+                      // before; each pill's tap area takes the 6 px above it,
+                      // so it is 44 px tall without moving anything.
+                      const SizedBox(height: 8 - _InfoPill.reach),
+                      pill(
+                        l10n.homeBreed,
+                        breed,
+                        PetInfoItem.breed,
+                        words.actionBreed(pet.name),
                       ),
-                      const SizedBox(height: 6),
-                      _InfoPill(
-                        label: l10n.homeAge,
-                        value: age == null ? _unknown : format.decimal(age),
+                      pill(
+                        l10n.homeAge,
+                        age == null ? null : format.decimal(age),
+                        PetInfoItem.age,
+                        words.actionAge(pet.name),
                       ),
-                      const SizedBox(height: 6),
-                      _InfoPill(
-                        label: l10n.homeWeight,
-                        value: weight == null
-                            ? _unknown
+                      pill(
+                        l10n.homeWeight,
+                        weight == null
+                            ? null
                             : l10n.homeWeightKg(format.decimal(weight)),
+                        PetInfoItem.weight,
+                        words.actionWeight(pet.name),
                       ),
                     ],
                   ),
@@ -138,22 +177,85 @@ class _Photo extends StatelessWidget {
   }
 }
 
+/// One "label value" pill of the hero. A [missing] detail shows its value
+/// ("Add") in coral on a lighter, outlined pill of the same size, and
+/// [onTap] fills it in.
 class _InfoPill extends StatelessWidget {
-  const _InfoPill({required this.label, required this.value});
+  const _InfoPill({
+    super.key,
+    required this.label,
+    required this.value,
+    this.missing = false,
+    this.semanticLabel,
+    this.onTap,
+  });
 
   final String label;
   final String value;
+  final bool missing;
+
+  /// What a screen reader says for a tappable pill ("Add Soya's age").
+  final String? semanticLabel;
+  final VoidCallback? onTap;
 
   static const _labelColumn = 56.0;
 
+  /// The room above each pill (the gap to what is above it), which is part
+  /// of its tap area.
+  static const reach = 6.0;
+
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-      decoration: const BoxDecoration(
-        color: AppColors.yellow,
-        borderRadius: BorderRadius.all(Radius.circular(999)),
+    final pill = _pill(context);
+    if (onTap == null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: reach),
+        child: pill,
+      );
+    }
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      excludeSemantics: semanticLabel != null,
+      onTap: onTap,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.only(top: reach),
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const StadiumBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(onTap: onTap, child: pill),
+          ),
+        ),
       ),
+    );
+  }
+
+  Widget _pill(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    // The 2 px outline of a missing detail is taken from the padding, so
+    // both kinds of pill are the same size.
+    final padding = missing
+        ? const EdgeInsets.symmetric(horizontal: 12, vertical: 4)
+        : const EdgeInsets.symmetric(horizontal: 14, vertical: 6);
+    final decoration = missing
+        ? BoxDecoration(
+            color: scheme.surfaceContainer,
+            border: Border.all(color: scheme.outlineVariant, width: 2),
+            borderRadius: const BorderRadius.all(Radius.circular(999)),
+          )
+        : const BoxDecoration(
+            color: AppColors.yellow,
+            borderRadius: BorderRadius.all(Radius.circular(999)),
+          );
+    // A tappable pill is painted as ink, so its ripple shows on it.
+    Widget box({required Widget child}) => onTap == null
+        ? Container(padding: padding, decoration: decoration, child: child)
+        : Ink(padding: padding, decoration: decoration, child: child);
+    return box(
       child: LayoutBuilder(
         builder: (context, constraints) {
           // The labels line up in a 56 px column. A longer word (another
@@ -182,7 +284,20 @@ class _InfoPill extends StatelessWidget {
               Expanded(
                 child: Text(
                   value,
-                  style: AppText.pillValue,
+                  style: missing
+                      ? AppText.button(14).copyWith(color: AppColors.coralDark)
+                      : AppText.pillValue,
+                  // "Add" is smaller than a value, on the same line height
+                  // (the inherited one included), so the pill keeps its
+                  // height.
+                  strutStyle: missing
+                      ? StrutStyle.fromTextStyle(
+                          DefaultTextStyle.of(
+                            context,
+                          ).style.merge(AppText.pillValue),
+                          forceStrutHeight: true,
+                        )
+                      : null,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

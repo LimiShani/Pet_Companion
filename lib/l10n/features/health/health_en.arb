@@ -126,6 +126,8 @@
   "noVetSavedFor": "No vet saved for {name} yet",
   "@noVetSavedFor": {"placeholders": {"name": {"type": "String"}}},
   "noVetSavedNote": "Add the vet's phone now, so a call or a message is two taps away when you need it.",
+  "homeNoVet": "No vet saved yet. Add the vet's phone so a call is two taps away.",
+  "@homeNoVet": {"description": "Home's Health card when nothing is coming up and the pet has no regular vet; tapping the card adds one."},
   "useSavedVet": "Use a vet you already saved",
   "addNewVet": "Add a new vet",
   "actionCall": "Call",

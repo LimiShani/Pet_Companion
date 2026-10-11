@@ -33,6 +33,16 @@ final petsModule = FeatureModule(
       capability: 'pets.view',
       open: (c, r) => openPetProfile(c, r.petId),
     ),
+    // Where one detail of the pet is filled in (Home's "Add" pills):
+    // values {'item': PetInfoItem}.
+    'pet-info-item': FeatureAction.task(
+      capability: 'pets.edit',
+      open: (c, r) => openPetInfoItem(
+        c,
+        petId: r.petId,
+        item: r.value<PetInfoItem>('item')!,
+      ),
+    ),
   },
   slots: {
     'pet-attention': FeatureSlot(

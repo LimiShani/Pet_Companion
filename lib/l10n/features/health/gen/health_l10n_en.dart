@@ -318,6 +318,9 @@ class HealthL10nEn extends HealthL10n {
   String get noVetSavedNote => 'Add the vet\'s phone now, so a call or a message is two taps away when you need it.';
 
   @override
+  String get homeNoVet => 'No vet saved yet. Add the vet\'s phone so a call is two taps away.';
+
+  @override
   String get useSavedVet => 'Use a vet you already saved';
 
   @override

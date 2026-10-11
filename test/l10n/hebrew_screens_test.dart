@@ -276,10 +276,18 @@ void main() {
       await tester.tap(find.text('Soya'));
       await _settle(tester);
 
-      expect(find.text('עוד לא נקבע יעד'), findsOneWidget);
-      expect(find.text('ההאכלה הבאה · עוד לא נקבעה'), findsOneWidget);
-      expect(find.text('הטיול הבא · עוד לא נקבע'), findsOneWidget);
-      expect(find.text('עדיין אין אירועי בריאות'), findsOneWidget);
+      // One sentence and one "Set up" button per daily card, nothing "not set".
+      expect(find.text('הוסיפו את המזון ואת שעות הארוחות של ${isolate('Soya')} כדי לספור קלוריות.'), findsOneWidget);
+      expect(find.text('הוסיפו שעות טיול כדי לעקוב אחרי הפעילות.'), findsOneWidget);
+      expect(find.text('הגדרה'), findsNWidgets(2));
+      expect(find.text('עוד לא נקבע יעד'), findsNothing);
+      expect(find.text('ההאכלה הבאה · עוד לא נקבעה'), findsNothing);
+      expect(find.text('הטיול הבא · עוד לא נקבע'), findsNothing);
+      // No vet saved for Soya: the Health card asks for one.
+      expect(
+        find.text('עדיין לא נשמר וטרינר. כדאי להוסיף את הטלפון של הווטרינר, כדי שחיוג יהיה במרחק שתי לחיצות.'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('the tabs still switch, by their Hebrew names', (tester) async {

@@ -17,6 +17,7 @@ import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/store_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/presentation/dashboard_card.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
@@ -85,15 +86,34 @@ void main() {
       await tester.pumpAndSettle();
       await tester.ensureVisible(card);
       expect(find.text('The first 30 days of Soya'), findsOneWidget);
-      expect(find.text('Day 10'), findsOneWidget);
-      expect(find.text('2/12'), findsOneWidget);
+      // The day and the progress are the title's label.
+      expect(find.text('Day 10 · ${isolate('2/12')}'), findsOneWidget);
       expect(find.text('Next: Get the basics: a bed, bowls, a lead and food'), findsOneWidget);
+    });
+
+    testWidgets('"Open" is the one pill, at the end of the "Next" line', (tester) async {
+      await homeOnSoya(tester);
+      await tester.ensureVisible(card);
+      await tester.pumpAndSettle();
+      final next = find.text('Next: Get the basics: a bed, bowls, a lead and food');
+      final open = find.byKey(FirstDaysHomeCard.openKey);
+      expect(find.descendant(of: card, matching: find.byType(CarePillButton)), findsOneWidget);
+      // The pill and the line are one CardActionRow, the last line.
+      final row = find.ancestor(of: next, matching: find.byType(CardActionRow));
+      expect(row, findsOneWidget);
+      expect(find.descendant(of: row, matching: open), findsOneWidget);
+      // At the end: its edge lines up with the progress bar's end, beside
+      // the line or (when both do not fit) under it, never above it.
+      final bar = tester.getRect(find.descendant(of: card, matching: find.byType(LinearProgressIndicator)));
+      expect(tester.getRect(open).right, moreOrLessEquals(bar.right, epsilon: 1));
+      expect(tester.getRect(open).top, greaterThanOrEqualTo(tester.getRect(row).top));
+      expect(tester.getRect(open).bottom, moreOrLessEquals(tester.getRect(row).bottom, epsilon: 1));
     });
 
     testWidgets('still shows on day 30, and is gone from day 31', (tester) async {
       await homeOnSoya(tester, now: DateTime(2025, 6, 30, 9));
       await tester.ensureVisible(card);
-      expect(find.text('Day 30'), findsOneWidget);
+      expect(find.textContaining('Day 30 · '), findsOneWidget);
 
       await homeOnSoya(tester, now: DateTime(2025, 7, 1, 9));
       expect(card, findsNothing);
@@ -122,7 +142,7 @@ void main() {
       expect(find.text('3/12 done'), findsOneWidget);
       await goBack(tester);
       await tester.ensureVisible(card);
-      expect(find.text('3/12'), findsOneWidget);
+      expect(find.text('Day 10 · ${isolate('3/12')}'), findsOneWidget);
       expect(find.text('Next: Keep to the food they know for now, and add it here'), findsOneWidget);
 
       await openPageFromCard(tester);
@@ -211,7 +231,7 @@ void main() {
 
       await tester.ensureVisible(card);
       // Soya's ticks were a dog's tasks: none is on a rabbit's list.
-      expect(find.text('0/7'), findsOneWidget);
+      expect(find.text('Day 10 · ${isolate('0/7')}'), findsOneWidget);
       await openPageFromCard(tester);
       expect(find.text('Set up their home: a cage, tank or corner, with food and water'), findsOneWidget);
       expect(find.byKey(FirstDaysScreen.tickKey('dog-basics')), findsNothing);
@@ -296,8 +316,7 @@ void main() {
       await tester.ensureVisible(card);
       expect(find.text('The first 30 days of Mitzi'), findsOneWidget);
       // The day picked before is kept: 8 June, so 10 June is day 3.
-      expect(find.text('Day 3'), findsOneWidget);
-      expect(find.text('0/11'), findsOneWidget);
+      expect(find.text('Day 3 · ${isolate('0/11')}'), findsOneWidget);
       expect(find.text('Next: Get the basics: a litter box, bowls and food'), findsOneWidget);
     });
 
@@ -366,7 +385,7 @@ void main() {
       await homeOnSoya(tester, language: AppLanguage.hebrew);
       await tester.ensureVisible(card);
       expect(find.text('30 הימים הראשונים של \u2068Soya\u2069'), findsOneWidget);
-      expect(find.text('יום \u206810\u2069'), findsOneWidget);
+      expect(find.text('יום \u206810\u2069 · ${isolate('2/12')}'), findsOneWidget);
       expect(find.text('הבא בתור: \u2068לדאוג לבסיס: מיטה, קערות, רצועה ומזון\u2069'), findsOneWidget);
       expect(find.text('פתיחה'), findsOneWidget);
       expect(Directionality.of(tester.element(card)), TextDirection.rtl);

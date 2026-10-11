@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../access/access_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
@@ -9,6 +10,7 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../services/care/state/care_logic.dart';
 import '../../../services/care/state/care_providers.dart';
+import '../emergency/vet_picker.dart';
 import '../health_routes.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/dashboard_card.dart';
@@ -17,6 +19,10 @@ import '../../../presentation/dashboard_state.dart';
 /// The two soonest health items: today's medicine doses nobody answered
 /// yet, planned visits, vaccinations and treatments. Tapping the card
 /// opens the Health tab on its schedule.
+///
+/// With nothing coming up and no regular vet saved for the pet, the card
+/// asks for the vet's phone instead, and a tap opens the vet picker (the
+/// vet form when the account has no vets yet).
 class HealthCard extends ConsumerWidget {
   const HealthCard({super.key, required this.pet});
 
@@ -28,20 +34,40 @@ class HealthCard extends ConsumerWidget {
     final value = ref.watch(upcomingHealthProvider(pet.id));
     final items = value.value;
     final shown = (items ?? const <HealthItem>[]).take(2).toList();
+    // Only once the vets are known, and only for an account that may add one.
+    final noVet =
+        items != null &&
+        shown.isEmpty &&
+        ref.watch(capabilityProvider('health.emergency.edit')) &&
+        switch (ref.watch(petVetsProvider(pet.id))) {
+          AsyncData(:final value) => value.regular == null,
+          _ => false,
+        };
 
     return DashboardCard(
       color: AppColors.peach,
       iconAsset: 'assets/images/icon_health.svg',
       title: l10n.homeHealth,
-      trailing: l10n.homeUpcoming,
+      trailing: noVet ? null : l10n.homeUpcoming,
       iconRing: true,
-      tapLabel: context.careL10n.openHealth,
-      onTap: () {
-        ref.read(healthSectionProvider.notifier).show(HealthSection.schedule);
-        GoRouter.maybeOf(context)?.go(HealthRoutes.root);
-      },
+      tapLabel: noVet
+          ? context.healthL10n.addPetsVet(pet.name)
+          : context.careL10n.openHealth,
+      onTap: noVet
+          ? () => showVetPicker(context, petId: pet.id)
+          : () {
+              ref
+                  .read(healthSectionProvider.notifier)
+                  .show(HealthSection.schedule);
+              GoRouter.maybeOf(context)?.go(HealthRoutes.root);
+            },
       child: items == null
           ? HomeCardState(value: value, petId: pet.id)
+          : noVet
+          ? Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Text(context.healthL10n.homeNoVet, style: AppText.body),
+            )
           : shown.isEmpty
           ? Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
