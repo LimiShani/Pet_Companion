@@ -113,17 +113,89 @@ abstract class HealthL10n {
   /// **'Schedule'**
   String get sectionSchedule;
 
-  /// No description provided for @sectionHistory.
+  /// The third section of the Health tab: the records, the weight and the journal.
   ///
   /// In en, this message translates to:
-  /// **'History'**
-  String get sectionHistory;
+  /// **'Records'**
+  String get recordsSection;
 
-  /// No description provided for @sectionInsights.
+  /// Chip of the Records section: the journal of what the owner noticed.
   ///
   /// In en, this message translates to:
-  /// **'Insights'**
-  String get sectionInsights;
+  /// **'Journal'**
+  String get recordsJournal;
+
+  /// Menu chip of the journal: narrows it to one category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get recordsCategory;
+
+  /// How many journal entries there are.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
+  String recordsEntries(int count);
+
+  /// No description provided for @recordsEntriesShown.
+  ///
+  /// In en, this message translates to:
+  /// **'{shown} of {total} entries'**
+  String recordsEntriesShown(int shown, int total);
+
+  /// Row of the Overview: the latest weight, 23 kg.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight {value}'**
+  String overviewWeightRow(String value);
+
+  /// No description provided for @overviewProfileAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies: {list}'**
+  String overviewProfileAllergies(String list);
+
+  /// No description provided for @overviewProfileNoAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'No known allergies'**
+  String get overviewProfileNoAllergies;
+
+  /// No description provided for @overviewProfileChipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Chipped'**
+  String get overviewProfileChipped;
+
+  /// No description provided for @overviewProfileEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add allergies, conditions and the microchip'**
+  String get overviewProfileEmpty;
+
+  /// No description provided for @overviewVaccinations.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 vaccination} other{{count} vaccinations}}'**
+  String overviewVaccinations(int count);
+
+  /// No description provided for @overviewVetVisits.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 vet visit} other{{count} vet visits}}'**
+  String overviewVetVisits(int count);
+
+  /// No description provided for @overviewDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 document} other{{count} documents}}'**
+  String overviewDocuments(int count);
+
+  /// How many medicine records there are, on the Overview's Records row.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 medicine} other{{count} medicines}}'**
+  String overviewMedicines(int count);
 
   /// No description provided for @quickLog.
   ///
@@ -569,17 +641,53 @@ abstract class HealthL10n {
   /// **'Emergency · {name}'**
   String emergencySheetTitle(String name);
 
-  /// No description provided for @emergencySheetSubtitle.
+  /// The one line of fine print at the foot of the emergency sheet.
   ///
   /// In en, this message translates to:
-  /// **'Call or message. You make the call or send the message yourself.'**
-  String get emergencySheetSubtitle;
+  /// **'You place the call or send the message yourself.'**
+  String get emergencySheetFinePrint;
 
-  /// No description provided for @openEmergencyCardOf.
+  /// The one big button of the emergency sheet: dials the first contact (the 24 h emergency vet, else the regular vet, else the emergency contact).
   ///
   /// In en, this message translates to:
-  /// **'Open {name}\'s Emergency card'**
-  String openEmergencyCardOf(String name);
+  /// **'Call now'**
+  String get emergencyCallNow;
+
+  /// Button under Call now on the emergency sheet: opens the maps app on the contact's address.
+  ///
+  /// In en, this message translates to:
+  /// **'Directions'**
+  String get emergencyDirections;
+
+  /// Tooltip and screen-reader label of the round call button of a contact row on the emergency sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Call {name}'**
+  String emergencyCallNamed(String name);
+
+  /// Tooltip and screen-reader label of the round message button of a contact row on the emergency sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Message {name}'**
+  String emergencyMessageNamed(String name);
+
+  /// Row on the emergency sheet that opens the Emergency card (which also leads to the emergency kit).
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency card and kit'**
+  String get emergencyCardAndKit;
+
+  /// Subtitle of the Emergency card and kit row while the kit count is not known yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies, medicines, microchip'**
+  String get emergencyCardAndKitNote;
+
+  /// Subtitle of the Emergency card and kit row: what the card holds, and how much of the emergency kit is ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Allergies, medicines, microchip · kit {ready} of {total} ready'**
+  String emergencyCardAndKitNoteKit(int ready, int total);
 
   /// No description provided for @vetRoleRegular.
   ///
@@ -1952,7 +2060,7 @@ abstract class HealthL10n {
   /// No description provided for @movedToHistory.
   ///
   /// In en, this message translates to:
-  /// **'Moved to the History.'**
+  /// **'Moved to Records.'**
   String get movedToHistory;
 
   /// Button: the planned appointment took place.
@@ -3484,6 +3592,18 @@ abstract class HealthL10n {
   /// In en, this message translates to:
   /// **'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.'**
   String get reportFooter;
+
+  /// Full-width button under the main fields of a long form; reveals the optional fields folded below it.
+  ///
+  /// In en, this message translates to:
+  /// **'More details'**
+  String get formMoreDetails;
+
+  /// The same button once the optional fields are open; folds them away again.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer details'**
+  String get formFewerDetails;
 }
 
 class _HealthL10nDelegate extends LocalizationsDelegate<HealthL10n> {

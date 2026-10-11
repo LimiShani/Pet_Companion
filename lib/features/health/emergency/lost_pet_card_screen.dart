@@ -38,8 +38,8 @@ Future<void> openLostPetCard(BuildContext context, String petId) {
   return Future.value();
 }
 
-/// The button that leads to the lost card from the emergency sheet and the
-/// Emergency card.
+/// The button that leads to the lost card from the Emergency card. (The
+/// emergency sheet has a plain row with the same key.)
 class LostPetButton extends StatelessWidget {
   const LostPetButton({super.key, required this.pet});
 

@@ -18,6 +18,7 @@ import '../../../presentation/health_format.dart';
 import '../../../presentation/health_strings.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/health_widgets.dart';
+import '../../../presentation/more_details.dart';
 import 'attachments.dart';
 
 /// Opens the add / edit record page over the whole app. Returns the saved
@@ -78,6 +79,20 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
   final _previews = <PickedFile, Future<Uint8List>>{};
   bool _saving = false;
 
+  /// Whether "More details" is open. An edited record opens it when a
+  /// field folded in it has something in it.
+  late bool _moreOpen;
+
+  /// Whether the edited record's files were seen yet: the first time they
+  /// are, "More details" opens to show them.
+  bool _documentsSeen = false;
+
+  /// The fields a failed save scrolls to.
+  final _titleAnchor = GlobalKey();
+  final _nextDueAnchor = GlobalKey();
+  final _costAnchor = GlobalKey();
+  final _notesAnchor = GlobalKey();
+
   /// The fields as the page opened, to tell whether anything changed.
   late final List<Object?> _initial;
 
@@ -125,6 +140,14 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
         _time = TimeOfDay.fromDateTime(now);
       }
     }
+    _moreOpen =
+        record != null &&
+        ((record.kind.hasProduct && record.productName.trim().isNotEmpty) ||
+            record.nextDueOn != null ||
+            // A planned record shows its vet above the fold.
+            (!_ahead && record.clinic.trim().isNotEmpty) ||
+            record.costAmount != null ||
+            record.notes.trim().isNotEmpty);
     _initial = _fields();
   }
 
@@ -218,12 +241,51 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     }
   }
 
+  String? _titleProblem(String? value) {
+    final l10n = context.healthL10n;
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return l10n.validRecordTitle;
+    if (v.length > 120) return l10n.validTitleTooLong(120);
+    return null;
+  }
+
+  String? _costProblem(String? value) {
+    final v = value?.trim() ?? '';
+    if (v.isEmpty) return null;
+    return parseMoney(v) == null ? context.healthL10n.validAmount : null;
+  }
+
+  String? _notesProblem(String? value) =>
+      (value?.length ?? 0) > 4000 ? context.healthL10n.validNotesTooLong : null;
+
+  /// Opens "More details" when a field folded in it is wrong, and scrolls
+  /// to [anchor], the first wrong field on the page.
+  void _revealFolded(GlobalKey anchor) {
+    if (_moreOpen) return;
+    setState(() => _moreOpen = true);
+    MoreDetails.scrollToOnceOpen(anchor);
+  }
+
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
+    if (!_form.currentState!.validate()) {
+      final cost = _costProblem(_cost.text) != null;
+      final notes = _notesProblem(_notes.text) != null;
+      if (cost || notes) {
+        _revealFolded(
+          _titleProblem(_title.text) != null
+              ? _titleAnchor
+              : cost
+              ? _costAnchor
+              : _notesAnchor,
+        );
+      }
+      return;
+    }
     final ahead = _ahead;
     final nextDue = _kind.hasNextDue && !ahead ? _nextDue : null;
     if (nextDue != null && !nextDue.isAfter(_day)) {
       setState(() => _error = context.healthL10n.validNextDueAfter);
+      _revealFolded(_nextDueAnchor);
       return;
     }
     setState(() {
@@ -330,6 +392,17 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     final error = _error;
+    if (!_documentsSeen && documents.isNotEmpty) {
+      _documentsSeen = true;
+      _moreOpen = true;
+    }
+    final clinic = TextFormField(
+      key: const Key('record-clinic'),
+      controller: _clinic,
+      textCapitalization: TextCapitalization.words,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(labelText: l10n.vetOrClinicOptional),
+    );
 
     final page = HealthPage(
       petId: _petId,
@@ -366,29 +439,17 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
               ],
             ),
             FormLabel(l10n.details),
-            TextFormField(
-              key: const Key('record-title'),
-              controller: _title,
-              textCapitalization: TextCapitalization.sentences,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: l10n.fieldTitle),
-              validator: (value) {
-                final v = value?.trim() ?? '';
-                if (v.isEmpty) return l10n.validRecordTitle;
-                if (v.length > 120) return l10n.validTitleTooLong(120);
-                return null;
-              },
-            ),
-            if (_kind.hasProduct) ...[
-              const SizedBox(height: 10),
-              TextFormField(
-                key: const Key('record-product'),
-                controller: _product,
+            KeyedSubtree(
+              key: _titleAnchor,
+              child: TextFormField(
+                key: const Key('record-title'),
+                controller: _title,
                 textCapitalization: TextCapitalization.sentences,
                 textInputAction: TextInputAction.next,
-                decoration: InputDecoration(labelText: l10n.productOptional),
+                decoration: InputDecoration(labelText: l10n.fieldTitle),
+                validator: _titleProblem,
               ),
-            ],
+            ),
             const SizedBox(height: 10),
             PickerTile(
               key: const Key('record-date'),
@@ -412,107 +473,133 @@ class _RecordFormScreenState extends ConsumerState<RecordFormScreen> {
             if (ahead) ...[
               const SizedBox(height: 6),
               FinePrint(l10n.recordAheadNote, center: false),
-            ],
-            if (_kind.hasNextDue && !ahead) ...[
               const SizedBox(height: 10),
-              PickerTile(
-                key: const Key('record-next-due'),
-                icon: Icons.event_repeat_rounded,
-                label: l10n.nextDueOptional,
-                value: _nextDue == null ? l10n.notSet : format.date(_nextDue!),
-                placeholder: _nextDue == null,
-                onTap: _pickNextDue,
-                onClear: _nextDue == null
-                    ? null
-                    : () => setState(() => _nextDue = null),
-              ),
-              const SizedBox(height: 6),
-              FinePrint(l10n.nextDueNote, center: false),
+              clinic,
             ],
-            const SizedBox(height: 10),
-            TextFormField(
-              key: const Key('record-clinic'),
-              controller: _clinic,
-              textCapitalization: TextCapitalization.words,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(labelText: l10n.vetOrClinicOptional),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              key: const Key('record-cost'),
-              controller: _cost,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
-              ],
-              textInputAction: TextInputAction.next,
-              // An amount: left to right on every screen, beside its sign.
-              textDirection: TextDirection.ltr,
-              textAlign: context.isRtl ? TextAlign.end : TextAlign.start,
-              decoration: InputDecoration(
-                labelText: ahead
-                    ? l10n.expectedCostOptional
-                    : l10n.costOptional,
-                prefixText: '${currencySymbol(_currency)} ',
-              ),
-              validator: (value) {
-                final v = value?.trim() ?? '';
-                if (v.isEmpty) return null;
-                return parseMoney(v) == null ? l10n.validAmount : null;
-              },
-            ),
-            const SizedBox(height: 6),
-            FinePrint(
-              ahead ? l10n.costNoteExpected : l10n.costNotePaid,
-              center: false,
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              key: const Key('record-notes'),
-              controller: _notes,
-              minLines: 2,
-              maxLines: 6,
-              textCapitalization: TextCapitalization.sentences,
-              decoration: InputDecoration(
-                labelText: l10n.notesOptional,
-                hintText: l10n.notesHint,
-              ),
-              validator: (value) =>
-                  (value?.length ?? 0) > 4000 ? l10n.validNotesTooLong : null,
-            ),
-            FormLabel(l10n.attachments),
-            for (final document in documents)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(bottom: 8),
-                child: DocumentRow(
-                  document: document,
-                  onRemove: () => _removeDocument(document),
-                ),
-              ),
-            for (final file in _pending)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(bottom: 8),
-                child: AttachmentRow(
-                  name: file.name,
-                  sizeBytes: file.bytes.length,
-                  isPdf: file.mimeType == 'application/pdf',
-                  bytes: _previews.putIfAbsent(
-                    file,
-                    () => Future.value(file.bytes),
+            const SizedBox(height: 8),
+            MoreDetails(
+              expanded: _moreOpen,
+              onToggle: () => setState(() => _moreOpen = !_moreOpen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 4),
+                  if (_kind.hasProduct) ...[
+                    TextFormField(
+                      key: const Key('record-product'),
+                      controller: _product,
+                      textCapitalization: TextCapitalization.sentences,
+                      textInputAction: TextInputAction.next,
+                      decoration: InputDecoration(
+                        labelText: l10n.productOptional,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                  ],
+                  if (_kind.hasNextDue && !ahead) ...[
+                    KeyedSubtree(
+                      key: _nextDueAnchor,
+                      child: PickerTile(
+                        key: const Key('record-next-due'),
+                        icon: Icons.event_repeat_rounded,
+                        label: l10n.nextDueOptional,
+                        value: _nextDue == null
+                            ? l10n.notSet
+                            : format.date(_nextDue!),
+                        placeholder: _nextDue == null,
+                        onTap: _pickNextDue,
+                        onClear: _nextDue == null
+                            ? null
+                            : () => setState(() => _nextDue = null),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    FinePrint(l10n.nextDueNote, center: false),
+                    const SizedBox(height: 10),
+                  ],
+                  if (!ahead) ...[clinic, const SizedBox(height: 10)],
+                  KeyedSubtree(
+                    key: _costAnchor,
+                    child: TextFormField(
+                      key: const Key('record-cost'),
+                      controller: _cost,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp('[0-9.,]')),
+                      ],
+                      textInputAction: TextInputAction.next,
+                      // An amount: left to right on every screen, beside its
+                      // sign.
+                      textDirection: TextDirection.ltr,
+                      textAlign: context.isRtl
+                          ? TextAlign.end
+                          : TextAlign.start,
+                      decoration: InputDecoration(
+                        labelText: ahead
+                            ? l10n.expectedCostOptional
+                            : l10n.costOptional,
+                        prefixText: '${currencySymbol(_currency)} ',
+                      ),
+                      validator: _costProblem,
+                    ),
                   ),
-                  onRemove: () => setState(() => _pending.remove(file)),
-                ),
+                  const SizedBox(height: 6),
+                  FinePrint(
+                    ahead ? l10n.costNoteExpected : l10n.costNotePaid,
+                    center: false,
+                  ),
+                  const SizedBox(height: 10),
+                  KeyedSubtree(
+                    key: _notesAnchor,
+                    child: TextFormField(
+                      key: const Key('record-notes'),
+                      controller: _notes,
+                      minLines: 2,
+                      maxLines: 6,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        labelText: l10n.notesOptional,
+                        hintText: l10n.notesHint,
+                      ),
+                      validator: _notesProblem,
+                    ),
+                  ),
+                  FormLabel(l10n.attachments),
+                  for (final document in documents)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(bottom: 8),
+                      child: DocumentRow(
+                        document: document,
+                        onRemove: () => _removeDocument(document),
+                      ),
+                    ),
+                  for (final file in _pending)
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(bottom: 8),
+                      child: AttachmentRow(
+                        name: file.name,
+                        sizeBytes: file.bytes.length,
+                        isPdf: file.mimeType == 'application/pdf',
+                        bytes: _previews.putIfAbsent(
+                          file,
+                          () => Future.value(file.bytes),
+                        ),
+                        onRemove: () => setState(() => _pending.remove(file)),
+                      ),
+                    ),
+                  OutlinedButton.icon(
+                    key: const Key('record-attach'),
+                    onPressed: _saving ? null : _attach,
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(kHealthTapTarget),
+                    ),
+                    icon: const AppIcon(Icons.attach_file_rounded),
+                    label: Text(l10n.addPhotoOrPdf),
+                  ),
+                ],
               ),
-            OutlinedButton.icon(
-              key: const Key('record-attach'),
-              onPressed: _saving ? null : _attach,
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size.fromHeight(kHealthTapTarget),
-              ),
-              icon: const AppIcon(Icons.attach_file_rounded),
-              label: Text(l10n.addPhotoOrPdf),
             ),
             if (error != null) ...[
               const SizedBox(height: 12),

@@ -3,14 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
+import 'package:pet_companion/features/health/health_format.dart';
 import 'package:pet_companion/features/health/widgets/weight_trend.dart';
 import 'package:pet_companion/l10n/l10n.dart';
+import 'package:pet_companion/widgets/pet_switcher.dart';
 
 import '../helpers.dart';
 import 'health_test_helpers.dart';
 
 // The Health tab itself in Hebrew and right to left, through the whole
-// app: the header, the four sections and what they open. An overflow
+// app: the header, the three sections and what they open. An overflow
 // anywhere fails the test by itself, and the test font makes Hebrew
 // letters as wide as Latin ones.
 
@@ -30,21 +32,21 @@ void main() {
       testWidgets('the header and what needs attention for Kelly', (tester) async {
         await pumpHealth(tester, harness: hebrewHealth(), size: size);
 
-        // The header: the tab's name, the emergency pill, the four sections.
+        // The header: the tab's name, the emergency pill, the three sections.
         expect(find.text('בריאות'), findsNWidgets(2)); // the header and the bottom bar
-        for (final label in ['סקירה', 'לוח זמנים', 'היסטוריה', 'תובנות']) {
+        for (final label in ['סקירה', 'לוח זמנים', 'רשומות']) {
           expect(find.text(label), findsWidgets, reason: label);
         }
+        expect(find.text('היסטוריה'), findsNothing);
+        expect(find.text('תובנות'), findsNothing);
         expect(find.text('חירום'), findsOneWidget);
         expect(directionOf(tester, find.byType(EmergencyButton)), TextDirection.rtl);
         // The emergency pill ends the header: on the left in Hebrew.
         expect(tester.getCenter(find.byType(EmergencyButton)).dx, lessThan(size.width / 2));
 
-        // The pet, in the Pets feature's Hebrew words; its name as typed.
-        expect(find.text('Kelly'), findsWidgets);
-        expect(find.textContaining('כלב · '), findsOneWidget);
-        expect(find.text(he.overviewLastRecord('08.06.25')), findsOneWidget);
-        expect(find.text(he.healthProfile), findsOneWidget);
+        // The pet is named by the header's chip; no pet card.
+        expect(find.byKey(PetSwitcher.chipKey), findsOneWidget);
+        expect(find.textContaining('כלב · '), findsNothing);
 
         // Coming up.
         expect(find.text('בקרוב'), findsOneWidget);
@@ -53,34 +55,46 @@ void main() {
         expect(find.textContaining('12.06.25'), findsOneWidget);
         expect(find.text('תזכורת אחת ממתינה לעדכון'), findsOneWidget);
 
-        // The quick actions.
+        // The two actions; Share is on Records.
         expect(find.text('רישום מהיר'), findsOneWidget);
         expect(find.text('הוספת רשומה'), findsOneWidget);
-        expect(find.text('שיתוף'), findsOneWidget);
+        expect(find.text('שיתוף'), findsNothing);
 
-        // The vet.
+        // The vet: its hours as typed, Call and Message; the map is on the
+        // details page.
         expect(find.text(he.vet), findsOneWidget);
         expect(find.text(he.details), findsOneWidget);
+        expect(find.text('Sun to Thu 08:00-19:00, Fri 08:00-13:00'), findsOneWidget);
         expect(find.text('חיוג'), findsOneWidget);
-        expect(find.textContaining(ltr('+972 3 555 0142')), findsOneWidget);
+        expect(find.text('הודעה'), findsOneWidget);
+        expect(find.text('מפה'), findsNothing);
 
-        // The latest facts.
+        // The rows: the health profile, the weight, the records.
         await tester.dragUntilVisible(
           find.byKey(const Key('overview-records')),
-          find.byKey(const Key('overview-pet')),
+          find.byKey(const Key('overview-coming-up')),
           const Offset(0, -200),
         );
-        expect(find.text('תרופות'), findsOneWidget);
-        expect(find.text('אחת פעילה'), findsOneWidget);
-        expect(find.text(he.lastDoseToday('08:05')), findsOneWidget);
-        expect(find.text('משקל'), findsOneWidget);
-        expect(find.text('23 ק״ג', findRichText: true), findsOneWidget);
+        final format = HealthFormat.forLocale(hebrewLocale);
+        expect(find.text(he.healthProfile), findsOneWidget);
+        expect(
+          find.text(
+            format.dots([
+              he.overviewProfileAllergies(format.commas(['Chicken (skin reaction)'])),
+              format.commas(['Arthritis in the hips']),
+              'יש שבב',
+            ]),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(he.overviewWeightRow(format.weight(23))), findsOneWidget);
         expect(find.textContaining('מאז'), findsOneWidget);
         expect(find.byType(WeightTrendChart), findsOneWidget);
-        expect(find.text('תיק רפואי'), findsOneWidget);
-        expect(find.bySemanticsLabel(he.countAndLabel(3, 'חיסונים')), findsOneWidget);
-        expect(find.bySemanticsLabel(he.countAndLabel(4, 'ביקורי וטרינר')), findsOneWidget);
-        expect(find.bySemanticsLabel(he.countAndLabel(3, 'מסמכים')), findsOneWidget);
+        expect(find.descendant(of: find.byKey(const Key('overview-records')), matching: find.text('רשומות')), findsOneWidget);
+        expect(find.text(format.dots(['3 חיסונים', '4 ביקורי וטרינר', '3 מסמכים'])), findsOneWidget);
+        // The medicines are in the Schedule.
+        expect(find.text('תרופות'), findsNothing);
+        expect(find.text(he.lastDoseToday('08:05')), findsNothing);
 
         for (final english in [
           'Health',
@@ -88,6 +102,7 @@ void main() {
           'Schedule',
           'History',
           'Insights',
+          'Records',
           'Emergency',
           'Coming up',
           'Quick log',
@@ -108,7 +123,6 @@ void main() {
         await pumpHealth(tester, harness: hebrewHealth(), size: size);
         await switchPet(tester, 'Soya');
 
-        expect(find.text(he.overviewNoCareDue), findsOneWidget);
         expect(find.text(he.startWithOneThing), findsOneWidget);
         expect(find.text(he.startNote('Soya')), findsOneWidget);
         expect(find.text(he.startDocument), findsOneWidget);
@@ -118,7 +132,9 @@ void main() {
         expect(find.text(he.startMedicine), findsOneWidget);
         expect(find.text(he.startMedicineNote), findsOneWidget);
         expect(find.text('הוספת וטרינר עבור \u2068Soya\u2069'), findsOneWidget);
-        expect(find.text('כלב'), findsOneWidget); // all that is known about Soya
+        expect(find.text(he.overviewProfileEmpty), findsOneWidget);
+        expect(find.text(he.noWeightYet), findsOneWidget);
+        expect(find.text(he.historyEmpty), findsOneWidget);
         expect(find.text('בקרוב'), findsNothing);
       });
     });
@@ -159,10 +175,10 @@ void main() {
 
     await openSection(tester, 'לוח זמנים');
     expect(find.text('היום'), findsOneWidget);
-    await openSection(tester, 'היסטוריה');
+    await openSection(tester, 'רשומות');
     expect(find.text('12 רשומות'), findsOneWidget);
-    await openSection(tester, 'תובנות');
-    expect(find.text(he.observations), findsOneWidget);
+    await tapVisible(tester, find.byKey(const Key('filter-journal')));
+    expect(find.text(he.recordsEntries(9)), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -187,6 +203,24 @@ void main() {
       expect(he.remindersNeedReview(5), '5 תזכורות ממתינות לעדכון');
       expect(en.remindersNeedReview(1), '1 reminder needs review');
       expect(en.remindersNeedReview(3), '3 reminders need review');
+    });
+
+    test('the counts of the Records row and the journal: one, two, many', () {
+      expect(he.overviewVaccinations(1), 'חיסון אחד');
+      expect(he.overviewVaccinations(2), 'שני חיסונים');
+      expect(he.overviewVaccinations(3), '3 חיסונים');
+      expect(he.overviewVetVisits(1), 'ביקור וטרינר אחד');
+      expect(he.overviewVetVisits(4), '4 ביקורי וטרינר');
+      expect(he.overviewDocuments(2), 'שני מסמכים');
+      expect(he.overviewMedicines(1), 'תרופה אחת');
+      expect(he.overviewMedicines(2), 'שתי תרופות');
+      expect(he.recordsEntries(1), 'רישום אחד');
+      expect(he.recordsEntries(9), '9 רישומים');
+      expect(en.overviewVaccinations(1), '1 vaccination');
+      expect(en.overviewVetVisits(4), '4 vet visits');
+      expect(en.overviewMedicines(1), '1 medicine');
+      expect(en.recordsEntries(1), '1 entry');
+      expect(en.recordsEntries(9), '9 entries');
     });
 
     test('active medicines: one, two, many', () {

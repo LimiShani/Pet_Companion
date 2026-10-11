@@ -6,8 +6,9 @@ import 'package:pet_companion/features/health/health_format.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
-// The History in Hebrew and right to left: the timeline and its filters,
+// Records in Hebrew and right to left: the timeline and its filters,
 // a record, its files and its cost, and the record form.
 
 final he = lookupHealthL10n(hebrewLocale);
@@ -18,7 +19,7 @@ const kelly = 'kelly';
 
 Future<HealthHarness> openHistory(WidgetTester tester, {HealthHarness? harness, Size size = widePhone}) async {
   final h = await pumpHealth(tester, harness: harness ?? hebrewHealth(), size: size);
-  await openSection(tester, h.l10n.sectionHistory);
+  await openSection(tester, h.l10n.recordsSection);
   return h;
 }
 
@@ -32,7 +33,7 @@ void main() {
   for (final size in [widePhone, smallPhone]) {
     final width = size.width.toInt();
 
-    group('History in Hebrew ($width px)', () {
+    group('Records in Hebrew ($width px)', () {
       testWidgets('the timeline, its filters and its search', (tester) async {
         await openHistory(tester, size: size);
         final format = HealthFormat.forLocale(hebrewLocale);
@@ -50,10 +51,11 @@ void main() {
         );
         expect(find.text(he.addRecord), findsOneWidget);
         expect(find.text(he.searchRecords('Kelly')), findsOneWidget);
-        for (final chip in ['הכול', 'ביקורי וטרינר', 'חיסונים', 'טיפולים מונעים', 'טיפולים', 'מסמכים']) {
+        for (final chip in ['הכול', 'ביקורי וטרינר', 'חיסונים', 'טיפולים מונעים', 'טיפולים', 'מסמכים', 'משקל', 'יומן תצפיות']) {
           expect(find.widgetWithText(ChoiceChip, chip), findsOneWidget, reason: chip);
         }
-        for (final english in ['All', 'Vaccinations', 'Documents', 'Add record', 'May 2025']) {
+        expect(find.text('שיתוף'), findsOneWidget);
+        for (final english in ['All', 'Vaccinations', 'Documents', 'Weight', 'Journal', 'Share', 'Add record', 'May 2025']) {
           expect(find.text(english), findsNothing, reason: english);
         }
         expect(directionOf(tester, find.byKey(const Key('history-count'))), TextDirection.rtl);
@@ -139,6 +141,11 @@ void main() {
         expect(find.text(he.fieldTitle), findsOneWidget);
         expect(find.text(he.fieldDate), findsOneWidget);
         expect(find.text(he.fieldTime), findsOneWidget);
+        // The rest is folded under "More details".
+        expect(find.text(he.costOptional), findsNothing);
+        expect(find.text(he.formMoreDetails), findsOneWidget);
+        await openMoreDetails(tester);
+        expect(find.text(he.formFewerDetails), findsOneWidget);
         expect(find.text(he.vetOrClinicOptional), findsOneWidget);
         expect(find.text(he.costOptional), findsOneWidget);
         expect(find.text(he.costNotePaid), findsOneWidget);
@@ -195,6 +202,7 @@ void main() {
 
         // A vaccination given today asks for the next due date.
         await tapVisible(tester, find.widgetWithText(ChoiceChip, 'חיסון'));
+        await openMoreDetails(tester);
         expect(find.text(he.productOptional), findsOneWidget);
         expect(find.text(he.nextDueOptional), findsOneWidget);
         expect(find.text(he.notSet), findsOneWidget);
@@ -216,6 +224,7 @@ void main() {
     await pumpHealth(tester, harness: hebrewHealth());
     await tester.tap(find.text('חירום'));
     await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
     await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
     await tapVisible(tester, find.byKey(const Key('kit-open-documents')));
 

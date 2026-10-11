@@ -191,14 +191,13 @@ ReminderPlan reminderPlanOf({
 // Which section of the tab is showing
 // ---------------------------------------------------------------------------
 
-/// The Health tab's four sections, in the order of the switcher. [label] is
-/// the English name, for logs; the switcher takes its words from the
-/// strings files.
+/// The Health tab's three sections, in the order of the switcher. [label]
+/// is the English name, for logs; the switcher takes its words from the
+/// strings files. What the Records section shows is [historyFilterProvider].
 enum HealthSection {
   overview('Overview'),
   schedule('Schedule'),
-  history('History'),
-  insights('Insights');
+  records('Records');
 
   const HealthSection(this.label);
 
@@ -217,17 +216,31 @@ final healthSectionProvider =
       HealthSectionController.new,
     );
 
-/// What the History timeline is narrowed to.
+/// What the Records section shows under its chips: the timeline of
+/// records, the weight chart, or the journal of what the owner noticed.
+enum RecordsView { timeline, weight, journal }
+
+/// What the Records section is narrowed to: its chip and its search.
 class HistoryFilter {
-  const HistoryFilter({this.kind, this.documentsOnly = false, this.query = ''});
+  const HistoryFilter({
+    this.kind,
+    this.documentsOnly = false,
+    this.view = RecordsView.timeline,
+    this.query = '',
+  });
 
   /// Only this kind, or every kind when `null`.
   final RecordKind? kind;
 
   /// Only records that carry a file.
   final bool documentsOnly;
+
+  /// The timeline (narrowed by [kind] and [documentsOnly]), the weight or
+  /// the journal.
+  final RecordsView view;
   final String query;
 
+  /// The timeline shows every record.
   bool get isEmpty => kind == null && !documentsOnly && query.trim().isEmpty;
 
   /// Whether [record] passes the filter. [hasFiles]: a photo or a PDF is
@@ -260,9 +273,10 @@ class HistoryFilter {
 class HistoryFilterController extends Notifier<HistoryFilter> {
   @override
   HistoryFilter build() {
-    // A different pet starts unfiltered.
+    // A different pet starts unfiltered, on the same view: the weight
+    // stays on the weight.
     ref.watch(selectedPetIdProvider);
-    return const HistoryFilter();
+    return HistoryFilter(view: stateOrNull?.view ?? RecordsView.timeline);
   }
 
   void showAll() => state = HistoryFilter(query: state.query);
@@ -270,9 +284,14 @@ class HistoryFilterController extends Notifier<HistoryFilter> {
       state = HistoryFilter(kind: kind, query: state.query);
   void showDocuments() =>
       state = HistoryFilter(documentsOnly: true, query: state.query);
+  void showWeight() =>
+      state = HistoryFilter(view: RecordsView.weight, query: state.query);
+  void showJournal() =>
+      state = HistoryFilter(view: RecordsView.journal, query: state.query);
   void search(String query) => state = HistoryFilter(
     kind: state.kind,
     documentsOnly: state.documentsOnly,
+    view: state.view,
     query: query,
   );
   void clear() => state = const HistoryFilter();

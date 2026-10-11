@@ -241,7 +241,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Opened again, this time from the Emergency card.
-      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
       await tapVisible(tester, find.byKey(const Key('open-lost-card')));
       expect(find.widgetWithText(TextFormField, 'Florentin, Tel Aviv'), findsOneWidget);
       expect(find.widgetWithText(TextFormField, phone), findsOneWidget);

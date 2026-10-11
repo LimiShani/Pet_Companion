@@ -16,6 +16,7 @@ import '../../../presentation/health_format.dart';
 import '../../../presentation/health_strings.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/health_widgets.dart';
+import '../../../presentation/more_details.dart';
 import '../../../presentation/schedule/schedule_form_widgets.dart';
 
 /// Opens the add / edit medicine page over the whole app. Returns the
@@ -65,6 +66,13 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
   var _days = CarePlanItem.everyDay;
   bool _saving = false;
 
+  /// Whether "More details" is open. An edited medicine opens it when a
+  /// field folded in it has something in it.
+  late bool _moreOpen;
+
+  /// The last day, which a failed save scrolls to.
+  final _endAnchor = GlobalKey();
+
   /// The fields as the page opened, to tell whether anything changed.
   late final List<Object?> _initial;
 
@@ -96,6 +104,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
       _times = [for (final item in items) item.time];
       if (items.isNotEmpty) _days = items.first.days;
     }
+    _moreOpen =
+        _strength.text.trim().isNotEmpty ||
+        _route.isNotEmpty ||
+        _end != null ||
+        _prescribedBy.text.trim().isNotEmpty;
     _initial = _fields();
   }
 
@@ -175,6 +188,11 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
     final end = _end;
     if (start != null && end != null && end.isBefore(start)) {
       setState(() => _error = context.healthL10n.validLastBeforeFirst);
+      // The last day is folded under "More details": open it there.
+      if (!_moreOpen) {
+        setState(() => _moreOpen = true);
+        MoreDetails.scrollToOnceOpen(_endAnchor);
+      }
       return;
     }
     if (_times.isNotEmpty && _days.isEmpty) {
@@ -303,16 +321,6 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
             ),
             const SizedBox(height: 10),
             TextFormField(
-              key: const Key('medicine-strength'),
-              controller: _strength,
-              textInputAction: TextInputAction.next,
-              decoration: InputDecoration(
-                labelText: l10n.strengthOptional,
-                hintText: l10n.strengthHint,
-              ),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
               key: const Key('medicine-dose'),
               controller: _dose,
               textInputAction: TextInputAction.next,
@@ -321,22 +329,7 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                 hintText: l10n.doseHint,
               ),
             ),
-            FormLabel(l10n.howItIsGiven),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                for (final route in routes)
-                  ChoiceChip(
-                    key: ValueKey('route-$route'),
-                    label: Text(l10n.medicineRoute(route)),
-                    selected: route == _route,
-                    onSelected: (selected) =>
-                        setState(() => _route = selected ? route : ''),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             TextFormField(
               key: const Key('medicine-frequency'),
               controller: _frequency,
@@ -355,23 +348,6 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
               value: _start == null ? l10n.notSet : format.date(_start!),
               placeholder: _start == null,
               onTap: _pickStart,
-            ),
-            const SizedBox(height: 10),
-            PickerTile(
-              key: const Key('medicine-end'),
-              icon: Icons.event_busy_rounded,
-              label: l10n.endOptional,
-              value: _end == null ? l10n.noEnd : format.date(_end!),
-              placeholder: _end == null,
-              onTap: _pickEnd,
-              onClear: _end == null ? null : () => setState(() => _end = null),
-            ),
-            const SizedBox(height: 10),
-            TextFormField(
-              key: const Key('medicine-prescribed-by'),
-              controller: _prescribedBy,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(labelText: l10n.prescribedByOptional),
             ),
             FormLabel(l10n.reminders),
             Wrap(
@@ -410,6 +386,65 @@ class _MedicineFormScreenState extends ConsumerState<MedicineFormScreen> {
                   ? l10n.medicineNoTimesNote
                   : l10n.medicineReminderNote,
               center: false,
+            ),
+            const SizedBox(height: 8),
+            MoreDetails(
+              expanded: _moreOpen,
+              onToggle: () => setState(() => _moreOpen = !_moreOpen),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 4),
+                  TextFormField(
+                    key: const Key('medicine-strength'),
+                    controller: _strength,
+                    textInputAction: TextInputAction.next,
+                    decoration: InputDecoration(
+                      labelText: l10n.strengthOptional,
+                      hintText: l10n.strengthHint,
+                    ),
+                  ),
+                  FormLabel(l10n.howItIsGiven),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final route in routes)
+                        ChoiceChip(
+                          key: ValueKey('route-$route'),
+                          label: Text(l10n.medicineRoute(route)),
+                          selected: route == _route,
+                          onSelected: (selected) =>
+                              setState(() => _route = selected ? route : ''),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  KeyedSubtree(
+                    key: _endAnchor,
+                    child: PickerTile(
+                      key: const Key('medicine-end'),
+                      icon: Icons.event_busy_rounded,
+                      label: l10n.endOptional,
+                      value: _end == null ? l10n.noEnd : format.date(_end!),
+                      placeholder: _end == null,
+                      onTap: _pickEnd,
+                      onClear: _end == null
+                          ? null
+                          : () => setState(() => _end = null),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('medicine-prescribed-by'),
+                    controller: _prescribedBy,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      labelText: l10n.prescribedByOptional,
+                    ),
+                  ),
+                ],
+              ),
             ),
             if (error != null) ...[
               const SizedBox(height: 12),

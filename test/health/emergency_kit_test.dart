@@ -30,6 +30,7 @@ void main() {
 
   Future<HealthHarness> openKit(WidgetTester tester, String petId, {HealthHarness? harness}) async {
     final h = await openSheet(tester, petId, harness: harness);
+    await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
     await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
     return h;
   }
@@ -41,16 +42,19 @@ void main() {
   };
 
   group('Emergency kit', () {
-    testWidgets('is one tap from the emergency sheet, with its count', (tester) async {
+    testWidgets('is counted on the emergency sheet and opens from the Emergency card', (tester) async {
       await openSheet(tester, kelly);
 
-      expect(find.text('Emergency kit'), findsOneWidget);
-      expect(find.text('3 of 6 ready'), findsOneWidget);
+      expect(find.text('Emergency card and kit'), findsOneWidget);
+      expect(find.text('Allergies, medicines, microchip · kit 3 of 6 ready'), findsOneWidget);
       // The contacts still come first.
       final call = tester.getTopLeft(find.byKey(const ValueKey('call-regular'))).dy;
-      final kit = tester.getTopLeft(find.byKey(const Key('open-emergency-kit'))).dy;
-      expect(call, lessThan(kit));
+      final card = tester.getTopLeft(find.byKey(const Key('open-emergency-card'))).dy;
+      expect(call, lessThan(card));
 
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
+      expect(find.text('Emergency kit'), findsOneWidget);
+      expect(find.text('3 of 6 ready'), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
       expect(find.text("Kelly's emergency kit"), findsOneWidget);
       expect(find.text('3 of 6 ready'), findsOneWidget);
@@ -96,12 +100,18 @@ void main() {
       expect(find.text('3 of 6 ready'), findsOneWidget);
       expect((await stored(tester, h, kelly))[KitItem.carrier]!.checkedAt, isNull);
 
-      // Back on the sheet the row already shows the new count.
+      // Back on the Emergency card the row already shows the new count, and
+      // so does the sheet.
       await tapVisible(tester, find.byKey(const ValueKey('kit-carrier')));
       await tester.pageBack();
       await tester.pumpAndSettle();
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Emergency card'), findsOneWidget);
       expect(find.text('4 of 6 ready'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(EmergencyButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Allergies, medicines, microchip · kit 4 of 6 ready'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -199,7 +209,7 @@ void main() {
 
     testWidgets('is also on the Emergency card, and readable by other tabs', (tester) async {
       await openSheet(tester, kelly);
-      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
       expect(find.text('Emergency card'), findsOneWidget);
       await tester.ensureVisible(find.byKey(const Key('open-emergency-kit')));
       expect(find.text('3 of 6 ready'), findsOneWidget);
@@ -226,7 +236,8 @@ void main() {
       expect(find.text('900 111 222 · your phone number in the chip registry is current.'), findsOneWidget);
       await tester.pageBack();
       await tester.pumpAndSettle();
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Emergency card'), findsOneWidget);
+      expect(find.text('900 111 222'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });

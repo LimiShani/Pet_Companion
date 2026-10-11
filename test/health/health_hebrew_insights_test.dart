@@ -12,9 +12,9 @@ import 'package:pet_companion/models/pet.dart';
 
 import 'health_test_helpers.dart';
 
-// Insights and the Quick log in Hebrew and right to left: the weight card
-// and its chart (which runs left to right in both languages), the journal,
-// and the Quick log for a dog, a cat and a reptile.
+// The weight, the journal and the Quick log in Hebrew and right to left:
+// Records on Weight (whose chart runs left to right in both languages),
+// Records on Journal, and the Quick log for a dog, a cat and a reptile.
 
 final he = lookupHealthL10n(hebrewLocale);
 final en = lookupHealthL10n(englishLocale);
@@ -28,9 +28,15 @@ const rio = Pet(id: 'rio', name: 'Rio', species: PetSpecies.bird);
 /// screen, with chips of its own).
 Finder inSheet(Finder finder) => find.descendant(of: find.byType(QuickLogSheet), matching: finder);
 
-Future<HealthHarness> openInsights(WidgetTester tester, {HealthHarness? harness, Size size = widePhone}) async {
+/// Opens Records on [chip]: the weight, unless said otherwise.
+Future<HealthHarness> openInsights(
+  WidgetTester tester, {
+  HealthHarness? harness,
+  Size size = widePhone,
+  String chip = 'filter-weight',
+}) async {
   final h = await pumpHealth(tester, harness: harness ?? hebrewHealth(), size: size);
-  await openSection(tester, h.l10n.sectionInsights);
+  await openRecords(tester, chip: chip, label: h.l10n.recordsSection);
   return h;
 }
 
@@ -42,7 +48,7 @@ void main() {
   for (final size in [widePhone, smallPhone]) {
     final width = size.width.toInt();
 
-    group('Insights in Hebrew ($width px)', () {
+    group('Weight and journal in Hebrew ($width px)', () {
       testWidgets('the weight card, its chart and the journal', (tester) async {
         await openInsights(tester, size: size);
         final format = HealthFormat.forLocale(hebrewLocale);
@@ -88,22 +94,28 @@ void main() {
         expect(tester.getCenter(find.text('18.09.24')).dx, lessThan(tester.getCenter(find.text('01.06.25').last).dx));
 
         // The journal.
-        expect(find.text(he.observations), findsOneWidget);
+        await tapVisible(tester, find.byKey(const Key('filter-journal')));
+        expect(find.text(he.recordsEntries(9)), findsOneWidget);
+        expect(find.widgetWithText(ChoiceChip, 'קטגוריה'), findsOneWidget);
         expect(find.text(format.dots(['תנועה', 'פחות מהרגיל'])), findsOneWidget);
         expect(find.text(format.dots(['תיאבון', 'כרגיל'])), findsOneWidget);
         expect(find.text(format.dots(['משקל', format.weight(23)])), findsOneWidget);
         expect(find.text(format.dots(['08.06.25', 'Stiff getting up in the morning'])), findsOneWidget);
         expect(find.text(he.insightsFinePrint), findsOneWidget);
-        for (final chip in ['הכול', 'משקל', 'תיאבון', 'אנרגיה', 'תנועה']) {
-          expect(find.widgetWithText(ChoiceChip, chip), findsOneWidget, reason: chip);
-        }
-        for (final english in ['Weight', 'Observations', 'Log weight', 'vet visit', 'All']) {
+        for (final english in ['Weight', 'Journal', 'Category', 'Log weight', 'vet visit', 'All', 'Share']) {
           expect(find.text(english), findsNothing, reason: english);
         }
 
-        await tapVisible(tester, find.byKey(const ValueKey('journal-mobility')));
+        // The categories are in the Category menu.
+        await tapVisible(tester, find.byKey(const Key('journal-category')));
+        for (final entry in ['הכול', 'משקל', 'תיאבון', 'אנרגיה', 'תנועה']) {
+          expect(find.widgetWithText(PopupMenuItem<int>, entry), findsOneWidget, reason: entry);
+        }
+        await tester.tap(find.byKey(const ValueKey('journal-mobility')).last);
+        await tester.pumpAndSettle();
         expect(find.text(format.dots(['תיאבון', 'כרגיל'])), findsNothing);
-        await tapVisible(tester, find.byKey(const Key('journal-all')));
+        expect(find.widgetWithText(ChoiceChip, 'תנועה'), findsOneWidget);
+        await pickJournalCategory(tester, 'journal-all');
         expect(find.text(format.dots(['תיאבון', 'כרגיל'])), findsOneWidget);
       });
 
@@ -160,6 +172,7 @@ void main() {
         expect(find.text('22.8 ק״ג', findRichText: true), findsOneWidget);
 
         // Changing and deleting an entry.
+        await tapVisible(tester, find.byKey(const Key('filter-journal')));
         await tapVisible(tester, find.byKey(const ValueKey('observation-o-energy')));
         expect(find.text(he.editEntry), findsOneWidget);
         expect(find.text(he.saveChanges), findsOneWidget);
@@ -198,7 +211,7 @@ void main() {
       });
 
       testWidgets('a pet with nothing logged is invited to the Quick log', (tester) async {
-        await openInsights(tester, size: size);
+        await openInsights(tester, size: size, chip: 'filter-journal');
         await switchPet(tester, 'Soya');
         expect(find.text(he.insightsEmpty), findsOneWidget);
         expect(find.text(he.insightsEmptyNote('Soya')), findsOneWidget);
@@ -244,7 +257,7 @@ void main() {
     expect(he.quickLogCategory(SpeciesSettings.of(PetSpecies.dog).category('made_up')), 'Made up');
   });
 
-  group('plural forms of Insights', () {
+  group('plural forms of the weight and the journal', () {
     test('weigh-ins: one, two, many', () {
       expect(he.weighIns(1), 'שקילה אחת');
       expect(he.weighIns(2), 'שתי שקילות');

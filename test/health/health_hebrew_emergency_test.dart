@@ -63,25 +63,38 @@ void main() {
       await tester.tap(find.byType(EmergencyButton));
       await tester.pumpAndSettle();
       expect(find.text(he.emergencySheetTitle('Kelly')), findsOneWidget);
-      expect(find.text(he.emergencySheetSubtitle), findsOneWidget);
       expect(find.text('וטרינר קבוע'), findsOneWidget);
       expect(find.text('וטרינר חירום (24 שעות)'), findsOneWidget);
       expect(find.text('איש קשר לחירום'), findsOneWidget);
-      expect(find.text('חיוג'), findsNWidgets(3));
-      expect(find.text('הודעה'), findsNWidgets(3));
-      expect(find.text('מפה'), findsNWidgets(2));
-      expect(find.text(he.openEmergencyCardOf('Kelly')), findsOneWidget);
-      expect(find.text(he.emergencyKit), findsOneWidget);
+      // One Call now; Message and Directions under it; the others are rows.
+      expect(find.text(he.emergencyCallNow), findsOneWidget);
+      expect(find.text('חיוג עכשיו'), findsOneWidget);
+      expect(find.text('הודעה'), findsOneWidget);
+      expect(find.text(he.emergencyDirections), findsOneWidget);
+      expect(find.text('מפה'), findsNothing);
+      expect(find.byTooltip(he.emergencyCallNamed('Dr. Levi, Park Vet Clinic')), findsOneWidget);
+      expect(find.byTooltip(he.emergencyMessageNamed('Dana (sister)')), findsOneWidget);
+      expect(find.text(he.emergencyCardAndKit), findsOneWidget);
+      expect(find.text(he.emergencyCardAndKitNoteKit(3, 6)), findsOneWidget);
       expect(find.text(he.petIsLost('Kelly')), findsOneWidget);
-      expect(find.text(he.safetyLine), findsOneWidget);
-      for (final english in ['Call', 'Message', 'Map', 'Regular vet', 'Emergency contact', 'Emergency kit']) {
+      expect(find.text(he.emergencySheetFinePrint), findsOneWidget);
+      expect(find.text(he.safetyLine), findsNothing);
+      for (final english in [
+        'Call now',
+        'Message',
+        'Directions',
+        'Regular vet',
+        'REGULAR VET',
+        'Emergency contact',
+        'Emergency card and kit',
+      ]) {
         expect(find.text(english), findsNothing, reason: english);
       }
       // What the owner typed stays as typed; a phone number stays in one
       // piece, left to right.
       expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
-      expect(find.text(ltr(parkPhone)), findsOneWidget);
-      expect(find.text(parkPhone), findsNothing);
+      expect(find.text(ltr('+972 3 555 0199')), findsOneWidget);
+      expect(find.text('+972 3 555 0199'), findsNothing);
 
       // Call still dials the plain number.
       await tapVisible(tester, find.byKey(const ValueKey('call-regular')));
@@ -121,7 +134,7 @@ void main() {
     testWidgets('the Emergency card, the vets and the vet form in Hebrew ($width px)', (tester) async {
       await openSheet(tester, kelly, size: size);
 
-      await tapVisible(tester, find.text(he.openEmergencyCardOf('Kelly')));
+      await tapVisible(tester, find.text(he.emergencyCardAndKit));
       expect(find.text('כרטיס חירום'), findsOneWidget);
       expect(directionOf(tester, find.text('כרטיס חירום')), TextDirection.rtl);
       // The back arrow leads: it is on the right in Hebrew.
@@ -135,7 +148,9 @@ void main() {
       // Kind, breed, age and weight in the Pets feature's Hebrew words.
       expect(find.textContaining('כלב · '), findsOneWidget);
       expect(find.textContaining('שנים'), findsOneWidget);
-      expect(find.text(he.shareSummary), findsOneWidget);
+      // Share is in the header only, and who to call is on the sheet.
+      expect(find.text(he.shareSummary), findsNothing);
+      expect(find.text(he.emergencyCallNow), findsNothing);
       expect(find.text(he.editHealthProfile), findsOneWidget);
       expect(find.text(he.emergencyCardFinePrint), findsOneWidget);
       expect(find.text('Emergency card'), findsNothing);
@@ -299,8 +314,11 @@ void main() {
 
     testWidgets('the emergency kit in Hebrew ($width px)', (tester) async {
       await openSheet(tester, kelly, size: size);
-      expect(find.text(he.kitSomeReady(3, 6)), findsOneWidget);
+      expect(find.text(he.emergencyCardAndKitNoteKit(3, 6)), findsOneWidget);
 
+      // Through the Emergency card.
+      await tapVisible(tester, find.text(he.emergencyCardAndKit));
+      expect(find.text(he.kitSomeReady(3, 6)), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
       expect(find.text(he.petsEmergencyKit('Kelly')), findsOneWidget);
       expect(find.text('3 מתוך 6 מוכנים'), findsOneWidget);
@@ -343,7 +361,7 @@ void main() {
     await tester.tap(find.text(appHe.commonClose));
     await tester.pumpAndSettle();
 
-    await tapVisible(tester, find.byKey(const ValueKey('map-regular')));
+    await tapVisible(tester, find.byKey(const ValueKey('map-emergency')));
     expect(find.text(he.couldNotOpenMaps), findsOneWidget);
     expect(find.text(he.copyAddress), findsOneWidget);
     await tester.tap(find.text(appHe.commonClose));
@@ -377,9 +395,15 @@ void main() {
     final h = HealthHarness(language: language);
     await real(tester, () => h.repository.saveProfile(const HealthProfile(petId: soya, contactPhone: '050 111 2222')));
     await openSheet(tester, soya, harness: h);
-    // Once as who it is, once in place of the name nobody typed.
-    expect(find.text(h.l10n.emergencyContact), findsNWidgets(2));
-    expect(find.text(h.isHebrew ? 'איש קשר לחירום' : 'Emergency contact'), findsNWidgets(2));
+    // Once as who it is (in small capitals in English), once in place of
+    // the name nobody typed.
+    if (h.isHebrew) {
+      expect(find.text('איש קשר לחירום'), findsNWidgets(2));
+    } else {
+      expect(find.text('EMERGENCY CONTACT'), findsOneWidget);
+      expect(find.text('Emergency contact'), findsOneWidget);
+    }
+    expect(find.text(h.l10n.emergencyCallNow), findsOneWidget);
   });
 
   group('failure reasons', () {

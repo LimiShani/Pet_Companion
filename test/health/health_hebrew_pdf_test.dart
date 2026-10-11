@@ -164,7 +164,8 @@ void main() {
   group('the summary PDF in Hebrew', () {
     testWidgets('is made from the Hebrew screen, in Hebrew', (tester) async {
       final h = await pumpHealth(tester, harness: hebrewHealth());
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await openSection(tester, he.recordsSection);
+      await tapVisible(tester, find.byKey(const Key('records-share')));
 
       final report = h.pdf.last;
       expect(report.rightToLeft, isTrue);
@@ -193,7 +194,8 @@ void main() {
 
     testWidgets('builds as text in the embedded fonts, right to left, with nothing missing', (tester) async {
       final h = await pumpHealth(tester, harness: hebrewHealth());
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await openSection(tester, he.recordsSection);
+      await tapVisible(tester, find.byKey(const Key('records-share')));
       final report = h.pdf.last;
 
       final (bytes, warnings) = (await tester.runAsync(() => printed(() => readable.build(report))))!;
@@ -233,7 +235,7 @@ void main() {
   group('the record PDF in Hebrew', () {
     testWidgets('is made from the Hebrew record page, and builds right to left', (tester) async {
       final h = await pumpHealth(tester, harness: hebrewHealth());
-      await openSection(tester, he.sectionHistory);
+      await openSection(tester, he.recordsSection);
       await tapVisible(tester, find.text('Rabies booster'));
       await tapVisible(tester, find.byKey(const Key('record-share')));
 

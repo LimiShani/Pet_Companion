@@ -13,6 +13,7 @@ import 'package:pet_companion/features/pets/profile/pet_profile_screen.dart';
 import 'package:pet_companion/features/store/share_deal_screen.dart';
 
 import '../health/health_test_helpers.dart';
+import '../health/more_details_test_helpers.dart';
 import '../helpers.dart';
 import '../store/store_test_helpers.dart' show pumpStore;
 
@@ -125,6 +126,7 @@ void main() {
 
     // The arrow in the header, and a choice (not typed text) as the change.
     await open();
+    await openMoreDetails(tester);
     await tapVisible(tester, find.byKey(const ValueKey('route-In the ear')));
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
@@ -142,7 +144,7 @@ void main() {
 
   testWidgets('a record', (tester) async {
     await pumpHealth(tester);
-    await openSection(tester, 'History');
+    await openSection(tester, 'Records');
     final page = find.byType(RecordFormScreen);
 
     await checkPage(
@@ -164,7 +166,7 @@ void main() {
     await pumpHealth(tester);
     await tester.tap(find.byType(EmergencyButton));
     await tester.pumpAndSettle();
-    await tapText(tester, "Open Kelly's Emergency card");
+    await tapText(tester, 'Emergency card and kit');
     await tapText(tester, "Kelly's vets");
     final page = find.byType(VetFormScreen);
 
@@ -209,6 +211,7 @@ void main() {
     await pumpHealth(tester);
     await tester.tap(find.byType(EmergencyButton));
     await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
     await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
     final page = find.byType(HealthProfileScreen);
 

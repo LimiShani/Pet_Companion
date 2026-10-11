@@ -9,6 +9,7 @@ import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -19,7 +20,7 @@ void main() {
 
   Future<HealthHarness> openHistory(WidgetTester tester, {HealthHarness? harness}) async {
     final h = await pumpHealth(tester, harness: harness);
-    await openSection(tester, 'History');
+    await openSection(tester, 'Records');
     return h;
   }
 
@@ -47,7 +48,7 @@ void main() {
   });
 
   group('Cost on a record', () {
-    testWidgets('shows as a tag on the History card and a row on the record', (tester) async {
+    testWidgets('shows as a tag on the Records card and a row on the record', (tester) async {
       await openHistory(tester);
 
       expect(tag(tester, 'r-limp'), '₪320');
@@ -64,6 +65,7 @@ void main() {
     testWidgets('is entered in the record form, optional, and validated', (tester) async {
       final h = await openHistory(tester);
       await tapVisible(tester, find.text('Add record'));
+      await openMoreDetails(tester);
       expect(find.text('Cost (optional)'), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('record-title')), 'Nail trim');
@@ -107,6 +109,7 @@ void main() {
       await tapVisible(tester, find.byKey(const ValueKey('planned-r-check')));
       await tester.tap(find.byTooltip('Edit record'));
       await tester.pumpAndSettle();
+      await openMoreDetails(tester);
       expect(find.text('Expected cost (optional)'), findsOneWidget);
       await tester.enterText(find.byKey(const Key('record-cost')), '250');
       await tapVisible(tester, find.text('Save record'));

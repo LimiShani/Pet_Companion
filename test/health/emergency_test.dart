@@ -87,7 +87,7 @@ void main() {
     testWidgets('a vet edited from the Emergency card shows on every page below', (tester) async {
       // Opened from another tab: the Health tab itself is not on screen.
       await openSheet(tester, kelly);
-      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
       expect(find.text('Emergency card'), findsOneWidget);
 
       await tapVisible(tester, find.text("Kelly's vets"));
@@ -99,33 +99,161 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
       expect(find.text('Emergency card'), findsOneWidget);
+      // The card lists no contacts; the sheet, opened again, has the new name.
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(EmergencyButton));
+      await tester.pumpAndSettle();
       expect(find.text('Riverside Vets'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('lists the vets and the contact, and Call opens the dialler', (tester) async {
+    testWidgets('leads with one Call now for the 24 h vet; the others are rows', (tester) async {
       final h = await openSheet(tester, kelly);
+      final primary = find.byKey(const Key('emergency-primary'));
+      final others = find.byKey(const Key('emergency-other-contacts'));
 
       expect(find.text('Emergency · Kelly'), findsOneWidget);
-      expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
-      expect(find.text('City Animal Hospital'), findsOneWidget);
-      expect(find.text('Dana (sister)'), findsOneWidget);
-      expect(find.textContaining('never contacts anyone on its own'), findsOneWidget);
+      // One obvious action: the emergency vet, in one card, with its number.
+      expect(find.text('Call now'), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('EMERGENCY VET (24 H)')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('City Animal Hospital')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('+972 3 555 0199')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.byKey(const ValueKey('call-emergency'))), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('Message')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('Directions')), findsOneWidget);
 
-      await tapVisible(tester, find.byKey(const ValueKey('call-regular')));
+      // The regular vet and Dana: a row each, with round Message and Call.
+      expect(find.descendant(of: others, matching: find.text('REGULAR VET')), findsOneWidget);
+      expect(find.descendant(of: others, matching: find.text('Dr. Levi, Park Vet Clinic')), findsOneWidget);
+      expect(find.descendant(of: others, matching: find.text('EMERGENCY CONTACT')), findsOneWidget);
+      expect(find.descendant(of: others, matching: find.text('Dana (sister)')), findsOneWidget);
+      for (final name in ['Dr. Levi, Park Vet Clinic', 'Dana (sister)']) {
+        expect(find.byTooltip('Call $name'), findsOneWidget, reason: name);
+        expect(find.byTooltip('Message $name'), findsOneWidget, reason: name);
+      }
+      expect(find.byKey(const ValueKey('call-regular')), findsOneWidget);
+      expect(find.byKey(const ValueKey('message-contact')), findsOneWidget);
+      // No more Call / Message / Map on every contact.
+      expect(find.text('Call'), findsNothing);
+      expect(find.text('Map'), findsNothing);
+      expect(find.byKey(const ValueKey('map-regular')), findsNothing);
+      expect(find.byKey(const ValueKey('map-contact')), findsNothing);
+
+      // The three plain rows and the short fine print.
+      expect(find.text('Find an emergency vet nearby'), findsOneWidget);
+      expect(find.text('Emergency card and kit'), findsOneWidget);
+      expect(find.text('Allergies, medicines, microchip · kit 3 of 6 ready'), findsOneWidget);
+      expect(find.text('Kelly is lost'), findsOneWidget);
+      expect(find.text('You place the call or send the message yourself.'), findsOneWidget);
+      expect(find.textContaining('never contacts anyone on its own'), findsNothing);
+      expect(find.textContaining('veterinary advice'), findsNothing);
+      expect(find.text("Open Kelly's Emergency card"), findsNothing);
+      final fine = tester.getTopLeft(find.text('You place the call or send the message yourself.')).dy;
+      expect(tester.getTopLeft(find.text('Kelly is lost')).dy, lessThan(fine));
+      expect(tester.getTopLeft(find.text('Call now')).dy, lessThan(tester.getTopLeft(others).dy));
+
+      // Call now dials the emergency vet; Directions opens its address.
+      await tapVisible(tester, find.text('Call now'));
       expect(h.launcher.calls, hasLength(1));
       expect(h.launcher.calls.single.action, ContactAction.call);
-      expect(h.launcher.calls.single.target, parkPhone);
-
-      await tapVisible(tester, find.byKey(const ValueKey('call-emergency')));
-      expect(h.launcher.calls.last.target, '+972 3 555 0199');
+      expect(h.launcher.calls.single.target, '+972 3 555 0199');
 
       await tapVisible(tester, find.byKey(const ValueKey('map-emergency')));
       expect(h.launcher.calls.last.action, ContactAction.map);
       expect(h.launcher.calls.last.target, '80 Harbour Road, Tel Aviv');
 
-      // The contact person has no address: no Map button.
-      expect(find.byKey(const ValueKey('map-contact')), findsNothing);
+      // A row's round Call dials that contact.
+      await tapVisible(tester, find.byTooltip('Call Dr. Levi, Park Vet Clinic'));
+      expect(h.launcher.calls.last.action, ContactAction.call);
+      expect(h.launcher.calls.last.target, parkPhone);
+    });
+
+    testWidgets('the Emergency card and kit row opens the card', (tester) async {
+      await openSheet(tester, kelly);
+      await tapVisible(tester, find.text('Emergency card and kit'));
+      expect(find.text('Emergency card'), findsOneWidget);
+      expect(find.text('Emergency · Kelly'), findsNothing);
+    });
+
+    testWidgets('with only a regular vet, the regular vet leads', (tester) async {
+      final h = HealthHarness();
+      await real(tester, () => h.repository.saveProfile(const HealthProfile(petId: soya, regularVetId: 'v-park')));
+      await openSheet(tester, soya, harness: h);
+      final primary = find.byKey(const Key('emergency-primary'));
+
+      expect(find.text('Call now'), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('REGULAR VET')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('Dr. Levi, Park Vet Clinic')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.byKey(const ValueKey('call-regular'))), findsOneWidget);
+      expect(find.byKey(const Key('emergency-other-contacts')), findsNothing);
+      expect(find.byKey(const Key('add-vet-prompt')), findsNothing);
+
+      await tapVisible(tester, find.text('Call now'));
+      expect(h.launcher.calls.single.target, parkPhone);
+    });
+
+    testWidgets('with only an emergency contact, the contact leads and a vet is asked for', (tester) async {
+      final h = HealthHarness();
+      await real(
+        tester,
+        () => h.repository.saveProfile(
+          const HealthProfile(petId: soya, contactName: 'Noa', contactPhone: '050 111 2222'),
+        ),
+      );
+      await openSheet(tester, soya, harness: h);
+      final primary = find.byKey(const Key('emergency-primary'));
+
+      expect(find.descendant(of: primary, matching: find.text('EMERGENCY CONTACT')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('Noa')), findsOneWidget);
+      // No address: Message alone under Call now.
+      expect(find.descendant(of: primary, matching: find.text('Message')), findsOneWidget);
+      expect(find.text('Directions'), findsNothing);
+      expect(find.byKey(const Key('add-vet-prompt')), findsOneWidget);
+      expect(find.text("Add Soya's vet"), findsOneWidget);
+
+      await tapVisible(tester, find.text('Call now'));
+      expect(h.launcher.calls.single.target, '050 111 2222');
+    });
+
+    testWidgets('with nothing saved, the add-a-vet prompt takes the place of Call now', (tester) async {
+      await openSheet(tester, soya);
+
+      expect(find.text('No vet saved for Soya yet'), findsOneWidget);
+      expect(find.byKey(const Key('add-new-vet')), findsOneWidget);
+      expect(find.text('Call now'), findsNothing);
+      expect(find.byKey(const Key('emergency-primary')), findsNothing);
+      // The rows below still lead on.
+      expect(find.text('Find an emergency vet nearby'), findsOneWidget);
+      expect(find.text('Emergency card and kit'), findsOneWidget);
+      expect(find.text('Soya is lost'), findsOneWidget);
+      expect(find.text('You place the call or send the message yourself.'), findsOneWidget);
+    });
+
+    testWidgets('the Emergency card has no contact list and one Share', (tester) async {
+      await openSheet(tester, kelly);
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
+      expect(find.text('Emergency card'), findsOneWidget);
+
+      // Who to call is on the sheet only.
+      for (final tag in ['regular', 'emergency', 'contact']) {
+        expect(find.byKey(ValueKey('call-$tag')), findsNothing, reason: tag);
+        expect(find.byKey(ValueKey('message-$tag')), findsNothing, reason: tag);
+        expect(find.byKey(ValueKey('map-$tag')), findsNothing, reason: tag);
+      }
+      expect(find.text('Dana (sister)'), findsNothing);
+      expect(find.text('Call now'), findsNothing);
+      // Share once, in the header.
+      expect(find.byTooltip('Share summary'), findsOneWidget);
+      expect(find.byKey(const Key('share-summary')), findsNothing);
+      expect(find.text('Share summary'), findsNothing);
+      // The rest stays.
+      expect(find.text('Microchip'), findsOneWidget);
+      expect(find.text('Allergies'), findsOneWidget);
+      await tester.ensureVisible(find.byKey(const Key('open-emergency-kit')));
+      expect(find.byKey(const Key('open-lost-card')), findsOneWidget);
+      expect(find.text("Kelly's vets"), findsOneWidget);
+      expect(find.textContaining('does not replace veterinary advice'), findsOneWidget);
     });
 
     testWidgets('Message pre-fills the essentials and the owner sends it', (tester) async {
@@ -255,7 +383,7 @@ void main() {
       expect(find.byKey(const Key('emergency-dot')), findsOneWidget);
     });
 
-    testWidgets('the one-tap call dials the first saved number, or asks for a vet', (tester) async {
+    testWidgets('the one-tap call dials the 24 h clinic first, or asks for a vet', (tester) async {
       final h = await pumpHealthHost(tester, onCoral(kelly));
       final context = tester.element(find.byType(EmergencyButton));
 
@@ -263,7 +391,7 @@ void main() {
       unawaited(callPrimaryEmergencyContact(context, kelly).then((value) => dialled = value));
       await tester.pumpAndSettle();
       expect(dialled, isTrue);
-      expect(h.launcher.calls.single.target, parkPhone);
+      expect(h.launcher.calls.single.target, '+972 3 555 0199');
 
       unawaited(callPrimaryEmergencyContact(context, soya));
       await tester.pumpAndSettle();
@@ -375,8 +503,9 @@ void main() {
       final k = (await settled(tester, emergencyContactsProvider(kelly))).value!;
       expect(k.isEmpty, isFalse);
       expect(k.hasPhone, isTrue);
-      expect(k.primaryPhone, parkPhone);
-      expect(k.primaryName, 'Dr. Levi, Park Vet Clinic');
+      // The 24 h clinic first, as the Emergency sheet leads with it.
+      expect(k.primaryPhone, '+972 3 555 0199');
+      expect(k.primaryName, 'City Animal Hospital');
       expect(k.regularVet!.onWhatsApp, isTrue);
       expect(k.emergencyVet!.address, '80 Harbour Road, Tel Aviv');
       expect(k.contact!.name, 'Dana (sister)');

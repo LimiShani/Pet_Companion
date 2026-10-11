@@ -59,7 +59,8 @@ Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
 | English | Hebrew |
 |---|---|
 | Home · Health · Community · Store | בית · בריאות · קהילה · חנות |
-| Overview · Schedule · History · Insights | סקירה · לוח זמנים · היסטוריה · תובנות |
+| Overview · Schedule · Records | סקירה · לוח זמנים · רשומות |
+| Journal (Records filter) | יומן תצפיות |
 | Feed · Chat · Guides | פיד · צ׳אט · מדריכים |
 | pet, pets, "2 pets" | חיה, חיות, "2 חיות" |
 | Add a pet | הוספת חיה |

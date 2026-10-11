@@ -18,10 +18,92 @@ class HealthL10nEn extends HealthL10n {
   String get sectionSchedule => 'Schedule';
 
   @override
-  String get sectionHistory => 'History';
+  String get recordsSection => 'Records';
 
   @override
-  String get sectionInsights => 'Insights';
+  String get recordsJournal => 'Journal';
+
+  @override
+  String get recordsCategory => 'Category';
+
+  @override
+  String recordsEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recordsEntriesShown(int shown, int total) {
+    return '$shown of $total entries';
+  }
+
+  @override
+  String overviewWeightRow(String value) {
+    return 'Weight $value';
+  }
+
+  @override
+  String overviewProfileAllergies(String list) {
+    return 'Allergies: $list';
+  }
+
+  @override
+  String get overviewProfileNoAllergies => 'No known allergies';
+
+  @override
+  String get overviewProfileChipped => 'Chipped';
+
+  @override
+  String get overviewProfileEmpty => 'Add allergies, conditions and the microchip';
+
+  @override
+  String overviewVaccinations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vaccinations',
+      one: '1 vaccination',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewVetVisits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vet visits',
+      one: '1 vet visit',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewDocuments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count documents',
+      one: '1 document',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewMedicines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medicines',
+      one: '1 medicine',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get quickLog => 'Quick log';
@@ -282,11 +364,33 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get emergencySheetSubtitle => 'Call or message. You make the call or send the message yourself.';
+  String get emergencySheetFinePrint => 'You place the call or send the message yourself.';
 
   @override
-  String openEmergencyCardOf(String name) {
-    return 'Open $name\'s Emergency card';
+  String get emergencyCallNow => 'Call now';
+
+  @override
+  String get emergencyDirections => 'Directions';
+
+  @override
+  String emergencyCallNamed(String name) {
+    return 'Call $name';
+  }
+
+  @override
+  String emergencyMessageNamed(String name) {
+    return 'Message $name';
+  }
+
+  @override
+  String get emergencyCardAndKit => 'Emergency card and kit';
+
+  @override
+  String get emergencyCardAndKitNote => 'Allergies, medicines, microchip';
+
+  @override
+  String emergencyCardAndKitNoteKit(int ready, int total) {
+    return 'Allergies, medicines, microchip · kit $ready of $total ready';
   }
 
   @override
@@ -1108,7 +1212,7 @@ class HealthL10nEn extends HealthL10n {
   String get notSure => 'Not sure';
 
   @override
-  String get movedToHistory => 'Moved to the History.';
+  String get movedToHistory => 'Moved to Records.';
 
   @override
   String get itHappened => 'It happened';
@@ -1976,4 +2080,10 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String get reportFooter => 'Written by the owner in PetLoop. It is a record of what was entered, not veterinary advice.';
+
+  @override
+  String get formMoreDetails => 'More details';
+
+  @override
+  String get formFewerDetails => 'Fewer details';
 }

@@ -75,15 +75,16 @@ class EmergencyContacts {
   bool get hasVetPhone =>
       regularVet?.phone != null || emergencyVet?.phone != null;
 
-  /// The number to call first: regular vet, else emergency vet, else the
+  /// The number to call first, the same one the Emergency sheet leads
+  /// with: the 24 h emergency vet, else the regular vet, else the
   /// emergency contact.
   String? get primaryPhone =>
-      regularVet?.phone ?? emergencyVet?.phone ?? contact?.phone;
+      emergencyVet?.phone ?? regularVet?.phone ?? contact?.phone;
 
   /// The name that goes with [primaryPhone].
   String? get primaryName {
-    if (regularVet?.phone != null) return regularVet!.name;
     if (emergencyVet?.phone != null) return emergencyVet!.name;
+    if (regularVet?.phone != null) return regularVet!.name;
     if (contact?.phone != null) return contact!.name;
     return null;
   }

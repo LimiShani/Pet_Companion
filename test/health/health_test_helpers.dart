@@ -353,9 +353,25 @@ Future<AsyncValue<T>> settled<T>(WidgetTester tester, ProviderListenable<AsyncVa
   return sub.read();
 }
 
-/// Opens one of the tab's four sections by its label in the switcher.
+/// Opens one of the tab's three sections by its label in the switcher.
 Future<void> openSection(WidgetTester tester, String label) async {
   await tester.tap(find.descendant(of: find.byType(CoralSegmentedControl), matching: find.text(label)));
+  await tester.pumpAndSettle();
+}
+
+/// Opens the Records section (by its [label] in the switcher) on one of
+/// its chips: `filter-all`, `filter-weight`, `filter-journal`...
+Future<void> openRecords(WidgetTester tester, {String chip = 'filter-all', String label = 'Records'}) async {
+  await openSection(tester, label);
+  await tapVisible(tester, find.byKey(Key(chip)));
+}
+
+/// Narrows the journal (Records on Journal) through its Category menu to
+/// the entry [entry]: `journal-all`, `journal-behaviour-group` or
+/// `journal-<category>`.
+Future<void> pickJournalCategory(WidgetTester tester, String entry) async {
+  await tapVisible(tester, find.byKey(const Key('journal-category')));
+  await tester.tap(find.byKey(ValueKey(entry)).last);
   await tester.pumpAndSettle();
 }
 
