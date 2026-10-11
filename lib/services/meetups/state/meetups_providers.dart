@@ -65,6 +65,9 @@ class MeetupsArea {
   final Locality city;
   final ParkRadius radius;
 
+  /// The radius the board starts on.
+  static const defaultRadius = ParkRadius.km10;
+
   /// The localities in range, by their centres: what the server is asked
   /// for (the city itself for "City only").
   List<String> get codes {

@@ -179,6 +179,84 @@ abstract class MeetupsL10n {
   /// **'At my parks'**
   String get atMyParks;
 
+  /// The board's button that opens the filters sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters'**
+  String get filters;
+
+  /// The filters button when some filters are on: how many.
+  ///
+  /// In en, this message translates to:
+  /// **'Filters · {count}'**
+  String filtersCount(int count);
+
+  /// What a screen reader says for the filters button.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Filters} =1{Filters, 1 on} other{Filters, {count} on}}'**
+  String filtersLabel(int count);
+
+  /// Beside the filters button: every filter back to the start.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get filtersClear;
+
+  /// No description provided for @filtersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which ads to show'**
+  String get filtersTitle;
+
+  /// No description provided for @filterDistance.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance'**
+  String get filterDistance;
+
+  /// No description provided for @filterKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Walk or play'**
+  String get filterKind;
+
+  /// No description provided for @filterAnimal.
+  ///
+  /// In en, this message translates to:
+  /// **'Animal'**
+  String get filterAnimal;
+
+  /// No description provided for @filterWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'When'**
+  String get filterWhen;
+
+  /// No description provided for @filterWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where'**
+  String get filterWhere;
+
+  /// No description provided for @filtersClearAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all'**
+  String get filtersClearAll;
+
+  /// The filters sheet's button: closes it. The ads already follow the filters.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No ads to show} =1{Show 1 ad} other{Show {count} ads}}'**
+  String filtersShow(int count);
+
+  /// The filters sheet's button while the ads are loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get filtersDone;
+
   /// Shown when the ads are made up (no backend).
   ///
   /// In en, this message translates to:

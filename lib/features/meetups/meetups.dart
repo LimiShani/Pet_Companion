@@ -22,6 +22,8 @@ export '../../services/meetups/data/meetups_repository.dart';
 export '../../services/meetups/state/meetups_providers.dart';
 export 'board/meetup_card.dart' show MeetupCard;
 export 'board/meetups_area_picker.dart' show MeetupsAreaPicker;
+export 'board/partners_filters_sheet.dart'
+    show PartnersFiltersSheet, openPartnersFilters;
 export 'board/partners_view.dart' show PartnersView;
 export 'form/meetup_form_screen.dart' show MeetupFormScreen;
 export 'meetup_actions.dart';

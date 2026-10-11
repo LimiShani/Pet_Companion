@@ -14,16 +14,17 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
-import '../../community/community_words.dart';
 import '../../outdoors/outdoors.dart' show ParkAreaBar;
 import '../meetup_actions.dart';
 import '../meetups_state.dart';
 import 'meetup_card.dart';
 import 'meetups_area_picker.dart';
+import 'partners_filters_sheet.dart';
 
 /// Community > Outside > Partners: the area (the profile's city by
-/// default), the safety line, "New ad" and "My ads", the filters, and the
-/// open ads around, the soonest first.
+/// default), the safety line, "New ad" and "My ads", one "Filters" button
+/// (the distance and the rest are in its sheet), and the open ads around,
+/// the soonest first.
 class PartnersView extends ConsumerWidget {
   const PartnersView({super.key});
 
@@ -36,6 +37,10 @@ class PartnersView extends ConsumerWidget {
   static const widerKey = Key('partners-wider');
   static const clearFiltersKey = Key('partners-clear-filters');
   static const myParksKey = Key('partners-filter-my-parks');
+  static const filtersKey = Key('partners-filters');
+  static const filtersClearKey = Key('partners-filters-clear');
+  static Key radiusKey(ParkRadius radius) =>
+      Key('partners-radius-${radius.name}');
   static Key kindKey(MeetupKind? kind) =>
       Key('partners-kind-${kind?.name ?? 'all'}');
   static Key whenKey(MeetupWhen when) => Key('partners-when-${when.name}');
@@ -54,6 +59,7 @@ class PartnersView extends ConsumerWidget {
     final listing = ref.watch(partnersListingProvider);
     final filters = ref.watch(meetupFiltersProvider);
     final scope = ref.watch(communityScopeProvider);
+    final filterCount = ref.watch(partnersFilterCountProvider);
 
     final children = <Widget>[
       if (demo) ...[
@@ -118,9 +124,10 @@ class PartnersView extends ConsumerWidget {
           area: CityArea(area.city, radius: area.radius),
           onChange: controller.changeArea,
           onRadius: controller.setRadius,
+          showRadius: false,
         ),
-        const SizedBox(height: 12),
-        _Filters(filters: filters, scope: scope),
+        const SizedBox(height: 10),
+        _FiltersRow(count: filterCount),
         const SizedBox(height: 12),
         ...switch (listing) {
           AsyncValue(:final value?) when value.isNotEmpty => [
@@ -210,81 +217,44 @@ class _SafetyStrip extends StatelessWidget {
   );
 }
 
-class _Filters extends ConsumerWidget {
-  const _Filters({required this.filters, required this.scope});
+/// "Filters · 2" (opens the sheet) and, when any is on, "Clear".
+class _FiltersRow extends ConsumerWidget {
+  const _FiltersRow({required this.count});
 
-  final MeetupFilters filters;
-  final CommunityScope scope;
+  /// How many filters differ from where the board starts.
+  final int count;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.meetupsL10n;
-    final community = context.communityL10n;
-    final controller = ref.read(meetupFiltersProvider.notifier);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            for (final (kind, label) in [
-              (null, l10n.kindAll),
-              (MeetupKind.walk, l10n.kindWalk),
-              (MeetupKind.play, l10n.kindPlay),
-            ])
-              ChoiceChip(
-                key: PartnersView.kindKey(kind),
-                label: Text(label),
-                selected: filters.kind == kind,
-                showCheckmark: false,
-                onSelected: (_) => controller.kind(kind),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            for (final option in CommunityScope.values)
-              ChoiceChip(
-                key: PartnersView.scopeKey(option),
-                label: Text(community.scope(option)),
-                selected: option == scope,
-                showCheckmark: false,
-                onSelected: (_) =>
-                    ref.read(communityScopeProvider.notifier).select(option),
-              ),
-          ],
-        ),
-        const SizedBox(height: 6),
-        Wrap(
-          spacing: 8,
-          runSpacing: 6,
-          children: [
-            for (final (option, label) in [
-              (MeetupWhen.today, l10n.whenToday),
-              (MeetupWhen.thisWeek, l10n.whenThisWeek),
-              (MeetupWhen.recurring, l10n.whenRecurring),
-            ])
-              FilterChip(
-                key: PartnersView.whenKey(option),
-                label: Text(label),
-                selected: filters.when == option,
-                showCheckmark: false,
-                onSelected: (_) => controller.when(option),
-              ),
-            FilterChip(
-              key: PartnersView.myParksKey,
-              avatar: const AppIcon(Icons.star_rounded, size: 18),
-              label: Text(l10n.atMyParks),
-              selected: filters.atMyParks,
-              showCheckmark: false,
-              onSelected: (_) => controller.toggleMyParks(),
+        Semantics(
+          button: true,
+          label: l10n.filtersLabel(count),
+          excludeSemantics: true,
+          child: OutlinedButton.icon(
+            key: PartnersView.filtersKey,
+            onPressed: () => openPartnersFilters(context),
+            style: OutlinedButton.styleFrom(
+              minimumSize: const Size(0, kHealthTapTarget),
             ),
-          ],
+            icon: const AppIcon(Icons.filter_list_rounded),
+            label: Text(count == 0 ? l10n.filters : l10n.filtersCount(count)),
+          ),
         ),
+        if (count > 0)
+          TextButton(
+            key: PartnersView.filtersClearKey,
+            onPressed: () => clearPartnersFilters(ref),
+            style: TextButton.styleFrom(
+              minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
+            ),
+            child: Text(l10n.filtersClear),
+          ),
       ],
     );
   }

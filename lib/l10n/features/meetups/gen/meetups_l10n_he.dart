@@ -53,6 +53,67 @@ class MeetupsL10nHe extends MeetupsL10n {
   String get atMyParks => 'בגינות שלי';
 
   @override
+  String get filters => 'סינון';
+
+  @override
+  String filtersCount(int count) {
+    return 'סינון · $count';
+  }
+
+  @override
+  String filtersLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'סינון, $count מסננים פעילים',
+      two: 'סינון, שני מסננים פעילים',
+      one: 'סינון, מסנן אחד פעיל',
+      zero: 'סינון',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filtersClear => 'ניקוי';
+
+  @override
+  String get filtersTitle => 'אילו מודעות להציג';
+
+  @override
+  String get filterDistance => 'מרחק';
+
+  @override
+  String get filterKind => 'טיול או משחק';
+
+  @override
+  String get filterAnimal => 'חיה';
+
+  @override
+  String get filterWhen => 'מתי';
+
+  @override
+  String get filterWhere => 'איפה';
+
+  @override
+  String get filtersClearAll => 'ניקוי הכול';
+
+  @override
+  String filtersShow(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'הצגת $count מודעות',
+      two: 'הצגת שתי מודעות',
+      one: 'הצגת מודעה אחת',
+      zero: 'אין מודעות להצגה',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get filtersDone => 'סיום';
+
+  @override
   String get sampleAds => 'מודעות לדוגמה';
 
   @override

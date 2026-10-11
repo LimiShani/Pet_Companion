@@ -207,6 +207,27 @@ Future<void> tapOn(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+/// Opens the board's filters sheet.
+Future<void> openFilters(WidgetTester tester) async {
+  await tapOn(tester, find.byKey(PartnersView.filtersKey));
+  expect(find.byKey(PartnersFiltersSheet.sheetKey), findsOneWidget);
+}
+
+/// Closes the filters sheet with its "Show N ads" button.
+Future<void> closeFilters(WidgetTester tester) async {
+  await tapOn(tester, find.byKey(PartnersFiltersSheet.showKey));
+  expect(find.byKey(PartnersFiltersSheet.sheetKey), findsNothing);
+}
+
+/// Whether the chip under [key] is chosen.
+bool chipOn(WidgetTester tester, Key key) {
+  final chip = tester.widget(find.byKey(key));
+  return switch (chip) {
+    ChoiceChip(:final selected) || FilterChip(:final selected) => selected,
+    _ => throw StateError('not a chip: $key'),
+  };
+}
+
 /// The provider container of the app.
 ProviderContainer containerOf(WidgetTester tester) =>
     ProviderScope.containerOf(tester.element(find.byType(AppBottomNav)));
