@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pet_companion/features/auth/widgets/account_sheet.dart';
+import 'package:pet_companion/features/settings/about_screen.dart';
+import 'package:pet_companion/features/settings/admin_tools_screen.dart';
 import 'package:pet_companion/features/settings/settings_screen.dart';
-import 'package:pet_companion/features/settings/side_menu.dart';
 import 'package:pet_companion/features/settings/widgets/week_choice.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import '../helpers.dart';
@@ -12,8 +13,9 @@ import '../helpers.dart';
 const phone = Size(390, 844);
 const smallPhone = Size(320, 568);
 
-final menu = find.byKey(AppSideMenu.menuKey);
+final youPage = find.byKey(YouScreen.screenKey);
 final settingsPage = find.byKey(SettingsScreen.screenKey);
+final adminToolsPage = find.byKey(AdminToolsScreen.screenKey);
 
 /// The strings of [language], for expectations that must hold in both.
 AppL10n stringsOf(AppLanguage language) =>
@@ -48,28 +50,40 @@ Future<void> pumpHome(
   await settle(tester);
 }
 
-/// Opens the side menu with its button on Home.
-Future<void> openMenu(WidgetTester tester, AppL10n l10n) async {
-  await tester.tap(find.byTooltip(l10n.homeMenu));
+/// The avatar of the signed-in account in the header on screen (Home's top
+/// bar or a tab's coral header), which opens the You page.
+Finder avatar(AppL10n l10n) => find.byTooltip(l10n.youTitle);
+
+/// Opens the You page with the avatar of the header on screen.
+Future<void> openYou(WidgetTester tester, AppL10n l10n) async {
+  await tester.tap(avatar(l10n));
   await settle(tester);
-  expect(menu, findsOneWidget);
+  expect(youPage, findsOneWidget);
 }
 
-/// Opens Settings through the side menu.
-Future<void> openSettingsFromMenu(WidgetTester tester, AppL10n l10n) async {
-  await openMenu(tester, l10n);
-  await tester.tap(find.byKey(AppSideMenu.settingsKey));
+/// Opens Settings through the You page.
+Future<void> openSettingsFromYou(WidgetTester tester, AppL10n l10n) async {
+  await openYou(tester, l10n);
+  await tester.tap(find.byKey(YouScreen.settingsKey));
   await settle(tester);
   expect(settingsPage, findsOneWidget);
 }
 
-/// Opens Settings through the account sheet (the avatar of the demo user).
-Future<void> openSettingsFromAccountSheet(WidgetTester tester) async {
-  await tester.tap(find.text('A'));
+/// Opens About through the You page.
+Future<void> openAboutFromYou(WidgetTester tester, AppL10n l10n) async {
+  await openYou(tester, l10n);
+  await tester.tap(find.byKey(YouScreen.aboutKey));
   await settle(tester);
-  await tester.tap(find.byKey(AccountSheet.settingsKey));
+  expect(find.byKey(AboutScreen.screenKey), findsOneWidget);
+}
+
+/// Opens Admin tools through the You page (the demo user is an
+/// administrator).
+Future<void> openAdminTools(WidgetTester tester, AppL10n l10n) async {
+  await openYou(tester, l10n);
+  await tester.tap(find.byKey(YouScreen.adminKey));
   await settle(tester);
-  expect(settingsPage, findsOneWidget);
+  expect(adminToolsPage, findsOneWidget);
 }
 
 /// Whether a row of a pick-one list (found by its key) is the marked one.

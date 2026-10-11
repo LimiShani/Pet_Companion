@@ -56,7 +56,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
         children: [
           // No back arrow: the screen is opened by a recovery link, and
           // Cancel below signs out instead.
-          CoralHeader(title: l10n.resetPasswordTitle),
+          CoralHeader(title: l10n.resetPasswordTitle, showAccount: false),
           Expanded(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,

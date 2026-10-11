@@ -4,21 +4,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/l10n.dart';
 import '../../notifications/push.dart';
 import '../../notifications/widgets/notification_settings_card.dart';
-import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/language_choice.dart';
-import 'widgets/legal_links.dart';
 import 'widgets/week_choice.dart';
 
-/// The Settings page: the app's language, the week layout, the
-/// notifications and the legal pages. Every choice applies at once and is remembered on the
-/// phone (see `SettingsStore`).
+/// The Settings page: the app's language, the week layout and the
+/// notifications. Every choice applies at once and is remembered on the
+/// phone (see `SettingsStore`). The legal pages and the credits are on
+/// the About page (`AboutScreen`).
 ///
-/// Opened from the side menu and from the account sheet with
-/// `openSettings`.
+/// Opened from the You page with `openSettings`.
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
@@ -61,22 +59,6 @@ class SettingsScreen extends StatelessWidget {
                         ref.watch(pushMessagingProvider) == null
                         ? const SizedBox.shrink()
                         : featureSlot('community-push-settings', ''),
-                  ),
-                  const SizedBox(height: 16),
-                  _SectionLabel(l10n.settingsAbout),
-                  const LegalLinks(),
-                  _Note(l10n.legalOpensInBrowser),
-                  // Credits of the data the installed modules show
-                  // (OpenStreetMap): a licence notice, so not gated.
-                  Consumer(
-                    builder: (context, ref, _) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final module in ref.watch(featureModulesProvider))
-                          if (module.slots['about-credits'] case final slot?)
-                            slot.build(context, const FeatureRequest('')),
-                      ],
-                    ),
                   ),
                   const SizedBox(height: 16),
                   _Note(l10n.settingsSavedNote),

@@ -118,8 +118,7 @@ class PetsL10nEn extends PetsL10n {
   }
 
   @override
-  String get welcomeIntro =>
-      'Let\'s meet your first pet. A name and a kind are enough to start; the rest takes about a minute.';
+  String get welcomeIntro => 'Let\'s meet your first pet. A name and a kind are enough to start; the rest takes about a minute.';
 
   @override
   String get welcomeWhyPhoto => 'A photo, or a friendly icon';
@@ -128,8 +127,7 @@ class PetsL10nEn extends PetsL10n {
   String get welcomeWhyVet => 'The vet\'s number, ready for an emergency';
 
   @override
-  String get welcomeWhyHealth =>
-      'Allergies and conditions: what a vet asks first';
+  String get welcomeWhyHealth => 'Allergies and conditions: what a vet asks first';
 
   @override
   String get welcomeAddFirst => 'Add my first pet';
@@ -171,8 +169,7 @@ class PetsL10nEn extends PetsL10n {
   String get whoIsJoining => 'Who is joining the family?';
 
   @override
-  String get whoIsJoiningNote =>
-      'A name and a kind are enough to start. Everything else can wait.';
+  String get whoIsJoiningNote => 'A name and a kind are enough to start. Everything else can wait.';
 
   @override
   String get addPhotoOrIcon => 'Add a photo or pick an icon';
@@ -200,8 +197,7 @@ class PetsL10nEn extends PetsL10n {
   }
 
   @override
-  String get savedOnContinueNoName =>
-      'Your pet is saved when you continue. You can change anything later.';
+  String get savedOnContinueNoName => 'Your pet is saved when you continue. You can change anything later.';
 
   @override
   String pictureNotSaved(String name) {
@@ -225,8 +221,7 @@ class PetsL10nEn extends PetsL10n {
   }
 
   @override
-  String get vetStepNote =>
-      'With the vet\'s phone saved, a call or a message is two taps away in an emergency.';
+  String get vetStepNote => 'With the vet\'s phone saved, a call or a message is two taps away in an emergency.';
 
   @override
   String get regularVet => 'Regular vet';
@@ -246,8 +241,7 @@ class PetsL10nEn extends PetsL10n {
   String get whatAVetAsksFirst => 'What a vet asks first';
 
   @override
-  String get healthStepNote =>
-      'If there is nothing to list, tick \"None known\". That is a real answer.';
+  String get healthStepNote => 'If there is nothing to list, tick \"None known\". That is a real answer.';
 
   @override
   String get finish => 'Finish';
@@ -530,8 +524,7 @@ class PetsL10nEn extends PetsL10n {
   String get unitMonths => 'months';
 
   @override
-  String get ageGuessNote =>
-      'A guess is fine. Shown as \"About 3 years\", and it keeps counting.';
+  String get ageGuessNote => 'A guess is fine. Shown as \"About 3 years\", and it keeps counting.';
 
   @override
   String get birthday => 'Birthday';
@@ -771,8 +764,7 @@ class PetsL10nEn extends PetsL10n {
   String get archived => 'Archived';
 
   @override
-  String get archivedNote =>
-      'Archived pets keep all their records and are hidden from the rest of the app.';
+  String get archivedNote => 'Archived pets keep all their records and are hidden from the rest of the app.';
 
   @override
   String archivedRow(String kind, String date) {
@@ -785,16 +777,13 @@ class PetsL10nEn extends PetsL10n {
   }
 
   @override
-  String get errNotYours =>
-      'You can only change your own pets. Please sign in again.';
+  String get errNotYours => 'You can only change your own pets. Please sign in again.';
 
   @override
-  String get errInvalid =>
-      'Some of that information is not valid. Please check it and try again.';
+  String get errInvalid => 'Some of that information is not valid. Please check it and try again.';
 
   @override
-  String get errDatabaseOutdated =>
-      'The database is not up to date for pets yet (migration 0005 has not been run).';
+  String get errDatabaseOutdated => 'The database is not up to date for pets yet (migration 0005 has not been run).';
 
   @override
   String get errSignInAgain => 'Please sign in again.';
@@ -824,27 +813,39 @@ class PetsL10nEn extends PetsL10n {
   String get errPhotoUnsupported => 'That kind of picture is not supported.';
 
   @override
-  String get errPhotoUnsupportedChooseAnother =>
-      'That kind of picture is not supported. Please choose another one.';
+  String get errPhotoUnsupportedChooseAnother => 'That kind of picture is not supported. Please choose another one.';
 
   @override
   String get errPhotoGone => 'That photo is no longer available.';
 
   @override
-  String get errOffline =>
-      'Cannot reach the server. Check your connection and try again.';
+  String get errOffline => 'Cannot reach the server. Check your connection and try again.';
 
   @override
-  String get errCameraNotAllowed =>
-      'Cannot open the camera. Check that PetLoop is allowed to use it.';
+  String get errCameraNotAllowed => 'Cannot open the camera. Check that PetLoop is allowed to use it.';
 
   @override
-  String get errPhotosNotAllowed =>
-      'Cannot open your photos. Check that PetLoop is allowed to see them.';
+  String get errPhotosNotAllowed => 'Cannot open your photos. Check that PetLoop is allowed to see them.';
 
   @override
   String get errCamera => 'Could not open the camera.';
 
   @override
   String get errPhotos => 'Could not open your photos.';
+
+  @override
+  String get switcherTitle => 'Which pet?';
+
+  @override
+  String switcherOpenProfile(String name) {
+    return 'Open $name\'s profile';
+  }
+
+  @override
+  String get switcherAddPet => 'Add a pet';
+
+  @override
+  String switcherSemantics(String name) {
+    return 'Switch pet: $name';
+  }
 }

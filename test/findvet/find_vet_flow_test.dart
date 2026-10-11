@@ -5,7 +5,6 @@ import 'package:pet_companion/features/findvet/findvet.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
 import 'package:pet_companion/features/health/emergency/emergency_sheet.dart' show EmergencySheet;
 import 'package:pet_companion/features/health/emergency/vet_form_screen.dart';
-import 'package:pet_companion/features/settings/side_menu.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import '../helpers.dart';
@@ -378,16 +377,13 @@ void main() {
   });
 
   group('choosing a path', () {
-    testWidgets('from the side menu: choice, long term results, Save as a pet\'s regular vet', (tester) async {
+    testWidgets('from the Health overview: choice, long term results, Save as a pet\'s regular vet', (tester) async {
       final kit = FindVetKit(
         location: const LocationResult(LocationOutcome.found, point: rehovot, accuracyM: 25),
       );
       await pumpApp(tester, overrides: kit.overrides, size: tallPhone);
       await signInAsDemo(tester);
-      await tester.tap(find.byTooltip(appEn.homeMenu));
-      await tester.pumpAndSettle();
-      await tester.tap(find.byKey(AppSideMenu.findVetKey));
-      await tester.pumpAndSettle();
+      await openFindVetFromHealth(tester);
 
       // The first screen offers both paths and asks for nothing.
       expect(find.byKey(FindVetScreen.emergencyChoiceKey), findsOneWidget);

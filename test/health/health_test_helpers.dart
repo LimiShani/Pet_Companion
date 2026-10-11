@@ -22,7 +22,7 @@ import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
 import 'package:pet_companion/widgets/coral_segmented_control.dart';
-import 'package:pet_companion/widgets/pet_selector.dart';
+import 'package:pet_companion/widgets/pet_switcher.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
@@ -359,8 +359,11 @@ Future<void> openSection(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
 }
 
-/// Selects another pet in the tab's pet switcher.
-Future<void> selectPet(WidgetTester tester, String name) async {
-  await tester.tap(find.descendant(of: find.byType(PetSelector), matching: find.text(name)));
+/// Switches the tab to another pet through the header's pet chip: opens
+/// the switcher sheet and taps the pet's row.
+Future<void> switchPet(WidgetTester tester, String name) async {
+  await tester.tap(find.byKey(PetSwitcher.chipKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.descendant(of: find.byKey(PetSwitcher.sheetKey), matching: find.text(name)));
   await tester.pumpAndSettle();
 }

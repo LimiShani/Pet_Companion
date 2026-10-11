@@ -9,6 +9,7 @@ import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/auth/reset_password_screen.dart';
 import 'package:pet_companion/navigation/app_router.dart';
 import 'package:pet_companion/platform/feature_module.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import '../helpers.dart';
 
 void main() {
@@ -55,7 +56,9 @@ void main() {
     (tester) async {
       await pumpApp(tester, now: DateTime(2025, 6, 10));
       await signInAsDemo(tester);
-      await tester.tap(find.byTooltip('Menu'));
+      await tester.tap(find.byTooltip('You'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(YouScreen.adminKey));
       await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Feature access'));
       await tester.tap(find.text('Feature access'));

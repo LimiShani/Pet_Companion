@@ -6,8 +6,8 @@ from pathlib import Path
 import argparse
 root=Path(__file__).resolve().parents[1]
 catalog={'pets':'petsModule','care':'careModule','health':'healthModule','community':'communityModule',
- 'store':'storeModule','budget':'budgetModule','basket':'basketModule','firstdays':'firstDaysModule','findvet':'findVetModule',
- 'outdoors':'outdoorsModule','meetups':'meetupsModule'}
+ 'outdoors':'outdoorsModule','meetups':'meetupsModule',
+ 'store':'storeModule','budget':'budgetModule','basket':'basketModule','firstdays':'firstDaysModule','findvet':'findVetModule'}
 parser=argparse.ArgumentParser();parser.add_argument('--modules',default=','.join(catalog))
 requested={x.strip() for x in parser.parse_args().modules.split(',') if x.strip()}
 unknown=requested-set(catalog)-{'basket','access'}

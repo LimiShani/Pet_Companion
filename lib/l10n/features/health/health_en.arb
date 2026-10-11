@@ -121,6 +121,8 @@
   "addPetsVet": "Add {name}'s vet",
   "@addPetsVet": {"placeholders": {"name": {"type": "String"}}},
   "vetPromptNote": "Phone and address, ready for an emergency",
+  "overviewFindVet": "Find a vet nearby",
+  "@overviewFindVet": {"description": "Link under the vet card of the Overview, to the Find a vet search."},
   "noVetSavedFor": "No vet saved for {name} yet",
   "@noVetSavedFor": {"placeholders": {"name": {"type": "String"}}},
   "noVetSavedNote": "Add the vet's phone now, so a call or a message is two taps away when you need it.",

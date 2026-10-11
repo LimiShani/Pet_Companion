@@ -97,7 +97,7 @@ class MeetupsKit {
   ];
 }
 
-/// Pumps the app, signs in as the demo account, opens Community > Outside
+/// Pumps the app, signs in as the demo account, opens the Outside tab
 /// (Partners shows first).
 Future<MeetupsKit> openPartners(
   WidgetTester tester, {
@@ -134,12 +134,10 @@ Future<MeetupsKit> openPartners(
   await tester.tap(
     find.descendant(
       of: find.byType(AppBottomNav),
-      matching: find.text(hebrew ? appHe.navCommunity : appEn.navCommunity),
+      matching: find.text(
+        hebrew ? outdoorsHe.sectionOutside : outdoorsEn.sectionOutside,
+      ),
     ),
-  );
-  await tester.pumpAndSettle();
-  await tester.tap(
-    find.text(hebrew ? outdoorsHe.sectionOutside : outdoorsEn.sectionOutside),
   );
   await tester.pumpAndSettle();
   return k;

@@ -12,7 +12,6 @@ import '../features/auth/signup_screen.dart';
 import '../features/auth/splash_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/settings/settings_routes.dart';
-import '../features/settings/side_menu.dart';
 import '../state/pets_provider.dart';
 import '../widgets/app_bottom_nav.dart';
 
@@ -87,8 +86,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // The first-pet welcome, the add-a-pet flow, the pet profile and "My
       // pets": full screen, beside the tabs (see pets_routes.dart).
       for (final module in modules) ...module.routes,
-      // The Settings page: full screen too, opened from the side menu and
-      // the account sheet.
+      // The You page (behind the avatar of every header), Settings, About
+      // and Admin tools: full screen too.
       ...settingsRoutes,
     ],
   );
@@ -128,6 +127,8 @@ String? _redirect(Ref ref, String location) {
       ? 'community.guides.view'
       : location.startsWith('/community')
       ? 'community.feed.view|community.chat.view|community.guides.view'
+      : location.startsWith('/outside')
+      ? 'community.parks.view|community.meetups.view'
       : location.startsWith('/store')
       ? 'store.deals.view'
       : null;
@@ -164,12 +165,7 @@ class _RouterRefresh extends ChangeNotifier {
 }
 
 /// Scaffold shared by the four tabs: keeps each tab's state and hosts the
-/// bottom navigation bar and the side menu.
-///
-/// The menu is this scaffold's drawer, so it covers the bottom bar and
-/// comes in from the start side (the left in English, the right in Hebrew).
-/// Its button is on Home, and only there can it also be pulled in from the
-/// screen's edge.
+/// bottom navigation bar.
 class _AppShell extends StatefulWidget {
   const _AppShell({required this.shell, required this.tabs});
   final List<FeatureTab> tabs;
@@ -238,8 +234,6 @@ class _AppShellState extends State<_AppShell> {
         },
         child: Scaffold(
           body: shell,
-          drawer: const AppSideMenu(),
-          drawerEnableOpenDragGesture: onHome,
           bottomNavigationBar: AppBottomNav(
             tabs: widget.tabs,
             currentIndex: shell.currentIndex,

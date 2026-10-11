@@ -55,8 +55,7 @@ class BudgetL10nEn extends BudgetL10n {
   }
 
   @override
-  String get averageNote =>
-      'Over the last 12 months at most. A yearly cost counts as 1/12 in every month.';
+  String get averageNote => 'Over the last 12 months at most. A yearly cost counts as 1/12 in every month.';
 
   @override
   String get byCategory => 'By category';
@@ -71,8 +70,7 @@ class BudgetL10nEn extends BudgetL10n {
   String get addExpense => 'Add expense';
 
   @override
-  String get healthMissing =>
-      'The costs from Health could not be loaded, so they are not counted here.';
+  String get healthMissing => 'The costs from Health could not be loaded, so they are not counted here.';
 
   @override
   String get loadFailed => 'Could not load the budget';
@@ -150,12 +148,10 @@ class BudgetL10nEn extends BudgetL10n {
   String get everyYear => 'Every year';
 
   @override
-  String get monthlyNote =>
-      'Entered once: it counts again every month from this date, until it is stopped.';
+  String get monthlyNote => 'Entered once: it counts again every month from this date, until it is stopped.';
 
   @override
-  String get yearlyNote =>
-      'Counts in this month every year. In the monthly average it counts as 1/12 a month.';
+  String get yearlyNote => 'Counts in this month every year. In the monthly average it counts as 1/12 a month.';
 
   @override
   String get stopRepeating => 'Stop repeating';
@@ -172,12 +168,10 @@ class BudgetL10nEn extends BudgetL10n {
   String get deleteExpenseTitle => 'Delete this expense?';
 
   @override
-  String get deleteExpenseBody =>
-      'It will be removed from the budget. This cannot be undone.';
+  String get deleteExpenseBody => 'It will be removed from the budget. This cannot be undone.';
 
   @override
-  String get deleteRecurringBody =>
-      'Every month it counted in will lose it. To keep the past months, stop it from repeating instead.';
+  String get deleteRecurringBody => 'Every month it counted in will lose it. To keep the past months, stop it from repeating instead.';
 
   @override
   String get expenseSaved => 'Saved';
@@ -195,8 +189,7 @@ class BudgetL10nEn extends BudgetL10n {
   String get basketEmptyTitle => 'Nothing in your basket yet';
 
   @override
-  String get basketEmptyMessage =>
-      'Add the food, litter and other things you buy again and again, and see when each one runs out.';
+  String get basketEmptyMessage => 'Add the food, litter and other things you buy again and again, and see when each one runs out.';
 
   @override
   String get regularProduct => 'Regular product';
@@ -349,8 +342,7 @@ class BudgetL10nEn extends BudgetL10n {
   }
 
   @override
-  String get lastsNoFeeding =>
-      'Add the portion and the meal times on the feeding page, or the size in kg or g, to work it out from the feeding.';
+  String get lastsNoFeeding => 'Add the portion and the meal times on the feeding page, or the size in kg or g, to work it out from the feeding.';
 
   @override
   String get lastsAbout => 'Lasts about';
@@ -365,8 +357,7 @@ class BudgetL10nEn extends BudgetL10n {
   String get weeks => 'weeks';
 
   @override
-  String get lastsOptional =>
-      'Leave it empty if you are not sure: there is just no run-out date.';
+  String get lastsOptional => 'Leave it empty if you are not sure: there is just no run-out date.';
 
   @override
   String get deleteProductTitle => 'Remove this product?';
@@ -403,23 +394,19 @@ class BudgetL10nEn extends BudgetL10n {
   String get openBasket => 'Open my basket';
 
   @override
-  String get errorOffline =>
-      'Could not reach the server. Check your connection and try again.';
+  String get errorOffline => 'Could not reach the server. Check your connection and try again.';
 
   @override
-  String get errorSessionEnded =>
-      'Your session has ended. Please sign in again.';
+  String get errorSessionEnded => 'Your session has ended. Please sign in again.';
 
   @override
   String get errorNotAllowed => 'That is not allowed. Please sign in again.';
 
   @override
-  String get errorInvalid =>
-      'Some of the details are not valid. Please check them.';
+  String get errorInvalid => 'Some of the details are not valid. Please check them.';
 
   @override
-  String get errorPetNotStored =>
-      'This pet is not saved to your account yet, so nothing can be stored for it.';
+  String get errorPetNotStored => 'This pet is not saved to your account yet, so nothing can be stored for it.';
 
   @override
   String get errorGone => 'That item no longer exists.';
@@ -429,4 +416,7 @@ class BudgetL10nEn extends BudgetL10n {
 
   @override
   String get errorUnknown => 'Something went wrong. Please try again.';
+
+  @override
+  String get scopeTooltip => 'Choose a pet or the whole home';
 }

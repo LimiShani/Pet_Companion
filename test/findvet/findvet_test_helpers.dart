@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/features/auth/login_screen.dart';
 import 'package:pet_companion/features/findvet/findvet.dart';
+import 'package:pet_companion/features/settings/admin_tools_screen.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
+import 'package:pet_companion/widgets/app_bottom_nav.dart';
 
 import '../helpers.dart';
 
@@ -53,6 +56,33 @@ Future<void> openEmergencySignedOut(
   await tester.tap(find.byKey(LoginScreen.findVetKey));
   await tester.pumpAndSettle();
   expect(find.byKey(FindVetScreen.screenKey), findsOneWidget);
+}
+
+/// Signed in: opens the Health tab and follows "Find a vet nearby" under
+/// the vet card of the Overview (the demo user's Kelly has a vet).
+Future<void> openFindVetFromHealth(WidgetTester tester) async {
+  await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text(appEn.navHealth)));
+  // Health's sample data answers after a short delay.
+  await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpAndSettle();
+  await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpAndSettle();
+  final link = find.byKey(const Key('overview-find-vet'));
+  await tester.ensureVisible(link);
+  await tester.pumpAndSettle();
+  await tester.tap(link);
+  await tester.pumpAndSettle();
+  expect(find.byKey(FindVetScreen.screenKey), findsOneWidget);
+}
+
+/// Signed in, on Home: opens the You page from the avatar, then Admin
+/// tools (the demo user is an administrator).
+Future<void> openAdminToolsFromHome(WidgetTester tester) async {
+  await tester.tap(find.byTooltip(appEn.youTitle));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(YouScreen.adminKey));
+  await tester.pumpAndSettle();
+  expect(find.byKey(AdminToolsScreen.screenKey), findsOneWidget);
 }
 
 /// Types [query] into the place field and picks the suggestion [label].

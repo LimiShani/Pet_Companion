@@ -248,5 +248,10 @@
   "errCameraNotAllowed": "אי אפשר לפתוח את המצלמה. כדאי לבדוק שיש ל־PetLoop הרשאה להשתמש בה.",
   "errPhotosNotAllowed": "אי אפשר לפתוח את התמונות שלך. כדאי לבדוק שיש ל־PetLoop הרשאה לראות אותן.",
   "errCamera": "לא הצלחנו לפתוח את המצלמה.",
-  "errPhotos": "לא הצלחנו לפתוח את התמונות שלך."
+  "errPhotos": "לא הצלחנו לפתוח את התמונות שלך.",
+
+  "switcherTitle": "איזו חיה?",
+  "switcherOpenProfile": "פתיחת הפרופיל של \u2068{name}\u2069",
+  "switcherAddPet": "הוספת חיה",
+  "switcherSemantics": "החלפת חיה: \u2068{name}\u2069"
 }

@@ -10,6 +10,8 @@ import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/pet_switcher.dart' show CoralMenuChip;
+import '../../presentation/pet_avatar.dart';
 import '../../presentation/care_widgets.dart';
 import '../../presentation/budget_words.dart';
 import '../../services/budget/data/budget_models.dart';
@@ -35,6 +37,9 @@ class BudgetScreen extends ConsumerWidget {
 
   static const screenKey = Key('budget-screen');
   static const totalKey = Key('budget-total');
+
+  /// The chip in the header that picks a pet or "All the home".
+  static const scopeKey = Key('budget-scope-chip');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
@@ -80,7 +85,7 @@ class BudgetScreen extends ConsumerWidget {
             CoralHeader(
               title: l10n.budgetTitle,
               showBack: true,
-              bottom: BudgetPetScope(
+              bottom: _ScopeChip(
                 allHome: filter.allHome,
                 onChanged: filters.setAllHome,
               ),
@@ -108,6 +113,113 @@ class BudgetScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Whose costs the page shows: a chip in the header reading the selected
+/// pet's name, or "All the home", with a menu of the pets and "All the
+/// home". A pet selects it for the whole app and narrows the budget to it,
+/// as the pet pills did; "All the home" is the budget's own choice.
+class _ScopeChip extends ConsumerWidget {
+  const _ScopeChip({required this.allHome, required this.onChanged});
+
+  static const _allValue = 'all';
+
+  final bool allHome;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
+    capability: 'budget.view',
+    hidden: false,
+    builder: (context) =>
+        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
+  );
+
+  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+    final l10n = context.budgetL10n;
+    final pets = ref.watch(petsProvider);
+    final selected = ref.watch(selectedPetProvider);
+    TextStyle itemStyle(bool on) => AppText.body.copyWith(
+      color: AppColors.ink,
+      fontWeight: on ? FontWeight.w800 : FontWeight.w600,
+    );
+
+    return Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: PopupMenuButton<String>(
+        key: BudgetScreen.scopeKey,
+        tooltip: l10n.scopeTooltip,
+        color: AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+        ),
+        onSelected: (value) {
+          if (value == _allValue) {
+            onChanged(true);
+            return;
+          }
+          ref.read(selectedPetIdProvider.notifier).select(value);
+          onChanged(false);
+        },
+        itemBuilder: (context) => [
+          for (final pet in pets)
+            PopupMenuItem(
+              key: ValueKey('budget-scope-${pet.id}'),
+              value: pet.id,
+              child: Row(
+                children: [
+                  ExcludeSemantics(child: PetAvatar(pet: pet, size: 24)),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Text(
+                      pet.name,
+                      style: itemStyle(!allHome && pet.id == selected.id),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            key: const Key('budget-scope-all'),
+            value: _allValue,
+            child: Row(
+              children: [
+                const AppIcon(
+                  Icons.home_rounded,
+                  size: 22,
+                  color: AppColors.brown,
+                ),
+                const SizedBox(width: 10),
+                Text(l10n.allHome, style: itemStyle(allHome)),
+              ],
+            ),
+          ),
+        ],
+        child: CoralMenuChip(
+          leading: allHome
+              ? Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.white.withValues(alpha: 0.55),
+                  ),
+                  child: const AppIcon(
+                    Icons.home_rounded,
+                    size: 15,
+                    color: AppColors.coralDark,
+                  ),
+                )
+              : ExcludeSemantics(child: PetAvatar(pet: selected, size: 24)),
+          label: allHome ? l10n.allHome : selected.name,
+          maxLabelWidth: 200,
         ),
       ),
     );

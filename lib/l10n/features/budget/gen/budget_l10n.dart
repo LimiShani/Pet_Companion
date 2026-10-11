@@ -62,8 +62,7 @@ import 'budget_l10n_he.dart';
 /// be consistent with the languages listed in the BudgetL10n.supportedLocales
 /// property.
 abstract class BudgetL10n {
-  BudgetL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  BudgetL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class BudgetL10n {
     return Localizations.of<BudgetL10n>(context, BudgetL10n)!;
   }
 
-  static const LocalizationsDelegate<BudgetL10n> delegate =
-      _BudgetL10nDelegate();
+  static const LocalizationsDelegate<BudgetL10n> delegate = _BudgetL10nDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class BudgetL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// Title of the budget page and of its row in the side menu.
@@ -793,6 +790,12 @@ abstract class BudgetL10n {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get errorUnknown;
+
+  /// Tooltip of the chip in the budget header that opens the menu of pets and "All the home".
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a pet or the whole home'**
+  String get scopeTooltip;
 }
 
 class _BudgetL10nDelegate extends LocalizationsDelegate<BudgetL10n> {
@@ -804,26 +807,25 @@ class _BudgetL10nDelegate extends LocalizationsDelegate<BudgetL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_BudgetL10nDelegate old) => false;
 }
 
 BudgetL10n lookupBudgetL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return BudgetL10nEn();
-    case 'he':
-      return BudgetL10nHe();
+    case 'en': return BudgetL10nEn();
+    case 'he': return BudgetL10nHe();
   }
 
   throw FlutterError(
     'BudgetL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

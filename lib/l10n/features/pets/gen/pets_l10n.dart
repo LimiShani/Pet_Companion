@@ -62,8 +62,7 @@ import 'pets_l10n_he.dart';
 /// be consistent with the languages listed in the PetsL10n.supportedLocales
 /// property.
 abstract class PetsL10n {
-  PetsL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  PetsL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -83,18 +82,17 @@ abstract class PetsL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// Title of the page that lists the owner's pets.
@@ -1470,6 +1468,30 @@ abstract class PetsL10n {
   /// In en, this message translates to:
   /// **'Could not open your photos.'**
   String get errPhotos;
+
+  /// Title of the sheet opened by the pet chip in a coral header (Health): switches the selected pet.
+  ///
+  /// In en, this message translates to:
+  /// **'Which pet?'**
+  String get switcherTitle;
+
+  /// Row at the end of the pet switcher sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Open {name}\'s profile'**
+  String switcherOpenProfile(String name);
+
+  /// Last row of the pet switcher sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a pet'**
+  String get switcherAddPet;
+
+  /// Screen-reader label of the chip that shows the selected pet and opens the switcher sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch pet: {name}'**
+  String switcherSemantics(String name);
 }
 
 class _PetsL10nDelegate extends LocalizationsDelegate<PetsL10n> {
@@ -1481,26 +1503,25 @@ class _PetsL10nDelegate extends LocalizationsDelegate<PetsL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_PetsL10nDelegate old) => false;
 }
 
 PetsL10n lookupPetsL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return PetsL10nEn();
-    case 'he':
-      return PetsL10nHe();
+    case 'en': return PetsL10nEn();
+    case 'he': return PetsL10nHe();
   }
 
   throw FlutterError(
     'PetsL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

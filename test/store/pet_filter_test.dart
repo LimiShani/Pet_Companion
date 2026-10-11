@@ -6,7 +6,6 @@ import 'package:pet_companion/features/store/saved_deals_screen.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
-import 'package:pet_companion/widgets/pet_selector.dart';
 
 import 'store_test_helpers.dart';
 
@@ -23,10 +22,12 @@ void main() {
   String tagText(WidgetTester tester, String dealId) =>
       tester.widget<Text>(find.descendant(of: animalsTag(dealId), matching: find.byType(Text))).data!;
 
-  Pet selectedPet(WidgetTester tester) =>
-      ProviderScope.containerOf(tester.element(find.byKey(const Key('store-screen')))).read(selectedPetProvider);
+  ProviderContainer containerOf(WidgetTester tester) =>
+      ProviderScope.containerOf(tester.element(find.byKey(const Key('store-screen'))));
 
-  bool petHighlighted(WidgetTester tester) => tester.widget<PetSelector>(find.byType(PetSelector)).highlightSelected;
+  Pet selectedPet(WidgetTester tester) => containerOf(tester).read(selectedPetProvider);
+
+  Finder menuItem(String label) => find.descendant(of: find.byType(PopupMenuItem<String>), matching: find.text(label));
 
   Future<void> search(WidgetTester tester, String text) async {
     await tester.enterText(find.byType(TextField), text);
@@ -41,13 +42,25 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  /// What Home's pet pills do: selects [petId] for the whole app while the
+  /// Store tab is in the background, then comes back to the Store.
+  Future<void> selectOnHome(WidgetTester tester, String petId) async {
+    final container = containerOf(tester);
+    await tester.tap(find.text('Home'));
+    await tester.pumpAndSettle();
+    container.read(selectedPetIdProvider.notifier).select(petId);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Store'));
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('the Store opens on the selected pet: its deals and the deals for every pet', (tester) async {
     await pumpStore(tester);
 
     // Kelly is a dog.
     expect(find.text('23 deals for dogs'), findsOneWidget);
-    expect(petHighlighted(tester), isTrue);
-    expect(find.text('All animals'), findsOneWidget);
+    expect(animalsChipLabel(tester), 'For dogs');
+    expect(find.text('All animals'), findsNothing);
 
     // A deal for every pet is there; a cat deal is not.
     await search(tester, 'first aid');
@@ -61,13 +74,29 @@ void main() {
     expect(animalsTag('d-rope-tug-toy'), findsNothing);
   });
 
-  testWidgets('choosing another pet narrows the Store to its kind and selects it for the whole app', (tester) async {
+  testWidgets('the animals menu lists each kind the owner keeps once, then "All animals"', (tester) async {
+    // Two dogs, a cat and a bird.
+    await pumpStore(tester, extraPets: [mitzi, tweety]);
+
+    await tester.tap(animalsChip);
+    await tester.pumpAndSettle();
+
+    final items = tester.widgetList<PopupMenuItem<String>>(find.byType(PopupMenuItem<String>));
+    expect([for (final item in items) item.value], ['dog', 'cat', 'bird', 'all']);
+    for (final label in ['Dogs', 'Cats', 'Birds', 'All animals']) {
+      expect(menuItem(label), findsOneWidget, reason: label);
+    }
+  });
+
+  testWidgets("choosing another kind narrows the Store to it and leaves the app's selected pet alone",
+      (tester) async {
     await pumpStore(tester, extraPets: [mitzi]);
     expect(selectedPet(tester).id, 'kelly');
 
-    await tapPetPill(tester, 'Mitzi');
+    await pickAnimals(tester, 'Cats');
 
-    expect(selectedPet(tester).id, 'mitzi');
+    expect(selectedPet(tester).id, 'kelly');
+    expect(animalsChipLabel(tester), 'For cats');
     expect(find.text('18 deals for cats'), findsOneWidget);
     // Biggest discount among what suits a cat.
     expect(shownDealIds(tester).first, 'd-nail-grinder');
@@ -87,19 +116,19 @@ void main() {
     await search(tester, 'kibble');
     expect(shownDealIds(tester), ['d-kitten-dry-2kg']);
 
-    await tapPetPill(tester, 'Kelly');
+    await pickAnimals(tester, 'Dogs');
     expect(selectedPet(tester).id, 'kelly');
     expect(shownDealIds(tester), unorderedEquals(['d-salmon-kibble-12kg', 'd-puppy-kibble-3kg']));
   });
 
-  testWidgets('"All animals" shows every deal, tags who each is for, and highlights no pet', (tester) async {
+  testWidgets('"All animals" shows every deal, tags who each is for, and leaves the selected pet alone',
+      (tester) async {
     await pumpStore(tester);
 
-    await tapPetPill(tester, 'All animals');
+    await pickAnimals(tester, 'All animals');
 
     expect(find.text('36 deals'), findsOneWidget);
-    expect(petHighlighted(tester), isFalse);
-    // The selected pet itself does not change.
+    expect(animalsChipLabel(tester), 'All animals');
     expect(selectedPet(tester).id, 'kelly');
 
     expect(tagText(tester, 'd-rope-tug-toy'), 'Dogs');
@@ -115,57 +144,46 @@ void main() {
     expect(animalsTag('d-first-aid-kit'), findsNothing);
   });
 
-  testWidgets('tapping a pet leaves "All animals", even the pet that was already selected', (tester) async {
+  testWidgets('a kind picked after "All animals" narrows the Store again, the selected pet\'s own kind too',
+      (tester) async {
     await pumpStore(tester, extraPets: [mitzi]);
 
-    await tapPetPill(tester, 'All animals');
+    await pickAnimals(tester, 'All animals');
     expect(find.text('36 deals'), findsOneWidget);
 
-    // Kelly is still the app's selected pet, so nothing "changes" for the
-    // shared selector: the Store has to notice the tap itself.
-    await tapPetPill(tester, 'Kelly');
+    // Kelly is a dog and still the app's pet: "Dogs" has to count as a
+    // choice all the same.
+    await pickAnimals(tester, 'Dogs');
     expect(find.text('23 deals for dogs'), findsOneWidget);
-    expect(petHighlighted(tester), isTrue);
+    expect(animalsChipLabel(tester), 'For dogs');
 
-    await tapPetPill(tester, 'All animals');
-    await tapPetPill(tester, 'Mitzi');
+    await pickAnimals(tester, 'All animals');
+    await pickAnimals(tester, 'Cats');
     expect(find.text('18 deals for cats'), findsOneWidget);
-    expect(selectedPet(tester).id, 'mitzi');
+    expect(selectedPet(tester).id, 'kelly');
   });
 
-  testWidgets('choosing a pet on another tab also leaves "All animals"', (tester) async {
-    await pumpStore(tester, extraPets: [mitzi]);
-    await tapPetPill(tester, 'All animals');
+  testWidgets('choosing a pet on another tab brings the Store back to that pet, from "All animals" or a picked kind',
+      (tester) async {
+    await pumpStore(tester, extraPets: [mitzi, tweety]);
+
+    await pickAnimals(tester, 'All animals');
     expect(find.text('36 deals'), findsOneWidget);
-
-    // On the Home tab the owner switches to the cat (what its pet pills do).
-    final container = ProviderScope.containerOf(tester.element(find.byKey(const Key('store-screen'))));
-    await tester.tap(find.text('Home'));
-    await tester.pumpAndSettle();
-    container.read(selectedPetIdProvider.notifier).select('mitzi');
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Store'));
-    await tester.pumpAndSettle();
-
+    await selectOnHome(tester, 'mitzi');
     expect(find.text('18 deals for cats'), findsOneWidget);
-    expect(petHighlighted(tester), isTrue);
+    expect(animalsChipLabel(tester), 'For cats');
+
+    await pickAnimals(tester, 'Dogs');
+    expect(find.text('23 deals for dogs'), findsOneWidget);
+    await selectOnHome(tester, 'tweety');
+    expect(find.text('4 deals for birds'), findsOneWidget);
+    expect(animalsChipLabel(tester), 'For birds');
   });
 
-  testWidgets('sliding the pet row is not a choice: "All animals" stays', (tester) async {
-    await pumpStore(tester);
-    await tapPetPill(tester, 'All animals');
-
-    await tester.drag(find.byType(PetSelector), const Offset(60, 0));
-    await tester.pumpAndSettle();
-
-    expect(find.text('36 deals'), findsOneWidget);
-    expect(petHighlighted(tester), isFalse);
-  });
-
-  testWidgets('nothing for this pet: the message offers "Show all animals"', (tester) async {
+  testWidgets('nothing for this kind: the message offers "Show all animals"', (tester) async {
     await pumpStore(tester, extraPets: [tweety]);
 
-    await tapPetPill(tester, 'Tweety');
+    await pickAnimals(tester, 'Birds');
     expect(find.text('4 deals for birds'), findsOneWidget);
 
     await pickCategory(tester, 'Toys');
@@ -182,7 +200,7 @@ void main() {
 
     // The category stays; every animal's toys are listed.
     expect(find.text('5 deals'), findsOneWidget);
-    expect(petHighlighted(tester), isFalse);
+    expect(animalsChipLabel(tester), 'All animals');
     expect(find.text('No deals for birds here'), findsNothing);
   });
 
@@ -206,7 +224,7 @@ void main() {
     expect(find.text('2 deals for dogs'), findsOneWidget);
     expect(shownDealIds(tester), ['d-waste-bags-300', 'd-odour-remover-spray']);
 
-    await tapPetPill(tester, 'Mitzi');
+    await pickAnimals(tester, 'Cats');
     expect(find.text('4 deals for cats'), findsOneWidget);
     expect(
       shownDealIds(tester),

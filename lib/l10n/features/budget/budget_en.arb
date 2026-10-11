@@ -293,5 +293,9 @@
   "errorPetNotStored": "This pet is not saved to your account yet, so nothing can be stored for it.",
   "errorGone": "That item no longer exists.",
   "errorNeedsUpdate": "The budget is not set up on the server yet.",
-  "errorUnknown": "Something went wrong. Please try again."
+  "errorUnknown": "Something went wrong. Please try again.",
+  "scopeTooltip": "Choose a pet or the whole home",
+  "@scopeTooltip": {
+    "description": "Tooltip of the chip in the budget header that opens the menu of pets and \"All the home\"."
+  }
 }

@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/config/app_config.dart';
-import 'package:pet_companion/features/auth/widgets/account_sheet.dart';
 import 'package:pet_companion/features/auth/widgets/delete_account_dialog.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/platform/link_opener.dart';
 import 'package:pet_companion/widgets/legal_notice.dart';
@@ -55,8 +55,10 @@ void main() {
     expect(find.text('Feeding'), findsOneWidget);
     expect(find.text('A'), findsOneWidget); // avatar initial of the demo user
 
+    // The avatar opens the You page, where Sign out is.
     await tester.tap(find.text('A'));
     await tester.pumpAndSettle();
+    expect(find.byKey(YouScreen.screenKey), findsOneWidget);
     expect(find.text(FakeAuthRepository.demoEmail), findsOneWidget);
 
     await tester.tap(find.text('Sign out'));
@@ -94,8 +96,8 @@ void main() {
     await tester.tap(find.text('A'));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.byKey(AccountSheet.deleteAccountKey));
-    await tester.tap(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.ensureVisible(find.byKey(YouScreen.deleteKey));
+    await tester.tap(find.byKey(YouScreen.deleteKey));
     await tester.pumpAndSettle();
     expect(find.text(en.accountDeleteTitle), findsOneWidget);
     FilledButton confirm() =>
@@ -125,14 +127,14 @@ void main() {
     await signInAsDemo(tester);
     await tester.tap(find.text('A'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(AccountSheet.deleteAccountKey));
-    await tester.tap(find.byKey(AccountSheet.deleteAccountKey));
+    await tester.ensureVisible(find.byKey(YouScreen.deleteKey));
+    await tester.tap(find.byKey(YouScreen.deleteKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DeleteAccountDialog.cancelKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(DeleteAccountDialog.fieldKey), findsNothing);
-    expect(find.text(FakeAuthRepository.demoEmail), findsOneWidget, reason: 'the sheet is still open');
+    expect(find.text(FakeAuthRepository.demoEmail), findsOneWidget, reason: 'the You page is still open');
   });
 
   testWidgets('the sign-up notice links to the Terms of Use and the Privacy Policy', (tester) async {

@@ -31,12 +31,13 @@ final builtInFeatureModules = <FeatureModule>[
   careModule,
   healthModule,
   communityModule,
+  // Outside sits between Community and Store in the bottom bar.
+  outdoorsModule,
+  meetupsModule,
   storeModule,
   budgetModule,
   basketModule,
   firstDaysModule,
   findVetModule,
-  outdoorsModule,
-  meetupsModule,
   const FeatureModule(id: 'access'),
 ];

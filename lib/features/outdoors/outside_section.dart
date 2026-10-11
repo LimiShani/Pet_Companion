@@ -11,7 +11,6 @@ import '../../services/outdoors/state/parks_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
-import '../../widgets/coral_segmented_control.dart';
 import 'parks/parks_view.dart';
 
 /// The slot the meetups feature fills with its Partners side. Until a
@@ -29,20 +28,22 @@ bool slotAvailable(WidgetRef ref, String name) {
   return false;
 }
 
-/// Community > Outside: "Partners | Parks", the same kind of switch as
-/// the Store's "Deals | My basket". Partners shows first once the meetups
-/// module fills it; an account without parks sees Partners alone.
+/// The body of the Outside tab: the parks or the partners, whichever the
+/// header's "Partners | Parks" switch (see `OutsideScreen`) chose. Partners
+/// shows first once the meetups module fills it; an account without parks
+/// sees Partners alone.
 class OutsideSection extends ConsumerWidget {
   const OutsideSection({super.key});
 
   static const sectionKey = Key('outside-section');
+
+  /// The segments of the switch in the tab's header, for tests.
   static const partnersKey = Key('outside-switch-partners');
   static const parksKey = Key('outside-switch-parks');
   static const partnersSoonKey = Key('outside-partners-soon');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = context.outdoorsL10n;
     final view = ref.watch(outsideViewProvider);
     final controller = ref.read(outsideViewProvider.notifier);
     if (!ref.watch(capabilityProvider(ParkCapabilities.view))) {
@@ -52,35 +53,15 @@ class OutsideSection extends ConsumerWidget {
       );
     }
     return OutdoorsKeeper(
-      child: Column(
+      child: KeyedSubtree(
         key: sectionKey,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.screen,
-              12,
-              AppSpacing.screen,
-              0,
-            ),
-            child: CoralSegmentedControl(
-              onSurface: true,
-              labels: [l10n.outsidePartners, l10n.outsideParks],
-              keys: const [partnersKey, parksKey],
-              selectedIndex: view == OutsideView.partners ? 0 : 1,
-              onChanged: (i) => controller.show(OutsideView.values[i]),
-            ),
-          ),
-          Expanded(
-            child: view == OutsideView.parks
-                ? const ParksView()
-                : slotAvailable(ref, outsidePartnersSlot)
-                ? featureSlot(outsidePartnersSlot, '')
-                : _PartnersSoon(
-                    onShowParks: () => controller.show(OutsideView.parks),
-                  ),
-          ),
-        ],
+        child: view == OutsideView.parks
+            ? const ParksView()
+            : slotAvailable(ref, outsidePartnersSlot)
+            ? featureSlot(outsidePartnersSlot, '')
+            : _PartnersSoon(
+                onShowParks: () => controller.show(OutsideView.parks),
+              ),
       ),
     );
   }

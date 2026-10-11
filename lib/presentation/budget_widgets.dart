@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
@@ -7,7 +6,6 @@ import '../l10n/l10n.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icon.dart';
-import '../widgets/pet_selector.dart';
 import '../services/budget/state/budget_providers.dart';
 
 /// Keeps the budget's and the basket's data active while [child] is
@@ -77,124 +75,6 @@ class _BudgetKeeperState extends State<BudgetKeeper> {
 
   @override
   Widget build(BuildContext context) => widget.child;
-}
-
-/// The pet pills of a coral header followed by an "All the home" pill. A
-/// pet pill selects that pet for the whole app and narrows the budget to
-/// it; "All the home" shows everything and leaves no pet highlighted.
-class BudgetPetScope extends StatefulWidget {
-  const BudgetPetScope({
-    super.key,
-    required this.allHome,
-    required this.onChanged,
-  });
-
-  final bool allHome;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  State<BudgetPetScope> createState() => _BudgetPetScopeState();
-}
-
-class _BudgetPetScopeState extends State<BudgetPetScope> {
-  final _allHomeKey = GlobalKey();
-  Offset? _pressedAt;
-
-  bool _isOnAllHome(Offset position) {
-    final box = _allHomeKey.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.hasSize) return false;
-    return (box.localToGlobal(Offset.zero) & box.size).contains(position);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // The selector only reports a change of pet, so a tap on the pet that
-    // is already selected would go unnoticed: a tap on the row (not a
-    // scroll, not on "All the home") is what leaves "All the home".
-    return Listener(
-      onPointerDown: (event) => _pressedAt = event.position,
-      onPointerCancel: (_) => _pressedAt = null,
-      onPointerUp: (event) {
-        final pressedAt = _pressedAt;
-        _pressedAt = null;
-        if (!widget.allHome || pressedAt == null) return;
-        if ((event.position - pressedAt).distance > kTouchSlop) return;
-        if (_isOnAllHome(event.position)) return;
-        widget.onChanged(false);
-      },
-      child: PetSelector(
-        highlightSelected: !widget.allHome,
-        trailing: _AllHomePill(
-          key: _allHomeKey,
-          selected: widget.allHome,
-          onTap: () => widget.onChanged(true),
-        ),
-      ),
-    );
-  }
-}
-
-/// Drawn to match the pet pills of [PetSelector], with a house for a
-/// picture.
-class _AllHomePill extends StatelessWidget {
-  const _AllHomePill({super.key, required this.selected, required this.onTap});
-
-  static const pillKey = Key('budget-all-home');
-
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: Material(
-        key: pillKey,
-        color: selected ? AppColors.yellow : AppColors.onCoralPill,
-        shape: StadiumBorder(
-          side: BorderSide(
-            color: selected ? AppColors.yellow : AppColors.onCoralOutline,
-            width: 2,
-          ),
-        ),
-        child: InkWell(
-          customBorder: const StadiumBorder(),
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.fromSTEB(8, 8, 16, 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: selected
-                        ? AppColors.coral
-                        : AppColors.white.withValues(alpha: 0.55),
-                  ),
-                  child: AppIcon(
-                    Icons.home_rounded,
-                    size: 13,
-                    color: selected ? AppColors.white : AppColors.coralDark,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  context.budgetL10n.allHome,
-                  style: AppText.cardTitle.copyWith(
-                    color: selected ? AppColors.ink : AppColors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 }
 
 /// "‹ June 2025 ›". The arrows point the way the months go on the screen:

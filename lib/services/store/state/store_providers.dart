@@ -228,15 +228,20 @@ final reportedDealIdsProvider =
       retry: _noRetry,
     );
 
-/// The search text, category, sort order and "all animals" choice picked
-/// on the Store tab.
+/// The search text, category, sort order and choice of animals picked on
+/// the Store tab.
 class StoreFilterController extends Notifier<StoreFilter> {
   @override
   StoreFilter build() => const StoreFilter();
 
   /// Shows the deals for every kind of animal, or (with `false`) only what
-  /// suits the selected pet.
+  /// suits the selected pet. Either way a kind picked with [setKind] is
+  /// forgotten.
   void setAllAnimals(bool value) => state = state.withAllAnimals(value);
+
+  /// Shows what suits [kind] without touching the app's selected pet (the
+  /// Store's animals menu); `null` goes back to the selected pet's kind.
+  void setKind(PetSpecies? kind) => state = state.withKind(kind);
 
   void setQuery(String query) => state = state.withQuery(query);
 
@@ -247,8 +252,11 @@ class StoreFilterController extends Notifier<StoreFilter> {
 
   /// Back to every category and no search text. The sort order and the
   /// choice of animals stay.
-  void clear() =>
-      state = StoreFilter(sort: state.sort, allAnimals: state.allAnimals);
+  void clear() => state = StoreFilter(
+    sort: state.sort,
+    allAnimals: state.allAnimals,
+    kind: state.kind,
+  );
 }
 
 final storeFilterProvider =
@@ -256,9 +264,12 @@ final storeFilterProvider =
       StoreFilterController.new,
     );
 
-/// The kind of animal the Store is shopping for: the selected pet's.
+/// The kind of animal the Store is shopping for: the one picked in its
+/// animals menu, else the selected pet's.
 final storePetSpeciesProvider = Provider<PetSpecies>(
-  (ref) => ref.watch(selectedPetProvider.select((pet) => pet.species)),
+  (ref) =>
+      ref.watch(storeFilterProvider.select((filter) => filter.kind)) ??
+      ref.watch(selectedPetProvider.select((pet) => pet.species)),
 );
 
 /// The catalogue as the Store grid shows it: what suits the selected pet

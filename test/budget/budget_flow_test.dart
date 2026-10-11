@@ -29,6 +29,15 @@ Finder plain(String text) => find.byWidgetPredicate(
   description: 'text "$text"',
 );
 
+/// What the budget header's chip reads: a pet's name or "All the home".
+Finder scopeChip(String label) => find.descendant(of: find.byKey(BudgetScreen.scopeKey), matching: plain(label));
+
+/// Picks a pet, or "All the home", in the budget header's menu chip.
+Future<void> pickScope(WidgetTester tester, String label) async {
+  await tapVisible(tester, find.byKey(BudgetScreen.scopeKey));
+  await tapVisible(tester, find.descendant(of: find.byType(PopupMenuItem<String>), matching: plain(label)));
+}
+
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
@@ -125,22 +134,26 @@ void main() {
       expect(plain('June 2025'), findsOneWidget);
     });
 
-    testWidgets('a pet pill narrows the budget to that pet; "All the home" shows everything again', (tester) async {
+    testWidgets('the header chip narrows the budget to one pet; "All the home" shows everything again', (tester) async {
       await pumpBudgetApp(tester);
       await openBudgetFromMenu(tester);
+      expect(scopeChip('All the home'), findsOneWidget);
 
-      await tapVisible(tester, plain('Soya'));
+      await pickScope(tester, 'Soya');
+      expect(scopeChip('Soya'), findsOneWidget);
       expect(_text(tester, _total()), '₪0');
       expect(plain('Nothing spent in this month.'), findsOneWidget);
       await tapVisible(tester, find.byKey(MonthSwitcher.previousKey));
       // Grooming ₪150 and poop bags ₪29.
       expect(_text(tester, _total()), '₪179');
 
-      await tapVisible(tester, plain('Kelly'));
+      await pickScope(tester, 'Kelly');
+      expect(scopeChip('Kelly'), findsOneWidget);
       // May for Kelly: 240 + 59 + 600 + 200 + 85 + 320.
       expect(_text(tester, _total()), '₪1,504');
 
-      await tapVisible(tester, plain('All the home'));
+      await pickScope(tester, 'All the home');
+      expect(scopeChip('All the home'), findsOneWidget);
       expect(_text(tester, _total()), '₪1,683');
     });
 

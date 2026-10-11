@@ -199,7 +199,7 @@ void main() {
 
       testWidgets('a pet with nothing logged is invited to the Quick log', (tester) async {
         await openInsights(tester, size: size);
-        await selectPet(tester, 'Soya');
+        await switchPet(tester, 'Soya');
         expect(find.text(he.insightsEmpty), findsOneWidget);
         expect(find.text(he.insightsEmptyNote('Soya')), findsOneWidget);
         await tapVisible(tester, find.text(he.openQuickLog));

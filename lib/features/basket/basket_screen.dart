@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/coral_header.dart';
-import '../../widgets/pet_selector.dart';
 import '../../access/feature_gate.dart';
 import 'basket_view.dart';
 
@@ -18,10 +17,7 @@ class BasketScreen extends StatelessWidget {
     builder: (_) => Scaffold(
       body: Column(
         children: [
-          CoralHeader(
-            title: context.budgetL10n.myBasket,
-            bottom: const PetSelector(),
-          ),
+          CoralHeader(title: context.budgetL10n.myBasket),
           const Expanded(child: BasketView()),
         ],
       ),

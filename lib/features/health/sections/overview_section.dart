@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
+import '../../../platform/feature_ui.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
@@ -588,12 +589,21 @@ class _VetCard extends StatelessWidget {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
     if (vet == null) {
-      return HealthPromptCard(
-        key: const Key('overview-add-vet'),
-        icon: Icons.add_call,
-        title: l10n.addPetsVet(pet.name),
-        message: l10n.vetPromptNote,
-        onTap: () => showVetPicker(context, petId: pet.id),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          HealthPromptCard(
+            key: const Key('overview-add-vet'),
+            icon: Icons.add_call,
+            title: l10n.addPetsVet(pet.name),
+            message: l10n.vetPromptNote,
+            onTap: () => showVetPicker(context, petId: pet.id),
+          ),
+          const Padding(
+            padding: EdgeInsetsDirectional.only(start: 8, top: 4),
+            child: _FindVetLink(),
+          ),
+        ],
       );
     }
     // The address as typed, the phone number left to right.
@@ -652,10 +662,35 @@ class _VetCard extends StatelessWidget {
             address: vet.hasAddress ? vet.address : null,
             onAddPhone: () => VetsScreen.open(context, pet),
           ),
+          const _FindVetLink(),
         ],
       ),
     );
   }
+}
+
+/// "Find a vet nearby", under the vet card whether a vet is saved or not:
+/// the way to the Find a vet search, for accounts that may use it. The
+/// Emergency sheet has its own.
+class _FindVetLink extends StatelessWidget {
+  const _FindVetLink();
+
+  static const linkKey = Key('overview-find-vet');
+
+  @override
+  Widget build(BuildContext context) => FeatureGate(
+    capability: 'findvet.search',
+    hidden: true,
+    builder: (context) => Align(
+      alignment: AlignmentDirectional.centerStart,
+      child: HealthLink(
+        context.healthL10n.overviewFindVet,
+        key: linkKey,
+        icon: Icons.search_rounded,
+        onPressed: () => openFeature<Object>(context, 'find-vet', ''),
+      ),
+    ),
+  );
 }
 
 class _MedicinesCard extends StatelessWidget {

@@ -325,7 +325,7 @@ void main() {
 
       testWidgets('the empty states of a pet with nothing', (tester) async {
         await pump(tester);
-        await selectPet(tester, 'Soya');
+        await switchPet(tester, 'Soya');
         expect(find.text('Start with one thing'), findsOneWidget);
         for (final (section, title) in [
           ('Schedule', 'Nothing scheduled yet'),

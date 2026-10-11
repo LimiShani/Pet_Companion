@@ -8,7 +8,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'petloop_icon.dart';
 
-/// Bottom navigation: Home, Health, Community, Store. On a right-to-left
+/// Bottom navigation: Home, Health, Community, Outside, Store. On a right-to-left
 /// screen the row mirrors by itself, so Home sits on the right.
 class AppBottomNav extends ConsumerWidget {
   const AppBottomNav({
@@ -79,7 +79,9 @@ class AppBottomNav extends ConsumerWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          // Five tabs share the row: a narrower edge leaves each label
+          // the room "Community" needs on a 320 px phone.
+          padding: const EdgeInsets.fromLTRB(6, 10, 6, 10),
           child: Row(
             children: [
               for (var i = 0; i < items.length; i++)
@@ -136,13 +138,22 @@ class _NavItem extends StatelessWidget {
                   color: selected ? AppColors.coral : AppColors.brown,
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.navLabel.copyWith(
-                    color: selected ? AppColors.ink : AppColors.brown,
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                // Shrinks a little rather than cut a word short when the
+                // text is large or the phone narrow.
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      style: AppText.navLabel.copyWith(
+                        color: selected ? AppColors.ink : AppColors.brown,
+                        fontWeight: selected
+                            ? FontWeight.w800
+                            : FontWeight.w700,
+                      ),
+                    ),
                   ),
                 ),
               ],

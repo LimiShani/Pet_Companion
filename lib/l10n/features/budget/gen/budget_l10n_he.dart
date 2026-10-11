@@ -55,8 +55,7 @@ class BudgetL10nHe extends BudgetL10n {
   }
 
   @override
-  String get averageNote =>
-      'על פני 12 החודשים האחרונים לכל היותר. הוצאה שנתית נספרת כ־1/12 בכל חודש.';
+  String get averageNote => 'על פני 12 החודשים האחרונים לכל היותר. הוצאה שנתית נספרת כ־1/12 בכל חודש.';
 
   @override
   String get byCategory => 'לפי קטגוריה';
@@ -71,8 +70,7 @@ class BudgetL10nHe extends BudgetL10n {
   String get addExpense => 'הוספת הוצאה';
 
   @override
-  String get healthMissing =>
-      'לא הצלחנו לטעון את העלויות מ״בריאות״, ולכן הן לא נספרות כאן.';
+  String get healthMissing => 'לא הצלחנו לטעון את העלויות מ״בריאות״, ולכן הן לא נספרות כאן.';
 
   @override
   String get loadFailed => 'לא הצלחנו לטעון את התקציב';
@@ -150,12 +148,10 @@ class BudgetL10nHe extends BudgetL10n {
   String get everyYear => 'כל שנה';
 
   @override
-  String get monthlyNote =>
-      'נרשמת פעם אחת: היא נספרת שוב בכל חודש מהתאריך הזה, עד שעוצרים אותה.';
+  String get monthlyNote => 'נרשמת פעם אחת: היא נספרת שוב בכל חודש מהתאריך הזה, עד שעוצרים אותה.';
 
   @override
-  String get yearlyNote =>
-      'נספרת בחודש הזה בכל שנה. בממוצע החודשי היא נספרת כ־1/12 בכל חודש.';
+  String get yearlyNote => 'נספרת בחודש הזה בכל שנה. בממוצע החודשי היא נספרת כ־1/12 בכל חודש.';
 
   @override
   String get stopRepeating => 'הפסקת החזרה';
@@ -172,12 +168,10 @@ class BudgetL10nHe extends BudgetL10n {
   String get deleteExpenseTitle => 'למחוק את ההוצאה?';
 
   @override
-  String get deleteExpenseBody =>
-      'היא תוסר מהתקציב. אי אפשר לבטל את הפעולה הזאת.';
+  String get deleteExpenseBody => 'היא תוסר מהתקציב. אי אפשר לבטל את הפעולה הזאת.';
 
   @override
-  String get deleteRecurringBody =>
-      'היא תוסר מכל החודשים שבהם נספרה. כדי לשמור את החודשים הקודמים, אפשר להפסיק את החזרה במקום.';
+  String get deleteRecurringBody => 'היא תוסר מכל החודשים שבהם נספרה. כדי לשמור את החודשים הקודמים, אפשר להפסיק את החזרה במקום.';
 
   @override
   String get expenseSaved => 'נשמר';
@@ -195,8 +189,7 @@ class BudgetL10nHe extends BudgetL10n {
   String get basketEmptyTitle => 'הסל שלך עדיין ריק';
 
   @override
-  String get basketEmptyMessage =>
-      'אפשר להוסיף כאן את המזון, החול ושאר הדברים שקונים שוב ושוב, ולראות מתי כל אחד נגמר.';
+  String get basketEmptyMessage => 'אפשר להוסיף כאן את המזון, החול ושאר הדברים שקונים שוב ושוב, ולראות מתי כל אחד נגמר.';
 
   @override
   String get regularProduct => 'מוצר קבוע';
@@ -277,12 +270,9 @@ class BudgetL10nHe extends BudgetL10n {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר בעוד $count ימים (\u2068$date\u2069).',
-      two:
-          'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר בעוד יומיים (\u2068$date\u2069).',
-      one:
-          'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר מחר (\u2068$date\u2069).',
+      other: 'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר בעוד $count ימים (\u2068$date\u2069).',
+      two: 'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר בעוד יומיים (\u2068$date\u2069).',
+      one: 'המלאי של \u2068$name\u2069 עבור \u2068$pet\u2069 ייגמר מחר (\u2068$date\u2069).',
     );
     return '$_temp0';
   }
@@ -356,8 +346,7 @@ class BudgetL10nHe extends BudgetL10n {
   }
 
   @override
-  String get lastsNoFeeding =>
-      'כדי לחשב לפי ההאכלה צריך מנה ושעות האכלה בדף ההאכלה, וגודל בק״ג או בגרם.';
+  String get lastsNoFeeding => 'כדי לחשב לפי ההאכלה צריך מנה ושעות האכלה בדף ההאכלה, וגודל בק״ג או בגרם.';
 
   @override
   String get lastsAbout => 'מחזיקה בערך';
@@ -372,8 +361,7 @@ class BudgetL10nHe extends BudgetL10n {
   String get weeks => 'שבועות';
 
   @override
-  String get lastsOptional =>
-      'אפשר להשאיר ריק אם לא בטוחים: פשוט לא יהיה תאריך סיום.';
+  String get lastsOptional => 'אפשר להשאיר ריק אם לא בטוחים: פשוט לא יהיה תאריך סיום.';
 
   @override
   String get deleteProductTitle => 'להסיר את המוצר?';
@@ -410,8 +398,7 @@ class BudgetL10nHe extends BudgetL10n {
   String get openBasket => 'פתיחת הסל שלי';
 
   @override
-  String get errorOffline =>
-      'לא הצלחנו להתחבר לשרת. כדאי לבדוק את החיבור ולנסות שוב.';
+  String get errorOffline => 'לא הצלחנו להתחבר לשרת. כדאי לבדוק את החיבור ולנסות שוב.';
 
   @override
   String get errorSessionEnded => 'פג תוקף החיבור. צריך להיכנס שוב.';
@@ -423,8 +410,7 @@ class BudgetL10nHe extends BudgetL10n {
   String get errorInvalid => 'חלק מהפרטים לא תקינים. כדאי לבדוק אותם.';
 
   @override
-  String get errorPetNotStored =>
-      'החיה עוד לא שמורה בחשבון שלך, ולכן אי אפשר לשמור עבורה כלום.';
+  String get errorPetNotStored => 'החיה עוד לא שמורה בחשבון שלך, ולכן אי אפשר לשמור עבורה כלום.';
 
   @override
   String get errorGone => 'הפריט הזה כבר לא קיים.';
@@ -434,4 +420,7 @@ class BudgetL10nHe extends BudgetL10n {
 
   @override
   String get errorUnknown => 'משהו השתבש. אפשר לנסות שוב.';
+
+  @override
+  String get scopeTooltip => 'בחירת חיה או כל הבית';
 }

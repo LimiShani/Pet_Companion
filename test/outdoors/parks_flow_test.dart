@@ -5,6 +5,7 @@ import 'package:pet_companion/features/meetups/meetups.dart' show PartnersView;
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/platform/feature_module.dart';
 import 'package:pet_companion/services/findvet/data/location_service.dart';
+import 'package:pet_companion/widgets/app_bottom_nav.dart';
 
 import 'outdoors_test_helpers.dart';
 
@@ -14,18 +15,20 @@ const tall = Size(390, 2400);
 void main() {
   setUpOutdoorsTests();
 
-  testWidgets('Outside sits between Chat and Guides; Parks is one tap from Partners', (
+  testWidgets('Outside is its own tab between Community and Store; Parks is one tap from Partners', (
     tester,
   ) async {
     await openOutside(tester, parks: false);
     expect(find.byKey(PartnersView.listKey), findsOneWidget, reason: 'Partners shows first');
     await tester.tap(find.byKey(OutsideSection.parksKey));
     await tester.pumpAndSettle();
-    final feed = tester.getCenter(find.text(communityEn.sectionFeed));
-    final chat = tester.getCenter(find.text(communityEn.sectionChat));
-    final outside = tester.getCenter(find.text(en.sectionOutside));
-    final guides = tester.getCenter(find.text(communityEn.sectionGuides));
-    expect(feed.dx < chat.dx && chat.dx < outside.dx && outside.dx < guides.dx, isTrue);
+    Offset tab(String label) => tester.getCenter(
+      find.descendant(of: find.byType(AppBottomNav), matching: find.text(label)),
+    );
+    final community = tab(appEn.navCommunity);
+    final outside = tab(en.sectionOutside);
+    final store = tab(appEn.navStore);
+    expect(community.dx < outside.dx && outside.dx < store.dx, isTrue);
     expect(find.byKey(ParksView.listKey), findsOneWidget);
     expect(find.text(en.areaQuestion), findsOneWidget);
     expect(find.byKey(ParksView.sampleKey), findsOneWidget);

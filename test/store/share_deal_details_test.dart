@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/store/data/deal.dart';
@@ -7,6 +8,7 @@ import 'package:pet_companion/features/store/deal_detail_screen.dart';
 import 'package:pet_companion/features/store/share_deal_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/state/pets_provider.dart';
 
 import 'store_test_helpers.dart';
 
@@ -172,7 +174,12 @@ void main() {
   testWidgets('with a cat selected the form starts on cats; taking the last animal off means all pets',
       (tester) async {
     await pumpStore(tester, extraPets: [const Pet(id: 'mitzi', name: 'Mitzi', species: PetSpecies.cat)]);
-    await tapPetPill(tester, 'Mitzi');
+    // The app's pet is chosen on Home (the Store's own menu only narrows
+    // the deals), so pick the cat the way Home does.
+    ProviderScope.containerOf(tester.element(find.byKey(const Key('store-screen'))))
+        .read(selectedPetIdProvider.notifier)
+        .select('mitzi');
+    await tester.pumpAndSettle();
     await openForm(tester);
 
     expect(animalChosen(tester, 'cat'), isTrue);

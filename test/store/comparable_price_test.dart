@@ -96,7 +96,7 @@ void main() {
 
     testWidgets('in the sample catalogue the big bag of cat food comes out cheapest per kilo', (tester) async {
       await pumpStore(tester, extraPets: [const Pet(id: 'mitzi', name: 'Mitzi', species: PetSpecies.cat)]);
-      await tapPetPill(tester, 'Mitzi');
+      await pickAnimals(tester, 'Cats');
       final food = find.widgetWithText(ChoiceChip, 'Food');
       await tester.tap(food);
       await tester.pumpAndSettle();
@@ -119,7 +119,7 @@ void main() {
     testWidgets('shows the unit price, package, delivery, final price, who it is for and the checked date',
         (tester) async {
       await pumpStore(tester);
-      await tapPetPill(tester, 'All animals');
+      await pickAnimals(tester, 'All animals');
       await tester.enterText(find.byType(TextField), 'clumping');
       await tester.pumpAndSettle();
       await openDeal(tester, 'd-clumping-litter-10kg');

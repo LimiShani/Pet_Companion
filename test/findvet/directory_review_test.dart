@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/findvet/findvet.dart';
-import 'package:pet_companion/features/settings/side_menu.dart';
+import 'package:pet_companion/features/settings/admin_tools_screen.dart';
 
 import '../helpers.dart';
 import 'findvet_test_helpers.dart';
@@ -12,11 +12,10 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  Future<void> openMenu(WidgetTester tester, FindVetKit kit) async {
+  Future<void> openAdminTools(WidgetTester tester, FindVetKit kit) async {
     await pumpApp(tester, overrides: kit.overrides, size: tallPhone);
     await signInAsDemo(tester);
-    await tester.tap(find.byTooltip(appEn.homeMenu));
-    await tester.pumpAndSettle();
+    await openAdminToolsFromHome(tester);
   }
 
   Future<void> answerNote(WidgetTester tester, String note) async {
@@ -26,15 +25,15 @@ void main() {
   }
 
   testWidgets('the review entry is shown to directory reviewers only', (tester) async {
-    await openMenu(tester, FindVetKit());
-    expect(find.byKey(AppSideMenu.findVetKey), findsOneWidget);
-    expect(find.byKey(AppSideMenu.directoryReviewKey), findsNothing);
+    await openAdminTools(tester, FindVetKit());
+    expect(find.byKey(AdminToolsScreen.featureAccessKey), findsOneWidget);
+    expect(find.byKey(AdminToolsScreen.directoryReviewKey), findsNothing);
   });
 
   testWidgets('a reviewer resolves items and approves, corrects and withdraws facilities', (tester) async {
     final kit = FindVetKit(admin: true);
-    await openMenu(tester, kit);
-    await tester.tap(find.byKey(AppSideMenu.directoryReviewKey));
+    await openAdminTools(tester, kit);
+    await tester.tap(find.byKey(AdminToolsScreen.directoryReviewKey));
     await tester.pumpAndSettle();
     expect(find.byKey(DirectoryReviewScreen.screenKey), findsOneWidget);
 

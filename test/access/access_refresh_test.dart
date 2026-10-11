@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' show ClientException;
 import 'package:pet_companion/access/access_provider.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthException, AuthRetryableFetchException, PostgrestException;
 
@@ -118,7 +119,9 @@ void main() {
       overrides: [accessRepositoryProvider.overrideWithValue(repository)],
     );
     await signInAsDemo(tester);
-    await tester.tap(find.byTooltip('Menu'));
+    await tester.tap(find.byTooltip('You'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(YouScreen.adminKey));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Feature access'));
     await tester.tap(find.text('Feature access'));
