@@ -98,11 +98,8 @@ class HealthSectionTitle extends StatelessWidget {
           Flexible(
             child: Text(
               title,
-              style: AppText.cardTitle.copyWith(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-              ),
-              maxLines: 1,
+              style: AppText.sectionTitle,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -449,8 +446,7 @@ class PickerTile extends StatelessWidget {
                         ),
                         Text(
                           value,
-                          style: AppText.body.copyWith(
-                            fontSize: 16,
+                          style: AppText.bodyLarge.copyWith(
                             color: placeholder
                                 ? AppColors.brown.withValues(alpha: 0.55)
                                 : AppColors.ink,
@@ -602,7 +598,7 @@ class SheetTitle extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TypedText(title, style: AppText.petName.copyWith(fontSize: 20)),
+        TypedText(title, style: AppText.heading),
         if (subtitle != null) ...[
           const SizedBox(height: 2),
           TypedText(

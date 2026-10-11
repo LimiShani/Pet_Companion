@@ -108,10 +108,7 @@ class _PetRow extends ConsumerWidget {
             children: [
               Text(
                 pet.name,
-                style: AppText.cardTitle.copyWith(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w800,
-                ),
+                style: AppText.sectionTitle,
               ),
               Text(
                 petSummaryLine(l10n, pet, now: now),

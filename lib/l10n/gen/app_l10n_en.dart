@@ -159,6 +159,27 @@ class AppL10nEn extends AppL10n {
   String get authHidePassword => 'Hide password';
 
   @override
+  String get resetPasswordTitle => 'New password';
+
+  @override
+  String get resetPasswordIntro => 'Choose a new password for your account.';
+
+  @override
+  String get resetPasswordLabel => 'New password';
+
+  @override
+  String get resetPasswordConfirm => 'Confirm password';
+
+  @override
+  String get resetPasswordTooShort => 'Use at least 8 characters';
+
+  @override
+  String get resetPasswordMismatch => 'Passwords do not match';
+
+  @override
+  String get resetPasswordSave => 'Save password';
+
+  @override
   String get validEmailEmpty => 'Enter your email address.';
 
   @override

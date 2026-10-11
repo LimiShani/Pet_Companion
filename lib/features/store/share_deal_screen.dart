@@ -711,8 +711,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
     );
   }
 
-  static final _fieldStyle = AppText.body.copyWith(
-    fontSize: 16,
+  static final _fieldStyle = AppText.bodyLarge.copyWith(
     color: AppColors.ink,
   );
 }
@@ -786,8 +785,7 @@ class _DropdownHint extends StatelessWidget {
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     return Text(
       text,
-      style: AppText.body.copyWith(
-        fontSize: 16,
+      style: AppText.bodyLarge.copyWith(
         color: AppColors.brown.withValues(alpha: 0.55),
       ),
       maxLines: 1,
@@ -924,8 +922,7 @@ class _EndDateField extends StatelessWidget {
                     picked == null
                         ? l10n.addEndDate
                         : l10n.endsDate(StoreFormat.of(context).date(picked)),
-                    style: AppText.body.copyWith(
-                      fontSize: 16,
+                    style: AppText.bodyLarge.copyWith(
                       color: picked == null ? AppColors.brown : AppColors.ink,
                     ),
                     maxLines: 1,

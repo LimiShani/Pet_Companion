@@ -19,6 +19,7 @@
 /// | `lib/l10n/features/findvet/`  | `FindVetL10n`   | `context.findVetL10n`   |
 /// | `lib/l10n/features/outdoors/` | `OutdoorsL10n`  | `context.outdoorsL10n`  |
 /// | `lib/l10n/features/meetups/`  | `MeetupsL10n`   | `context.meetupsL10n`   |
+/// | `lib/l10n/features/access/`   | `AccessL10n`    | `context.accessL10n`    |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -31,6 +32,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'features/access/gen/access_l10n.dart';
 import 'features/budget/gen/budget_l10n.dart';
 import 'features/care/gen/care_l10n.dart';
 import 'features/community/gen/community_l10n.dart';
@@ -45,6 +47,7 @@ import '../notifications/l10n/gen/notifications_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
 
+export 'features/access/gen/access_l10n.dart' show AccessL10n, lookupAccessL10n;
 export 'features/budget/gen/budget_l10n.dart' show BudgetL10n, lookupBudgetL10n;
 export 'features/care/gen/care_l10n.dart' show CareL10n, lookupCareL10n;
 export 'features/community/gen/community_l10n.dart'
@@ -69,7 +72,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the twelve strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the thirteen strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -84,6 +87,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   FindVetL10n.delegate,
   OutdoorsL10n.delegate,
   MeetupsL10n.delegate,
+  AccessL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -127,6 +131,10 @@ extension L10nContext on BuildContext {
 
   /// Community > Outside > Partners: walk and play partner ads.
   MeetupsL10n get meetupsL10n => _strings(this, lookupMeetupsL10n);
+
+  /// Feature access: the administration screen, its audit, and the pages
+  /// shown when a feature or the permissions themselves are unavailable.
+  AccessL10n get accessL10n => _strings(this, lookupAccessL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;

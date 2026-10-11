@@ -272,7 +272,7 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                     // The post reads in the direction of what is typed, as
                     // it will in the feed; an empty field follows the screen.
                     textDirection: contentDirection(context, _text.text),
-                    style: AppText.body.copyWith(fontSize: 16, height: 1.5),
+                    style: AppText.bodyLarge.copyWith(height: 1.5),
                     decoration: InputDecoration(
                       hintText: l10n.composerHintFor(_kind),
                       border: _fieldBorder,

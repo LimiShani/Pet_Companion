@@ -444,7 +444,7 @@ class CareLinkRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: AppText.cardTitle.copyWith(fontSize: 16)),
+              Text(title, style: AppText.rowTitle),
               const SizedBox(height: 2),
               Text(summary, style: AppText.secondary),
             ],

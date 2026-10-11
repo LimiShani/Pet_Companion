@@ -19,6 +19,7 @@ import '../../../widgets/empty_state.dart';
 import '../outdoors_words.dart';
 import '../widgets/park_widgets.dart';
 import 'update_details_sheet.dart';
+import '../../../widgets/app_tag.dart';
 
 /// The slots another feature (meetups) fills on the park page. Each gets
 /// the values `parkId`, `parkName` (with the city) and `parkTags` (the
@@ -259,10 +260,10 @@ class _ParkPage extends ConsumerWidget {
                   const SizedBox(height: 10),
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: ParkTag(
+                    child: AppTag(
                       l10n.closedLabel,
+                      tone: AppTagTone.yellow,
                       icon: Icons.construction_rounded,
-                      color: AppColors.yellow,
                     ),
                   ),
                 ],

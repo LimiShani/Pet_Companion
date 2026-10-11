@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_icon.dart';
+import 'dashboard_card.dart';
 
 class MoneyCard extends StatelessWidget {
   const MoneyCard({
@@ -51,32 +52,7 @@ class MoneyCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              title,
-                              style: AppText.cardTitle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (trailing != null) ...[
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                trailing!,
-                                style: AppText.label.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                textAlign: TextAlign.end,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
+                      CardTitleRow(title: title, trailing: trailing),
                       const SizedBox(height: 6),
                       child,
                     ],

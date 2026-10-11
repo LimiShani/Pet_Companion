@@ -81,7 +81,7 @@ class AccountSheet extends ConsumerWidget {
                     children: [
                       Text(
                         user.displayName,
-                        style: AppText.cardTitle.copyWith(fontSize: 17),
+                        style: AppText.sectionTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),

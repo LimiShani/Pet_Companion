@@ -108,7 +108,7 @@ class _VetResultCardState extends State<VetResultCard> {
                       r.name,
                       fallback: Directionality.of(context),
                     ),
-                    style: AppText.cardTitle.copyWith(fontSize: 17),
+                    style: AppText.sectionTitle,
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                   ),

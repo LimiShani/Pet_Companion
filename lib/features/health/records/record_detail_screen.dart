@@ -225,7 +225,7 @@ class _Detail extends ConsumerWidget {
                 children: [
                   TypedText(
                     record.title,
-                    style: AppText.petName.copyWith(fontSize: 20),
+                    style: AppText.heading,
                   ),
                   Text(
                     format.dots([l10n.recordKind(record.kind), pet.name]),

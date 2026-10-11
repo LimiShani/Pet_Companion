@@ -91,8 +91,8 @@ class _LowRow extends StatelessWidget {
           pet.name.isEmpty
               ? item.name
               : '${isolate(item.name)} · ${isolate(pet.name)}',
-          style: AppText.cardTitle.copyWith(fontSize: 16),
-          maxLines: 1,
+          style: AppText.rowTitle,
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
         Text(

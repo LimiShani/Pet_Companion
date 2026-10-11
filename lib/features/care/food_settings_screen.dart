@@ -275,13 +275,13 @@ class _FoodFormState extends ConsumerState<_FoodForm> {
                     Expanded(
                       child: Text(
                         l10n.dailyGoal,
-                        style: AppText.cardTitle.copyWith(fontSize: 17),
+                        style: AppText.sectionTitle,
                       ),
                     ),
                     if (canEstimate && !ownGoal)
                       Text(
                         format.integer(estimate.calories),
-                        style: AppText.metricSmall.copyWith(fontSize: 22),
+                        style: AppText.heading,
                       ),
                   ],
                 ),

@@ -13,10 +13,10 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../community/community_words.dart';
 import '../../community/safety/safety_providers.dart' show blockedIdsProvider;
-import '../../outdoors/outdoors.dart' show ParkTag;
 import '../meetup_actions.dart';
 import '../meetups_state.dart';
 import '../meetups_words.dart';
+import '../../../widgets/app_tag.dart';
 
 /// "Post a meetup here": beside Navigate on a park's page; the form opens
 /// with the park chosen.
@@ -190,7 +190,7 @@ class MeetupRow extends ConsumerWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        ParkTag(l10n.kind(ad.kind), color: AppColors.yellow),
+                        AppTag(l10n.kind(ad.kind), tone: AppTagTone.yellow),
                       ],
                     ),
                     Text(
@@ -250,12 +250,12 @@ class ParkCardMeetups extends ConsumerWidget {
       padding: const EdgeInsets.only(top: 6),
       child: Align(
         alignment: AlignmentDirectional.centerStart,
-        child: ParkTag(
+        child: AppTag(
           summary.today
               ? l10n.cardMeetupToday
               : l10n.cardMeetupsWeek(summary.thisWeek),
+          tone: AppTagTone.peach,
           icon: Icons.groups_rounded,
-          color: AppColors.peach.withValues(alpha: 0.6),
         ),
       ),
     );

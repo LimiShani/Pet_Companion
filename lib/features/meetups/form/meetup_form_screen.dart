@@ -17,10 +17,11 @@ import '../../../widgets/coral_header.dart';
 import '../../../widgets/primary_button.dart';
 import '../../community/feed/post_actions.dart' show showCommunitySnack;
 import '../../community/safety/safety_flows.dart' show ensureCommunityRules;
-import '../../outdoors/outdoors.dart' show PickedPark, ParkTag, parkDetailIcon;
+import '../../outdoors/outdoors.dart' show PickedPark, parkDetailIcon;
 import '../../outdoors/outdoors_words.dart';
 import '../board/meetups_area_picker.dart';
 import '../meetups_words.dart';
+import '../../../widgets/app_tag.dart';
 
 /// A new ad, or the new text of an open one ([edit]). [copyOf] starts a
 /// new ad from an old one ("Post again"); [park] starts it at a park (the
@@ -260,7 +261,7 @@ class _MeetupFormScreenState extends ConsumerState<MeetupFormScreen> {
       padding: const EdgeInsets.only(top: 18, bottom: 8),
       child: Semantics(
         header: true,
-        child: Text(text, style: AppText.cardTitle.copyWith(fontSize: 17)),
+        child: Text(text, style: AppText.sectionTitle),
       ),
     );
     Widget chip(Key key, String label, bool selected, VoidCallback onTap) =>
@@ -382,7 +383,7 @@ class _MeetupFormScreenState extends ConsumerState<MeetupFormScreen> {
                                     runSpacing: 6,
                                     children: [
                                       for (final d in park.has)
-                                        ParkTag(
+                                        AppTag(
                                           outdoors.detail(d),
                                           icon: parkDetailIcon(d),
                                         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
+import '../../../theme/app_theme.dart';
 import '../../../services/pet_records/data/health_models.dart';
 
 /// The few fixed words of a lost card, in the card's own language. The
@@ -272,9 +273,7 @@ class LostCardView extends StatelessWidget {
                           child: Text(
                             content.phone.trim(),
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
+                            style: AppText.heading.copyWith(
                               color: AppColors.ink,
                             ),
                           ),

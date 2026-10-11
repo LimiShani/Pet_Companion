@@ -12,7 +12,7 @@ import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/features/community/widgets/message_bar.dart';
-import 'package:pet_companion/features/community/widgets/small_tag.dart';
+import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/widgets/app_icon.dart';
@@ -54,7 +54,7 @@ Finder cardOf(String author) => find.widgetWithText(PostCard, author);
 
 Finder inCard(String author, Finder matching) => find.descendant(of: cardOf(author), matching: matching);
 
-Finder tag(String label) => find.widgetWithText(SmallTag, label);
+Finder tag(String label) => find.widgetWithText(AppTag, label);
 
 final adviceLine = find.byType(AdviceNotice);
 

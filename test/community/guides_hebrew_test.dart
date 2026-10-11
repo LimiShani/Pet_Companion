@@ -8,7 +8,7 @@ import 'package:pet_companion/features/community/data/guides/guide_credits.dart'
 import 'package:pet_companion/features/community/data/guides/guides_en.dart';
 import 'package:pet_companion/features/community/data/guides/guides_he.dart';
 import 'package:pet_companion/features/community/data/guides_repository.dart';
-import 'package:pet_companion/features/community/widgets/small_tag.dart';
+import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 
@@ -65,7 +65,7 @@ int count(Pattern pattern, String text) => pattern.allMatches(text).length;
 
 Finder headerTitle(String title) => find.descendant(of: find.byType(CoralHeader), matching: find.text(title));
 
-Finder tag(String label) => find.widgetWithText(SmallTag, label);
+Finder tag(String label) => find.widgetWithText(AppTag, label);
 
 const small = Size(320, 568);
 

@@ -242,11 +242,7 @@ class _DealBody extends ConsumerWidget {
                 Text(
                   deal.title,
                   textDirection: contentDirection(context, deal.title),
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    height: 1.2,
-                  ),
+                  style: AppText.heading.copyWith(height: 1.2),
                 ),
                 if (expired) ...[
                   const SizedBox(height: 14),

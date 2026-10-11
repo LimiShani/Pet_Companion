@@ -136,7 +136,7 @@ class _Body extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       l10n.today,
-                      style: AppText.cardTitle.copyWith(fontSize: 17),
+                      style: AppText.sectionTitle,
                     ),
                   ),
                   Text(

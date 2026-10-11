@@ -32,8 +32,7 @@ class GuideReaderScreen extends ConsumerWidget {
 
   final String guideId;
 
-  static final _paragraph = AppText.body.copyWith(
-    fontSize: 16,
+  static final _paragraph = AppText.bodyLarge.copyWith(
     height: 1.55,
     fontWeight: FontWeight.w500,
   );
@@ -93,7 +92,7 @@ class GuideReaderScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
-                          if (!guide.translated) SmallTag.englishOnly(l10n),
+                          if (!guide.translated) tagEnglishOnly(l10n),
                         ],
                       ),
                       const SizedBox(height: 10),

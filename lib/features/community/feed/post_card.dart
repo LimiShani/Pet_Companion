@@ -14,11 +14,11 @@ import '../../../services/community/data/community_providers.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/post_photo_view.dart';
-import '../widgets/small_tag.dart';
 import '../widgets/speech_icon.dart';
 import 'post_composer_screen.dart';
 import '../safety/safety_flows.dart';
 import 'post_actions.dart';
+import '../../../widgets/app_tag.dart';
 
 enum _PostAction { edit, delete, share, report, block }
 
@@ -175,17 +175,17 @@ class PostCard extends ConsumerWidget {
                     runSpacing: 6,
                     children: [
                       if (post.kind != PostKind.moment)
-                        SmallTag(
+                        AppTag(
                           l10n.postKind(post.kind),
-                          color: post.kind == PostKind.lostFound
-                              ? AppColors.peach
-                              : AppColors.yellow,
+                          tone: post.kind == PostKind.lostFound
+                              ? AppTagTone.peach
+                              : AppTagTone.yellow,
                           icon: _kindIcon(post.kind),
                         ),
                       if (answered)
-                        SmallTag(
+                        AppTag(
                           l10n.answeredTag,
-                          color: AppColors.sage,
+                          tone: AppTagTone.sage,
                           icon: Icons.check_rounded,
                         ),
                     ],

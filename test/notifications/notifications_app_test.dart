@@ -40,6 +40,13 @@ Future<void> _signIn(WidgetTester tester) async {
   await _settle(tester);
 }
 
+/// Moves to another tab: the sheet never covers the first Home, it waits
+/// for the owner's first move away from it.
+Future<void> _leaveHome(WidgetTester tester) async {
+  await tester.tap(find.text(lookupAppL10n(englishLocale).navCommunity));
+  await _settle(tester);
+}
+
 /// Closes the permission sheet with "Not now".
 Future<void> _notNow(WidgetTester tester) async {
   await tester.tap(find.byKey(NotificationPermissionSheet.laterKey));
@@ -69,6 +76,7 @@ void main() {
     await pumpAppWithNotifications(tester, phone, health: health);
     expect(phone.scheduled, isEmpty);
     await _signIn(tester);
+    await _leaveHome(tester);
     await _notNow(tester);
 
     // Kelly's routines and medicine, and Soya's, without opening Health.
@@ -88,9 +96,12 @@ void main() {
     final store = MemorySettingsStore();
     final phone = FakeNotificationPlatform();
     await pumpAppWithNotifications(tester, phone, settings: store);
-    // Not on the sign-in screen: only once the account has reminders.
+    // Not on the sign-in screen, and not over the first Home either: only
+    // once the account has reminders and the owner moves on.
     expect(_sheet, findsNothing);
     await _signIn(tester);
+    expect(_sheet, findsNothing);
+    await _leaveHome(tester);
 
     expect(_sheet, findsOneWidget);
     expect(find.text(_en.askTitle), findsOneWidget);
@@ -116,12 +127,14 @@ void main() {
     final phone = FakeNotificationPlatform(grantNotifications: false);
     await pumpAppWithNotifications(tester, phone, settings: store);
     await _signIn(tester);
+    await _leaveHome(tester);
     await _notNow(tester);
     expect(_sheet, findsNothing);
     expect(phone.permissionRequests, 0);
 
     await pumpAppWithNotifications(tester, phone, settings: store);
     await _signIn(tester);
+    await _leaveHome(tester);
     expect(_sheet, findsNothing);
   });
 
@@ -129,6 +142,7 @@ void main() {
     final phone = FakeNotificationPlatform(currentAccess: const NotificationAccess(allowed: true, exact: true));
     await pumpAppWithNotifications(tester, phone);
     await _signIn(tester);
+    await _leaveHome(tester);
     expect(_sheet, findsNothing);
     expect(phone.scheduled, isNotEmpty);
   });

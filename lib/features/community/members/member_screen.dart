@@ -100,10 +100,7 @@ class MemberScreen extends ConsumerWidget {
                           children: [
                             AutoDirectionText(
                               l10n.memberName(value.name),
-                              style: AppText.cardTitle.copyWith(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: AppText.heading,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),

@@ -54,6 +54,13 @@
   "authTerms": "יצירת חשבון היא הסכמה ל[תנאי השימוש] ול[מדיניות הפרטיות].",
   "authShowPassword": "הצגת הסיסמה",
   "authHidePassword": "הסתרת הסיסמה",
+  "resetPasswordTitle": "סיסמה חדשה",
+  "resetPasswordIntro": "בחרו סיסמה חדשה לחשבון שלכם.",
+  "resetPasswordLabel": "סיסמה חדשה",
+  "resetPasswordConfirm": "אימות סיסמה",
+  "resetPasswordTooShort": "לפחות 8 תווים",
+  "resetPasswordMismatch": "הסיסמאות אינן זהות",
+  "resetPasswordSave": "שמירת הסיסמה",
 
   "validEmailEmpty": "צריך להזין כתובת אימייל.",
   "validEmailInvalid": "זה לא נראה כמו כתובת אימייל.",

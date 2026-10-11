@@ -76,14 +76,13 @@ class _AuthTextFieldState extends State<AuthTextField> {
           onFieldSubmitted: widget.onSubmitted,
           autovalidateMode: AutovalidateMode.onUserInteraction,
           textDirection: widget.leftToRight ? TextDirection.ltr : null,
-          style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
+          style: AppText.bodyLarge.copyWith(color: AppColors.ink),
           decoration: InputDecoration(
             hintText: widget.hint,
             hintTextDirection: widget.leftToRightHint
                 ? TextDirection.ltr
                 : Directionality.of(context),
-            hintStyle: AppText.body.copyWith(
-              fontSize: 16,
+            hintStyle: AppText.bodyLarge.copyWith(
               color: AppColors.brown.withValues(alpha: 0.55),
             ),
             filled: true,

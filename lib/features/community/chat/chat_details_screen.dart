@@ -18,10 +18,10 @@ import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/community_keeper.dart';
 import '../widgets/section_state.dart';
-import '../widgets/small_tag.dart';
 import 'new_chat_screen.dart';
 import 'private_chat_providers.dart';
 import 'private_chat_widgets.dart';
+import '../../../widgets/app_tag.dart';
 
 /// A private chat's details: its name (admins rename a group), who is in
 /// it and their roles, adding people (admins), muting and leaving. An
@@ -199,10 +199,7 @@ class _Details extends ConsumerWidget {
                   name,
                   textAlign: TextAlign.center,
                   textDirection: contentDirection(context, name),
-                  style: AppText.cardTitle.copyWith(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: AppText.heading,
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -322,9 +319,9 @@ class _MemberTile extends StatelessWidget {
     final l10n = context.communityL10n;
     final name = l10n.memberName(member.name);
     final tags = [
-      if (me) SmallTag(l10n.youTag, color: AppColors.sage),
-      if (member.isAdmin) SmallTag(l10n.adminTag, color: AppColors.peach),
-      if (!member.joined) SmallTag(l10n.invitedTag, color: AppColors.yellow),
+      if (me) AppTag(l10n.youTag, tone: AppTagTone.sage),
+      if (member.isAdmin) AppTag(l10n.adminTag, tone: AppTagTone.peach),
+      if (!member.joined) AppTag(l10n.invitedTag, tone: AppTagTone.yellow),
     ];
     return ListTile(
       key: ValueKey('member-${member.userId}'),

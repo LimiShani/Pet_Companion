@@ -475,8 +475,7 @@ class _DateField extends StatelessWidget {
           ),
           child: Text(
             text ?? context.petsL10n.chooseTheDate,
-            style: AppText.body.copyWith(
-              fontSize: 16,
+            style: AppText.bodyLarge.copyWith(
               color: text == null
                   ? AppColors.brown.withValues(alpha: 0.7)
                   : AppColors.ink,

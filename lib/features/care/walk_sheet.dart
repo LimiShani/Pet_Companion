@@ -268,7 +268,7 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
                     const SizedBox(height: 4),
                     Text(
                       _walks ? l10n.startNow : l10n.startPlayNow,
-                      style: AppText.cardTitle.copyWith(fontSize: 17),
+                      style: AppText.sectionTitle,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -282,7 +282,7 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
             ),
           ),
         const SizedBox(height: 14),
-        Text(l10n.logPast, style: AppText.cardTitle.copyWith(fontSize: 16)),
+        Text(l10n.logPast, style: AppText.rowTitle),
         const SizedBox(height: 8),
         _Label(l10n.howLong),
         Wrap(
@@ -337,7 +337,7 @@ class _WalkSheetState extends ConsumerState<WalkSheet> {
             title: Text(l10n.when, style: AppText.body),
             trailing: Text(
               l10n.todayAt(format.timeOfDay(_time!)),
-              style: AppText.cardTitle.copyWith(fontSize: 16),
+              style: AppText.rowTitle,
             ),
             onTap: _pickTime,
           ),

@@ -125,7 +125,7 @@ class _DayField extends StatelessWidget {
           ),
           child: Text(
             text,
-            style: AppText.body.copyWith(fontSize: 16, color: AppColors.ink),
+            style: AppText.bodyLarge.copyWith(color: AppColors.ink),
           ),
         ),
       ),
