@@ -196,4 +196,48 @@ export const IL_LOCALITIES: readonly Locality[] = Object.freeze([
   {"code": "yerucham", "en": "Yerucham", "he": "ירוחם", "lat": 30.9888, "lng": 34.9251, "aliases": []},
   {"code": "yesud-hamaala", "en": "Yesud HaMaala", "he": "יסוד המעלה", "lat": 33.0584, "lng": 35.6079, "aliases": []},
   {"code": "zarzir", "en": "Zarzir", "he": "זרזיר", "lat": 32.7274, "lng": 35.2134, "aliases": []},
+  {"code": "ariel", "en": "Ariel", "he": "אריאל", "lat": 32.1061, "lng": 35.1851, "aliases": []},
+  {"code": "maale-adumim", "en": "Ma'ale Adumim", "he": "מעלה אדומים", "lat": 31.7706, "lng": 35.2985, "aliases": ["Maale Adumim", "Ma'ale Edomim"]},
+  {"code": "modiin-illit", "en": "Modi'in Illit", "he": "מודיעין עילית", "lat": 31.9324, "lng": 35.0433, "aliases": ["Modiin Illit", "Modiin Ilit", "Kiryat Sefer", "קריית ספר", "קרית ספר"]},
+  {"code": "beitar-illit", "en": "Beitar Illit", "he": "ביתר עילית", "lat": 31.6989, "lng": 35.1137, "aliases": ["Betar Illit", "Beitar Ilit", "Betar Ilit"]},
+  {"code": "alfei-menashe", "en": "Alfei Menashe", "he": "אלפי מנשה", "lat": 32.1731, "lng": 35.0158, "aliases": ["Alfe Menashe"]},
+  {"code": "beit-aryeh-ofarim", "en": "Beit Aryeh-Ofarim", "he": "בית אריה-עופרים", "lat": 32.0341, "lng": 35.0502, "aliases": ["Beit Aryeh", "Bet Arye", "Bet Arye - Ofarim", "Ofarim", "בית אריה", "עופרים"]},
+  {"code": "beit-el", "en": "Beit El", "he": "בית אל", "lat": 31.9421, "lng": 35.2224, "aliases": ["Bet El"]},
+  {"code": "efrat", "en": "Efrat", "he": "אפרת", "lat": 31.6536, "lng": 35.1509, "aliases": ["Efrata", "אפרתה"]},
+  {"code": "elkana", "en": "Elkana", "he": "אלקנה", "lat": 32.1116, "lng": 35.0355, "aliases": []},
+  {"code": "givat-zeev", "en": "Giv'at Ze'ev", "he": "גבעת זאב", "lat": 31.8623, "lng": 35.1687, "aliases": ["Givat Zeev", "Givat Ze'ev"]},
+  {"code": "har-adar", "en": "Har Adar", "he": "הר אדר", "lat": 31.8269, "lng": 35.1296, "aliases": []},
+  {"code": "immanuel", "en": "Immanuel", "he": "עמנואל", "lat": 32.1619, "lng": 35.1361, "aliases": ["Emanuel", "Emmanuel"]},
+  {"code": "karnei-shomron", "en": "Karnei Shomron", "he": "קרני שומרון", "lat": 32.171, "lng": 35.0892, "aliases": ["Karne Shomron"]},
+  {"code": "kedumim", "en": "Kedumim", "he": "קדומים", "lat": 32.2177, "lng": 35.1604, "aliases": ["Kdumim"]},
+  {"code": "kiryat-arba", "en": "Kiryat Arba", "he": "קריית ארבע", "lat": 31.5278, "lng": 35.1192, "aliases": ["Qiryat Arba", "קרית ארבע"]},
+  {"code": "maale-efraim", "en": "Ma'ale Efraim", "he": "מעלה אפרים", "lat": 32.0708, "lng": 35.4034, "aliases": ["Maale Efraim", "Ma'ale Ephraim"]},
+  {"code": "oranit", "en": "Oranit", "he": "אורנית", "lat": 32.1309, "lng": 34.992, "aliases": []},
+  {"code": "shaar-shomron", "en": "Sha'ar Shomron", "he": "שער שומרון", "lat": 32.1199, "lng": 35.0381, "aliases": ["Shaar Shomron", "Sha'arei Tikva", "Shaarei Tikva", "Etz Efraim", "Ets Efraim", "שערי תקווה", "שערי תקוה", "עץ אפרים"]},
+]);
+
+/**
+ * The Israeli cities and local councils of Judea and Samaria (in the list
+ * above). They lie outside OpenStreetMap's boundary of Israel, so the dog
+ * parks import also searches around each of them.
+ */
+export const IL_JUDEA_SAMARIA_CODES: readonly string[] = Object.freeze([
+  "ariel",
+  "maale-adumim",
+  "modiin-illit",
+  "beitar-illit",
+  "alfei-menashe",
+  "beit-aryeh-ofarim",
+  "beit-el",
+  "efrat",
+  "elkana",
+  "givat-zeev",
+  "har-adar",
+  "immanuel",
+  "karnei-shomron",
+  "kedumim",
+  "kiryat-arba",
+  "maale-efraim",
+  "oranit",
+  "shaar-shomron",
 ]);

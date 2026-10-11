@@ -6,7 +6,7 @@ will pick a city and a radius from it.
 
     python tool/gen_il_localities.py                 # fetch OSM, merge, write
     python tool/gen_il_localities.py --osm FILE      # use a saved Overpass answer
-    python tool/gen_il_localities.py --offline       # rewrite outputs from the JSON only
+    python tool/gen_il_localities.py --offline       # no OSM: the JSON + EXTRA_ISRAELI_LOCALITIES
 
 Source of truth: tool/data/il_localities.json (committed). Every entry has a
 stable code (a lowercase slug), English and Hebrew names, the centre and the
@@ -20,6 +20,23 @@ OSM's boundary of Israel, and the place=village nodes that are local
 councils (LOCAL_COUNCILS below) or have a population tag of 5,000 or more.
 Kibbutzim, moshavim and small villages are left out on purpose: their
 parks are found by distance from the nearest town.
+
+The Israeli cities and local councils of Judea and Samaria lie outside
+OSM's boundary of Israel, so the query above never returns them. They come
+from an explicit list instead (EXTRA_ISRAELI_LOCALITIES below, owner
+decision 2026-10-11), with the same criterion as the rest: cities and local
+councils, no regional councils and no Palestinian localities. The list was
+checked on 2026-10-11 against the local authorities of the Judea and
+Samaria Area: 4 cities and 14 local councils (Sha'ar Shomron, made from
+Sha'arei Tikva and Etz Efraim in 2022, is the newest; Giv'at Ze'ev is on
+its way to city status). Their centres are fixed coordinates read from
+OSM's place nodes that day (Ma'ale Adumim: its place=town area; Sha'ar
+Shomron: halfway between its two villages). They are added on every run,
+--offline included, under the same append-only rule: a code already in the
+JSON keeps its names and coordinates and only gains missing aliases. Their
+JSON entries carry "area": "judea-samaria", and the server's list exports
+their codes (IL_JUDEA_SAMARIA_CODES) so the dog parks import searches
+around each of them as well as inside OSM's boundary.
 
 Outputs (generated, do not edit by hand):
     lib/services/findvet/regions/il_localities.dart
@@ -88,6 +105,56 @@ EN_OVERRIDES = {
 }
 
 SAME_PLACE_M = 300
+
+# The Israeli cities and local councils of Judea and Samaria (see the module
+# docstring). Append-only like the JSON: never change a code, name or
+# centre here once released; add aliases freely. Centres: OSM place nodes,
+# read 2026-10-11 (the OSM id is kept for the record).
+JUDEA_SAMARIA = 'judea-samaria'
+EXTRA_ISRAELI_LOCALITIES = [
+    # Cities
+    {'code': 'ariel', 'en': 'Ariel', 'he': 'אריאל', 'lat': 32.1061, 'lng': 35.1851,
+     'aliases': [], 'osm': 'node/1695006618'},
+    {'code': 'maale-adumim', 'en': "Ma'ale Adumim", 'he': 'מעלה אדומים', 'lat': 31.7706, 'lng': 35.2985,
+     'aliases': ['Maale Adumim', "Ma'ale Edomim"], 'osm': 'way/659365950 (place=town area)'},
+    {'code': 'modiin-illit', 'en': "Modi'in Illit", 'he': 'מודיעין עילית', 'lat': 31.9324, 'lng': 35.0433,
+     'aliases': ['Modiin Illit', 'Modiin Ilit', 'Kiryat Sefer', 'קריית ספר', 'קרית ספר'],
+     'osm': 'node/432287759'},
+    {'code': 'beitar-illit', 'en': 'Beitar Illit', 'he': 'ביתר עילית', 'lat': 31.6989, 'lng': 35.1137,
+     'aliases': ['Betar Illit', 'Beitar Ilit', 'Betar Ilit'], 'osm': 'node/415000885'},
+    # Local councils
+    {'code': 'alfei-menashe', 'en': 'Alfei Menashe', 'he': 'אלפי מנשה', 'lat': 32.1731, 'lng': 35.0158,
+     'aliases': ['Alfe Menashe'], 'osm': 'node/702291529'},
+    {'code': 'beit-aryeh-ofarim', 'en': 'Beit Aryeh-Ofarim', 'he': 'בית אריה-עופרים', 'lat': 32.0341, 'lng': 35.0502,
+     'aliases': ['Beit Aryeh', 'Bet Arye', 'Bet Arye - Ofarim', 'Ofarim', 'בית אריה', 'עופרים'],
+     'osm': 'node/286402706'},
+    {'code': 'beit-el', 'en': 'Beit El', 'he': 'בית אל', 'lat': 31.9421, 'lng': 35.2224,
+     'aliases': ['Bet El'], 'osm': 'node/353156244'},
+    {'code': 'efrat', 'en': 'Efrat', 'he': 'אפרת', 'lat': 31.6536, 'lng': 35.1509,
+     'aliases': ['Efrata', 'אפרתה'], 'osm': 'node/431636494'},
+    {'code': 'elkana', 'en': 'Elkana', 'he': 'אלקנה', 'lat': 32.1116, 'lng': 35.0355,
+     'aliases': [], 'osm': 'node/876967646'},
+    {'code': 'givat-zeev', 'en': "Giv'at Ze'ev", 'he': 'גבעת זאב', 'lat': 31.8623, 'lng': 35.1687,
+     'aliases': ['Givat Zeev', "Givat Ze'ev"], 'osm': 'node/246843692'},
+    {'code': 'har-adar', 'en': 'Har Adar', 'he': 'הר אדר', 'lat': 31.8269, 'lng': 35.1296,
+     'aliases': [], 'osm': 'node/222478918'},
+    {'code': 'immanuel', 'en': 'Immanuel', 'he': 'עמנואל', 'lat': 32.1619, 'lng': 35.1361,
+     'aliases': ['Emanuel', 'Emmanuel'], 'osm': 'node/257450411'},
+    {'code': 'karnei-shomron', 'en': 'Karnei Shomron', 'he': 'קרני שומרון', 'lat': 32.171, 'lng': 35.0892,
+     'aliases': ['Karne Shomron'], 'osm': 'node/768030451'},
+    {'code': 'kedumim', 'en': 'Kedumim', 'he': 'קדומים', 'lat': 32.2177, 'lng': 35.1604,
+     'aliases': ['Kdumim'], 'osm': 'node/768024862'},
+    {'code': 'kiryat-arba', 'en': 'Kiryat Arba', 'he': 'קריית ארבע', 'lat': 31.5278, 'lng': 35.1192,
+     'aliases': ['Qiryat Arba', 'קרית ארבע'], 'osm': 'node/768027338'},
+    {'code': 'maale-efraim', 'en': "Ma'ale Efraim", 'he': 'מעלה אפרים', 'lat': 32.0708, 'lng': 35.4034,
+     'aliases': ['Maale Efraim', "Ma'ale Ephraim"], 'osm': 'node/354962707'},
+    {'code': 'oranit', 'en': 'Oranit', 'he': 'אורנית', 'lat': 32.1309, 'lng': 34.992,
+     'aliases': [], 'osm': 'node/699996912'},
+    {'code': 'shaar-shomron', 'en': "Sha'ar Shomron", 'he': 'שער שומרון', 'lat': 32.1199, 'lng': 35.0381,
+     'aliases': ['Shaar Shomron', "Sha'arei Tikva", 'Shaarei Tikva', 'Etz Efraim', 'Ets Efraim',
+                 'שערי תקווה', 'שערי תקוה', 'עץ אפרים'],
+     'osm': 'halfway between node/699991141 (Sha\'arei Tikva) and node/699987693 (Etz Efraim)'},
+]
 
 
 def normalize(text: str) -> str:
@@ -217,6 +284,35 @@ def merge(entries: list[dict], osm: dict) -> tuple[int, int]:
     return added, aliases
 
 
+def add_extras(entries: list[dict]) -> tuple[int, int]:
+    """EXTRA_ISRAELI_LOCALITIES into the list: new codes appended, known ones only gain aliases."""
+    by_code = {entry['code']: entry for entry in entries}
+    added = aliases = 0
+    for extra in EXTRA_ISRAELI_LOCALITIES:
+        entry = by_code.get(extra['code'])
+        if entry is None:
+            entry = {
+                'code': extra['code'],
+                'en': extra['en'],
+                'he': extra['he'],
+                'lat': extra['lat'],
+                'lng': extra['lng'],
+                'aliases': list(extra['aliases']),
+                'area': JUDEA_SAMARIA,
+            }
+            entries.append(entry)
+            by_code[entry['code']] = entry
+            added += 1
+            continue
+        known = {normalize(n) for n in [entry['he'], entry['en'], *entry['aliases']]}
+        for name in extra['aliases']:
+            if normalize(name) not in known:
+                entry['aliases'].append(name)
+                known.add(normalize(name))
+                aliases += 1
+    return added, aliases
+
+
 def dart_string(text: str) -> str:
     if "'" in text and '"' not in text:
         return '"' + text.replace('\\', '\\\\').replace('$', '\\$') + '"'
@@ -266,6 +362,17 @@ def write_ts(entries: list[dict]) -> None:
             'lat': e['lat'], 'lng': e['lng'], 'aliases': e['aliases'],
         }, ensure_ascii=False) + ',')
     lines += [']);', '']
+    codes = [e['code'] for e in entries if e.get('area') == JUDEA_SAMARIA]
+    lines += [
+        '/**',
+        ' * The Israeli cities and local councils of Judea and Samaria (in the list',
+        " * above). They lie outside OpenStreetMap's boundary of Israel, so the dog",
+        ' * parks import also searches around each of them.',
+        ' */',
+        'export const IL_JUDEA_SAMARIA_CODES: readonly string[] = Object.freeze([',
+    ]
+    lines += [f'  {json.dumps(code)},' for code in codes]
+    lines += [']);', '']
     TS_OUT.write_text('\n'.join(lines), encoding='utf-8', newline='\n')
 
 
@@ -276,6 +383,8 @@ def main() -> None:
     args = parser.parse_args()
 
     entries = load()
+    added, aliases = add_extras(entries)
+    print(f'Judea and Samaria (explicit list): {added} new localities, {aliases} new aliases.')
     if not args.offline:
         osm = json.loads(args.osm.read_text(encoding='utf-8')) if args.osm else fetch_osm()
         added, aliases = merge(entries, osm)
