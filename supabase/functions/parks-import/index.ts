@@ -8,10 +8,15 @@
 //
 // Environment (Supabase function secrets):
 //   PARKS_JOB_SECRET   required; without it the function refuses to run
-//   OVERPASS_URL       optional; another Overpass instance
+//   OVERPASS_URL       optional; another Overpass instance (then no fallback)
 //   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY   provided by Supabase
 
-import { createParksImportHandler, createPostgrestParksStore, OVERPASS_URL } from '../_shared/parks_import.ts';
+import {
+  createParksImportHandler,
+  createPostgrestParksStore,
+  FALLBACK_OVERPASS_URL,
+  OVERPASS_URL,
+} from '../_shared/parks_import.ts';
 import { IL_LOCALITIES } from '../_shared/regions/il_localities.ts';
 
 const env = (name: string): string => Deno.env.get(name) ?? '';
@@ -22,6 +27,8 @@ const handler = createParksImportHandler({
   now: () => new Date(),
   localities: IL_LOCALITIES,
   overpassUrl: env('OVERPASS_URL') || OVERPASS_URL,
+  // A chosen OVERPASS_URL is used alone; the default gets a fallback.
+  fallbackUrl: env('OVERPASS_URL') ? undefined : FALLBACK_OVERPASS_URL,
   jobSecret: env('PARKS_JOB_SECRET'),
 });
 

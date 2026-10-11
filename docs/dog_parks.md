@@ -31,8 +31,12 @@ Nothing here costs money: the free plan's Edge Functions, `pg_cron` and
    ```
    `supabase/config.toml` already says `verify_jwt = false` for it (pg_cron
    calls it without a user); the function refuses any call without the
-   right `x-job-secret` header. Optional secret: `OVERPASS_URL` (another
-   Overpass instance, e.g. `https://overpass.kumi.systems/api/interpreter`).
+   right `x-job-secret` header. Every request names a `Referer` as well
+   as the User-Agent: overpass-api.de answers 406 to a request with neither,
+   and the first live run (2026-10-11) got 406 from the Edge Runtime. When
+   overpass-api.de refuses (406/429) or is busy (5xx) the import tries
+   `maps.mail.ru`'s public instance once. Optional secret: `OVERPASS_URL`
+   (one chosen instance, used alone with no fallback).
 3. **Schedule.** Open `supabase/scheduling/parks_import.sql`, replace
    `<project-ref>` and `<same as PARKS_JOB_SECRET>`, run it. It runs the
    import at 01:00 UTC on the 3rd of every month.

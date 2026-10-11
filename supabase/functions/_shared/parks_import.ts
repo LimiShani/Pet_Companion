@@ -29,6 +29,16 @@ export const PARKS_JOB = 'parks-import';
 export const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
 export const USER_AGENT =
   'PetLoopParksImport/1.0 (+https://github.com/LimiShani/Pet_Companion; monthly import of leisure=dog_park in Israel)';
+/**
+ * overpass-api.de answers 406 to a request without a User-Agent unless it
+ * names a Referer, and the Edge Runtime may not pass our User-Agent on
+ * (the first live run got 406 while the same request from a PC got 200).
+ */
+export const REFERER = 'https://github.com/LimiShani/Pet_Companion';
+/** Another public instance, tried once when the first refuses or is busy. */
+export const FALLBACK_OVERPASS_URL = 'https://maps.mail.ru/osm/tools/overpass/api/interpreter';
+/** Only try the fallback if the first attempt failed within this time. */
+export const FALLBACK_WITHIN_MS = 60_000;
 /** The server stops the query after this many seconds; we wait a little longer. */
 export const OVERPASS_TIMEOUT_S = 90;
 export const FETCH_TIMEOUT_MS = 120_000;
@@ -288,6 +298,8 @@ export interface ParksImportDeps {
   now: () => Date;
   localities: readonly Locality[];
   overpassUrl?: string;
+  /** Tried once after a refusal (406/429) or a busy answer (5xx) from [overpassUrl]. */
+  fallbackUrl?: string;
   timeoutMs?: number;
   log?: (line: string) => void;
 }
@@ -306,13 +318,31 @@ export function periodKey(d: Date): string {
 }
 
 async function download(deps: ParksImportDeps): Promise<unknown> {
+  const started = Date.now();
+  try {
+    return await downloadFrom(deps.overpassUrl ?? OVERPASS_URL, deps);
+  } catch (e) {
+    const first = message(e);
+    const retryable = /^overpass_http_(406|429|5\d\d)$/.test(first);
+    if (!deps.fallbackUrl || !retryable || Date.now() - started > FALLBACK_WITHIN_MS) throw e;
+    (deps.log ?? console.log)(`parks-import: ${first} from the first Overpass server, trying the fallback`);
+    try {
+      return await downloadFrom(deps.fallbackUrl, deps);
+    } catch (e2) {
+      throw new Error(`${first}; fallback ${message(e2)}`);
+    }
+  }
+}
+
+async function downloadFrom(url: string, deps: ParksImportDeps): Promise<unknown> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), deps.timeoutMs ?? FETCH_TIMEOUT_MS);
   try {
-    const res = await deps.fetch(deps.overpassUrl ?? OVERPASS_URL, {
+    const res = await deps.fetch(url, {
       method: 'POST',
       headers: {
         'User-Agent': USER_AGENT,
+        Referer: REFERER,
         'Content-Type': 'application/x-www-form-urlencoded',
         Accept: 'application/json',
       },

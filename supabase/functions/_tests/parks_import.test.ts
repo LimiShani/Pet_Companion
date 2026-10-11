@@ -18,6 +18,7 @@ import {
   parseOverpass,
   periodKey,
   runParksImport,
+  REFERER,
   tri,
   USER_AGENT,
 } from '../_shared/parks_import.ts';
@@ -140,6 +141,7 @@ test('a run downloads once, with an honest user agent, and imports every park', 
   assert.equal(requests.length, 1);
   const headers = requests[0].init?.headers as Record<string, string>;
   assert.equal(headers['User-Agent'], USER_AGENT);
+  assert.equal(headers.Referer, REFERER, 'overpass-api.de refuses a request with neither');
   assert.match(String(requests[0].init?.body), /^data=/);
   assert.equal(store.imported[0].rows.length, 3);
   assert.equal(r.stats.named, 1);
@@ -194,6 +196,40 @@ test('a download that never answers times out', async () => {
   });
   const r = await runParksImport(d);
   assert.equal(r.error, 'overpass_timeout');
+});
+
+test('a refused or busy first server falls back once to the second', async () => {
+  for (const firstStatus of [406, 429, 504]) {
+    const urls: string[] = [];
+    const { d, store, logs } = deps({
+      overpassUrl: 'https://first.test/api/interpreter',
+      fallbackUrl: 'https://second.test/api/interpreter',
+      fetch: async (url) => {
+        urls.push(url);
+        return url.startsWith('https://first.test')
+          ? new Response('no', { status: firstStatus })
+          : new Response(JSON.stringify(ANSWER), { status: 200 });
+      },
+    });
+    const r = await runParksImport(d);
+    assert.equal(r.status, 'succeeded', `after ${firstStatus}`);
+    assert.deepEqual(urls, ['https://first.test/api/interpreter', 'https://second.test/api/interpreter']);
+    assert.equal(store.imported.length, 1);
+    assert.match(logs[0], new RegExp(`overpass_http_${firstStatus}`));
+  }
+});
+
+test('both servers failing records both reasons; a bad answer does not fall back', async () => {
+  const both = deps({ fallbackUrl: 'https://second.test/api/interpreter' }, 'busy', 504);
+  const r = await runParksImport(both.d);
+  assert.equal(r.status, 'failed');
+  assert.equal(r.error, 'overpass_http_504; fallback overpass_http_504');
+  assert.equal(both.requests.length, 2);
+
+  const bad = deps({ fallbackUrl: 'https://second.test/api/interpreter' }, 'not json', 200);
+  const r2 = await runParksImport(bad.d);
+  assert.equal(r2.error, 'overpass_bad_answer');
+  assert.equal(bad.requests.length, 1);
 });
 
 test('periods are UTC months', () => {
