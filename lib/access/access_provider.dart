@@ -25,6 +25,17 @@ final accessOfflineGraceProvider = Provider<Duration>(
   (ref) => const Duration(minutes: 10),
 );
 
+/// How long a load of the account's permissions may take. The app waits on
+/// it behind the loading screen right after opening; without a limit, a
+/// request that never returns (a stalled or switching connection) kept the
+/// owner on that screen for good. Past it the load fails with a
+/// TimeoutException: at startup the router shows "Could not load account
+/// permissions" with Retry; a background refresh treats it as a transient
+/// failure and keeps the confirmed permissions through the grace period.
+final accessLoadTimeoutProvider = Provider<Duration>(
+  (ref) => const Duration(seconds: 15),
+);
+
 /// A failure that says nothing about the account's permissions. A server
 /// that answered (a database or auth error) is authoritative; anything
 /// else is connectivity, and so are gateway errors (HTTP 5xx).
@@ -61,7 +72,10 @@ class AccessController extends AsyncNotifier<AccessSnapshot> {
     }
     return repository is FakeAccessRepository
         ? _confirmed(repository.snapshot(userId))
-        : repository.fetch(userId).then(_confirmed);
+        : repository
+              .fetch(userId)
+              .timeout(ref.read(accessLoadTimeoutProvider))
+              .then(_confirmed);
   }
 
   Future<void> refresh() async {
@@ -70,7 +84,8 @@ class AccessController extends AsyncNotifier<AccessSnapshot> {
     try {
       final result = await ref
           .read(accessRepositoryProvider)
-          .fetch(ref.read(authControllerProvider).value?.id);
+          .fetch(ref.read(authControllerProvider).value?.id)
+          .timeout(ref.read(accessLoadTimeoutProvider));
       if (ticket.current && request == _request) {
         state = AsyncData(_confirmed(result));
       }
