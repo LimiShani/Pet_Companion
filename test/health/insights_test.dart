@@ -21,18 +21,28 @@ void main() {
 
   const kelly = 'kelly';
 
-  Future<HealthHarness> openInsights(WidgetTester tester, {HealthHarness? harness}) async {
+  /// Opens Records on the journal (or on [chip]).
+  Future<HealthHarness> openInsights(
+    WidgetTester tester, {
+    HealthHarness? harness,
+    String chip = 'filter-journal',
+  }) async {
     final h = await pumpHealth(tester, harness: harness);
-    await openSection(tester, 'Insights');
+    await openRecords(tester, chip: chip);
     return h;
+  }
+
+  Future<void> openShare(WidgetTester tester) async {
+    await openSection(tester, 'Records');
+    await tapVisible(tester, find.byKey(const Key('records-share')));
   }
 
   bool saveEnabled(WidgetTester tester, String label) =>
       tester.widget<FilledButton>(find.widgetWithText(FilledButton, label)).onPressed != null;
 
-  group('Insights', () {
+  group('Weight and journal', () {
     testWidgets('shows the weight trend with vet visits and the journal', (tester) async {
-      await openInsights(tester);
+      await openInsights(tester, chip: 'filter-weight');
 
       expect(find.text('23 kg', findRichText: true), findsOneWidget);
       expect(find.text('01.06.25 · 6 weigh-ins'), findsOneWidget);
@@ -51,7 +61,8 @@ void main() {
       );
 
       // The journal, newest first.
-      expect(find.text('Observations'), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('filter-journal')));
+      expect(find.text('9 entries'), findsOneWidget);
       expect(find.text('Mobility · Less than usual'), findsOneWidget);
       expect(find.text('08.06.25 · Stiff getting up in the morning'), findsOneWidget);
       expect(find.text('Appetite · Usual'), findsOneWidget);
@@ -68,13 +79,15 @@ void main() {
     testWidgets('the journal is filtered by category', (tester) async {
       await openInsights(tester);
 
-      await tapVisible(tester, find.byKey(const ValueKey('journal-mobility')));
+      await pickJournalCategory(tester, 'journal-mobility');
       expect(find.text('Mobility · Less than usual'), findsOneWidget);
       expect(find.text('Appetite · Usual'), findsNothing);
       expect(find.text('Weight · 23 kg'), findsNothing);
+      expect(find.text('1 of 9 entries'), findsOneWidget);
 
-      await tapVisible(tester, find.byKey(const Key('journal-all')));
+      await pickJournalCategory(tester, 'journal-all');
       expect(find.text('Appetite · Usual'), findsOneWidget);
+      expect(find.text('9 entries'), findsOneWidget);
     });
 
     testWidgets('a pet with nothing logged is invited to the Quick log', (tester) async {
@@ -146,7 +159,7 @@ void main() {
     });
 
     testWidgets('logging a weight updates the trend and the pet profile', (tester) async {
-      await openInsights(tester);
+      await openInsights(tester, chip: 'filter-weight');
 
       await tapVisible(tester, find.byKey(const Key('log-weight')));
       expect(find.text('Weight in kilograms'), findsOneWidget);
@@ -195,8 +208,9 @@ void main() {
 
       final stored = await real(tester, () => h.repository.fetchObservations('rio'));
       expect(stored.single.value, closeTo(0.412, 1e-9));
-      await openSection(tester, 'Insights');
+      await openRecords(tester, chip: 'filter-weight');
       expect(find.text('412 g', findRichText: true), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('filter-journal')));
       expect(find.text('Weight · 412 g'), findsOneWidget);
     });
 
@@ -225,9 +239,9 @@ void main() {
   });
 
   group('Sharing', () {
-    testWidgets('Share on the Overview hands a PDF summary to the share sheet', (tester) async {
+    testWidgets('Share on Records hands a PDF summary to the share sheet', (tester) async {
       final h = await pumpHealth(tester);
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await openShare(tester);
 
       final report = h.pdf.last;
       expect(report.title, 'Kelly: health summary');
@@ -258,9 +272,10 @@ void main() {
       final h = await pumpHealth(tester);
       await tester.tap(find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')));
       await tester.pumpAndSettle();
-      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      await tapVisible(tester, find.text('Emergency card and kit'));
 
-      await tapVisible(tester, find.byKey(const Key('share-summary')));
+      // Share is in the card's header.
+      await tapVisible(tester, find.byTooltip('Share summary'));
       expect(h.pdf.last.title, 'Kelly: health summary');
       expect(h.sharer.shared.single.name, 'kelly-health-summary.pdf');
     });
@@ -269,18 +284,18 @@ void main() {
       final h = await pumpHealth(tester);
 
       h.sharer.succeeds = false;
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await openShare(tester);
       expect(find.text('Could not open the share sheet on this device.'), findsOneWidget);
 
       h.pdf.failing = true;
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await tapVisible(tester, find.byKey(const Key('records-share')));
       expect(find.text('Could not prepare the PDF. Please try again.'), findsOneWidget);
     });
 
     testWidgets('a pet with almost nothing still gets an honest summary', (tester) async {
       final h = await pumpHealth(tester);
       await switchPet(tester, 'Soya');
-      await tapVisible(tester, find.byKey(const Key('overview-share')));
+      await openShare(tester);
 
       final report = h.pdf.last;
       expect(report.title, 'Soya: health summary');

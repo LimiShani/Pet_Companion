@@ -263,6 +263,7 @@ class HealthLink extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.color = AppColors.coralDark,
+    this.padding = 8,
   });
 
   final String label;
@@ -270,12 +271,15 @@ class HealthLink extends StatelessWidget {
   final IconData? icon;
   final Color color;
 
+  /// The room on each side of the label; less where links share a line.
+  final double padding;
+
   @override
   Widget build(BuildContext context) {
     final style = TextButton.styleFrom(
       foregroundColor: color,
       minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: EdgeInsets.symmetric(horizontal: padding),
       tapTargetSize: MaterialTapTargetSize.padded,
     );
     final text = Text(label, maxLines: 1, overflow: TextOverflow.ellipsis);

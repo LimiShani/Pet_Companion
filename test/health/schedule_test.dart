@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/data/health_models.dart';
 
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -129,7 +130,7 @@ void main() {
       final record = (await real(tester, () => h.repository.fetchRecords(kelly))).firstWhere((r) => r.id == 'r-check');
       expect(record.doneAt, DateTime(2025, 6, 12, 18, 20));
 
-      await openSection(tester, 'History');
+      await openSection(tester, 'Records');
       expect(find.text('General check'), findsOneWidget);
     });
   });
@@ -218,12 +219,69 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('overview-record-dose')));
       await tapVisible(tester, find.byKey(const Key('dose-given-now')));
 
-      expect(find.text('Last recorded dose: today 19:45'), findsOneWidget);
+      final saved = (await logs(tester, h)).where((l) => l.planItemId == 'p-joint-pm' && l.dueOn == today).single;
+      expect(saved.doneAt, DateTime(2025, 6, 10, 19, 45));
       expect(find.byKey(const Key('overview-record-dose')), findsNothing);
     });
   });
 
   group('Medicines', () {
+    const folded = ['medicine-strength', 'route-By mouth', 'medicine-end', 'medicine-prescribed-by'];
+
+    testWidgets('a new medicine shows the short set, and More details the rest', (tester) async {
+      await openSchedule(tester);
+      await tapVisible(tester, find.byKey(const Key('schedule-add')));
+      await tapVisible(tester, find.byKey(const ValueKey('add-medicine')));
+      for (final key in ['medicine-name', 'medicine-dose', 'medicine-frequency', 'medicine-start', 'medicine-add-time']) {
+        expect(find.byKey(Key(key)), findsOneWidget, reason: key);
+      }
+      for (final key in folded) {
+        expect(find.byKey(ValueKey(key)), findsNothing, reason: key);
+      }
+      expect(find.text('How it is given'), findsNothing);
+
+      await tapVisible(tester, find.text('More details'));
+      for (final key in folded) {
+        expect(find.byKey(ValueKey(key)), findsOneWidget, reason: key);
+      }
+      expect(find.text('Fewer details'), findsOneWidget);
+    });
+
+    testWidgets('editing a medicine with a strength opens More details', (tester) async {
+      await openSchedule(tester);
+      await tapVisible(tester, find.byKey(const ValueKey('medicine-m-joint')));
+      expect(find.text('Fewer details'), findsOneWidget);
+      expect(find.byKey(const Key('medicine-strength')), findsOneWidget);
+      // The dose log stays below, whatever the fold.
+      expect(find.text('Dose log'), findsOneWidget);
+      await tapVisible(tester, find.text('Fewer details'));
+      expect(find.text('Dose log'), findsOneWidget);
+    });
+
+    testWidgets('a last day before the first day opens More details', (tester) async {
+      await openSchedule(tester);
+      await tapVisible(tester, find.byKey(const Key('schedule-add')));
+      await tapVisible(tester, find.byKey(const ValueKey('add-medicine')));
+      await tester.enterText(find.byKey(const Key('medicine-name')), 'Ear drops');
+      // The last day today, with the fold closed again; then the first
+      // day moves to the 12th.
+      await tapVisible(tester, find.text('More details'));
+      await tapVisible(tester, find.byKey(const Key('medicine-end')));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Fewer details'));
+      await tapVisible(tester, find.byKey(const Key('medicine-start')));
+      await tester.tap(find.descendant(of: find.byType(Dialog), matching: find.text('12')));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      await tapVisible(tester, find.text('Save medicine'));
+      expect(find.text('New medicine'), findsOneWidget);
+      expect(find.text('The last day should not be before the first day.'), findsOneWidget);
+      expect(find.text('Fewer details'), findsOneWidget);
+      expect(find.byKey(const Key('medicine-end')), findsOneWidget);
+    });
+
     testWidgets('a medicine is added with its instructions and a reminder time', (tester) async {
       final h = await openSchedule(tester);
       await tapVisible(tester, find.byKey(const Key('schedule-add')));
@@ -236,6 +294,7 @@ void main() {
 
       await tester.enterText(find.byKey(const Key('medicine-name')), 'Ear drops');
       await tester.enterText(find.byKey(const Key('medicine-dose')), '3 drops');
+      await openMoreDetails(tester);
       await tapVisible(tester, find.byKey(const ValueKey('route-In the ear')));
       await tester.enterText(find.byKey(const Key('medicine-frequency')), 'Once a day for ten days');
       expect(find.text('No reminder times: a medicine given only when needed.'), findsOneWidget);

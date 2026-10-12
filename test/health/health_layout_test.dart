@@ -12,6 +12,7 @@ import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
 /// Closes the bottom sheet on top.
 Future<void> closeSheet(WidgetTester tester) async {
@@ -67,11 +68,11 @@ void main() {
           );
           await tester.pumpAndSettle();
           expect(find.text('Emergency · Kelly'), findsOneWidget);
-          await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+          await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
           expect(find.text('Emergency card'), findsOneWidget);
           await back(tester);
 
-          await tapVisible(tester, find.byKey(const Key('overview-pet')));
+          await tapVisible(tester, find.byKey(const Key('overview-profile')));
           expect(find.text("Kelly's health profile"), findsOneWidget);
           await back(tester);
           expect(tester.takeException(), isNull);
@@ -96,6 +97,7 @@ void main() {
           find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')),
         );
         await tester.pumpAndSettle();
+        await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
         await tapVisible(tester, find.byKey(const Key('open-emergency-kit')));
         expect(find.text("Kelly's emergency kit"), findsOneWidget);
         await tapVisible(tester, find.byKey(const ValueKey('kit-foodWater')));
@@ -184,6 +186,7 @@ void main() {
           find.byKey(const Key('record-title')),
           'Yearly check and vaccinations at the clinic',
         );
+        await openMoreDetails(tester);
         await tester.enterText(
           find.byKey(const Key('record-cost')),
           '12345.50',
@@ -200,7 +203,7 @@ void main() {
         await tapVisible(tester, find.text('Save routine'));
         expect(find.text('Litter box cleaning'), findsWidgets);
 
-        await openSection(tester, 'History');
+        await openSection(tester, 'Records');
         expect(find.bySemanticsLabel(RegExp('Cost')), findsOneWidget);
         await tapVisible(
           tester,
@@ -209,9 +212,13 @@ void main() {
         expect(find.byKey(const Key('record-cost-row')), findsOneWidget);
         await back(tester);
 
-        await openSection(tester, 'Insights');
+        await tapVisible(tester, find.byKey(const Key('filter-journal')));
+        await pickJournalCategory(tester, 'journal-behaviour-group');
         expect(
-          find.byKey(const Key('journal-behaviour-group')),
+          find.descendant(
+            of: find.byKey(const Key('journal-category')),
+            matching: find.text('Behaviour'),
+          ),
           findsOneWidget,
         );
         expect(tester.takeException(), isNull);
@@ -266,11 +273,11 @@ void main() {
         },
       );
 
-      testWidgets('History, a record, its form and the attachment sheet', (
+      testWidgets('Records, a record, its form and the attachment sheet', (
         tester,
       ) async {
         await pump(tester);
-        await openSection(tester, 'History');
+        await openSection(tester, 'Records');
         expect(find.byKey(const Key('history-count')), findsOneWidget);
 
         await tapVisible(tester, find.text('Blood test results'));
@@ -301,9 +308,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('Insights and the Quick log', (tester) async {
+      testWidgets('Weight, the journal and the Quick log', (tester) async {
         await pump(tester);
-        await openSection(tester, 'Insights');
+        await openRecords(tester, chip: 'filter-weight');
         expect(find.byKey(const Key('weight-summary')), findsOneWidget);
 
         await tester.tap(find.byKey(const Key('quick-log-button')));
@@ -314,6 +321,8 @@ void main() {
         expect(find.byKey(const Key('quick-weight-field')), findsOneWidget);
         await closeSheet(tester);
 
+        await tapVisible(tester, find.byKey(const Key('filter-journal')));
+        expect(find.byKey(const Key('journal-category')), findsOneWidget);
         await tapVisible(
           tester,
           find.byKey(const ValueKey('observation-o-mobility')),
@@ -327,12 +336,14 @@ void main() {
         await pump(tester);
         await switchPet(tester, 'Soya');
         expect(find.text('Start with one thing'), findsOneWidget);
-        for (final (section, title) in [
-          ('Schedule', 'Nothing scheduled yet'),
-          ('History', 'No records yet'),
-          ('Insights', 'Nothing logged yet'),
+        for (final (section, chip, title) in [
+          ('Schedule', null, 'Nothing scheduled yet'),
+          ('Records', 'filter-all', 'No records yet'),
+          ('Records', 'filter-journal', 'Nothing logged yet'),
+          ('Records', 'filter-weight', 'No weight logged yet.'),
         ]) {
           await openSection(tester, section);
+          if (chip != null) await tapVisible(tester, find.byKey(Key(chip)));
           expect(find.text(title), findsOneWidget);
         }
         expect(tester.takeException(), isNull);
@@ -350,15 +361,17 @@ void main() {
       textDirection: TextDirection.rtl,
     );
 
-    // The summary's avatar sits at the start: the right-hand side.
-    final card = tester.getRect(find.byKey(const Key('overview-pet')));
-    final name = tester.getRect(
-      find.descendant(
-        of: find.byKey(const Key('overview-pet')),
-        matching: find.text('Kelly'),
-      ),
+    // A row of the Overview starts on the right: its title there, its
+    // chevron on the left.
+    final profile = find.byKey(const Key('overview-profile'));
+    await tester.ensureVisible(profile);
+    await tester.pumpAndSettle();
+    final row = tester.getRect(profile);
+    final title = tester.getRect(
+      find.descendant(of: profile, matching: find.text('Health profile')),
     );
-    expect(name.right, lessThan(card.right - 56));
+    expect(title.right, closeTo(row.right, 1));
+    expect(title.left, greaterThan(row.left + 24));
 
     await tapVisible(tester, find.text('Details'));
     final arrow = tester.getCenter(find.byTooltip('Back'));
@@ -366,7 +379,7 @@ void main() {
   });
 
   testWidgets(
-    'the Overview keeps a slot for the Pets reminder under the pet summary',
+    'the Overview keeps a slot for the Pets reminder at its top',
     (tester) async {
       // The slot holds the Pets feature's reminder card, which draws nothing
       // for a pet whose essentials are all answered.
@@ -394,13 +407,13 @@ void main() {
         ),
       );
 
-      final summary = tester.getRect(find.byKey(const Key('overview-pet')));
+      expect(find.byKey(const Key('overview-pet')), findsNothing);
       final reminder = tester.getRect(find.text('Reminder card goes here'));
       final comingUp = tester.getRect(
         find.byKey(const Key('overview-coming-up')),
       );
-      expect(reminder.top, greaterThanOrEqualTo(summary.bottom));
-      expect(reminder.bottom, lessThanOrEqualTo(comingUp.top));
+      expect(reminder.top, 20);
+      expect(reminder.bottom, lessThan(comingUp.top));
     },
   );
 
@@ -420,9 +433,9 @@ void main() {
 
     await openSection(tester, 'Schedule');
     expect(find.textContaining('Tue, Jun 10'), findsOneWidget);
-    await openSection(tester, 'History');
+    await openSection(tester, 'Records');
     expect(find.text('12 records'), findsOneWidget);
-    await openSection(tester, 'Insights');
+    await tapVisible(tester, find.byKey(const Key('filter-weight')));
     expect(find.text('01.06.25 · 6 weigh-ins'), findsOneWidget);
   });
 }

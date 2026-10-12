@@ -19,7 +19,7 @@ import 'contact_actions.dart';
 import '../../../platform/contact_launcher.dart';
 import 'emergency_card_screen.dart';
 import '../../../services/pet_records/state/emergency_contacts.dart';
-import 'emergency_kit_screen.dart';
+import '../../../services/pet_records/state/emergency_kit.dart';
 import 'health_profile_form.dart';
 import 'lost_pet_card_screen.dart';
 import 'vet_form_screen.dart';
@@ -36,9 +36,10 @@ Pet? _petById(BuildContext context, String petId) {
 }
 
 /// Opens the emergency actions for [petId] as a bottom sheet over the
-/// whole app: Call, Message and Map for the pet's vets and emergency
-/// contact, a link to the Emergency card, or the add-a-vet prompt when
-/// nothing is saved. Completes when the sheet is closed.
+/// whole app: one "Call now" for the most urgent contact, Message and Call
+/// for the others, then Find a vet, the Emergency card and kit, and the
+/// lost-pet card; or the add-a-vet prompt when nothing is saved. Completes
+/// when the sheet is closed.
 ///
 /// Nothing opens for an unknown [petId] (an assertion in debug builds).
 Future<void> showEmergencySheet(BuildContext context, String petId) {
@@ -95,6 +96,9 @@ class EmergencySheet extends ConsumerWidget {
   /// Opens Find a vet's emergency path.
   static const findVetKey = Key('emergency-find-vet');
 
+  /// Opens the Emergency card (which leads on to the kit).
+  static const cardKey = Key('open-emergency-card');
+
   final Pet pet;
 
   @override
@@ -116,10 +120,7 @@ class EmergencySheet extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
-          SheetTitle(
-            l10n.emergencySheetTitle(pet.name),
-            subtitle: l10n.emergencySheetSubtitle,
-          ),
+          SheetTitle(l10n.emergencySheetTitle(pet.name)),
           const SizedBox(height: 12),
           contacts.when(
             loading: () => const HealthLoading(),
@@ -133,53 +134,132 @@ class EmergencySheet extends ConsumerWidget {
             ),
             data: (data) => data.isEmpty
                 ? NoVetPrompt(pet: pet)
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      EmergencyContactList(pet: pet, contacts: data),
-                      Center(
-                        child: HealthLink(
-                          l10n.openEmergencyCardOf(pet.name),
-                          icon: Icons.chevron_right_rounded,
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                            openEmergencyCard(context, pet.id);
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+                : EmergencyContactList(pet: pet, contacts: data),
           ),
-          // Away from home, or no vet of their own: the nearest facilities.
-          const SizedBox(height: 10),
-          OutlinedButton.icon(
-            key: EmergencySheet.findVetKey,
-            onPressed: () {
-              Navigator.of(context).pop();
-              openFeature<Object>(context, 'find-vet', '', {
-                'mode': VetSearchMode.emergency,
-              });
-            },
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(kHealthTapTarget),
-            ),
-            icon: const AppIcon(Icons.near_me_rounded),
-            label: Text(context.findVetL10n.emergencySheetFindVet),
-          ),
-          // Being ready, whatever is saved above.
-          const SizedBox(height: 10),
-          EmergencyKitRow(pet: pet),
-          const SizedBox(height: 10),
-          LostPetButton(pet: pet),
-          const SizedBox(height: 8),
-          FinePrint(l10n.safetyLine),
+          // Whatever is saved above: the nearest facilities, the card and
+          // the kit, and the lost-pet card.
+          const SizedBox(height: 12),
+          _EmergencyLinks(pet: pet),
+          const SizedBox(height: 12),
+          FinePrint(l10n.emergencySheetFinePrint),
         ],
       ),
     );
   }
 }
 
-/// The three contacts with their buttons (also used by the Emergency card).
+/// The three plain rows under the contacts: "Find an emergency vet nearby",
+/// "Emergency card and kit" and "{name} is lost".
+class _EmergencyLinks extends ConsumerWidget {
+  const _EmergencyLinks({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final kit = ref.watch(emergencyKitProvider(pet.id)).value;
+    final l10n = context.healthL10n;
+    const divider = Divider(height: 1, indent: 16, endIndent: 16);
+    return HealthCard(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Away from home, or no vet of their own: the nearest facilities.
+          _PlainRow(
+            key: EmergencySheet.findVetKey,
+            title: context.findVetL10n.emergencySheetFindVet,
+            onTap: () {
+              Navigator.of(context).pop();
+              openFeature<Object>(context, 'find-vet', '', {
+                'mode': VetSearchMode.emergency,
+              });
+            },
+          ),
+          divider,
+          _PlainRow(
+            key: EmergencySheet.cardKey,
+            title: l10n.emergencyCardAndKit,
+            subtitle: kit == null
+                ? l10n.emergencyCardAndKitNote
+                : l10n.emergencyCardAndKitNoteKit(kit.ready, kit.total),
+            onTap: () {
+              Navigator.of(context).pop();
+              openEmergencyCard(context, pet.id);
+            },
+          ),
+          divider,
+          _PlainRow(
+            key: const Key('open-lost-card'),
+            title: l10n.petIsLost(pet.name),
+            onTap: () => openLostPetCard(context, pet.id),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A row of [_EmergencyLinks]: a title, an optional line under it, and a
+/// chevron. At least 52 px tall.
+class _PlainRow extends StatelessWidget {
+  const _PlainRow({
+    super.key,
+    required this.title,
+    required this.onTap,
+    this.subtitle,
+  });
+
+  final String title;
+  final String? subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 52),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: AppText.cardTitle.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: AppText.label.copyWith(color: AppColors.brown),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              const AppIcon(
+                Icons.chevron_right_rounded,
+                color: AppColors.brown,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The pet's contacts, most urgent first: the 24 h emergency vet if one is
+/// saved, else the regular vet, else the emergency contact leads as one
+/// card with "Call now"; the others follow as rows with round Message and
+/// Call buttons. Without a vet, the add-a-vet prompt comes last.
 class EmergencyContactList extends StatelessWidget {
   const EmergencyContactList({
     super.key,
@@ -203,53 +283,83 @@ class EmergencyContactList extends StatelessWidget {
     final emergency = contacts.emergencyVet;
     final person = contacts.contact;
     final l10n = context.healthL10n;
+    // Most urgent first. The keys of each contact's buttons end in its tag.
+    final entries = <_Entry>[
+      if (emergency != null)
+        _Entry(
+          tag: 'emergency',
+          role: l10n.vetRole(VetRole.emergency),
+          name: emergency.name,
+          icon: Icons.local_hospital_rounded,
+          phone: emergency.phone,
+          onWhatsApp: emergency.onWhatsApp,
+          address: emergency.address,
+          onAddPhone: () => _editVet(context, emergency.id),
+        ),
+      if (regular != null)
+        _Entry(
+          tag: 'regular',
+          role: l10n.vetRole(VetRole.regular),
+          name: regular.name,
+          icon: Icons.medical_services_rounded,
+          phone: regular.phone,
+          onWhatsApp: regular.onWhatsApp,
+          address: regular.address,
+          onAddPhone: () => _editVet(context, regular.id),
+        ),
+      if (person != null)
+        _Entry(
+          tag: 'contact',
+          role: l10n.emergencyContact,
+          // Only a phone number was given: the person has no name to show.
+          name: person.name.isEmpty ? l10n.emergencyContact : person.name,
+          icon: Icons.person_rounded,
+          phone: person.phone,
+          onAddPhone: () => HealthProfileScreen.open(context, pet),
+        ),
+    ];
+    final others = entries.skip(1).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (regular != null) ...[
-          EmergencyContactCard(
+        if (entries.isNotEmpty)
+          EmergencyPrimaryCard(
             petId: pet.id,
-            tag: 'regular',
-            role: l10n.vetRole(VetRole.regular),
-            name: regular.name,
-            icon: Icons.medical_services_rounded,
-            detail: regular.openingHours ?? regular.address,
-            phone: regular.phone,
-            onWhatsApp: regular.onWhatsApp,
-            address: regular.address,
-            onAddPhone: () => _editVet(context, regular.id),
+            tag: entries.first.tag,
+            role: entries.first.role,
+            name: entries.first.name,
+            icon: entries.first.icon,
+            phone: entries.first.phone,
+            onWhatsApp: entries.first.onWhatsApp,
+            address: entries.first.address,
+            onAddPhone: entries.first.onAddPhone,
           ),
-          const SizedBox(height: 10),
-        ],
-        if (emergency != null) ...[
-          EmergencyContactCard(
-            petId: pet.id,
-            tag: 'emergency',
-            role: l10n.vetRole(VetRole.emergency),
-            name: emergency.name,
-            icon: Icons.local_hospital_rounded,
-            detail: emergency.openingHours ?? emergency.address,
-            phone: emergency.phone,
-            onWhatsApp: emergency.onWhatsApp,
-            address: emergency.address,
-            onAddPhone: () => _editVet(context, emergency.id),
+        if (others.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          HealthCard(
+            key: const Key('emergency-other-contacts'),
+            padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < others.length; i++) ...[
+                  if (i > 0) const Divider(height: 1),
+                  EmergencyContactRow(
+                    petId: pet.id,
+                    tag: others[i].tag,
+                    role: others[i].role,
+                    name: others[i].name,
+                    phone: others[i].phone,
+                    onWhatsApp: others[i].onWhatsApp,
+                    onAddPhone: others[i].onAddPhone,
+                  ),
+                ],
+              ],
+            ),
           ),
-          const SizedBox(height: 10),
         ],
-        if (person != null) ...[
-          EmergencyContactCard(
-            petId: pet.id,
-            tag: 'contact',
-            role: l10n.emergencyContact,
-            // Only a phone number was given: the person has no name to show.
-            name: person.name.isEmpty ? l10n.emergencyContact : person.name,
-            icon: Icons.person_rounded,
-            phone: person.phone,
-            onAddPhone: () => HealthProfileScreen.open(context, pet),
-          ),
-          const SizedBox(height: 10),
-        ],
-        if (regular == null && emergency == null)
+        if (regular == null && emergency == null) ...[
+          const SizedBox(height: 12),
           HealthPromptCard(
             key: const Key('add-vet-prompt'),
             icon: Icons.add_call,
@@ -257,6 +367,7 @@ class EmergencyContactList extends StatelessWidget {
             message: l10n.vetPromptNote,
             onTap: () => showVetPicker(context, petId: pet.id),
           ),
+        ],
       ],
     );
   }
@@ -271,6 +382,29 @@ class EmergencyContactList extends StatelessWidget {
       }
     }
   }
+}
+
+/// One contact of [EmergencyContactList], whichever way it is shown.
+class _Entry {
+  const _Entry({
+    required this.tag,
+    required this.role,
+    required this.name,
+    required this.icon,
+    required this.onAddPhone,
+    this.phone,
+    this.onWhatsApp = false,
+    this.address,
+  });
+
+  final String tag;
+  final String role;
+  final String name;
+  final IconData icon;
+  final String? phone;
+  final bool onWhatsApp;
+  final String? address;
+  final VoidCallback onAddPhone;
 }
 
 /// What the sheet shows when the pet has no vet and no contact yet: a

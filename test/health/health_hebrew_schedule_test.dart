@@ -10,6 +10,7 @@ import 'package:pet_companion/l10n/l10n.dart';
 
 import '../helpers.dart';
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
 // The Schedule in Hebrew and right to left (its sections, the routine and
 // medicine forms, recording a dose), and the owner's week: the order of
@@ -217,6 +218,11 @@ void main() {
 
         expect(find.text('תרופה חדשה'), findsOneWidget);
         expect(find.text(he.fromVetInstructions), findsOneWidget);
+        // The rest is folded under "More details".
+        expect(find.text(he.howItIsGiven), findsNothing);
+        expect(find.text(he.formMoreDetails), findsOneWidget);
+        await openMoreDetails(tester);
+        expect(find.text(he.formFewerDetails), findsOneWidget);
         expect(find.text(he.howItIsGiven), findsOneWidget);
         for (final route in ['דרך הפה', 'על העור', 'בעין', 'באוזן', 'זריקה', 'אחר']) {
           expect(find.widgetWithText(ChoiceChip, route), findsOneWidget, reason: route);

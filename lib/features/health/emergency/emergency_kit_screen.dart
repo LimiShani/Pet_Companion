@@ -36,8 +36,9 @@ Future<void> openEmergencyKit(BuildContext context, String petId) {
 String kitCountLabel(HealthL10n l10n, EmergencyKit kit) =>
     l10n.kitCount(ready: kit.ready, total: kit.total);
 
-/// The row that leads to the kit from the emergency sheet and the
-/// Emergency card: its name and how much of it is ready.
+/// The row that leads to the kit from the Emergency card: its name and how
+/// much of it is ready. (The emergency sheet counts the kit on its
+/// "Emergency card and kit" row.)
 class EmergencyKitRow extends ConsumerWidget {
   const EmergencyKitRow({super.key, required this.pet});
 

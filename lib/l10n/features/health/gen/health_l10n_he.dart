@@ -18,10 +18,97 @@ class HealthL10nHe extends HealthL10n {
   String get sectionSchedule => 'לוח זמנים';
 
   @override
-  String get sectionHistory => 'היסטוריה';
+  String get recordsSection => 'רשומות';
 
   @override
-  String get sectionInsights => 'תובנות';
+  String get recordsJournal => 'יומן תצפיות';
+
+  @override
+  String get recordsCategory => 'קטגוריה';
+
+  @override
+  String recordsEntries(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count רישומים',
+      two: 'שני רישומים',
+      one: 'רישום אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recordsEntriesShown(int shown, int total) {
+    return '$shown מתוך $total רישומים';
+  }
+
+  @override
+  String overviewWeightRow(String value) {
+    return 'משקל \u2068$value\u2069';
+  }
+
+  @override
+  String overviewProfileAllergies(String list) {
+    return 'אלרגיות: \u2068$list\u2069';
+  }
+
+  @override
+  String get overviewProfileNoAllergies => 'לא ידוע על אלרגיות';
+
+  @override
+  String get overviewProfileChipped => 'יש שבב';
+
+  @override
+  String get overviewProfileEmpty => 'הוספת אלרגיות, מחלות רקע ושבב';
+
+  @override
+  String overviewVaccinations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count חיסונים',
+      two: 'שני חיסונים',
+      one: 'חיסון אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewVetVisits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ביקורי וטרינר',
+      two: 'שני ביקורי וטרינר',
+      one: 'ביקור וטרינר אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewDocuments(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count מסמכים',
+      two: 'שני מסמכים',
+      one: 'מסמך אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String overviewMedicines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count תרופות',
+      two: 'שתי תרופות',
+      one: 'תרופה אחת',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get quickLog => 'רישום מהיר';
@@ -282,11 +369,33 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get emergencySheetSubtitle => 'חיוג או הודעה. האפליקציה רק פותחת את החייגן או את ההודעות. החיוג והשליחה בידיים שלך.';
+  String get emergencySheetFinePrint => 'החיוג והשליחה בידיים שלך.';
 
   @override
-  String openEmergencyCardOf(String name) {
-    return 'לכרטיס החירום של \u2068$name\u2069';
+  String get emergencyCallNow => 'חיוג עכשיו';
+
+  @override
+  String get emergencyDirections => 'ניווט';
+
+  @override
+  String emergencyCallNamed(String name) {
+    return 'חיוג אל \u2068$name\u2069';
+  }
+
+  @override
+  String emergencyMessageNamed(String name) {
+    return 'הודעה אל \u2068$name\u2069';
+  }
+
+  @override
+  String get emergencyCardAndKit => 'כרטיס חירום וערכה';
+
+  @override
+  String get emergencyCardAndKitNote => 'אלרגיות, תרופות, שבב';
+
+  @override
+  String emergencyCardAndKitNoteKit(int ready, int total) {
+    return 'אלרגיות, תרופות, שבב · ערכה: $ready מתוך $total מוכנים';
   }
 
   @override
@@ -1111,7 +1220,7 @@ class HealthL10nHe extends HealthL10n {
   String get notSure => 'לא ידוע';
 
   @override
-  String get movedToHistory => 'הועבר להיסטוריה.';
+  String get movedToHistory => 'הועבר לרשומות.';
 
   @override
   String get itHappened => 'זה התקיים';
@@ -1982,4 +2091,10 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String get reportFooter => 'נכתב על ידי הבעלים באפליקציית PetLoop. זהו תיעוד של מה שהוזן, ולא ייעוץ וטרינרי.';
+
+  @override
+  String get formMoreDetails => 'פרטים נוספים';
+
+  @override
+  String get formFewerDetails => 'פחות פרטים';
 }

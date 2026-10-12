@@ -8,7 +8,6 @@ import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/app_icon.dart';
 import '../../../widgets/coral_header.dart';
 import '../../../presentation/pet_avatar.dart';
 import '../../../services/pet_records/data/species_settings.dart';
@@ -17,9 +16,7 @@ import '../share/share_actions.dart';
 import '../../../services/pet_records/state/health_keeper.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/health_widgets.dart';
-import '../../../services/pet_records/state/emergency_contacts.dart';
 import 'emergency_kit_screen.dart';
-import 'emergency_sheet.dart';
 import 'health_profile_form.dart';
 import 'lost_pet_card_screen.dart';
 import 'vets_screen.dart';
@@ -39,14 +36,15 @@ Future<void> openEmergencyCard(BuildContext context, String petId) {
   return Future.value();
 }
 
-/// What a vet needs at a glance: identification, allergies, conditions,
-/// active medicines and who to call, with Call / Message / Map buttons.
+/// What a vet needs at a glance: identification, allergies, conditions and
+/// active medicines, with the emergency kit and the lost-pet card. Who to
+/// call is on the emergency sheet.
 class EmergencyCardScreen extends ConsumerWidget {
   const EmergencyCardScreen({super.key, required this.pet, this.onShare});
 
   final Pet pet;
 
-  /// Replaces what "Share summary" does. By default it hands the pet's
+  /// Replaces what the header's Share does. By default it hands the pet's
   /// health summary, as a PDF, to the phone's share sheet.
   final void Function(BuildContext context, HealthSummary summary)? onShare;
 
@@ -60,7 +58,6 @@ class EmergencyCardScreen extends ConsumerWidget {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final summary = ref.watch(healthSummaryProvider(pet.id));
-    final contacts = ref.watch(emergencyContactsProvider(pet.id));
     final onShare =
         this.onShare ??
         (BuildContext context, HealthSummary _) =>
@@ -102,12 +99,7 @@ class EmergencyCardScreen extends ConsumerWidget {
                     onRetry: () =>
                         ref.invalidate(healthSummaryProvider(pet.id)),
                   ),
-                  data: (data) => _Card(
-                    pet: pet,
-                    summary: data,
-                    contacts: contacts.value,
-                    onShare: onShare,
-                  ),
+                  data: (data) => _Card(pet: pet, summary: data),
                 ),
               ),
             ),
@@ -119,17 +111,10 @@ class EmergencyCardScreen extends ConsumerWidget {
 }
 
 class _Card extends StatelessWidget {
-  const _Card({
-    required this.pet,
-    required this.summary,
-    required this.contacts,
-    required this.onShare,
-  });
+  const _Card({required this.pet, required this.summary});
 
   final Pet pet;
   final HealthSummary summary;
-  final EmergencyContacts? contacts;
-  final void Function(BuildContext context, HealthSummary summary) onShare;
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -252,28 +237,11 @@ class _Card extends StatelessWidget {
               ],
             ),
           ),
+        // Who to call is on the emergency sheet; sharing is in the header.
         const SizedBox(height: 12),
-        if (contacts != null)
-          EmergencyContactList(pet: pet, contacts: contacts!)
-        else
-          const HealthLoading(),
         EmergencyKitRow(pet: pet),
         const SizedBox(height: 10),
         LostPetButton(pet: pet),
-        const SizedBox(height: 10),
-        FeatureGate(
-          capability: 'health.emergency.export',
-          hidden: true,
-          builder: (_) => OutlinedButton.icon(
-            key: const Key('share-summary'),
-            onPressed: () => onShare(context, summary),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(kHealthTapTarget),
-            ),
-            icon: const AppIcon(Icons.ios_share_rounded),
-            label: Text(l10n.shareSummary),
-          ),
-        ),
         const SizedBox(height: 4),
         Wrap(
           alignment: WrapAlignment.center,

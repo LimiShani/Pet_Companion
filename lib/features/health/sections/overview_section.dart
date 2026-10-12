@@ -1,4 +1,5 @@
 import '../../../access/feature_gate.dart';
+import '../../../access/access_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,7 +9,6 @@ import '../../../platform/feature_ui.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../../presentation/pet_avatar.dart';
 import '../../../services/pet_records/data/health_models.dart';
 import '../../../services/pet_records/data/species_settings.dart';
 import '../emergency/contact_actions.dart';
@@ -27,29 +27,27 @@ class OverviewActions {
   const OverviewActions({
     this.onQuickLog,
     this.onAddRecord,
-    this.onShare,
     this.onAddDocument,
     this.onAddAppointment,
     this.onAddMedicine,
     this.onRecordDose,
     this.onOpenRecord,
-    this.onOpenMedicine,
   });
 
   final VoidCallback? onQuickLog;
   final VoidCallback? onAddRecord;
-  final VoidCallback? onShare;
   final VoidCallback? onAddDocument;
   final VoidCallback? onAddAppointment;
   final VoidCallback? onAddMedicine;
   final void Function(ScheduleEntry entry)? onRecordDose;
   final void Function(HealthRecord record)? onOpenRecord;
-  final void Function(Medication medication)? onOpenMedicine;
 }
 
-/// What needs attention now: the next action first, then quick actions,
-/// the vet, and the latest facts. A block with nothing in it is not shown,
-/// and there is no overall "health score".
+/// What needs attention now: the next action first, then the two quick
+/// actions, the vet, and one card of rows that each open their own page
+/// (the health profile, the weight, the records). A block with nothing in
+/// it is not shown, and there is no overall "health score". The pet is
+/// named by the header's pet chip, so there is no pet card here.
 class OverviewSection extends ConsumerWidget {
   const OverviewSection({
     super.key,
@@ -63,8 +61,8 @@ class OverviewSection extends ConsumerWidget {
   final PetHealthData data;
   final OverviewActions actions;
 
-  /// Shown right under the pet summary: the slot for the Pets feature's
-  /// "essentials missing" reminder card.
+  /// Shown at the top: the slot for the Pets feature's "essentials
+  /// missing" reminder card.
   final Widget? reminder;
 
   @override
@@ -101,170 +99,53 @@ class OverviewSection extends ConsumerWidget {
         entriesNeedingReview(data.plan, now).length +
         recordsNeedingReview(data.records, now).length;
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
+    final records = ref.watch(capabilityProvider('health.records.view'));
 
-    final history = historyRecords(data.records);
-    final weights = weightEntries(data.observations);
-    DateTime? lastRecord = history.isEmpty ? null : history.first.when;
-    for (final o in data.observations) {
-      if (lastRecord == null || o.observedAt.isAfter(lastRecord)) {
-        lastRecord = o.observedAt;
-      }
-    }
-    final medicines = data.plan.activeMedications(now);
-    final l10n = context.healthL10n;
-    final format = HealthFormat.of(context);
+    // One gap between blocks. The reminder brings its own gap above it and
+    // takes no space when hidden, so the first block keeps a gap after it;
+    // the tab starts the Overview one gap higher to match.
+    final blocks = <Widget>[
+      if (!nothingDue)
+        _ComingUp(
+          now: now,
+          entry: nextEntry,
+          record: nextRecord,
+          reviewCount: review,
+          actions: actions,
+          onSchedule: () => show(HealthSection.schedule),
+        ),
+      if (data.isEmpty) _GettingStarted(pet: pet, actions: actions),
+      if (actions.onQuickLog != null || actions.onAddRecord != null)
+        _QuickActions(actions: actions),
+      _VetCard(pet: pet, vets: data.vets),
+      _OverviewRows(
+        pet: pet,
+        data: data,
+        onWeight: records
+            ? () {
+                ref.read(historyFilterProvider.notifier).showWeight();
+                show(HealthSection.records);
+              }
+            : null,
+        onRecords: records
+            ? () {
+                ref.read(historyFilterProvider.notifier).clear();
+                show(HealthSection.records);
+              }
+            : null,
+      ),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _PetSummary(
-          pet: pet,
-          status: nothingDue
-              ? l10n.overviewNoCareDue
-              : lastRecord == null
-              ? null
-              : l10n.overviewLastRecord(format.date(lastRecord)),
-        ),
-        // The reminder brings its own top gap, so it leaves none when hidden.
         if (reminder != null) reminder!,
-        if (!nothingDue) ...[
-          const SizedBox(height: AppSpacing.cardGap),
-          _ComingUp(
-            now: now,
-            entry: nextEntry,
-            record: nextRecord,
-            reviewCount: review,
-            actions: actions,
-            onSchedule: () => show(HealthSection.schedule),
-          ),
-        ],
-        if (data.isEmpty) ...[
-          const SizedBox(height: 8),
-          _GettingStarted(pet: pet, actions: actions),
-        ],
-        const SizedBox(height: AppSpacing.cardGap),
-        _QuickActions(actions: actions),
-        const SizedBox(height: AppSpacing.cardGap),
-        _VetCard(pet: pet, vets: data.vets),
-        if (medicines.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.cardGap),
-          _MedicinesCard(
-            medicines: medicines,
-            plan: data.plan,
-            now: now,
-            actions: actions,
-          ),
-        ],
-        if (weights.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.cardGap),
-          _WeightCard(
-            weights: weights,
-            grams: SpeciesSettings.of(pet.species).weightInGrams,
-            onInsights: () => show(HealthSection.insights),
-          ),
-        ],
-        if (history.isNotEmpty) ...[
-          const SizedBox(height: AppSpacing.cardGap),
-          _RecordsCard(
-            history: history,
-            // The same records the History's "Documents" filter shows.
-            documents: history
-                .where(
-                  (r) =>
-                      r.kind == RecordKind.document ||
-                      data.documentsOf(r.id).isNotEmpty,
-                )
-                .length,
-            onKind: (kind) {
-              ref.read(historyFilterProvider.notifier).showKind(kind);
-              show(HealthSection.history);
-            },
-            onDocuments: () {
-              ref.read(historyFilterProvider.notifier).showDocuments();
-              show(HealthSection.history);
-            },
-          ),
+        for (var i = 0; i < blocks.length; i++) ...[
+          if (i > 0 || reminder != null)
+            const SizedBox(height: AppSpacing.cardGap),
+          blocks[i],
         ],
       ],
-    );
-  }
-}
-
-class _PetSummary extends StatelessWidget {
-  const _PetSummary({required this.pet, required this.status});
-
-  final Pet pet;
-  final String? status;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    final format = HealthFormat.of(context);
-    return HealthCard(
-      key: const Key('overview-pet'),
-      onTap: () => HealthProfileScreen.open(context, pet),
-      padding: const EdgeInsetsDirectional.only(
-        start: 14,
-        end: 8,
-        top: 12,
-        bottom: 12,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: AppColors.yellow,
-              shape: BoxShape.circle,
-              border: Border.all(color: AppColors.coral, width: 3),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: ExcludeSemantics(child: PetAvatar(pet: pet, size: 50)),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TypedText(
-                  pet.name,
-                  style: AppText.cardTitle.copyWith(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  format.petLine(pet),
-                  style: AppText.secondary.copyWith(color: AppColors.brown),
-                ),
-                if (status != null)
-                  Text(
-                    status!,
-                    style: AppText.secondary.copyWith(color: AppColors.brown),
-                  ),
-                Text(
-                  format.l10n.healthProfile,
-                  style: AppText.secondary.copyWith(
-                    color: AppColors.coralDark,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
-        ],
-      ),
     );
   }
 }
@@ -458,114 +339,58 @@ class _ComingUpRow extends StatelessWidget {
   }
 }
 
+/// The Overview's two actions: the Quick log (the one filled button) and
+/// "Add record".
 class _QuickActions extends StatelessWidget {
   const _QuickActions({required this.actions});
 
   final OverviewActions actions;
 
   @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.healthL10n;
+    const size = Size(kHealthTapTarget, kHealthTapTarget);
+    const padding = EdgeInsets.symmetric(horizontal: 12);
     final buttons = [
       if (actions.onQuickLog != null)
-        _QuickAction(
+        FilledButton.icon(
           key: const Key('overview-quick-log'),
-          icon: Icons.add_rounded,
-          label: l10n.quickLog,
-          primary: true,
-          onTap: actions.onQuickLog!,
+          onPressed: actions.onQuickLog,
+          style: FilledButton.styleFrom(
+            minimumSize: size,
+            padding: padding,
+            textStyle: AppText.button(15),
+          ),
+          icon: const AppIcon(Icons.add_rounded, size: 18),
+          label: Text(
+            l10n.quickLog,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
       if (actions.onAddRecord != null)
-        _QuickAction(
+        OutlinedButton(
           key: const Key('overview-add-record'),
-          icon: Icons.note_add_rounded,
-          label: l10n.addRecord,
-          onTap: actions.onAddRecord!,
-        ),
-      if (actions.onShare != null)
-        _QuickAction(
-          key: const Key('overview-share'),
-          icon: Icons.ios_share_rounded,
-          label: context.l10n.commonShare,
-          onTap: actions.onShare!,
+          onPressed: actions.onAddRecord,
+          style: OutlinedButton.styleFrom(
+            minimumSize: size,
+            padding: padding,
+            textStyle: AppText.button(15),
+          ),
+          child: Text(
+            l10n.addRecord,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
     ];
-    if (buttons.isEmpty) return const SizedBox.shrink();
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: 8),
+          if (i > 0) const SizedBox(width: 12),
           Expanded(child: buttons[i]),
         ],
       ],
-    );
-  }
-}
-
-class _QuickAction extends StatelessWidget {
-  const _QuickAction({
-    super.key,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.primary = false,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-  final bool primary;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    final fg = primary ? AppColors.white : AppColors.ink;
-    return Semantics(
-      button: true,
-      child: Material(
-        color: primary ? AppColors.coralDark : AppColors.white,
-        borderRadius: BorderRadius.circular(22),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                AppIcon(icon, color: fg, size: 24),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.secondary.copyWith(
-                    color: fg,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -606,11 +431,16 @@ class _VetCard extends StatelessWidget {
         ],
       );
     }
-    // The address as typed, the phone number left to right.
-    final detail = format.dots([
-      if (vet.hasAddress) vet.address,
-      if (vet.hasPhone) format.ltrInLine(vet.phone),
-    ]);
+    // The opening hours as typed; without them, the address as typed and
+    // the phone number left to right.
+    final hours = vet.openingHours.trim();
+    final detail = hours.isNotEmpty
+        ? hours
+        : format.dots([
+            if (vet.hasAddress) vet.address,
+            if (vet.hasPhone) format.ltrInLine(vet.phone),
+          ]);
+    void details() => VetsScreen.open(context, pet);
     return HealthCard(
       key: const Key('overview-vet'),
       padding: const EdgeInsetsDirectional.only(
@@ -625,42 +455,48 @@ class _VetCard extends StatelessWidget {
           Row(
             children: [
               Expanded(child: Text(l10n.vet, style: AppText.cardTitle)),
-              HealthLink(
-                l10n.details,
-                onPressed: () => VetsScreen.open(context, pet),
-              ),
+              HealthLink(l10n.details, onPressed: details),
             ],
           ),
-          Row(
-            children: [
-              const IconDisc(Icons.medical_services_rounded),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    TypedText(vet.name, style: AppText.cardTitle),
-                    if (detail.isNotEmpty)
-                      Text(
-                        detail,
-                        style: AppText.secondary.copyWith(
-                          color: AppColors.brown,
+          InkWell(
+            key: const Key('overview-vet-row'),
+            onTap: details,
+            borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
+            child: Row(
+              children: [
+                const IconDisc(Icons.medical_services_rounded),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TypedText(vet.name, style: AppText.cardTitle),
+                      if (detail.isNotEmpty)
+                        TypedText(
+                          detail,
+                          style: AppText.secondary.copyWith(
+                            color: AppColors.brown,
+                          ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+                const AppIcon(
+                  Icons.chevron_right_rounded,
+                  color: AppColors.brown,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
+          // Call and Message; the map is on the vet's details page.
           ContactActionButtons(
             petId: pet.id,
             tag: 'overview',
             name: vet.name,
             phone: vet.hasPhone ? vet.phone : null,
             onWhatsApp: vet.onWhatsApp,
-            address: vet.hasAddress ? vet.address : null,
-            onAddPhone: () => VetsScreen.open(context, pet),
+            onAddPhone: details,
           ),
           const _FindVetLink(),
         ],
@@ -693,313 +529,196 @@ class _FindVetLink extends StatelessWidget {
   );
 }
 
-class _MedicinesCard extends StatelessWidget {
-  const _MedicinesCard({
-    required this.medicines,
-    required this.plan,
-    required this.now,
-    required this.actions,
+/// One white card of rows, each opening its own page: the health profile,
+/// the weight (Records on Weight) and the records (Records on All). The
+/// last two need [onWeight] and [onRecords]: without them (no access to
+/// the records) they are left out.
+class _OverviewRows extends StatelessWidget {
+  const _OverviewRows({
+    required this.pet,
+    required this.data,
+    required this.onWeight,
+    required this.onRecords,
   });
 
-  final List<Medication> medicines;
-  final CarePlan plan;
-  final DateTime now;
-  final OverviewActions actions;
+  final Pet pet;
+  final PetHealthData data;
+  final VoidCallback? onWeight;
+  final VoidCallback? onRecords;
 
   @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = context.healthL10n;
     final format = HealthFormat.of(context);
+    final rows = <Widget>[
+      _OverviewRow(
+        key: const Key('overview-profile'),
+        title: l10n.healthProfile,
+        detail: _profileLine(format, data.profile),
+        onTap: () => HealthProfileScreen.open(context, pet),
+      ),
+      if (onWeight != null) _weightRow(format),
+      if (onRecords != null)
+        _OverviewRow(
+          key: const Key('overview-records'),
+          title: l10n.recordsSection,
+          detail: _recordsLine(format),
+          onTap: onRecords!,
+        ),
+    ];
     return HealthCard(
-      key: const Key('overview-medicines'),
+      key: const Key('overview-rows'),
+      padding: const EdgeInsetsDirectional.only(start: 16, end: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: [
-              Expanded(child: Text(l10n.medicines, style: AppText.cardTitle)),
-              HealthTag(
-                l10n.medicinesActive(medicines.length),
-                highlight: true,
-              ),
-            ],
-          ),
-          for (final m in medicines)
-            InkWell(
-              onTap: actions.onOpenMedicine == null
-                  ? null
-                  : () => actions.onOpenMedicine!(m),
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(top: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const IconDisc(Icons.medication_rounded),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TypedText(m.displayName, style: AppText.cardTitle),
-                          if (format.instructions(m).isNotEmpty)
-                            Text(
-                              format.instructions(m),
-                              style: AppText.secondary.copyWith(
-                                color: AppColors.brown,
-                              ),
-                            ),
-                          Text(
-                            _lastDose(format, m),
-                            style: AppText.secondary.copyWith(
-                              color: AppColors.brown,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          for (var i = 0; i < rows.length; i++) ...[
+            if (i > 0)
+              const Divider(height: 1, thickness: 1, color: AppColors.cream),
+            rows[i],
+          ],
         ],
       ),
     );
   }
 
-  String _lastDose(HealthFormat format, Medication m) {
+  /// "Allergies: chicken · Arthritis in the hips · Chipped": only what the
+  /// owner answered.
+  String _profileLine(HealthFormat format, HealthProfile profile) {
     final l10n = format.l10n;
-    final at = plan.lastDose(m.id)?.doneAt;
-    if (at == null) return l10n.noDoseYet;
-    final time = format.time(at);
-    return switch (daysBetween(now, at)) {
-      0 => l10n.lastDoseToday(time),
-      -1 => l10n.lastDoseYesterday(time),
-      _ => l10n.lastDoseOn(format.weekdayDate(at), time),
-    };
+    final parts = [
+      if (profile.allergies.isNotEmpty)
+        l10n.overviewProfileAllergies(format.commas(profile.allergies))
+      else if (profile.allergiesNoneKnown)
+        l10n.overviewProfileNoAllergies,
+      if (profile.conditions.isNotEmpty) format.commas(profile.conditions),
+      if (profile.microchip.trim().isNotEmpty)
+        l10n.overviewProfileChipped
+      else if (profile.notChipped)
+        l10n.notChipped,
+    ];
+    return parts.isEmpty ? l10n.overviewProfileEmpty : format.dots(parts);
+  }
+
+  /// "3 vaccinations · 4 vet visits · 3 documents · 1 medicine".
+  String _recordsLine(HealthFormat format) {
+    final l10n = format.l10n;
+    final history = historyRecords(data.records);
+    if (history.isEmpty) return l10n.historyEmpty;
+    int count(RecordKind kind) => history.where((r) => r.kind == kind).length;
+    // The same records the Records' "Documents" chip shows.
+    final documents = history
+        .where(
+          (r) =>
+              r.kind == RecordKind.document ||
+              data.documentsOf(r.id).isNotEmpty,
+        )
+        .length;
+    final vaccinations = count(RecordKind.vaccination);
+    final visits = count(RecordKind.checkup);
+    final medicines = count(RecordKind.medicine);
+    final parts = [
+      if (vaccinations > 0) l10n.overviewVaccinations(vaccinations),
+      if (visits > 0) l10n.overviewVetVisits(visits),
+      if (documents > 0) l10n.overviewDocuments(documents),
+      if (medicines > 0) l10n.overviewMedicines(medicines),
+    ];
+    return parts.isEmpty
+        ? l10n.recordsCount(history.length)
+        : format.dots(parts);
+  }
+
+  /// "Weight 23 kg", what changed since the weigh-in before, and a small
+  /// line of the weigh-ins.
+  Widget _weightRow(HealthFormat format) {
+    final l10n = format.l10n;
+    final weights = weightEntries(data.observations);
+    final grams = SpeciesSettings.of(pet.species).weightInGrams;
+    if (weights.isEmpty) {
+      return _OverviewRow(
+        key: const Key('overview-weight'),
+        title: l10n.weight,
+        detail: l10n.noWeightYet,
+        onTap: onWeight!,
+      );
+    }
+    final latest = weights.last;
+    final previous = weights.length > 1 ? weights[weights.length - 2] : null;
+    return _OverviewRow(
+      key: const Key('overview-weight'),
+      title: l10n.overviewWeightRow(format.weight(latest.value!, grams: grams)),
+      detail: previous == null
+          ? format.date(latest.observedAt)
+          : format.weightChangeSince(
+              previous.value!,
+              latest.value!,
+              previous.observedAt,
+              grams: grams,
+            ),
+      trailing: previous == null
+          ? null
+          : SizedBox(
+              width: 64,
+              child: WeightTrendChart(
+                points: [
+                  for (final w in weights) TrendPoint(w.observedAt, w.value!),
+                ],
+                height: 24,
+                showGuides: false,
+                semanticsLabel: l10n.smallWeightChart,
+              ),
+            ),
+      onTap: onWeight!,
+    );
   }
 }
 
-class _WeightCard extends StatelessWidget {
-  const _WeightCard({
-    required this.weights,
-    required this.grams,
-    required this.onInsights,
+/// A row of the Overview's card: a title, one quieter line, and a chevron.
+class _OverviewRow extends StatelessWidget {
+  const _OverviewRow({
+    super.key,
+    required this.title,
+    required this.detail,
+    required this.onTap,
+    this.trailing,
   });
 
-  final List<Observation> weights;
-  final bool grams;
-  final VoidCallback onInsights;
+  final String title;
+  final String detail;
+  final VoidCallback onTap;
+  final Widget? trailing;
 
   @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    final l10n = context.healthL10n;
-    final format = HealthFormat.of(context);
-    final latest = weights.last;
-    final previous = weights.length > 1 ? weights[weights.length - 2] : null;
-    final detail = format.dots([
-      format.date(latest.observedAt),
-      if (previous != null)
-        format.weightChangeSince(
-          previous.value!,
-          latest.value!,
-          previous.observedAt,
-          grams: grams,
-        ),
-    ]);
-
-    return HealthCard(
-      key: const Key('overview-weight'),
-      padding: const EdgeInsetsDirectional.only(
-        start: 16,
-        end: 12,
-        top: 6,
-        bottom: 14,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text(l10n.weight, style: AppText.cardTitle)),
-              HealthLink(l10n.sectionInsights, onPressed: onInsights),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                flex: 3,
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 56),
+        child: Row(
+          children: [
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text.rich(
-                      TextSpan(
-                        text: format.weightNumber(latest.value!, grams: grams),
-                        style: AppText.metric,
-                        children: [
-                          TextSpan(
-                            text: ' ${format.weightUnit(grams: grams)}',
-                            style: AppText.body.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
+                    Text(title, style: AppText.cardTitle),
+                    TypedText(
                       detail,
-                      style: AppText.secondary.copyWith(color: AppColors.brown),
+                      style: AppText.secondary.copyWith(
+                        color: AppColors.brown,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                flex: 2,
-                child: WeightTrendChart(
-                  points: [
-                    for (final w in weights) TrendPoint(w.observedAt, w.value!),
-                  ],
-                  height: 56,
-                  showGuides: false,
-                  semanticsLabel: l10n.smallWeightChart,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _RecordsCard extends StatelessWidget {
-  const _RecordsCard({
-    required this.history,
-    required this.documents,
-    required this.onKind,
-    required this.onDocuments,
-  });
-
-  final List<HealthRecord> history;
-  final int documents;
-  final void Function(RecordKind kind) onKind;
-  final VoidCallback onDocuments;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    int count(RecordKind kind) => history.where((r) => r.kind == kind).length;
-    final l10n = context.healthL10n;
-    return HealthCard(
-      key: const Key('overview-records'),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(l10n.medicalRecords, style: AppText.cardTitle),
-          const SizedBox(height: 10),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: _CountTile(
-                  count: count(RecordKind.vaccination),
-                  label: l10n.vaccinations,
-                  onTap: () => onKind(RecordKind.vaccination),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  count: count(RecordKind.checkup),
-                  label: l10n.vetVisits,
-                  onTap: () => onKind(RecordKind.checkup),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _CountTile(
-                  count: documents,
-                  label: l10n.documents,
-                  onTap: onDocuments,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CountTile extends StatelessWidget {
-  const _CountTile({
-    required this.count,
-    required this.label,
-    required this.onTap,
-  });
-
-  final int count;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    return Semantics(
-      button: true,
-      label: context.healthL10n.countAndLabel(count, label),
-      excludeSemantics: true,
-      child: Material(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('$count', style: AppText.pillValue),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.label.copyWith(color: AppColors.brown),
-                ),
-              ],
             ),
-          ),
+            if (trailing != null) ...[const SizedBox(width: 12), trailing!],
+            const SizedBox(width: 4),
+            const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+          ],
         ),
       ),
     );

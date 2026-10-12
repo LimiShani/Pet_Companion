@@ -5,6 +5,7 @@ import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/health/data/health_models.dart';
 
 import 'health_test_helpers.dart';
+import 'more_details_test_helpers.dart';
 
 void main() {
   setUpAll(() {
@@ -15,13 +16,13 @@ void main() {
 
   Future<HealthHarness> openHistory(WidgetTester tester, {HealthHarness? harness}) async {
     final h = await pumpHealth(tester, harness: harness);
-    await openSection(tester, 'History');
+    await openSection(tester, 'Records');
     return h;
   }
 
   String count(WidgetTester tester) => tester.widget<Text>(find.byKey(const Key('history-count'))).data!;
 
-  group('History timeline', () {
+  group('Records timeline', () {
     testWidgets('lists every done record by month, newest first', (tester) async {
       await openHistory(tester);
 
@@ -72,17 +73,20 @@ void main() {
       expect(count(tester), '12 records');
     });
 
-    testWidgets('the Overview counts open the matching filter', (tester) async {
+    testWidgets("the Overview's Records row opens Records on All", (tester) async {
       await pumpHealth(tester);
-      await tapVisible(tester, find.bySemanticsLabel('3 Vaccinations'));
-
-      expect(count(tester), '3 of 12 records');
-      expect(find.text('DHPP booster'), findsOneWidget);
+      // Left on a filter, with a search typed.
+      await openRecords(tester, chip: 'filter-vaccination');
+      await tester.enterText(find.byKey(const Key('history-search')), 'rabies');
+      await tester.pumpAndSettle();
+      expect(count(tester), '1 of 12 records');
 
       await openSection(tester, 'Overview');
-      await tapVisible(tester, find.bySemanticsLabel('3 Documents'));
-      expect(count(tester), '3 of 12 records');
-      expect(find.text('Blood test results'), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('overview-records')));
+      expect(count(tester), '12 records');
+      expect(find.text('DHPP booster'), findsOneWidget);
+      final all = tester.widget<ChoiceChip>(find.byKey(const Key('filter-all')));
+      expect(all.selected, isTrue);
     });
 
     testWidgets('a pet without records gets a friendly empty state', (tester) async {
@@ -173,6 +177,101 @@ void main() {
   });
 
   group('Record form', () {
+    const folded = ['record-product', 'record-next-due', 'record-clinic', 'record-cost', 'record-notes', 'record-attach'];
+
+    testWidgets('a new record shows the short set, and More details the rest', (tester) async {
+      await openHistory(tester);
+      await tapVisible(tester, find.text('Add record'));
+      await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
+      for (final key in ['record-title', 'record-date', 'record-time']) {
+        expect(find.byKey(Key(key)), findsOneWidget, reason: key);
+      }
+      for (final key in folded) {
+        expect(find.byKey(Key(key)), findsNothing, reason: key);
+      }
+
+      await tapVisible(tester, find.text('More details'));
+      for (final key in folded) {
+        expect(find.byKey(Key(key)), findsOneWidget, reason: key);
+      }
+      expect(find.text('Cost (optional)'), findsOneWidget);
+      expect(find.text('Attachments'), findsOneWidget);
+
+      // And folds away again; what was typed stays.
+      await tester.enterText(find.byKey(const Key('record-notes')), 'Booster due next year.');
+      await tapVisible(tester, find.text('Fewer details'));
+      expect(find.byKey(const Key('record-notes')), findsNothing);
+      await tapVisible(tester, find.text('More details'));
+      expect(find.text('Booster due next year.'), findsOneWidget);
+    });
+
+    testWidgets('editing a record opens More details when a folded field is filled', (tester) async {
+      await openHistory(tester);
+      await tapVisible(tester, find.text('Limping after a long walk'));
+      await tester.tap(find.byTooltip('Edit record'));
+      await tester.pumpAndSettle();
+      expect(find.text('Fewer details'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '320'), findsOneWidget);
+    });
+
+    testWidgets('editing a record with nothing folded filled keeps More details closed', (tester) async {
+      await openHistory(tester);
+      await tapVisible(tester, find.text('Worming tablet'));
+      await tester.tap(find.byTooltip('Edit record'));
+      await tester.pumpAndSettle();
+      expect(find.text('More details'), findsOneWidget);
+      expect(find.byKey(const Key('record-cost')), findsNothing);
+    });
+
+    testWidgets('a wrong amount in the folded cost opens More details at the cost', (tester) async {
+      await openHistory(tester);
+      await tapVisible(tester, find.text('Add record'));
+      await tester.enterText(find.byKey(const Key('record-title')), 'Nail trim');
+      await tapVisible(tester, find.text('More details'));
+      await tester.enterText(find.byKey(const Key('record-cost')), '4.5.0');
+      await tapVisible(tester, find.text('Fewer details'));
+      expect(find.byKey(const Key('record-cost')), findsNothing);
+
+      await tapVisible(tester, find.text('Save record'));
+      expect(find.text('New record'), findsOneWidget);
+      expect(find.text('Fewer details'), findsOneWidget);
+      expect(find.text('Enter an amount, like 120 or 89.90.'), findsOneWidget);
+      final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+      final cost = tester.getRect(find.byKey(const Key('record-cost')));
+      expect(cost.top, greaterThanOrEqualTo(0));
+      expect(cost.bottom, lessThanOrEqualTo(screen.height));
+    });
+
+    testWidgets('a next due date before the date given opens More details', (tester) async {
+      await openHistory(tester);
+      await tapVisible(tester, find.text('Add record'));
+      await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
+      await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
+      Future<void> pickDay(String day) async {
+        await tapVisible(tester, find.byKey(const Key('record-date')));
+        await tester.tap(find.descendant(of: find.byType(Dialog), matching: find.text(day)));
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+      }
+
+      // Given on the 5th, next due on the 6th; then the date given moves
+      // to the 8th, with the fold closed.
+      await pickDay('5');
+      await tapVisible(tester, find.text('More details'));
+      await tapVisible(tester, find.byKey(const Key('record-next-due')));
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+      expect(find.text('06.06.25'), findsOneWidget);
+      await tapVisible(tester, find.text('Fewer details'));
+      await pickDay('8');
+
+      await tapVisible(tester, find.text('Save record'));
+      expect(find.text('New record'), findsOneWidget);
+      expect(find.text('The next due date should be after the date given.'), findsOneWidget);
+      expect(find.text('Fewer details'), findsOneWidget);
+      expect(find.byKey(const Key('record-next-due')), findsOneWidget);
+    });
+
     testWidgets('a vaccination is saved with a separate next due date', (tester) async {
       final h = await openHistory(tester);
       await tapVisible(tester, find.text('Add record'));
@@ -184,6 +283,7 @@ void main() {
 
       await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
+      await openMoreDetails(tester);
       await tester.enterText(find.byKey(const Key('record-product')), 'Lepto 4, batch L77');
       await tester.enterText(find.byKey(const Key('record-clinic')), 'Park Vet Clinic');
 
@@ -219,6 +319,7 @@ void main() {
       await tapVisible(tester, find.text('Add record'));
       await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
+      await openMoreDetails(tester);
       await tapVisible(tester, find.byKey(const Key('record-next-due')));
       await tester.tap(find.text('OK'));
       await tester.pumpAndSettle();
@@ -259,6 +360,7 @@ void main() {
 
       await tapVisible(tester, find.byKey(const ValueKey('kind-document')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Discharge letter');
+      await openMoreDetails(tester);
       await tapVisible(tester, find.byKey(const Key('record-attach')));
       await tapVisible(tester, find.byKey(const ValueKey('attach-pdf')));
       expect(find.text('discharge-letter.pdf'), findsOneWidget);
@@ -279,6 +381,7 @@ void main() {
       expect(find.text('Edit record'), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('record-title')), 'Worming tablet (spring)');
+      await openMoreDetails(tester);
       await tester.enterText(find.byKey(const Key('record-notes')), 'Given with breakfast.');
       await tapVisible(tester, find.text('Save record'));
 

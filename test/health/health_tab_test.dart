@@ -18,14 +18,14 @@ void main() {
       await pumpHealth(tester);
 
       expect(find.text('Health'), findsWidgets);
-      for (final label in ['Overview', 'Schedule', 'History', 'Insights']) {
+      for (final label in ['Overview', 'Schedule', 'Records']) {
         expect(find.text(label), findsWidgets);
       }
       expect(find.byType(EmergencyButton), findsOneWidget);
 
-      // The pet, and the date of the last record.
-      expect(find.text('Dog · Mix · 13.6 years'), findsOneWidget);
-      expect(find.text('Last record 08.06.25'), findsOneWidget);
+      // The header's pet chip names the pet: no pet card on the Overview.
+      expect(find.byKey(const Key('overview-pet')), findsNothing);
+      expect(find.text('Dog · Mix · 13.6 years'), findsNothing);
 
       // The next action outranks everything else.
       expect(find.text('Coming up'), findsOneWidget);
@@ -35,20 +35,36 @@ void main() {
       expect(find.text('Thu 12.06.25 · 18:20 · Park Vet Clinic'), findsOneWidget);
       expect(find.text('1 reminder needs review'), findsOneWidget);
 
-      // The vet, one tap away.
-      expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
-      expect(find.text('12 Park Street, Tel Aviv · +972 3 555 0142'), findsOneWidget);
+      // Two actions: the Quick log and "Add record"; Share is on Records.
+      expect(find.byKey(const Key('overview-quick-log')), findsOneWidget);
+      expect(find.byKey(const Key('overview-add-record')), findsOneWidget);
+      expect(find.byKey(const Key('overview-share')), findsNothing);
+      expect(find.text('Share'), findsNothing);
 
-      // The latest facts.
-      expect(find.text('Joint tablets 50 mg'), findsOneWidget);
-      expect(find.text('1 tablet by mouth, twice a day with food'), findsOneWidget);
-      expect(find.text('Last recorded dose: today 08:05'), findsOneWidget);
-      expect(find.text('23 kg', findRichText: true), findsOneWidget);
-      expect(find.text('01.06.25 · 0.2 kg down since 02.05.25'), findsOneWidget);
+      // The vet, one tap away: the opening hours, Call and Message; the map
+      // is on the details page.
+      expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
+      expect(find.text('Sun to Thu 08:00-19:00, Fri 08:00-13:00'), findsOneWidget);
+      expect(find.byKey(const ValueKey('call-overview')), findsOneWidget);
+      expect(find.byKey(const ValueKey('message-overview')), findsOneWidget);
+      expect(find.byKey(const ValueKey('map-overview')), findsNothing);
+      expect(find.text('Details'), findsOneWidget);
+      expect(find.text('Find a vet nearby'), findsOneWidget);
+
+      // The rest is rows: the health profile, the weight, the records. The
+      // medicines live in the Schedule.
+      expect(find.byKey(const Key('overview-medicines')), findsNothing);
+      expect(find.text('Last recorded dose: today 08:05'), findsNothing);
+      expect(find.text('Health profile'), findsOneWidget);
+      expect(find.text('Allergies: Chicken (skin reaction) · Arthritis in the hips · Chipped'), findsOneWidget);
+      expect(find.text('Weight 23 kg'), findsOneWidget);
+      expect(find.text('0.2 kg down since 02.05.25'), findsOneWidget);
       expect(find.byType(WeightTrendChart), findsOneWidget);
-      expect(find.bySemanticsLabel('3 Vaccinations'), findsOneWidget);
-      expect(find.bySemanticsLabel('4 Vet visits'), findsOneWidget);
-      expect(find.bySemanticsLabel('3 Documents'), findsOneWidget);
+      expect(
+        find.descendant(of: find.byKey(const Key('overview-records')), matching: find.text('Records')),
+        findsOneWidget,
+      );
+      expect(find.text('3 vaccinations · 4 vet visits · 3 documents'), findsOneWidget);
 
       // No score, no verdict.
       expect(find.textContaining('score'), findsNothing);
@@ -60,17 +76,18 @@ void main() {
       await pumpHealth(tester);
       await switchPet(tester, 'Soya');
 
-      expect(find.text('No scheduled care due'), findsOneWidget);
       expect(find.text('Start with one thing'), findsOneWidget);
       expect(find.text("No need to enter Soya's whole history. Add things as they come up."), findsOneWidget);
       expect(find.text("Add Soya's vet"), findsOneWidget);
       expect(find.byKey(const Key('emergency-dot')), findsOneWidget);
 
-      // Blocks with nothing in them are not shown.
+      // Blocks with nothing in them are not shown; the rows say what is
+      // still to come.
       expect(find.text('Coming up'), findsNothing);
-      expect(find.text('Medicines'), findsNothing);
-      expect(find.text('Weight'), findsNothing);
-      expect(find.text('Medical records'), findsNothing);
+      expect(find.byKey(const Key('overview-medicines')), findsNothing);
+      expect(find.text('Add allergies, conditions and the microchip'), findsOneWidget);
+      expect(find.text('No weight logged yet.'), findsOneWidget);
+      expect(find.text('No records yet'), findsOneWidget);
     });
 
     testWidgets('a load failure offers to try again', (tester) async {
@@ -101,7 +118,7 @@ void main() {
         expect(find.text('Coming up'), findsOneWidget);
         await tester.dragUntilVisible(
           find.byKey(const Key('overview-records')),
-          find.byKey(const Key('overview-pet')),
+          find.byKey(const Key('overview-coming-up')),
           const Offset(0, -200),
         );
         expect(tester.takeException(), isNull);
@@ -191,23 +208,23 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Emergency · Kelly'), findsOneWidget);
 
-      await tapVisible(tester, find.text("Open Kelly's Emergency card"));
+      await tapVisible(tester, find.text('Emergency card and kit'));
       expect(find.text('Emergency card'), findsOneWidget);
       expect(find.text('985 112 004 567 321'), findsOneWidget);
       expect(find.text('Dog · Mix · 13.6 years · 23 kg'), findsOneWidget);
       expect(find.text('Chicken (skin reaction)'), findsOneWidget);
       expect(find.text('Arthritis in the hips'), findsOneWidget);
       expect(find.text('Joint tablets 50 mg · 1 tablet by mouth, twice a day with food'), findsOneWidget);
-      expect(find.byKey(const ValueKey('call-regular')), findsOneWidget);
-      expect(find.byKey(const ValueKey('message-emergency')), findsOneWidget);
+      // Who to call is on the sheet, not repeated on the card.
+      expect(find.byKey(const ValueKey('call-regular')), findsNothing);
+      expect(find.byKey(const ValueKey('message-emergency')), findsNothing);
       expect(find.textContaining('does not replace veterinary advice'), findsOneWidget);
     });
 
     testWidgets('the health profile is edited from the Overview', (tester) async {
       final h = await pumpHealth(tester);
 
-      await tester.tap(find.byKey(const Key('overview-pet')));
-      await tester.pumpAndSettle();
+      await tapVisible(tester, find.byKey(const Key('overview-profile')));
       expect(find.text("Kelly's health profile"), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('profile-allergies')), 'Chicken\nGrass pollen');
@@ -227,14 +244,15 @@ void main() {
   });
 
   group('species', () {
-    testWidgets('another species is named on the Overview', (tester) async {
+    testWidgets('another species gets its own first steps', (tester) async {
       final h = HealthHarness(
         repository: fakeHealth(seeded: false),
         pets: const [Pet(id: 'rio', name: 'Rio', species: PetSpecies.bird, breed: 'Cockatiel', ageYears: 4)],
       );
       await pumpHealth(tester, harness: h);
 
-      expect(find.text('Bird · Cockatiel · 4 years'), findsOneWidget);
+      // The header's pet chip names Rio.
+      expect(find.text('Rio'), findsWidgets);
       expect(find.text('Start with one thing'), findsOneWidget);
       expect(find.text("Add Rio's vet"), findsOneWidget);
     });

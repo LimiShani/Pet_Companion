@@ -150,8 +150,8 @@ void main() {
       expect(stored.single.category, 'vocalisation');
       expect(stored.single.level, ObservationLevel.more);
 
-      // It sits in the Insights journal with every other observation.
-      await openSection(tester, 'Insights');
+      // It sits in the journal with every other observation.
+      await openRecords(tester, chip: 'filter-journal');
       expect(find.text('Meowing · More than usual'), findsOneWidget);
       expect(find.text('10.06.25 · Cries at the door around five'), findsOneWidget);
       expect(find.textContaining('The app does not interpret it'), findsOneWidget);
@@ -192,12 +192,17 @@ void main() {
         await real(tester, () => h.repository.saveObservation(observation));
       }
       await pumpHealth(tester, harness: h);
-      await openSection(tester, 'Insights');
+      await openRecords(tester, chip: 'filter-journal');
 
       expect(find.text('Appetite · Usual'), findsOneWidget);
       expect(find.text('Litter box use · Different from usual'), findsOneWidget);
 
-      await tapVisible(tester, find.byKey(const Key('journal-behaviour-group')));
+      await pickJournalCategory(tester, 'journal-behaviour-group');
+      // The Category chip now names the group.
+      expect(
+        find.descendant(of: find.byKey(const Key('journal-category')), matching: find.text('Behaviour')),
+        findsOneWidget,
+      );
       expect(find.text('Appetite · Usual'), findsNothing);
       expect(find.text('Sleep · Less than usual'), findsOneWidget);
       expect(find.text('Biting or scratching · More than usual'), findsOneWidget);
@@ -205,18 +210,20 @@ void main() {
       expect(find.text('Litter box use · Different from usual'), findsOneWidget);
 
       // A single category still narrows it further.
-      await tapVisible(tester, find.byKey(const ValueKey('journal-sleep')));
+      await pickJournalCategory(tester, 'journal-sleep');
       expect(find.text('Sleep · Less than usual'), findsOneWidget);
       expect(find.text('Biting or scratching · More than usual'), findsNothing);
 
-      await tapVisible(tester, find.byKey(const Key('journal-all')));
+      await pickJournalCategory(tester, 'journal-all');
       expect(find.text('Appetite · Usual'), findsOneWidget);
     });
 
     testWidgets('without behaviour entries, or for a reptile, nothing extra shows', (tester) async {
-      // Kelly's sample journal has no behaviour entry: no group chip.
+      // Kelly's sample journal has no behaviour entry: no group in the menu.
       await pumpHealth(tester);
-      await openSection(tester, 'Insights');
+      await openRecords(tester, chip: 'filter-journal');
+      await tapVisible(tester, find.byKey(const Key('journal-category')));
+      expect(find.byKey(const Key('journal-all')), findsWidgets);
       expect(find.byKey(const Key('journal-behaviour-group')), findsNothing);
     });
 

@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
-import 'package:pet_companion/features/health/sections/history_section.dart';
-import 'package:pet_companion/features/health/sections/insights_section.dart';
+import 'package:pet_companion/features/health/sections/records_section.dart';
 import 'package:pet_companion/features/health/sections/schedule_section.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
@@ -38,12 +37,13 @@ void main() {
 
   testWidgets('Health: every section with the Quick log button ends above it', (tester) async {
     await pumpHealth(tester);
-    for (final (label, section) in [
-      ('Schedule', find.byType(ScheduleSection)),
-      ('History', find.byType(HistorySection)),
-      ('Insights', find.byType(InsightsSection)),
+    for (final (label, chip, section) in [
+      ('Schedule', null, find.byType(ScheduleSection)),
+      ('Records', 'filter-all', find.byType(RecordsSection)),
+      ('Records', 'filter-journal', find.byType(RecordsSection)),
     ]) {
       await openSection(tester, label);
+      if (chip != null) await tapVisible(tester, find.byKey(Key(chip)));
       expect(find.byKey(const Key('quick-log-button')), findsOneWidget);
       await scrollToEnd(tester, section);
       expectAboveButton(tester, section);
