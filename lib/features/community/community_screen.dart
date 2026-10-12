@@ -8,6 +8,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
+import '../../widgets/header_search.dart';
 import 'chat/chat_providers.dart' show chatChannelsProvider;
 import 'chat/chat_section.dart';
 import 'chat/new_chat_screen.dart';
@@ -19,6 +20,7 @@ import '../../theme/app_colors.dart';
 import 'feed/feed_controller.dart';
 import 'feed/feed_section.dart';
 import 'feed/post_composer_screen.dart';
+import 'guides/guides_providers.dart' show guidesQueryProvider;
 import 'guides/guides_section.dart';
 
 /// Set by another part of the app to have the Community tab show its
@@ -38,6 +40,11 @@ final communityGuidesRequestProvider =
 
 /// The Community tab: a social feed, topic chat rooms and a library of
 /// guides, switched from the header.
+///
+/// The header's magnifier searches the section on screen (the posts or the
+/// guides; Chat has no search): while it is open the search field takes
+/// the place of the sections switch, and closing it clears the words and
+/// gives the switch back.
 class CommunityScreen extends ConsumerStatefulWidget {
   const CommunityScreen({super.key});
 
@@ -47,6 +54,7 @@ class CommunityScreen extends ConsumerStatefulWidget {
 
 class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   static const _feed = 0;
+  static const _chat = 1;
   static const _guides = 2;
 
   var _index = _feed;
@@ -55,10 +63,59 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
   /// its scroll position and state when the user switches.
   final _visited = <int>{_feed};
 
+  /// The search field is open in the header.
+  var _searching = false;
+  final _search = TextEditingController();
+
+  @override
+  void dispose() {
+    _search.dispose();
+    super.dispose();
+  }
+
   void _select(int index) => setState(() {
+    if (index != _index) _endSearch();
     _index = index;
     _visited.add(index);
   });
+
+  /// The words [section] is searched for now.
+  String _queryOf(int section) => section == _guides
+      ? ref.read(guidesQueryProvider)
+      : ref.read(feedFilterProvider).search;
+
+  void _openSearch(int section) {
+    _search.text = _queryOf(section);
+    setState(() => _searching = true);
+  }
+
+  /// The guides filter as the words are typed. The feed asks the server,
+  /// so it searches when the words are sent, and shows every post again
+  /// as soon as the field is emptied.
+  void _onSearchChanged(int section, String words) {
+    if (section == _guides) {
+      ref.read(guidesQueryProvider.notifier).set(words);
+    } else if (words.trim().isEmpty && _queryOf(_feed).isNotEmpty) {
+      ref.read(feedFilterProvider.notifier).search('');
+    }
+  }
+
+  void _onSearchSubmitted(int section, String words) {
+    if (section == _feed) ref.read(feedFilterProvider.notifier).search(words);
+  }
+
+  /// Closes the search and clears its words, as the field's close button
+  /// does.
+  void _endSearch() {
+    _searching = false;
+    _search.clear();
+    if (_queryOf(_feed).isNotEmpty) {
+      ref.read(feedFilterProvider.notifier).search('');
+    }
+    if (_queryOf(_guides).isNotEmpty) {
+      ref.read(guidesQueryProvider.notifier).set('');
+    }
+  }
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -93,6 +150,12 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
         (feed) => feed.value == null ? feed.isLoading : feed.value!.isNotEmpty,
       ),
     );
+    // Chat has no search: no magnifier there.
+    final searchable = index != _chat;
+    final searching = _searching && searchable;
+    final query = index == _guides
+        ? ref.watch(guidesQueryProvider)
+        : ref.watch(feedFilterProvider.select((filter) => filter.search));
 
     return CommunityKeeper(
       child: Scaffold(
@@ -102,6 +165,14 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
             CoralHeader(
               title: l10n.tabTitle,
               actions: [
+                if (searchable)
+                  HeaderSearchButton(
+                    tooltip: index == _guides
+                        ? l10n.searchGuides
+                        : l10n.searchPosts,
+                    active: !searching && query.isNotEmpty,
+                    onPressed: () => _openSearch(index),
+                  ),
                 Badge(
                   isLabelVisible: ref.watch(hasNewActivityProvider),
                   smallSize: 9,
@@ -115,24 +186,31 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
                     onPressed: () => context.go(CommunityRoutes.activity),
                   ),
                 ),
-                CoralHeaderAction(
-                  icon: Icons.shield_outlined,
-                  tooltip: l10n.safetyTitle,
-                  onPressed: () => context.go(CommunityRoutes.safety),
-                ),
               ],
-              bottom: CoralSegmentedControl(
-                labels: [
-                  for (final section in visible)
-                    [
-                      l10n.sectionFeed,
-                      l10n.sectionChat,
-                      l10n.sectionGuides,
-                    ][section],
-                ],
-                selectedIndex: visible.indexOf(index),
-                onChanged: (selected) => _select(visible[selected]),
-              ),
+              bottom: searching
+                  ? HeaderSearchField(
+                      controller: _search,
+                      hint: index == _guides
+                          ? l10n.searchGuides
+                          : l10n.searchPostsHint,
+                      onChanged: (words) => _onSearchChanged(index, words),
+                      onSubmitted: (words) => _onSearchSubmitted(index, words),
+                      onClose: () => setState(_endSearch),
+                      clearTooltip: l10n.clearSearch,
+                      closeTooltip: context.l10n.commonClose,
+                    )
+                  : CoralSegmentedControl(
+                      labels: [
+                        for (final section in visible)
+                          [
+                            l10n.sectionFeed,
+                            l10n.sectionChat,
+                            l10n.sectionGuides,
+                          ][section],
+                      ],
+                      selectedIndex: visible.indexOf(index),
+                      onChanged: (selected) => _select(visible[selected]),
+                    ),
             ),
             Expanded(
               child: IndexedStack(

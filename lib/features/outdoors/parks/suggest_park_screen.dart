@@ -301,46 +301,17 @@ class _SuggestParkScreenState extends ConsumerState<SuggestParkScreen> {
                   child: Text(l10n.detailsOptional, style: AppText.cardTitle),
                 ),
                 const SizedBox(height: 8),
-                for (final detail in ParkDetail.values) ...[
-                  Row(
-                    children: [
-                      AppIcon(
-                        parkDetailIcon(detail),
-                        size: 18,
-                        color: AppColors.ink,
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          l10n.detail(detail),
-                          style: AppText.body.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ],
+                for (final detail in ParkDetail.values)
+                  ParkDetailRow(
+                    detail: detail,
+                    answer: _details[detail] ?? ParkAnswer.unknown,
+                    answerKey: (answer) =>
+                        SuggestParkScreen.answerKey(detail, answer),
+                    onChanged: _sending
+                        ? null
+                        : (answer) => setState(() => _details[detail] = answer),
                   ),
-                  const SizedBox(height: 4),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 4,
-                    children: [
-                      for (final answer in ParkAnswer.values)
-                        ChoiceChip(
-                          key: SuggestParkScreen.answerKey(detail, answer),
-                          label: Text(l10n.answer(answer)),
-                          selected:
-                              (_details[detail] ?? ParkAnswer.unknown) ==
-                              answer,
-                          showCheckmark: false,
-                          onSelected: _sending
-                              ? null
-                              : (_) => setState(() => _details[detail] = answer),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                ],
+                const SizedBox(height: 4),
                 if (_error != null) ...[
                   Semantics(
                     liveRegion: true,

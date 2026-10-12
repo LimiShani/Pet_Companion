@@ -12,9 +12,6 @@ class MeetupsL10nEn extends MeetupsL10n {
   String get areaQuestion => 'Where do you go out?';
 
   @override
-  String get areaWhy => 'Pick a city to see walk and play ads around it. \"Near me\" asks the phone for your location once, only to find the nearest city. It is never saved or sent.';
-
-  @override
   String get problemOutsideRegion => 'Partners are listed in Israel for now. Pick a city in Israel.';
 
   @override
@@ -73,13 +70,7 @@ class MeetupsL10nEn extends MeetupsL10n {
   }
 
   @override
-  String get filtersClear => 'Clear';
-
-  @override
   String get filtersTitle => 'Which ads to show';
-
-  @override
-  String get filterDistance => 'Distance';
 
   @override
   String get filterKind => 'Walk or play';

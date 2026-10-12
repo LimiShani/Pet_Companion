@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/composition/modules.g.dart';
-import 'package:pet_companion/features/meetups/meetups.dart' show PartnersView;
+import 'package:pet_companion/features/meetups/meetups.dart' show MeetupsAreaPicker, PartnersView;
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/platform/feature_module.dart';
 import 'package:pet_companion/services/findvet/data/location_service.dart';
@@ -69,7 +69,9 @@ void main() {
     await tester.tap(find.byKey(ParkAreaPicker.nearMeKey));
     await tester.pumpAndSettle();
     expect(kit.location.asked, 1);
-    expect(find.text(en.areaNearMeIn("Ra'anana")), findsOneWidget);
+    // The area is the header's chip now: the nearest city, no area bar.
+    expect(find.descendant(of: find.byKey(OutsideScreen.areaChipKey), matching: find.text("Ra'anana")), findsOneWidget);
+    expect(find.byType(ParkAreaBar), findsNothing);
 
     final query = kit.repo.queries.single;
     expect(query.localityCode, isNull);
@@ -94,9 +96,12 @@ void main() {
     expect(find.descendant(of: card('demo-raanana-ahuza'), matching: find.text('Dog park · Ahuza')), findsOneWidget);
 
     // Wider: 25 km reaches Tel Aviv.
-    await tester.tap(find.byKey(ParkAreaBar.radiusKey(ParkRadius.km25)));
-    await tester.pumpAndSettle();
+    await chooseRadius(tester, ParkRadius.km25);
     expect(cardIds(tester), contains('demo-tlv-meir'));
+    expect(find.descendant(of: find.byKey(ParksView.radiusChipKey), matching: find.text(en.radiusKm(25))), findsOneWidget);
+    await tester.tap(find.byKey(ParksView.radiusChipKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(ParkAreaBar.radiusKey(ParkRadius.km10)), findsOneWidget);
     expect(find.byKey(ParkAreaBar.radiusKey(ParkRadius.cityOnly)), findsNothing, reason: 'no "City only" near me');
   });
 
@@ -114,33 +119,30 @@ void main() {
     expect(kit.location.settingsOpened, [LocationOutcome.deniedForever]);
 
     await chooseCity(tester, 'Kfar Sa', 'kfar-saba');
-    expect(kit.repo.queries.single.localityCode, 'kfar-saba', reason: 'City only asks by locality');
+    // A city starts on up to 10 km, as Partners does.
+    expect(kit.repo.queries.single.box, isNotNull);
+    expect(cardIds(tester), contains('demo-raanana-park'));
+
+    await chooseRadius(tester, ParkRadius.cityOnly);
+    expect(kit.repo.queries.last.localityCode, 'kfar-saba', reason: 'City only asks by locality');
     expect(cardIds(tester), unorderedEquals(['demo-kfarsaba-weizmann', 'demo-kfarsaba-garden']));
     // No distance from a city's centre.
     expect(find.descendant(of: card('demo-kfarsaba-weizmann'), matching: find.textContaining(' km')), findsNothing);
 
-    await tester.tap(find.byKey(ParkAreaBar.radiusKey(ParkRadius.km10)));
+    // The header's chip asks again, in a sheet.
+    await tester.tap(find.byKey(OutsideScreen.areaChipKey));
     await tester.pumpAndSettle();
-    expect(cardIds(tester), contains('demo-raanana-park'));
-    expect(kit.repo.queries.last.box, isNotNull);
-
-    await tester.tap(find.byKey(ParkAreaBar.changeKey));
-    await tester.pumpAndSettle();
-    expect(find.text(en.areaQuestion), findsOneWidget);
+    expect(find.descendant(of: find.byKey(OutsideAreaSheet.sheetKey), matching: find.text(en.areaQuestion)), findsOneWidget);
   });
 
   testWidgets('filters keep parks known to have every chosen detail', (tester) async {
     await openOutside(tester, size: tall);
     await chooseCity(tester, 'raan', 'raanana');
-    await tester.tap(find.byKey(ParkAreaBar.radiusKey(ParkRadius.km10)));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(ParksView.filterKey(ParkDetail.fenced)));
-    await tester.tap(find.byKey(ParksView.filterKey(ParkDetail.smallDogs)));
-    await tester.pumpAndSettle();
+    await tapFilter(tester, ParkDetail.fenced);
+    await tapFilter(tester, ParkDetail.smallDogs);
     expect(cardIds(tester), ['demo-raanana-park', 'demo-kfarsaba-garden']);
 
-    await tester.tap(find.byKey(ParksView.filterKey(ParkDetail.lighting)));
-    await tester.pumpAndSettle();
+    await tapFilter(tester, ParkDetail.lighting);
     expect(cardIds(tester), isEmpty);
     expect(find.text(en.noFilterMatch), findsOneWidget);
     await tester.tap(find.byKey(ParksView.clearFiltersKey));
@@ -356,5 +358,115 @@ void main() {
   testWidgets('members do not see the review entry', (tester) async {
     await openOutside(tester);
     expect(find.byKey(ParksView.reviewKey), findsNothing);
+  });
+
+  testWidgets('one area for Outside: a chip in the header opens the picker; no area bar in the bodies', (tester) async {
+    await openOutside(tester, size: tall);
+    // Before an area is chosen: the picker in the body, no chip.
+    expect(find.byKey(OutsideScreen.areaChipKey), findsNothing);
+    expect(find.byType(ParkAreaPicker), findsOneWidget);
+    await chooseCity(tester, 'raan', 'raanana');
+    expect(find.byType(ParkAreaPicker), findsNothing);
+    expect(find.byType(ParkAreaBar), findsNothing);
+    final chip = find.byKey(OutsideScreen.areaChipKey);
+    expect(find.descendant(of: chip, matching: find.text("Ra'anana")), findsOneWidget);
+    expect(find.bySemanticsLabel(en.areaChipLabel("Ra'anana")), findsOneWidget);
+
+    // The chip opens the same picker, in a sheet; a city closes it.
+    await tester.tap(chip);
+    await tester.pumpAndSettle();
+    final sheet = find.byKey(OutsideAreaSheet.sheetKey);
+    expect(find.descendant(of: sheet, matching: find.byType(ParkAreaPicker)), findsOneWidget);
+    expect(find.descendant(of: sheet, matching: find.text(en.locationWhy)), findsOneWidget);
+    await chooseCity(tester, 'Kfar Sa', 'kfar-saba');
+    expect(sheet, findsNothing);
+    expect(find.descendant(of: chip, matching: find.text('Kfar Saba')), findsOneWidget);
+    expect(cardIds(tester), contains('demo-kfarsaba-weizmann'));
+
+    // Partners looks at the same place, with no bar of its own.
+    await tester.tap(find.byKey(OutsideSection.partnersKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(PartnersView.listKey), findsOneWidget);
+    expect(find.byType(ParkAreaBar), findsNothing);
+    expect(find.byType(MeetupsAreaPicker), findsNothing);
+    expect(find.byKey(PartnersView.controlRowKey), findsOneWidget);
+    expect(find.descendant(of: chip, matching: find.text('Kfar Saba')), findsOneWidget);
+  });
+
+  testWidgets('Parks has one filter row: the radius menu first, a divider, then the details', (tester) async {
+    final kit = await openOutside(tester, size: tall);
+    await chooseCity(tester, 'raan', 'raanana');
+    final row = find.byKey(ParksView.filterRowKey);
+    expect(tester.widget<SingleChildScrollView>(row).scrollDirection, Axis.horizontal);
+    final radius = find.byKey(ParksView.radiusChipKey);
+    expect(find.descendant(of: row, matching: radius), findsOneWidget);
+    expect(find.descendant(of: radius, matching: find.text(en.radiusKm(10))), findsOneWidget);
+    final y = tester.getCenter(radius).dy;
+    for (final detail in ParkDetail.filters) {
+      final chip = find.byKey(ParksView.filterKey(detail));
+      expect(find.descendant(of: row, matching: chip), findsOneWidget);
+      expect(tester.getCenter(chip).dy, moreOrLessEquals(y, epsilon: 1), reason: '${detail.name} is on the same row');
+      expect(tester.getCenter(chip).dx, greaterThan(tester.getCenter(radius).dx), reason: 'the radius comes first');
+    }
+
+    // The menu: City only around a city, 10 and 25 km.
+    await tester.tap(radius);
+    await tester.pumpAndSettle();
+    for (final option in ParkRadius.values) {
+      expect(find.byKey(ParkAreaBar.radiusKey(option)), findsOneWidget);
+    }
+    await tester.tap(find.byKey(ParkAreaBar.radiusKey(ParkRadius.cityOnly)));
+    await tester.pumpAndSettle();
+    expect(kit.repo.queries.last.localityCode, 'raanana');
+    expect(find.descendant(of: radius, matching: find.text(en.radiusCityOnly)), findsOneWidget);
+
+    // "Missing a park?" stays at the end of the list.
+    final suggest = find.byKey(ParksView.suggestKey);
+    expect(tester.getTopLeft(suggest).dy, greaterThan(tester.getBottomLeft(card(cardIds(tester).last)).dy));
+  });
+
+  testWidgets('Suggest a park and Update details: one row per detail with Yes · No · ?', (tester) async {
+    await openOutside(tester, size: tall);
+    await tester.tap(find.byKey(ParksView.suggestKey));
+    await tester.pumpAndSettle();
+    final suggest = find.byKey(SuggestParkScreen.screenKey);
+    expect(find.descendant(of: suggest, matching: find.byType(ChoiceChip)), findsNothing);
+    expect(find.descendant(of: suggest, matching: find.byType(ParkDetailRow)), findsNWidgets(ParkDetail.values.length));
+    for (final detail in ParkDetail.values) {
+      final label = find.descendant(of: suggest, matching: find.text(en.detail(detail)));
+      final y = tester.getCenter(label).dy;
+      for (final answer in ParkAnswer.values) {
+        final key = find.byKey(SuggestParkScreen.answerKey(detail, answer));
+        expect(tester.getCenter(key).dy, moreOrLessEquals(y, epsilon: 1), reason: '${detail.name}: one row');
+      }
+    }
+    // "Not known" is the default, and screen readers hear the words.
+    expect(find.bySemanticsLabel(en.detailAnswer(en.detailShade, en.answerUnknown)), findsOneWidget);
+    expect(
+      tester.getSemantics(find.byKey(SuggestParkScreen.answerKey(ParkDetail.shade, ParkAnswer.unknown))),
+      containsSemantics(isSelected: true, isButton: true, hasTapAction: true, label: en.detailAnswer(en.detailShade, en.answerUnknown)),
+    );
+    expect(find.descendant(of: suggest, matching: find.text(en.imHereWhy)), findsOneWidget, reason: 'its position is sent');
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    await chooseCity(tester, 'raan', 'raanana');
+    await tester.tap(card('demo-raanana-ahuza'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(ParkScreen.updateKey));
+    await tester.pumpAndSettle();
+    final sheet = find.byType(UpdateDetailsSheet);
+    expect(find.descendant(of: sheet, matching: find.byType(ChoiceChip)), findsNothing);
+    expect(find.descendant(of: sheet, matching: find.byType(ParkDetailRow)), findsNWidgets(ParkDetail.values.length));
+    final fenced = find.descendant(of: sheet, matching: find.text(en.detailFenced));
+    expect(
+      tester.getCenter(find.byKey(UpdateDetailsSheet.answerKey(ParkDetail.fenced, ParkAnswer.no))).dy,
+      moreOrLessEquals(tester.getCenter(fenced).dy, epsilon: 1),
+    );
+    // The park's own answers are chosen: Ahuza is fenced.
+    expect(
+      tester.getSemantics(find.byKey(UpdateDetailsSheet.answerKey(ParkDetail.fenced, ParkAnswer.yes))),
+      containsSemantics(isSelected: true, isButton: true, hasTapAction: true, label: en.detailAnswer(en.detailFenced, en.answerYes)),
+    );
   });
 }

@@ -208,11 +208,10 @@ void main() {
       await tester.tap(find.byKey(ParkAreaPicker.nearMeKey));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      // Filters wrap instead of overflowing.
-      await scrollTo(tester, find.byKey(ParksView.filterKey(ParkDetail.smallDogs)));
-      await tester.tap(find.byKey(ParksView.filterKey(ParkDetail.smallDogs)));
-      await tester.pumpAndSettle();
+      // The filters scroll sideways in one row instead of overflowing.
+      await tapFilter(tester, ParkDetail.smallDogs);
       expect(tester.takeException(), isNull);
+      expect(find.text(he.radiusKm(10)), findsOneWidget);
       await scrollTo(tester, find.text(he.myParks));
       await scrollTo(tester, card('demo-raanana-park'));
       expect(tester.takeException(), isNull);
@@ -246,11 +245,17 @@ void main() {
     });
 
     testWidgets('the suggestion form and the partners board fit', (tester) async {
-      await openOutside(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
+      await openOutside(
+        tester,
+        language: AppLanguage.hebrew,
+        size: const Size(320, 640),
+        kit: ParksKit(profileArea: true),
+      );
       await tester.tap(find.byKey(OutsideSection.partnersKey));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      expect(find.byKey(PartnersView.safetyKey), findsOneWidget);
+      expect(find.byKey(PartnersView.controlRowKey), findsOneWidget);
+      expect(find.byKey(PartnersView.newAdKey), findsOneWidget);
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(ParksView.suggestKey));

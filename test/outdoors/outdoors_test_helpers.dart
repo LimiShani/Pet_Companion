@@ -34,6 +34,7 @@ class ParksKit {
       accuracyM: 30,
     ),
     this.reviewer = false,
+    this.profileArea = false,
     FakeParksRepository? repository,
     Set<String>? favorites,
   }) : location = FakeLocationService(location),
@@ -50,11 +51,17 @@ class ParksKit {
   final launcher = RecordingParkLauncher();
   final bool reviewer;
 
+  /// Whether Partners starts Outside on the demo profile's city (Tel
+  /// Aviv-Yafo), as in the app. Off, Outside starts with no area, so the
+  /// parks' own picker shows.
+  final bool profileArea;
+
   List<Override> get overrides => [
     parksRepositoryProvider.overrideWithValue(repo),
     meetupsRepositoryProvider.overrideWithValue(meetups),
     locationServiceProvider.overrideWithValue(location),
     parkLauncherProvider.overrideWithValue(launcher),
+    if (!profileArea) meetupsAreaSeedProvider.overrideWith(_NoSeed.new),
     if (reviewer)
       accessRepositoryProvider.overrideWithValue(
         FakeAccessRepository()
@@ -103,6 +110,48 @@ Future<ParksKit> openOutside(
     await tester.pumpAndSettle();
   }
   return k;
+}
+
+/// Outside without a starting city from the profile.
+class _NoSeed extends MeetupsAreaSeed {
+  @override
+  bool build() => false;
+}
+
+/// Changes Outside's area from the chip in the tab's header: [query] in
+/// the sheet's city field, then [cityCode].
+Future<void> changeArea(
+  WidgetTester tester,
+  String query,
+  String cityCode,
+) async {
+  await tester.tap(find.byKey(OutsideScreen.areaChipKey));
+  await tester.pumpAndSettle();
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsOneWidget);
+  await chooseCity(tester, query, cityCode);
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsNothing);
+}
+
+/// Picks [radius] from the radius chip's menu ([chip] is its key).
+Future<void> chooseRadius(
+  WidgetTester tester,
+  ParkRadius radius, {
+  Key chip = ParksView.radiusChipKey,
+}) async {
+  await tester.ensureVisible(find.byKey(chip));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(chip));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ParkAreaBar.radiusKey(radius)));
+  await tester.pumpAndSettle();
+}
+
+/// Taps a detail filter of the parks' sideways row.
+Future<void> tapFilter(WidgetTester tester, ParkDetail detail) async {
+  await tester.ensureVisible(find.byKey(ParksView.filterKey(detail)));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ParksView.filterKey(detail)));
+  await tester.pumpAndSettle();
 }
 
 /// Picks [cityCode] by typing [query] in the city field.

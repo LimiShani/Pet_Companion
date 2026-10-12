@@ -76,7 +76,7 @@ void main() {
         expect(value, isNot(contains('צאט')), reason: key);
       }
       expect(he.sectionChat, 'צ׳אט');
-      expect(he.roomsMatchedTo('Kelly'), contains('״הכול״'));
+      expect(he.noRoomsForDogs, contains('״הכול״'));
     });
 
     test('nobody is addressed as a man or as a woman: no slashed forms, no singular commands', () {
@@ -255,19 +255,14 @@ void main() {
       expect([for (final a in Audience.values) en.forWhom(a)], [null, 'For dogs', 'For cats', 'For other animals']);
     });
 
-    test('the captions under the chips are whole sentences', () {
-      expect(plain(he.roomsCaption(CommunityScope.dogs, matchedPet: 'Kelly')),
-          'מותאם עבור Kelly. לחיצה על ״הכול״ מציגה את כל החדרים.');
-      expect(plain(he.guidesCaption(CommunityScope.cats, matchedPet: 'Mitzi')),
-          'מותאם עבור Mitzi. לחיצה על ״הכול״ מציגה את כל המדריכים.');
-      // The pet's name is wrapped, so a Latin name cannot reorder the line.
-      expect(he.roomsCaption(CommunityScope.dogs, matchedPet: 'Kelly'), contains(isolate('Kelly')));
-      expect(he.roomsCaption(CommunityScope.cats), 'מוצגים חדרים עבור חתולים.');
-      expect(he.roomsCaption(CommunityScope.everything), 'מוצגים החדרים של כל החיות.');
-      expect(he.guidesCaption(CommunityScope.dogs), 'מוצגים מדריכים עבור כלבים.');
-      expect(he.guidesCaption(CommunityScope.everything), 'מוצגים המדריכים של כל החיות.');
-      expect(en.roomsCaption(CommunityScope.dogs, matchedPet: 'Kelly'),
-          'Matched to Kelly. Tap Everything to see all rooms.');
+    test('the animal menu, the advice line and the guide byline', () {
+      expect([for (final s in CommunityScope.values) he.scope(s)], ['כלבים', 'חתולים', 'הכול']);
+      expect(he.scopeMenuTooltip, 'בחירת סוג החיה');
+      expect(he.adviceHide, 'הסתרה');
+      expect(en.adviceHide, 'Hide');
+      // The reviewer's name is wrapped, so a Latin name cannot reorder the line.
+      expect(he.reviewedByName('Dana Levi'), 'נבדק על ידי ${isolate('Dana Levi')}');
+      expect(en.reviewedByName('Dana Levi'), 'Reviewed by Dana Levi');
     });
 
     test('every room the app ships with has a Hebrew name and description', () {

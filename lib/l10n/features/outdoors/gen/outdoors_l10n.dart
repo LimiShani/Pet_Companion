@@ -143,10 +143,10 @@ abstract class OutdoorsL10n {
   /// **'Where should we look?'**
   String get areaQuestion;
 
-  /// No description provided for @locationWhy.
+  /// The one sentence about location privacy, under every "Near me" button of Outside (the parks and the partners).
   ///
   /// In en, this message translates to:
-  /// **'\"Near me\" asks the phone for your location once, to sort parks by distance on this phone. It is never saved or sent.'**
+  /// **'\"Near me\" asks the phone for its location once. It is never saved or sent.'**
   String get locationWhy;
 
   /// No description provided for @nearMe.
@@ -239,6 +239,12 @@ abstract class OutdoorsL10n {
   /// **'Change where to look'**
   String get changeAreaLabel;
 
+  /// Screen-reader label of the area chip in the Outside header.
+  ///
+  /// In en, this message translates to:
+  /// **'Area: {place}. Change where to look'**
+  String areaChipLabel(String place);
+
   /// No description provided for @approximateLocation.
   ///
   /// In en, this message translates to:
@@ -316,6 +322,12 @@ abstract class OutdoorsL10n {
   /// In en, this message translates to:
   /// **'Not known'**
   String get answerUnknown;
+
+  /// "Not known" on the small Yes · No · ? switch of a park detail (screen readers say answerUnknown).
+  ///
+  /// In en, this message translates to:
+  /// **'?'**
+  String get answerUnknownShort;
 
   /// A detail and its answer, read by screen readers.
   ///

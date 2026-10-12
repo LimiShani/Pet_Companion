@@ -17,7 +17,10 @@
   "partnersShowParks": "Show the parks",
   "parksIntro": "Dog parks near you, with what is there: a fence, water, shade, lighting.",
   "areaQuestion": "Where should we look?",
-  "locationWhy": "\"Near me\" asks the phone for your location once, to sort parks by distance on this phone. It is never saved or sent.",
+  "locationWhy": "\"Near me\" asks the phone for its location once. It is never saved or sent.",
+  "@locationWhy": {
+    "description": "The one sentence about location privacy, under every \"Near me\" button of Outside (the parks and the partners)."
+  },
   "nearMe": "Near me",
   "locating": "Finding your location…",
   "orPickCity": "Or pick a city",
@@ -41,6 +44,15 @@
   },
   "changeArea": "Change",
   "changeAreaLabel": "Change where to look",
+  "areaChipLabel": "Area: {place}. Change where to look",
+  "@areaChipLabel": {
+    "description": "Screen-reader label of the area chip in the Outside header.",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
   "approximateLocation": "Your location is approximate (within about {km} km).",
   "@approximateLocation": {
     "placeholders": {
@@ -71,6 +83,10 @@
   "answerYes": "Yes",
   "answerNo": "No",
   "answerUnknown": "Not known",
+  "answerUnknownShort": "?",
+  "@answerUnknownShort": {
+    "description": "\"Not known\" on the small Yes · No · ? switch of a park detail (screen readers say answerUnknown)."
+  },
   "detailAnswer": "{detail}: {answer}",
   "@detailAnswer": {
     "description": "A detail and its answer, read by screen readers.",

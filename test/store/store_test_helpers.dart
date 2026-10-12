@@ -13,6 +13,7 @@ import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/widgets/header_search.dart';
 
 import '../helpers.dart';
 
@@ -148,6 +149,20 @@ Future<void> pickAnimals(WidgetTester tester, String label) async {
   await tester.tap(animalsChip);
   await tester.pumpAndSettle();
   await tester.tap(find.descendant(of: find.byType(PopupMenuItem<String>), matching: find.text(label)));
+  await tester.pumpAndSettle();
+}
+
+/// The Store's search field, open in the header in place of the segments.
+final searchField = find.byKey(HeaderSearchField.fieldKey);
+
+/// Searches the deals: opens the field from the header's magnifier unless
+/// it is open already, and types [query] into it.
+Future<void> searchDeals(WidgetTester tester, String query) async {
+  if (searchField.evaluate().isEmpty) {
+    await tester.tap(find.byKey(HeaderSearchButton.buttonKey));
+    await tester.pumpAndSettle();
+  }
+  await tester.enterText(searchField, query);
   await tester.pumpAndSettle();
 }
 

@@ -33,7 +33,7 @@ class OutdoorsL10nEn extends OutdoorsL10n {
   String get areaQuestion => 'Where should we look?';
 
   @override
-  String get locationWhy => '\"Near me\" asks the phone for your location once, to sort parks by distance on this phone. It is never saved or sent.';
+  String get locationWhy => '\"Near me\" asks the phone for its location once. It is never saved or sent.';
 
   @override
   String get nearMe => 'Near me';
@@ -83,6 +83,11 @@ class OutdoorsL10nEn extends OutdoorsL10n {
   String get changeAreaLabel => 'Change where to look';
 
   @override
+  String areaChipLabel(String place) {
+    return 'Area: $place. Change where to look';
+  }
+
+  @override
   String approximateLocation(int km) {
     return 'Your location is approximate (within about $km km).';
   }
@@ -124,6 +129,9 @@ class OutdoorsL10nEn extends OutdoorsL10n {
 
   @override
   String get answerUnknown => 'Not known';
+
+  @override
+  String get answerUnknownShort => '?';
 
   @override
   String detailAnswer(String detail, String answer) {

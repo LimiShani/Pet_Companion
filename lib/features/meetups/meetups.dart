@@ -24,7 +24,7 @@ export 'board/meetup_card.dart' show MeetupCard;
 export 'board/meetups_area_picker.dart' show MeetupsAreaPicker;
 export 'board/partners_filters_sheet.dart'
     show PartnersFiltersSheet, openPartnersFilters;
-export 'board/partners_view.dart' show PartnersView;
+export 'board/partners_view.dart' show NewAdButton, PartnersView;
 export 'form/meetup_form_screen.dart' show MeetupFormScreen;
 export 'meetup_actions.dart';
 export 'meetups_state.dart';

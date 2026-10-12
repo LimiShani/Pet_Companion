@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 
+import '../../platform/session.dart';
 import '../../services/community/data/audience.dart';
 import '../../services/meetups/data/meetup_models.dart';
 import '../../services/meetups/state/meetups_providers.dart';
@@ -58,9 +59,9 @@ final partnersListingProvider = Provider<AsyncValue<List<MeetupListing>>>((
   ref,
 ) {
   final ads = ref.watch(areaMeetupsProvider);
-  final area = ref.watch(meetupsAreaProvider.select((s) => s.area));
+  final area = ref.watch(meetupsAreaOfOutsideProvider);
   final filters = ref.watch(meetupFiltersProvider);
-  final scope = ref.watch(communityScopeProvider);
+  final scope = ref.watch(meetupAnimalProvider);
   final blocked = ref.watch(blockedIdsProvider);
   final myParks = ref.watch(parkFavoritesProvider).value ?? const <String>{};
   final now = ref.watch(meetupsClockProvider)();
@@ -77,16 +78,36 @@ final partnersListingProvider = Provider<AsyncValue<List<MeetupListing>>>((
   );
 });
 
-/// How many of the board's filters differ from where it starts: the
-/// distance (up to 10 km), walk or play, the animal (the selected pet's
-/// kind, as in the rest of the Community), when, and "At my parks".
+/// The animal the board shows: its own choice, apart from the Community's
+/// (Feed, Chat and Guides), so changing one leaves the other. Starts on the
+/// selected pet's kind, as the Community's does, and goes back to it when
+/// another pet is selected or the session changes.
+class MeetupAnimalNotifier extends Notifier<CommunityScope> {
+  @override
+  CommunityScope build() {
+    ref.watch(sessionEpochProvider);
+    final (_, species) = ref.watch(
+      selectedPetProvider.select((pet) => (pet.id, pet.species)),
+    );
+    return CommunityScope.forSpecies(species);
+  }
+
+  void select(CommunityScope scope) => state = scope;
+}
+
+final meetupAnimalProvider =
+    NotifierProvider<MeetupAnimalNotifier, CommunityScope>(
+      MeetupAnimalNotifier.new,
+    );
+
+/// How many of the sheet's filters differ from where the board starts:
+/// walk or play, the animal (the selected pet's kind), when, and "At my
+/// parks". The distance has its own chip on the board.
 final partnersFilterCountProvider = Provider<int>((ref) {
-  final radius = ref.watch(meetupsAreaProvider.select((s) => s.area?.radius));
   final filters = ref.watch(meetupFiltersProvider);
-  final scope = ref.watch(communityScopeProvider);
+  final scope = ref.watch(meetupAnimalProvider);
   final species = ref.watch(selectedPetProvider.select((pet) => pet.species));
   return [
-    radius != null && radius != MeetupsArea.defaultRadius,
     filters.kind != null,
     scope != CommunityScope.forSpecies(species),
     filters.when != MeetupWhen.any,
@@ -94,14 +115,13 @@ final partnersFilterCountProvider = Provider<int>((ref) {
   ].where((on) => on).length;
 });
 
-/// "Clear": every filter back to where the board starts (the distance is
-/// kept on the phone, as when it is chosen).
+/// "Clear all": every filter of the sheet back to where the board starts.
+/// The distance stays: it is Outside's, shared with the parks.
 void clearPartnersFilters(WidgetRef ref) {
   ref.read(meetupFiltersProvider.notifier).clear();
   ref
-      .read(communityScopeProvider.notifier)
+      .read(meetupAnimalProvider.notifier)
       .select(CommunityScope.forSpecies(ref.read(selectedPetProvider).species));
-  ref.read(meetupsAreaProvider.notifier).setRadius(MeetupsArea.defaultRadius);
 }
 
 /// What a park card says about meetups there.
@@ -194,6 +214,7 @@ class _MeetupsKeeperState extends State<MeetupsKeeper> {
     if (widget.board) {
       keep(meetupsAreaProvider);
       keep(meetupFiltersProvider);
+      keep(meetupAnimalProvider);
       keep(areaMeetupsProvider);
       keep(myMeetupsProvider);
       keep(partnersListingProvider);

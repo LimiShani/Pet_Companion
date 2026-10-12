@@ -202,5 +202,10 @@
   "errSessionEnded": "החיבור לחשבון הסתיים. צריך להיכנס שוב.",
   "errStoreNeedsUpdate": "החנות מתעדכנת כרגע. אפשר לנסות שוב מאוחר יותר.",
 
-  "kindMenuTooltip": "בחירת סוג החיה"
+  "kindMenuTooltip": "בחירת סוג החיה",
+
+  "searchTooltip": "חיפוש מבצעים",
+  "shareStepWhat": "מה ובכמה",
+  "shareStepDetails": "פרטים (לא חובה)",
+  "shareNext": "הבא"
 }

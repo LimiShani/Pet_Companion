@@ -17,14 +17,71 @@ Future<void> contactProfessional(BuildContext context, WidgetRef ref) async {
   await openFeature<Object>(context, 'emergency', petId);
 }
 
+/// Whether the line about advice at the top of the feed is hidden. Hidden
+/// with its "Hide" button for the rest of this run of the app; it is back
+/// the next time the app opens.
+class FeedAdviceHidden extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void hide() => state = true;
+}
+
+final feedAdviceHiddenProvider = NotifierProvider<FeedAdviceHidden, bool>(
+  FeedAdviceHidden.new,
+);
+
+/// The feed's one line saying that members share experience, not
+/// professional advice, with a "Hide" button. Shown once, above the first
+/// post (not on every post page and room).
+class FeedAdviceLine extends ConsumerWidget {
+  const FeedAdviceLine({super.key});
+
+  static const lineKey = Key('feed-advice-line');
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (ref.watch(feedAdviceHiddenProvider)) return const SizedBox.shrink();
+    final l10n = context.communityL10n;
+
+    return Padding(
+      key: lineKey,
+      padding: const EdgeInsetsDirectional.fromSTEB(
+        AppSpacing.screen,
+        8,
+        AppSpacing.screen - 8,
+        0,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              l10n.adviceNotice,
+              style: AppText.label.copyWith(color: AppColors.brown),
+            ),
+          ),
+          const SizedBox(width: 4),
+          TextButton(
+            onPressed: () => ref.read(feedAdviceHiddenProvider.notifier).hide(),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.coralDark,
+              textStyle: AppText.label.copyWith(fontWeight: FontWeight.w800),
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+            ),
+            child: Text(l10n.adviceHide),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// One slim line saying that members' answers are personal experience and
 /// not professional advice, with the way to a professional. The whole line
-/// is the tap target. With [onDismiss] it carries a close button (chat
-/// rooms, once read); without, it is always shown.
+/// is the tap target. Always shown where it is placed: the health room and
+/// the room info sheet.
 class AdviceNotice extends ConsumerWidget {
-  const AdviceNotice({super.key, this.onDismiss});
-
-  final VoidCallback? onDismiss;
+  const AdviceNotice({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,21 +130,6 @@ class AdviceNotice extends ConsumerWidget {
                       style: style,
                     ),
                   ),
-                  if (onDismiss != null)
-                    IconButton(
-                      onPressed: onDismiss,
-                      tooltip: l10n.hideNotice,
-                      icon: const AppIcon(
-                        Icons.close_rounded,
-                        size: 18,
-                        color: AppColors.brown,
-                      ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 36,
-                        height: 36,
-                      ),
-                    ),
                 ],
               ),
             ),

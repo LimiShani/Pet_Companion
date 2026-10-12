@@ -33,7 +33,7 @@ class OutdoorsL10nHe extends OutdoorsL10n {
   String get areaQuestion => 'איפה לחפש?';
 
   @override
-  String get locationWhy => '״לידי״ מבקש מהטלפון את המיקום שלך פעם אחת, כדי למיין את הגינות לפי מרחק בטלפון עצמו. המיקום לא נשמר ולא נשלח.';
+  String get locationWhy => '״לידי״ מבקש מהטלפון את המיקום שלו פעם אחת. המיקום לא נשמר ולא נשלח.';
 
   @override
   String get nearMe => 'לידי';
@@ -83,6 +83,11 @@ class OutdoorsL10nHe extends OutdoorsL10n {
   String get changeAreaLabel => 'שינוי האזור';
 
   @override
+  String areaChipLabel(String place) {
+    return 'אזור: \u2068$place\u2069. שינוי האזור';
+  }
+
+  @override
   String approximateLocation(int km) {
     return 'המיקום משוער (בטווח של כ־$km ק״מ).';
   }
@@ -124,6 +129,9 @@ class OutdoorsL10nHe extends OutdoorsL10n {
 
   @override
   String get answerUnknown => 'לא ידוע';
+
+  @override
+  String get answerUnknownShort => '?';
 
   @override
   String detailAnswer(String detail, String answer) {

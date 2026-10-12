@@ -24,11 +24,15 @@ import 'package:pet_companion/services/community/data/safety_repository.dart';
 import 'package:pet_companion/services/community/data/members_repository.dart';
 import 'package:pet_companion/features/community/feed/post_actions.dart' show communityShareProvider;
 import 'package:pet_companion/features/community/guides/guide_reader_screen.dart';
+import 'package:pet_companion/features/community/widgets/scope_menu_chip.dart';
+import 'package:pet_companion/features/settings/you_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
+import 'package:pet_companion/widgets/coral_header.dart';
+import 'package:pet_companion/widgets/header_search.dart';
 
 import '../helpers.dart';
 
@@ -277,9 +281,55 @@ Future<void> openSection(WidgetTester tester, String label) async {
   await tester.pumpAndSettle();
 }
 
-/// Chooses Dogs, Cats or Everything in the section on screen.
+/// The animal menu chip ("Dogs ▾") of the section on screen.
+Finder get scopeMenu => find.byKey(ScopeMenuChip.chipKey).hitTestable();
+
+/// Chooses Dogs, Cats or Everything in the section on screen: opens the
+/// animal menu chip, then picks the item.
 Future<void> chooseScope(WidgetTester tester, String name) async {
-  await tester.tap(find.byKey(ValueKey('scope-$name')).hitTestable());
+  final chip = find.byKey(ScopeMenuChip.chipKey);
+  if (chip.evaluate().isEmpty) await scrollTo(tester, chip);
+  // The chip scrolls sideways with its row of chips.
+  await tester.ensureVisible(chip.first);
+  await tester.pumpAndSettle();
+  await tester.tap(chip.first);
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ValueKey('scope-$name')).last);
+  await tester.pumpAndSettle();
+}
+
+/// Opens Community safety the way a member does: from the You page (the
+/// avatar in the header). The Community header has no shield of its own.
+Future<void> openSafety(WidgetTester tester) async {
+  await tester.tap(find.byType(HeaderAvatar).hitTestable().first);
+  await tester.pumpAndSettle();
+  await scrollOnTop(tester, find.byKey(YouScreen.safetyKey));
+  await tester.tap(find.byKey(YouScreen.safetyKey));
+  await tester.pumpAndSettle();
+}
+
+/// Opens the search in the tab's header (the magnifier).
+Future<void> openSearch(WidgetTester tester) async {
+  await tester.tap(find.byKey(HeaderSearchButton.buttonKey));
+  await tester.pumpAndSettle();
+}
+
+/// Searches the section on screen for [words] from the header: opens the
+/// field if it is closed, types, and sends (the feed searches when the
+/// words are sent; the guides as they are typed).
+Future<void> searchFor(WidgetTester tester, String words) async {
+  if (find.byKey(HeaderSearchField.fieldKey).evaluate().isEmpty) {
+    await openSearch(tester);
+  }
+  await tester.enterText(find.byKey(HeaderSearchField.fieldKey), words);
+  await tester.testTextInput.receiveAction(TextInputAction.search);
+  await tester.pumpAndSettle();
+}
+
+/// Closes the header's search: the words are cleared and the sections
+/// switch is back.
+Future<void> closeSearch(WidgetTester tester) async {
+  await tester.tap(find.byKey(HeaderSearchField.closeKey));
   await tester.pumpAndSettle();
 }
 
@@ -291,6 +341,13 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
+/// The screen's main list: the first list that scrolls down (not the
+/// header's search field, nor a sideways row of chips).
+Finder get mainList => find.byWidgetPredicate(
+      (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+      description: 'the main list',
+    ).first;
+
 /// Scrolls the screen's main list until [finder] is in view. (The sections
 /// also hold a horizontal row of chips, so the list has to be named.)
 ///
@@ -298,7 +355,7 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 /// (rooms are ordered by their latest message), so the list starts again
 /// from the top before looking downwards.
 Future<void> scrollTo(WidgetTester tester, Finder finder) async {
-  final scrollable = find.byType(Scrollable).first;
+  final scrollable = mainList;
   if (finder.evaluate().isEmpty) {
     final position = tester.state<ScrollableState>(scrollable).position;
     position.jumpTo(position.minScrollExtent);

@@ -12,6 +12,7 @@ import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/empty_state.dart';
+import '../../widgets/header_search.dart';
 import '../../services/budget/state/budget_providers.dart'
     show StoreView, storeViewProvider;
 import '../../platform/feature_ui.dart';
@@ -30,8 +31,9 @@ import 'widgets/store_messages.dart';
 ///
 /// It opens on what suits the selected pet; the chip at the start of the
 /// category row picks another kind of animal, or "All animals", without
-/// changing the app's selected pet. A switch at the top turns it to "My
-/// basket", the owner's regular products (the budget feature).
+/// changing the app's selected pet. A switch at the top turns it to the
+/// basket, the owner's regular products (the budget feature). The search
+/// opens from the header's magnifier and takes the switch's place.
 class StoreScreen extends ConsumerStatefulWidget {
   const StoreScreen({super.key});
 
@@ -42,12 +44,18 @@ class StoreScreen extends ConsumerStatefulWidget {
 class _StoreScreenState extends ConsumerState<StoreScreen> {
   late final TextEditingController _search;
 
+  /// The search field is open in the header in place of the switch.
+  late bool _searching;
+
   @override
   void initState() {
     super.initState();
-    // Made here rather than on first use: with "My basket" showing, the
+    // Made here rather than on first use: with the basket showing, the
     // search field is never built, and dispose must not reach for ref.
-    _search = TextEditingController(text: ref.read(storeFilterProvider).query);
+    final query = ref.read(storeFilterProvider).query;
+    _search = TextEditingController(text: query);
+    // A search already applied when the tab is built shows its field.
+    _searching = query.isNotEmpty;
   }
 
   @override
@@ -78,6 +86,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   void _clearFilters() {
     _search.clear();
     ref.read(storeFilterProvider.notifier).clear();
+    setState(() => _searching = false);
   }
 
   @override
@@ -119,6 +128,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       query,
     ) {
       if (_search.text != query) _search.text = query;
+      if (query.isNotEmpty && !_searching) setState(() => _searching = true);
     });
 
     final loading = deals.isLoading && !deals.hasValue;
@@ -129,6 +139,8 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     // under a message that fills the page, so neither sits beneath it.
     final clearance =
         AppSpacing.fabClearance + MediaQuery.paddingOf(context).bottom;
+    final hasBasket = ref.watch(capabilityProvider('basket.view'));
+    final searching = _searching && !basket;
 
     return Scaffold(
       key: const Key('store-screen'),
@@ -146,35 +158,41 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
           CoralHeader(
             title: l10n.tabTitle,
             actions: [
+              // Hidden while the field is open: its own close button ends
+              // the search.
+              if (!basket && !searching)
+                HeaderSearchButton(
+                  tooltip: l10n.searchTooltip,
+                  active: !searching && filter.query.isNotEmpty,
+                  onPressed: () => setState(() => _searching = true),
+                ),
               CoralHeaderAction(
                 icon: Icons.favorite_border_rounded,
                 tooltip: l10n.savedDeals,
                 onPressed: () => context.push(StoreRoutes.saved),
               ),
             ],
-            bottom: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (ref.watch(capabilityProvider('basket.view')))
-                  CoralSegmentedControl(
+            bottom: searching
+                ? HeaderSearchField(
+                    controller: _search,
+                    hint: l10n.searchHint,
+                    onChanged: filters.setQuery,
+                    onClose: () => setState(() => _searching = false),
+                    clearTooltip: l10n.clearSearch,
+                    closeTooltip: context.l10n.commonClose,
+                  )
+                : hasBasket
+                ? CoralSegmentedControl(
                     labels: [
                       context.budgetL10n.deals,
-                      context.budgetL10n.myBasket,
+                      context.budgetL10n.basketTab,
                     ],
                     selectedIndex: basket ? 1 : 0,
                     onChanged: (index) => ref
                         .read(storeViewProvider.notifier)
                         .show(StoreView.values[index]),
-                  ),
-                if (!basket) ...[
-                  const SizedBox(height: 10),
-                  _SearchField(
-                    controller: _search,
-                    onChanged: filters.setQuery,
-                  ),
-                ],
-              ],
-            ),
+                  )
+                : null,
           ),
           if (basket)
             Expanded(
@@ -373,57 +391,6 @@ class _KindChip extends StatelessWidget {
   }
 }
 
-class _SearchField extends StatelessWidget {
-  const _SearchField({required this.controller, required this.onChanged});
-
-  final TextEditingController controller;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability: 'store.deals.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    return ListenableBuilder(
-      listenable: controller,
-      builder: (context, _) => TextField(
-        controller: controller,
-        onChanged: onChanged,
-        textInputAction: TextInputAction.search,
-        style: AppText.bodyLarge.copyWith(color: AppColors.ink),
-        decoration: InputDecoration(
-          hintText: context.storeL10n.searchHint,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          prefixIcon: const AppIcon(
-            Icons.search_rounded,
-            color: AppColors.brown,
-          ),
-          suffixIcon: controller.text.isEmpty
-              ? null
-              : IconButton(
-                  tooltip: context.storeL10n.clearSearch,
-                  icon: const AppIcon(
-                    Icons.close_rounded,
-                    color: AppColors.brown,
-                  ),
-                  onPressed: () {
-                    controller.clear();
-                    onChanged('');
-                  },
-                ),
-        ),
-      ),
-    );
-  }
-}
-
 /// The animals chip, then one chip per category ("All" first).
 class _CategoryChips extends StatelessWidget {
   const _CategoryChips({
@@ -562,14 +529,17 @@ class _SortRow extends StatelessWidget {
                     ),
                   ),
               ],
+              // The menu-chip look of the animals chip, in white.
               child: Container(
-                constraints: const BoxConstraints(minHeight: 44),
-                padding: const EdgeInsetsDirectional.fromSTEB(14, 6, 10, 6),
-                decoration: BoxDecoration(
+                key: const Key('store-sort-chip'),
+                constraints: const BoxConstraints(minHeight: 32),
+                padding: const EdgeInsetsDirectional.fromSTEB(12, 6, 6, 6),
+                decoration: ShapeDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+                  shape: StadiumBorder(
+                    side: BorderSide(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
                 child: Row(
@@ -586,11 +556,11 @@ class _SortRow extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 2),
                     const AppIcon(
                       Icons.expand_more_rounded,
-                      size: 20,
-                      color: AppColors.brown,
+                      size: 18,
+                      color: AppColors.ink,
                     ),
                   ],
                 ),

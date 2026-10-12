@@ -30,19 +30,24 @@ void main() {
   });
 
   group('advice is not a diagnosis', () {
-    testWidgets('every chat room carries the line, and it opens the pet\'s emergency and vet sheet', (tester) async {
+    testWidgets('only the health room carries the line, and it opens the pet\'s emergency and vet sheet', (tester) async {
       await pumpCommunity(tester);
       await openSection(tester, 'Chat');
 
+      // A topic room: no line (the feed says it once; the room info says it).
       await tester.tap(find.text('Puppies'));
       await tester.pumpAndSettle();
+      expect(adviceLine, findsNothing);
+      await goBack(tester);
+
+      await tester.tap(find.text('Health questions'));
+      await tester.pumpAndSettle();
+      expect(headerTitle('Health questions'), findsOneWidget);
       expect(adviceWords, findsOneWidget);
       // Pinned under the header, above the conversation.
       final header = tester.getRect(find.byType(CoralHeader).hitTestable());
       final line = tester.getRect(adviceLine);
-      final firstMessage = tester.getRect(find.text('Today'));
       expect(line.top, greaterThanOrEqualTo(header.bottom));
-      expect(line.bottom, lessThanOrEqualTo(firstMessage.top));
       expect(line.height, greaterThanOrEqualTo(44)); // the whole line is the tap target
 
       await tester.tap(adviceLine);
@@ -51,60 +56,40 @@ void main() {
       await closeSheet(tester);
       expect(find.text('Emergency · Kelly'), findsNothing);
       expect(adviceWords, findsOneWidget); // nothing to dismiss: it stays
-
-      // And in another room.
-      await goBack(tester);
-      await tester.tap(find.text('Health questions'));
-      await tester.pumpAndSettle();
-      expect(headerTitle('Health questions'), findsOneWidget);
-      expect(adviceWords, findsOneWidget);
     });
 
-    testWidgets('a room that cannot load carries it too', (tester) async {
+    testWidgets('the health room carries it even when it cannot load', (tester) async {
       final h = await pumpCommunity(tester);
       await openSection(tester, 'Chat');
 
       h.chat.failing = true;
-      await tester.tap(find.text('Senior dogs'));
+      await tester.tap(find.text('Health questions'));
       await tester.pumpAndSettle();
       expect(find.text('Cannot load this conversation'), findsOneWidget);
       expect(adviceWords, findsOneWidget);
     });
 
-    testWidgets('a post\'s comments carry the line, above the first comment', (tester) async {
+    testWidgets('a post page has no line: the comments follow the post', (tester) async {
       await pumpCommunity(tester);
 
       await tester.tap(find.text(mayaPost));
       await tester.pumpAndSettle();
       expect(headerTitle('Post'), findsOneWidget);
-      expect(adviceWords, findsOneWidget);
-
-      final heading = tester.getRect(find.text('Comments'));
-      final line = tester.getRect(adviceLine);
-      final firstComment = tester.getRect(find.text('Well done Biscuit! The early weeks are the hardest part.'));
-      expect(line.top, greaterThanOrEqualTo(heading.bottom));
-      expect(line.bottom, lessThanOrEqualTo(firstComment.top));
-
-      await tester.tap(adviceLine);
-      await settleHealth(tester);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(adviceLine, findsNothing);
+      expect(find.text('Well done Biscuit! The early weeks are the hardest part.'), findsOneWidget);
     });
 
     testWidgets('the sheet is the selected pet\'s', (tester) async {
       await pumpCommunity(tester, harness: CommunityHarness(pets: catFirst));
       await openSection(tester, 'Chat');
-      await tester.tap(find.text('Kittens'));
+      await scrollTo(tester, find.text('Health questions'));
+      await tester.tap(find.text('Health questions'));
       await tester.pumpAndSettle();
 
       await tester.tap(adviceLine);
       await settleHealth(tester);
       expect(find.text('Emergency · Mitzi'), findsOneWidget);
       expect(find.text('Emergency · Kelly'), findsNothing);
-    });
-
-    testWidgets('the feed itself has no such line', (tester) async {
-      await pumpCommunity(tester);
-      expect(adviceLine, findsNothing);
     });
   });
 
@@ -155,7 +140,7 @@ void main() {
         await tester.tap(find.text(mayaPost));
         await tester.pumpAndSettle();
         expect(headerTitle('Post'), findsOneWidget);
-        expect(adviceLine, findsOneWidget);
+        expect(adviceLine, findsNothing);
         await tester.enterText(find.byType(TextField), 'Sleep well, Biscuit!');
         await tester.tap(find.byTooltip('Send comment'));
         await tester.pumpAndSettle();
@@ -202,7 +187,12 @@ void main() {
         await tester.tap(find.byTooltip('Send message'));
         await tester.pumpAndSettle();
         expect(find.text('We scoop morning and evening now.'), findsOneWidget);
+        expect(adviceLine, findsNothing);
+        await goBack(tester);
 
+        await scrollTo(tester, find.text('Health questions'));
+        await tester.tap(find.text('Health questions'));
+        await tester.pumpAndSettle();
         await tester.tap(adviceLine);
         await settleHealth(tester);
         expect(find.text('Emergency · Mitzi'), findsOneWidget);
@@ -220,16 +210,16 @@ void main() {
         await tester.pumpAndSettle();
 
         await chooseScope(tester, 'cats');
-        await tester.enterText(find.byType(TextField), 'xylitol');
-        await tester.pumpAndSettle();
+        await searchFor(tester, 'xylitol');
         await scrollTo(tester, find.text('Search everything'));
-        await tester.enterText(find.byType(TextField), '');
-        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await closeSearch(tester);
 
         await scrollTo(tester, find.text('Knowing when to call the vet about your cat'));
         await tester.tap(find.text('Knowing when to call the vet about your cat'));
         await tester.pumpAndSettle();
-        expect(find.text('About this guide'), findsOneWidget);
+        expect(find.byKey(const Key('guide-byline')), findsOneWidget);
+        await tester.scrollUntilVisible(find.text('About this guide'), 300);
         expect(find.text('Not reviewed by a veterinarian'), findsOneWidget);
         await tester.scrollUntilVisible(find.text(guideDisclaimer), 300);
         await tester.scrollUntilVisible(find.text(contactProfessionalLabel), 200);
@@ -240,7 +230,7 @@ void main() {
         await pump(tester, harness: CommunityHarness(pets: catFirst, guides: reviewedGuides));
         await openSection(tester, 'Guides');
         await tapVisible(tester, find.text('Fixture: reviewed guide'));
-        expect(find.byKey(const Key('guide-review')), findsOneWidget);
+        await tester.scrollUntilVisible(find.byKey(const Key('guide-review')), 300);
         await tester.scrollUntilVisible(find.text(guideDisclaimer), 300);
         expect(tester.takeException(), isNull);
       });

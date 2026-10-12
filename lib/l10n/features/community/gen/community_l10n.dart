@@ -125,7 +125,7 @@ abstract class CommunityL10n {
   /// **'New post'**
   String get newPost;
 
-  /// A chip at the top of Chat and Guides, and the small tag on a room or guide for dogs.
+  /// The animal menu chip at the start of the filter row of Feed, Chat and Guides (and an item of its menu), and the small tag on a room or guide for dogs.
   ///
   /// In en, this message translates to:
   /// **'Dogs'**
@@ -142,6 +142,12 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Everything'**
   String get scopeEverything;
+
+  /// Tooltip of the chip ('Dogs', 'Cats', 'Everything') that opens the menu of animals in Feed, Chat and Guides.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the animal'**
+  String get scopeMenuTooltip;
 
   /// The small tag on a room or guide for an animal that has no view of its own (rabbits, birds).
   ///
@@ -167,64 +173,16 @@ abstract class CommunityL10n {
   /// **'For other animals'**
   String get forOtherAnimals;
 
-  /// Under the chips in Chat, when the view is the selected pet's kind. Everything is the name of the third chip.
-  ///
-  /// In en, this message translates to:
-  /// **'Matched to {pet}. Tap Everything to see all rooms.'**
-  String roomsMatchedTo(String pet);
-
-  /// No description provided for @guidesMatchedTo.
-  ///
-  /// In en, this message translates to:
-  /// **'Matched to {pet}. Tap Everything to see all guides.'**
-  String guidesMatchedTo(String pet);
-
-  /// No description provided for @roomsShownForDogs.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing rooms for dogs.'**
-  String get roomsShownForDogs;
-
-  /// No description provided for @roomsShownForCats.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing rooms for cats.'**
-  String get roomsShownForCats;
-
-  /// No description provided for @roomsShownForAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing rooms for every animal.'**
-  String get roomsShownForAll;
-
-  /// No description provided for @guidesShownForDogs.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing guides for dogs.'**
-  String get guidesShownForDogs;
-
-  /// No description provided for @guidesShownForCats.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing guides for cats.'**
-  String get guidesShownForCats;
-
-  /// No description provided for @guidesShownForAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing guides for every animal.'**
-  String get guidesShownForAll;
-
   /// No description provided for @noRoomsForDogs.
   ///
   /// In en, this message translates to:
-  /// **'No rooms for dogs yet. Tap Everything to see all rooms.'**
+  /// **'No rooms for dogs yet. Choose Everything to see all rooms.'**
   String get noRoomsForDogs;
 
   /// No description provided for @noRoomsForCats.
   ///
   /// In en, this message translates to:
-  /// **'No rooms for cats yet. Tap Everything to see all rooms.'**
+  /// **'No rooms for cats yet. Choose Everything to see all rooms.'**
   String get noRoomsForCats;
 
   /// No description provided for @feedLoadFailed.
@@ -863,6 +821,12 @@ abstract class CommunityL10n {
   /// **'Reviewed by'**
   String get reviewedBy;
 
+  /// In the byline under a reviewed guide's title: 'By Dana · Updated 30.09.26 · Reviewed by Dr. Levi'.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by {name}'**
+  String reviewedByName(String name);
+
   /// After the reviewer's profession: 'Veterinarian · reviewed 05.10.26'.
   ///
   /// In en, this message translates to:
@@ -911,11 +875,17 @@ abstract class CommunityL10n {
   /// **'This guide is general guidance and not a substitute for advice from your veterinarian.'**
   String get guideDisclaimer;
 
-  /// The standing line in chat rooms and above a post's comments. It is followed by contactProfessional.
+  /// The line at the top of the feed (once, with adviceHide), and the standing line in the health room and the room info sheet, where it is followed by contactProfessional.
   ///
   /// In en, this message translates to:
   /// **'Members share personal experience, not professional advice.'**
   String get adviceNotice;
+
+  /// The text button after the advice line at the top of the feed: hides the line until the app is opened again.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide'**
+  String get adviceHide;
 
   /// Opens the selected pet's emergency and vet sheet.
   ///
@@ -1223,12 +1193,6 @@ abstract class CommunityL10n {
   /// **'{emoji} {count}'**
   String reactionsSummary(String emoji, int count);
 
-  /// No description provided for @hideNotice.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide this note'**
-  String get hideNotice;
-
   /// No description provided for @roomInfo.
   ///
   /// In en, this message translates to:
@@ -1528,30 +1492,6 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Describe the animal, where and when, and how to reach you'**
   String get composerHintLostFound;
-
-  /// No description provided for @postsShownForDogs.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing posts about dogs, and posts for everyone.'**
-  String get postsShownForDogs;
-
-  /// No description provided for @postsShownForCats.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing posts about cats, and posts for everyone.'**
-  String get postsShownForCats;
-
-  /// No description provided for @postsShownForAll.
-  ///
-  /// In en, this message translates to:
-  /// **'Showing every post.'**
-  String get postsShownForAll;
-
-  /// Under the chips of the feed, when the view is the selected pet's kind.
-  ///
-  /// In en, this message translates to:
-  /// **'Matched to {pet}. Tap Everything to see all posts.'**
-  String postsMatchedTo(String pet);
 
   /// No description provided for @searchPosts.
   ///

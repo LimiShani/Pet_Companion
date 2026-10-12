@@ -7,9 +7,10 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../services/community/data/community_models.dart';
 
-/// The picture of a post or a chat message: rounded, 4:3, whatever its
-/// source. With [aspectRatio] `null` it takes its own shape (the full
-/// screen photo viewer, with [fit] `BoxFit.contain`).
+/// The picture of a post or a chat message: the whole 4:3 frame, clipped
+/// to an 18 px rounded rectangle (never an oval), whatever its source. With
+/// [aspectRatio] `null` it takes its own shape (the full screen photo
+/// viewer, with [fit] `BoxFit.contain`).
 class PostPhotoView extends StatelessWidget {
   const PostPhotoView({
     super.key,
@@ -34,6 +35,7 @@ class PostPhotoView extends StatelessWidget {
           rounded ? AppSpacing.fieldRadius : 0,
         ),
         child: _shaped(
+          context,
           switch (photo) {
             AssetPostPhoto(:final asset) => Image.asset(
               asset,
@@ -71,9 +73,18 @@ class PostPhotoView extends StatelessWidget {
     );
   }
 
-  Widget _shaped(Widget child) => aspectRatio == null
+  Widget _shaped(BuildContext context, Widget child) => aspectRatio == null
       ? child
-      : AspectRatio(aspectRatio: aspectRatio!, child: child);
+      // The frame is filled behind the picture, so one with see-through
+      // edges (a round cut-out) still shows as the whole rounded 4:3
+      // frame, not as a shape of its own.
+      : AspectRatio(
+          aspectRatio: aspectRatio!,
+          child: ColoredBox(
+            color: Theme.of(context).colorScheme.surfaceContainer,
+            child: child,
+          ),
+        );
 }
 
 /// Shown while a picture loads and when it cannot be shown.

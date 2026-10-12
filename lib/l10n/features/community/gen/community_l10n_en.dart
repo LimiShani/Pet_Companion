@@ -33,6 +33,9 @@ class CommunityL10nEn extends CommunityL10n {
   String get scopeEverything => 'Everything';
 
   @override
+  String get scopeMenuTooltip => 'Choose the animal';
+
+  @override
   String get tagOtherAnimals => 'Other animals';
 
   @override
@@ -45,38 +48,10 @@ class CommunityL10nEn extends CommunityL10n {
   String get forOtherAnimals => 'For other animals';
 
   @override
-  String roomsMatchedTo(String pet) {
-    return 'Matched to $pet. Tap Everything to see all rooms.';
-  }
+  String get noRoomsForDogs => 'No rooms for dogs yet. Choose Everything to see all rooms.';
 
   @override
-  String guidesMatchedTo(String pet) {
-    return 'Matched to $pet. Tap Everything to see all guides.';
-  }
-
-  @override
-  String get roomsShownForDogs => 'Showing rooms for dogs.';
-
-  @override
-  String get roomsShownForCats => 'Showing rooms for cats.';
-
-  @override
-  String get roomsShownForAll => 'Showing rooms for every animal.';
-
-  @override
-  String get guidesShownForDogs => 'Showing guides for dogs.';
-
-  @override
-  String get guidesShownForCats => 'Showing guides for cats.';
-
-  @override
-  String get guidesShownForAll => 'Showing guides for every animal.';
-
-  @override
-  String get noRoomsForDogs => 'No rooms for dogs yet. Tap Everything to see all rooms.';
-
-  @override
-  String get noRoomsForCats => 'No rooms for cats yet. Tap Everything to see all rooms.';
+  String get noRoomsForCats => 'No rooms for cats yet. Choose Everything to see all rooms.';
 
   @override
   String get feedLoadFailed => 'Cannot load the feed';
@@ -463,6 +438,11 @@ class CommunityL10nEn extends CommunityL10n {
   String get reviewedBy => 'Reviewed by';
 
   @override
+  String reviewedByName(String name) {
+    return 'Reviewed by $name';
+  }
+
+  @override
   String reviewedOn(String date) {
     return 'reviewed $date';
   }
@@ -492,6 +472,9 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get adviceNotice => 'Members share personal experience, not professional advice.';
+
+  @override
+  String get adviceHide => 'Hide';
 
   @override
   String get contactProfessional => 'Contact a professional';
@@ -673,9 +656,6 @@ class CommunityL10nEn extends CommunityL10n {
   }
 
   @override
-  String get hideNotice => 'Hide this note';
-
-  @override
   String get roomInfo => 'About this room';
 
   @override
@@ -851,20 +831,6 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get composerHintLostFound => 'Describe the animal, where and when, and how to reach you';
-
-  @override
-  String get postsShownForDogs => 'Showing posts about dogs, and posts for everyone.';
-
-  @override
-  String get postsShownForCats => 'Showing posts about cats, and posts for everyone.';
-
-  @override
-  String get postsShownForAll => 'Showing every post.';
-
-  @override
-  String postsMatchedTo(String pet) {
-    return 'Matched to $pet. Tap Everything to see all posts.';
-  }
 
   @override
   String get searchPosts => 'Search posts';

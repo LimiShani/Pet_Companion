@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../l10n/l10n.dart';
-import '../../../presentation/health_widgets.dart' show kHealthTapTarget;
+import '../../../presentation/health_widgets.dart'
+    show kHealthTapTarget, showHealthSheet;
+import '../../../services/findvet/data/location_service.dart';
 import '../../../services/findvet/regions/regions.dart';
 import '../../../services/outdoors/data/park_area.dart';
 import '../../../services/outdoors/state/parks_providers.dart';
@@ -210,7 +213,112 @@ class _ParkAreaPickerState extends State<ParkAreaPicker> {
   }
 }
 
-/// "Near me · Ra'anana   Change" with the radius chips under it.
+/// Changes Outside's one area (the chip in the tab's header, a park
+/// picker's "Change"): the same "Near me" or a city as the first time. The
+/// choice applies to the parks and the partners alike.
+Future<void> openOutsideAreaSheet(BuildContext context) =>
+    showHealthSheet<void>(context, const OutsideAreaSheet());
+
+class OutsideAreaSheet extends ConsumerWidget {
+  const OutsideAreaSheet({super.key});
+
+  static const sheetKey = Key('outside-area-sheet');
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(outsideAreaProvider);
+    final controller = ref.read(outsideAreaProvider.notifier);
+    return Padding(
+      key: sheetKey,
+      padding: const EdgeInsets.only(top: 16),
+      child: ParkAreaPicker(
+        locating: state.locating,
+        problem: state.problem,
+        onNearMe: () async {
+          await controller.useMyLocation();
+          if (context.mounted &&
+              ref.read(outsideAreaProvider).problem == null) {
+            Navigator.of(context).pop();
+          }
+        },
+        onOpenSettings: () => ref
+            .read(locationServiceProvider)
+            .openSettings(
+              state.problem == AreaProblem.serviceOff
+                  ? LocationOutcome.serviceOff
+                  : LocationOutcome.deniedForever,
+            ),
+        onCity: (city) {
+          controller.chooseCity(city);
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+}
+
+/// "Up to 10 km ▾": the radius of Outside's area as one chip; its menu
+/// offers the others ("City only" only around a city). The parks' filter
+/// row and the partners' row show it.
+class ParkRadiusChip extends StatelessWidget {
+  const ParkRadiusChip({
+    super.key,
+    required this.area,
+    required this.onRadius,
+    this.optionKey = ParkAreaBar.radiusKey,
+  });
+
+  final ParkArea area;
+  final ValueChanged<ParkRadius> onRadius;
+
+  /// The key of each option in the menu, for tests.
+  final Key Function(ParkRadius radius) optionKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.outdoorsL10n;
+    final options = [
+      if (area is CityArea) ParkRadius.cityOnly,
+      ParkRadius.km10,
+      ParkRadius.km25,
+    ];
+    return MenuAnchor(
+      menuChildren: [
+        for (final option in options)
+          MenuItemButton(
+            key: optionKey(option),
+            onPressed: () => onRadius(option),
+            leadingIcon: option == area.radius
+                ? const AppIcon(Icons.check_rounded, size: 20)
+                : const SizedBox(width: 20),
+            child: Text(l10n.radius(option)),
+          ),
+      ],
+      builder: (context, menu, _) => ActionChip(
+        backgroundColor: AppColors.yellow,
+        side: BorderSide.none,
+        // Snug, so it shares a row on a 320 px phone.
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+        labelPadding: const EdgeInsetsDirectional.only(start: 6, end: 2),
+        onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.radius(area.radius),
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+            const SizedBox(width: 2),
+            const AppIcon(Icons.expand_more_rounded, size: 18),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// "Near me · Ra'anana   Change" with the radius chips under it (a park
+/// picker; the Outside tab has its area in the header).
 class ParkAreaBar extends StatelessWidget {
   const ParkAreaBar({
     super.key,

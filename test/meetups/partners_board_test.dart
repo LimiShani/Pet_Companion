@@ -19,28 +19,52 @@ const tall = Size(390, 3200);
 void main() {
   setUpMeetupsTests();
 
-  testWidgets('Outside opens on Partners: the profile city, the safety line, the soonest ads first', (
+  testWidgets('Outside opens on Partners: the profile city in the header, one row of controls, the soonest ads first', (
     tester,
   ) async {
     final kit = await openPartners(tester, size: tall);
     expect(board, findsOneWidget);
-    expect(find.text(en.safetyStrip), findsOneWidget);
+    // No safety strip on the board (the form and the join sheet keep it).
+    expect(find.text(en.safetyStrip), findsNothing);
     expect(find.byKey(PartnersView.sampleKey), findsOneWidget);
-    // The demo profile says "Tel Aviv": Tel Aviv-Yafo, up to 10 km.
-    expect(find.text('Tel Aviv-Yafo'), findsOneWidget);
+    // The demo profile says "Tel Aviv": Tel Aviv-Yafo, up to 10 km, as the
+    // header's chip; no area bar in the board.
+    final chip = find.byKey(OutsideScreen.areaChipKey);
+    expect(find.descendant(of: chip, matching: find.text('Tel Aviv-Yafo')), findsOneWidget);
+    expect(find.byType(ParkAreaBar), findsNothing);
     final area = containerOf(tester).read(meetupsAreaProvider).area!;
     expect(area.radius, ParkRadius.km10);
-    expect(kit.settings.values.keys.where((k) => k.startsWith('meetups.')), isEmpty, reason: 'nothing stored yet');
+    expect(
+      kit.settings.values.keys.where((k) => k.startsWith('meetups.') || k.startsWith('outdoors.')),
+      isEmpty,
+      reason: 'nothing stored yet',
+    );
 
-    // One "Filters" button, no chips on the board. The animal starts on the
-    // selected pet's kind (Kelly: dogs), as in the rest of the Community,
-    // so no filter counts as on. Today first (nearest first), then Tuesday.
-    expect(find.text(en.filters), findsOneWidget);
-    expect(find.byKey(PartnersView.filtersClearKey), findsNothing);
+    // One row: "Filters", "Up to 10 km", "My ads (2)", side by side. The
+    // animal starts on the selected pet's kind (Kelly: dogs), as in the
+    // Community, so no filter counts as on. Today first (nearest first),
+    // then Tuesday.
+    final row = find.byKey(PartnersView.controlRowKey);
+    final controls = [
+      find.byKey(PartnersView.filtersKey),
+      find.byKey(PartnersView.radiusChipKey),
+      find.byKey(PartnersView.myAdsKey),
+    ];
+    for (final control in controls) {
+      expect(find.descendant(of: row, matching: control), findsOneWidget);
+      expect(tester.getCenter(control).dy, moreOrLessEquals(tester.getCenter(row).dy, epsilon: 1));
+    }
+    expect(tester.getCenter(controls[0]).dx, lessThan(tester.getCenter(controls[1]).dx));
+    expect(tester.getCenter(controls[1]).dx, lessThan(tester.getCenter(controls[2]).dx));
+    expect(find.descendant(of: row, matching: find.text(en.filters)), findsOneWidget);
+    expect(find.descendant(of: row, matching: find.text(outdoorsEn.radiusKm(10))), findsOneWidget);
     expect(find.byKey(PartnersView.scopeKey(CommunityScope.dogs)), findsNothing);
-    expect(find.byKey(ParkAreaBar.radiusKey(ParkRadius.km10)), findsNothing);
+    // "New ad" is the floating button of the tab.
+    expect(tester.widget(find.byKey(PartnersView.newAdKey)), isA<FloatingActionButton>());
+    expect(find.text(en.newAd), findsOneWidget);
     expect(listedIds(tester), ['demo-meetup-noa', 'demo-meetup-priya', 'demo-meetup-mine']);
     await openFilters(tester);
+    expect(find.text(en.filterAnimal), findsOneWidget);
     expect(chipOn(tester, PartnersView.scopeKey(CommunityScope.dogs)), isTrue);
     await tapOn(tester, find.byKey(PartnersView.scopeKey(CommunityScope.everything)));
     await closeFilters(tester);
@@ -67,17 +91,26 @@ void main() {
 
   testWidgets('a wider radius asks for the cities in range; City only for the city alone', (tester) async {
     await openPartners(tester, size: tall);
+    // The distance is a chip of its own, not in the filters sheet.
     await openFilters(tester);
-    expect(chipOn(tester, PartnersView.radiusKey(ParkRadius.km10)), isTrue);
-    await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.km25)));
-    expect(listedIds(tester), containsAll(['demo-meetup-sam', 'demo-meetup-maya', 'demo-meetup-dana']));
+    expect(find.byKey(PartnersView.radiusKey(ParkRadius.km10)), findsNothing);
     await closeFilters(tester);
+    await tapOn(tester, find.byKey(PartnersView.radiusChipKey));
+    for (final option in ParkRadius.values) {
+      expect(find.byKey(PartnersView.radiusKey(option)), findsOneWidget);
+    }
+    await tester.tap(find.byKey(PartnersView.radiusKey(ParkRadius.km25)));
+    await tester.pumpAndSettle();
+    expect(listedIds(tester), containsAll(['demo-meetup-sam', 'demo-meetup-maya', 'demo-meetup-dana']));
+    expect(find.text(outdoorsEn.radiusKm(25)), findsOneWidget);
+    expect(find.text(en.filters), findsOneWidget, reason: 'the distance is no filter of the sheet');
     // Distances between city centres (or the park), about.
     expect(find.descendant(of: card('demo-meetup-dana'), matching: find.textContaining('about')), findsOneWidget);
-    await openFilters(tester);
-    await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.cityOnly)));
+    await chooseRadius(tester, ParkRadius.cityOnly);
     expect(listedIds(tester), isNot(contains('demo-meetup-sam')));
-    expect(containerOf(tester).read(settingsStoreProvider).read(meetupsAreaKey('demo')), 'tel-aviv-yafo|cityOnly');
+    // Outside's one area keeps the choice, for the parks too.
+    expect(containerOf(tester).read(settingsStoreProvider).read(outsideAreaKey('demo')), 'tel-aviv-yafo|cityOnly');
+    expect(containerOf(tester).read(outsideAreaProvider).area?.radius, ParkRadius.cityOnly);
   });
 
   testWidgets('filters: kind, the animal chips, when, my parks; empty says so and clears', (tester) async {
@@ -113,45 +146,69 @@ void main() {
     expect(find.text(en.filtersCount(1)), findsOneWidget);
   });
 
-  testWidgets('the Filters button counts what differs from the start; Clear and Clear all go back', (tester) async {
-    final kit = await openPartners(tester, size: tall, kit: MeetupsKit(favorites: {'demo-tlv-meir'}));
+  testWidgets('the Filters chip counts what differs from the start; Clear all goes back', (tester) async {
+    await openPartners(tester, size: tall, kit: MeetupsKit(favorites: {'demo-tlv-meir'}));
     await openFilters(tester);
     expect(tester.widget<TextButton>(find.byKey(PartnersFiltersSheet.clearAllKey)).onPressed, isNull);
-    await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.km25)));
     await tapOn(tester, find.byKey(PartnersView.kindKey(MeetupKind.walk)));
     await tapOn(tester, find.byKey(PartnersView.scopeKey(CommunityScope.everything)));
     await tapOn(tester, find.byKey(PartnersView.whenKey(MeetupWhen.thisWeek)));
-    expect(containerOf(tester).read(partnersFilterCountProvider), 4);
+    expect(containerOf(tester).read(partnersFilterCountProvider), 3);
     await tapOn(tester, find.byKey(PartnersView.myParksKey));
-    expect(containerOf(tester).read(partnersFilterCountProvider), 5);
+    expect(containerOf(tester).read(partnersFilterCountProvider), 4);
     await closeFilters(tester);
-    expect(find.text(en.filtersCount(5)), findsOneWidget);
-    expect(find.bySemanticsLabel(en.filtersLabel(5)), findsOneWidget);
-    expect(kit.settings.values[meetupsAreaKey('demo')], 'tel-aviv-yafo|km25');
+    expect(find.text(en.filtersCount(4)), findsOneWidget);
+    expect(find.bySemanticsLabel(en.filtersLabel(4)), findsOneWidget);
 
-    // "Clear": every filter back, the animal to Kelly's kind, 10 km again.
-    await tapOn(tester, find.byKey(PartnersView.filtersClearKey));
-    expect(find.text(en.filters), findsOneWidget);
-    expect(find.byKey(PartnersView.filtersClearKey), findsNothing);
-    final container = containerOf(tester);
-    expect(container.read(meetupFiltersProvider).isEmpty, isTrue);
-    expect(container.read(communityScopeProvider), CommunityScope.dogs);
-    expect(container.read(meetupsAreaProvider).area!.radius, ParkRadius.km10);
-    expect(kit.settings.values[meetupsAreaKey('demo')], 'tel-aviv-yafo|km10');
-    expect(listedIds(tester), ['demo-meetup-noa', 'demo-meetup-priya', 'demo-meetup-mine']);
+    // The distance has its own chip: it is not counted.
+    await chooseRadius(tester, ParkRadius.km25);
+    expect(containerOf(tester).read(partnersFilterCountProvider), 4);
 
-    // "Clear all" in the sheet does the same.
+    // "Clear all": every filter back, the animal to Kelly's kind; the
+    // distance stays (it is Outside's, shared with the parks).
     await openFilters(tester);
-    await tapOn(tester, find.byKey(PartnersView.kindKey(MeetupKind.play)));
-    await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.cityOnly)));
-    expect(containerOf(tester).read(partnersFilterCountProvider), 2);
     await tapOn(tester, find.byKey(PartnersFiltersSheet.clearAllKey));
-    expect(containerOf(tester).read(partnersFilterCountProvider), 0);
+    final container = containerOf(tester);
+    expect(container.read(partnersFilterCountProvider), 0);
     expect(chipOn(tester, PartnersView.kindKey(null)), isTrue);
-    expect(chipOn(tester, PartnersView.radiusKey(ParkRadius.km10)), isTrue);
-    expect(find.text(en.filtersShow(3)), findsOneWidget);
+    expect(container.read(meetupFiltersProvider).isEmpty, isTrue);
+    expect(container.read(meetupAnimalProvider), CommunityScope.dogs);
+    expect(container.read(meetupsAreaProvider).area!.radius, ParkRadius.km25);
     await closeFilters(tester);
     expect(find.text(en.filters), findsOneWidget);
+    expect(find.bySemanticsLabel(en.filtersLabel(0)), findsOneWidget);
+  });
+
+  testWidgets('the board\'s animal is its own: it leaves the Community\'s choice alone, and the other way round', (
+    tester,
+  ) async {
+    await openPartners(tester, size: tall);
+    final container = containerOf(tester);
+    expect(container.read(communityScopeProvider), CommunityScope.dogs);
+    expect(container.read(meetupAnimalProvider), CommunityScope.dogs);
+
+    await openFilters(tester);
+    await tapOn(tester, find.byKey(PartnersView.scopeKey(CommunityScope.cats)));
+    await closeFilters(tester);
+    expect(container.read(meetupAnimalProvider), CommunityScope.cats);
+    expect(container.read(communityScopeProvider), CommunityScope.dogs, reason: 'the Community is unchanged');
+    expect(listedIds(tester), ['demo-meetup-jonas']);
+
+    // "Clear filters" on an empty board widens the board alone, too.
+    await openFilters(tester);
+    await tapOn(tester, find.byKey(PartnersView.whenKey(MeetupWhen.today)));
+    await closeFilters(tester);
+    expect(listedIds(tester), isEmpty, reason: 'Luna walks on Saturdays');
+    await tester.tap(find.byKey(PartnersView.clearFiltersKey));
+    await tester.pumpAndSettle();
+    expect(container.read(meetupAnimalProvider), CommunityScope.everything);
+    expect(container.read(communityScopeProvider), CommunityScope.dogs, reason: 'the Community is unchanged');
+
+    // And the Community's choice leaves the board's.
+    container.read(communityScopeProvider.notifier).select(CommunityScope.cats);
+    await tester.pumpAndSettle();
+    expect(container.read(meetupAnimalProvider), CommunityScope.everything);
+    expect(listedIds(tester), hasLength(4));
   });
 
   testWidgets('on an ordinary phone the first ad shows without scrolling', (tester) async {
@@ -164,15 +221,9 @@ void main() {
 
   testWidgets('an area without ads offers to look further', (tester) async {
     await openPartners(tester, size: tall);
-    await tester.tap(find.byKey(ParkAreaBar.changeKey));
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(MeetupsAreaPicker.cityFieldKey), 'Herzl');
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(MeetupsAreaPicker.cityKey('herzliya')));
-    await tester.pumpAndSettle();
-    await openFilters(tester);
-    await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.cityOnly)));
-    await closeFilters(tester);
+    await changeArea(tester, 'Herzl', 'herzliya');
+    expect(find.descendant(of: find.byKey(OutsideScreen.areaChipKey), matching: find.text('Herzliya')), findsOneWidget);
+    await chooseRadius(tester, ParkRadius.cityOnly);
     expect(find.text(en.emptyFiltered), findsOneWidget, reason: 'the dogs chip is on');
     await openFilters(tester);
     await tapOn(tester, find.byKey(PartnersView.scopeKey(CommunityScope.everything)));
@@ -187,29 +238,43 @@ void main() {
     final kit = MeetupsKit(profileCity: '');
     await openPartners(tester, kit: kit, size: tall);
     expect(find.text(en.areaQuestion), findsOneWidget);
-    expect(find.text(en.areaWhy), findsOneWidget);
+    // The one location sentence of Outside, as on the parks' picker.
+    expect(find.text(outdoorsEn.locationWhy), findsOneWidget);
+    expect(find.byKey(OutsideScreen.areaChipKey), findsNothing, reason: 'no area yet');
     expect(kit.location.asked, 0, reason: 'nothing is asked before the tap');
     await tester.enterText(find.byKey(MeetupsAreaPicker.cityFieldKey), 'raan');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(MeetupsAreaPicker.cityKey('raanana')));
     await tester.pumpAndSettle();
     expect(listedIds(tester), containsAll(['demo-meetup-sam', 'demo-meetup-dana']));
-    expect(kit.settings.values[meetupsAreaKey('demo')], 'raanana|km10');
+    expect(kit.settings.values[outsideAreaKey('demo')], 'raanana|km10');
 
     // The next start remembers it.
     await openPartners(tester, kit: kit, size: tall);
     expect(find.text(en.areaQuestion), findsNothing);
-    expect(find.text("Ra'anana"), findsOneWidget);
+    expect(find.descendant(of: find.byKey(OutsideScreen.areaChipKey), matching: find.text("Ra'anana")), findsOneWidget);
   });
 
-  testWidgets('Near me only picks the nearest city: the position is neither kept nor sent', (tester) async {
+  testWidgets('a city the board kept before Outside had one area is carried over', (tester) async {
+    final kit = MeetupsKit();
+    await kit.settings.write(meetupsAreaKey('demo'), 'kfar-saba|km25');
+    await openPartners(tester, kit: kit, size: tall);
+    expect(find.descendant(of: find.byKey(OutsideScreen.areaChipKey), matching: find.text('Kfar Saba')), findsOneWidget);
+    expect(containerOf(tester).read(meetupsAreaProvider).area?.radius, ParkRadius.km25);
+    expect(kit.settings.read(outsideAreaKey('demo')), 'kfar-saba|km25');
+    expect(kit.settings.read(meetupsAreaKey('demo')), isNull);
+  });
+
+  testWidgets('Near me looks around the nearest city: the position is neither kept nor sent', (tester) async {
     final kit = MeetupsKit(profileCity: '');
     await openPartners(tester, kit: kit, size: tall);
     await tester.tap(find.byKey(MeetupsAreaPicker.nearMeKey));
     await tester.pumpAndSettle();
     expect(kit.location.asked, 1);
-    expect(find.text("Ra'anana"), findsOneWidget);
-    expect(kit.settings.values[meetupsAreaKey('demo')], 'raanana|km10');
+    expect(find.descendant(of: find.byKey(OutsideScreen.areaChipKey), matching: find.text("Ra'anana")), findsOneWidget);
+    expect(containerOf(tester).read(meetupsAreaProvider).area?.city.code, 'raanana');
+    expect(listedIds(tester), containsAll(['demo-meetup-sam', 'demo-meetup-dana']));
+    expect(kit.settings.values.keys.where((k) => k.startsWith('outdoors.') || k.startsWith('meetups.')), isEmpty);
     expect(kit.settings.values.values.any((v) => v.contains('32.18')), isFalse);
   });
 

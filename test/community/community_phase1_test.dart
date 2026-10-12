@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/data/audience.dart';
 import 'package:pet_companion/features/community/data/community_language.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
-import 'package:pet_companion/features/community/widgets/scope_bar.dart';
+import 'package:pet_companion/features/community/widgets/scope_menu_chip.dart';
 import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
@@ -21,9 +21,10 @@ Finder tag(String label) => find.widgetWithText(AppTag, label);
 /// The advice line (its words are one rich text).
 final adviceLine = find.byType(AdviceNotice);
 
-/// The caption under the Dogs · Cats · Everything chips of the section on
-/// screen.
-Finder caption(String text) => find.descendant(of: find.byType(ScopeBar), matching: find.text(text)).hitTestable();
+/// The animal menu chip of the section on screen, reading [label] ("Dogs",
+/// "Cats", "Everything").
+Finder scopeChip(String label) =>
+    find.descendant(of: find.byKey(ScopeMenuChip.chipKey), matching: find.text(label)).hitTestable();
 
 const attribution = 'By PetLoop team · Updated 30.09.26';
 const authorRole = 'App content team, writing with an AI assistant. Not veterinarians or trainers.';
@@ -38,7 +39,7 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(pets: catFirst));
       await openSection(tester, 'Chat');
 
-      expect(caption('Matched to Mitzi. Tap Everything to see all rooms.'), findsOneWidget);
+      expect(scopeChip('Cats'), findsOneWidget);
       for (final name in ['General', 'Kittens', 'Litter and cleaning', 'Cat behaviour and play', 'Senior cats']) {
         expect(find.text(name), findsOneWidget);
       }
@@ -68,10 +69,10 @@ void main() {
     testWidgets('Everything shows every room, each tagged with its animal', (tester) async {
       await pumpCommunity(tester);
       await openSection(tester, 'Chat');
-      expect(caption('Matched to Kelly. Tap Everything to see all rooms.'), findsOneWidget);
+      expect(scopeChip('Dogs'), findsOneWidget);
 
       await chooseScope(tester, 'everything');
-      expect(caption('Showing rooms for every animal.'), findsOneWidget);
+      expect(scopeChip('Everything'), findsOneWidget);
       expect(find.text('General'), findsOneWidget);
       expect(find.text('Puppies'), findsOneWidget);
       expect(tag('Dogs'), findsWidgets);
@@ -87,19 +88,19 @@ void main() {
       await pumpCommunity(tester);
       await openSection(tester, 'Chat');
       await chooseScope(tester, 'cats');
-      expect(caption('Showing rooms for cats.'), findsOneWidget);
+      expect(scopeChip('Cats'), findsOneWidget);
       expect(find.text('Kittens'), findsOneWidget);
       expect(find.text('Puppies'), findsNothing);
 
       await openSection(tester, 'Guides');
-      expect(caption('Showing guides for cats.'), findsOneWidget);
+      expect(scopeChip('Cats'), findsOneWidget);
       expect(find.text("Your cat's first week at home"), findsOneWidget);
       expect(find.text("Your puppy's first week at home"), findsNothing);
 
       // Selecting the other pet (as the pet switcher on Home does).
       hostContainer(tester).read(selectedPetIdProvider.notifier).select('soya');
       await tester.pumpAndSettle();
-      expect(caption('Matched to Soya. Tap Everything to see all guides.'), findsOneWidget);
+      expect(scopeChip('Dogs'), findsOneWidget);
       expect(find.text("Your puppy's first week at home"), findsOneWidget);
       expect(find.text("Your cat's first week at home"), findsNothing);
     });
@@ -108,7 +109,7 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(pets: catFirst));
       await openSection(tester, 'Guides');
 
-      expect(caption('Matched to Mitzi. Tap Everything to see all guides.'), findsOneWidget);
+      expect(scopeChip('Cats'), findsOneWidget);
       expect(find.text("Your cat's first week at home"), findsOneWidget);
       expect(find.text(attribution), findsWidgets);
       expect(find.text("Your puppy's first week at home"), findsNothing);
@@ -132,19 +133,17 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(pets: catFirst));
       await openSection(tester, 'Guides');
 
-      await tester.enterText(find.byType(TextField), 'xylitol');
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'xylitol');
       expect(find.text('No guides for cats match'), findsOneWidget);
       expect(find.text('There is 1 match among the guides for every animal.'), findsOneWidget);
 
       await tapVisible(tester, find.text('Search everything'));
-      expect(caption('Showing guides for every animal.'), findsOneWidget);
+      expect(scopeChip('Everything'), findsOneWidget);
       expect(find.text('Foods your dog should never eat'), findsOneWidget);
       expect(tag('Dogs'), findsOneWidget);
 
       // Nothing anywhere: the plain message, without the offer.
-      await tester.enterText(find.byType(TextField), 'zzzz');
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'zzzz');
       expect(find.text('No guides match'), findsOneWidget);
       expect(find.text('Search everything'), findsNothing);
     });
@@ -154,7 +153,7 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(pets: const [bunny]));
       await openSection(tester, 'Chat');
 
-      expect(caption('Showing rooms for every animal.'), findsOneWidget);
+      expect(scopeChip('Everything'), findsOneWidget);
       expect(find.text('Puppies'), findsOneWidget);
       expect(hostContainer(tester).read(communityScopeProvider), CommunityScope.everything);
     });
@@ -169,14 +168,20 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('the reader says who wrote a guide and that no vet reviewed it, before the text', (tester) async {
+    testWidgets('the reader says who wrote a guide and that no vet reviewed it: a byline before the text, the full account after it', (tester) async {
       await openLitterGuide(tester);
 
       expect(headerTitle('Guide'), findsOneWidget);
       expect(find.text('Home and cleaning'), findsOneWidget);
       expect(find.textContaining('min read · For cats'), findsOneWidget);
+      // One line under the title, before the guide's first words.
+      final byline = find.byKey(const Key('guide-byline'));
+      expect(reads('$attribution · Not reviewed by a veterinarian'), findsOneWidget);
+      final intro = find.textContaining('The usual guideline is simple');
+      expect(tester.getBottomLeft(byline).dy, lessThan(tester.getTopLeft(intro).dy));
 
       final about = find.byKey(const Key('about-guide'));
+      await scrollOnTop(tester, about);
       Finder inAbout(String text) => find.descendant(of: about, matching: find.text(text));
       expect(inAbout('About this guide'), findsOneWidget);
       expect(inAbout('Written by'), findsOneWidget);
@@ -196,9 +201,13 @@ void main() {
       expect(tag('Reviewed'), findsNothing);
       expect(tag('English only'), findsNothing);
 
-      // The box comes before the guide's first words.
-      final intro = find.textContaining('The usual guideline is simple');
-      expect(tester.getBottomLeft(about).dy, lessThan(tester.getTopLeft(intro).dy));
+      // The box comes after the guide's text (its last part is just above
+      // as the box comes into view), above the closing note.
+      final lastSection = find.text('When a cat stops using the box');
+      expect(lastSection, findsOneWidget);
+      expect(tester.getTopLeft(about).dy, greaterThan(tester.getBottomLeft(lastSection).dy));
+      await scrollOnTop(tester, find.text(guideDisclaimer));
+      expect(tester.getBottomLeft(about).dy, lessThan(tester.getTopLeft(find.text(guideDisclaimer)).dy));
     });
 
     testWidgets('the closing note stays, with the way to a professional', (tester) async {
@@ -290,6 +299,7 @@ void main() {
       await tapVisible(tester, find.text(hebrewFixture.title));
       expect(tag('English only'), findsNothing);
       expect(Directionality.of(tester.element(find.text(hebrewFixture.intro))), TextDirection.rtl);
+      await scrollOnTop(tester, find.text('טקסט לבדיקה בלבד'));
       expect(find.text('טקסט לבדיקה בלבד'), findsOneWidget); // this text's own author line
       expect(find.text('01.10.26'), findsOneWidget); // and its own date
       await goBack(tester);

@@ -171,7 +171,7 @@ void main() {
       }
       expect(find.text('Luna and I are in.'), findsOneWidget);
       // No advice note in a private chat.
-      expect(find.text(en.hideNotice), findsNothing);
+      expect(find.textContaining(en.adviceNotice, findRichText: true), findsNothing);
 
       await tester.tap(find.byKey(const ValueKey('chat-people')));
       await tester.pumpAndSettle();

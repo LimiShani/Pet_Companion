@@ -22,7 +22,8 @@ import '../../services/community/data/guides_repository.dart';
 extension CommunityWords on CommunityL10n {
   bool get _rightToLeft => localeName != 'en';
 
-  /// The chip's label: "Dogs", "Cats", "Everything".
+  /// The animal menu chip's label and its items: "Dogs", "Cats",
+  /// "Everything".
   String scope(CommunityScope scope) => switch (scope) {
     CommunityScope.dogs => scopeDogs,
     CommunityScope.cats => scopeCats,
@@ -46,26 +47,6 @@ extension CommunityWords on CommunityL10n {
     Audience.other => forOtherAnimals,
   };
 
-  /// The line under the chips of the Chat section.
-  String roomsCaption(CommunityScope scope, {String? matchedPet}) {
-    if (matchedPet != null) return roomsMatchedTo(matchedPet);
-    return switch (scope) {
-      CommunityScope.dogs => roomsShownForDogs,
-      CommunityScope.cats => roomsShownForCats,
-      CommunityScope.everything => roomsShownForAll,
-    };
-  }
-
-  /// The line under the chips of the Feed section.
-  String postsCaption(CommunityScope scope, {String? matchedPet}) {
-    if (matchedPet != null) return postsMatchedTo(matchedPet);
-    return switch (scope) {
-      CommunityScope.dogs => postsShownForDogs,
-      CommunityScope.cats => postsShownForCats,
-      CommunityScope.everything => postsShownForAll,
-    };
-  }
-
   /// A kind of post: the chip and the tag on the card.
   String postKind(PostKind kind) => switch (kind) {
     PostKind.moment => kindMoment,
@@ -83,16 +64,6 @@ extension CommunityWords on CommunityL10n {
     PostKind.recommendation => composerHintRecommendation,
     PostKind.lostFound => composerHintLostFound,
   };
-
-  /// The line under the chips of the Guides section.
-  String guidesCaption(CommunityScope scope, {String? matchedPet}) {
-    if (matchedPet != null) return guidesMatchedTo(matchedPet);
-    return switch (scope) {
-      CommunityScope.dogs => guidesShownForDogs,
-      CommunityScope.cats => guidesShownForCats,
-      CommunityScope.everything => guidesShownForAll,
-    };
-  }
 
   /// Said when a view has no room of its own.
   String noRoomsFor(CommunityScope scope) => switch (scope) {

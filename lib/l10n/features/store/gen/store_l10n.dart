@@ -1240,6 +1240,30 @@ abstract class StoreL10n {
   /// In en, this message translates to:
   /// **'Choose who to shop for'**
   String get kindMenuTooltip;
+
+  /// Tooltip of the magnifier in the Store header that opens the search field.
+  ///
+  /// In en, this message translates to:
+  /// **'Search deals'**
+  String get searchTooltip;
+
+  /// Heading of step 1 of 'Share a deal': title, category, animals, prices, link and seller.
+  ///
+  /// In en, this message translates to:
+  /// **'What and the price'**
+  String get shareStepWhat;
+
+  /// Heading of step 2 of 'Share a deal': package size, delivery, description and end date, all optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Details (optional)'**
+  String get shareStepDetails;
+
+  /// Button at the end of step 1 of 'Share a deal': checks the fields and goes on to the details.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get shareNext;
 }
 
 class _StoreL10nDelegate extends LocalizationsDelegate<StoreL10n> {

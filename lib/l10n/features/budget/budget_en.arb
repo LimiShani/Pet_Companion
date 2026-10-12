@@ -128,6 +128,10 @@
   "@myBasket": {
     "description": "Second half of the Store's switch: the products the owner rebuys."
   },
+  "basketTab": "Basket",
+  "@basketTab": {
+    "description": "Short label of the second half of the Store's switch (the owner's basket); 'My basket' stays the basket page's title."
+  },
   "basketEmptyTitle": "Nothing in your basket yet",
   "basketEmptyMessage": "Add the food, litter and other things you buy again and again, and see when each one runs out.",
   "regularProduct": "Regular product",

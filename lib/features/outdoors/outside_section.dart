@@ -17,6 +17,10 @@ import 'parks/parks_view.dart';
 /// module registers it, Partners shows a friendly "coming soon".
 const outsidePartnersSlot = 'outside-partners';
 
+/// The slot the meetups feature fills with the floating "+ New ad" button
+/// the Outside tab shows while Partners is on screen.
+const outsideNewAdSlot = 'outside-new-ad';
+
 /// Whether an installed module the account may use fills slot [name].
 bool slotAvailable(WidgetRef ref, String name) {
   for (final module in ref.watch(featureModulesProvider)) {
@@ -149,6 +153,7 @@ class _OutdoorsKeeperState extends State<OutdoorsKeeper> {
       void keep<T>(ProviderListenable<T> provider) => _subscriptions.add(
         container.listen<T>(provider, (_, _) {}, onError: (_, _) {}),
       );
+      keep(outsideAreaProvider);
       keep(parksControllerProvider);
       keep(parkFavoritesProvider);
       keep(savedParksProvider);

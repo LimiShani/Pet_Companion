@@ -68,13 +68,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   /// Messages from others that arrived while [_away].
   var _arrived = 0;
   String? _latestId;
-  bool? _noticeHidden;
 
-  String get _noticeKey => 'community.notice.${widget.channelId}';
-
-  /// The health room keeps its note: answers there are most easily taken
-  /// for advice.
-  bool get _noticeDismissible => widget.channelId != 'health';
+  /// Only the health room shows the note about advice above its messages:
+  /// answers there are most easily taken for advice. (The feed says it
+  /// once at its top, and every room's info sheet says it.)
+  bool get _showsNotice => widget.channelId == 'health';
 
   @override
   void initState() {
@@ -223,11 +221,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     } catch (e) {
       showCommunitySnack(messenger, errorWords(e));
     }
-  }
-
-  Future<void> _hideNotice() async {
-    setState(() => _noticeHidden = true);
-    await ref.read(settingsStoreProvider).write(_noticeKey, '1');
   }
 
   Future<void> _showRoomInfo(ChatChannel? channel, String name) async {
@@ -538,9 +531,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         ? l10n.sectionChat
         : l10n.roomName(channel);
     final canSend = ref.watch(capabilityProvider('community.chat.send'));
-    _noticeHidden ??= ref.read(settingsStoreProvider).read(_noticeKey) == '1';
-    final showNotice =
-        privateChat == null && (!_noticeDismissible || _noticeHidden != true);
+    final showNotice = privateChat == null && _showsNotice;
     final closedBar = privateChat == null
         ? null
         : _closedBar(context, ref, privateChat, viewerId);
@@ -586,9 +577,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   AppSpacing.screen,
                   0,
                 ),
-                child: AdviceNotice(
-                  onDismiss: _noticeDismissible ? _hideNotice : null,
-                ),
+                child: const AdviceNotice(),
               ),
             Expanded(
               child: Stack(

@@ -186,6 +186,9 @@ class BudgetL10nEn extends BudgetL10n {
   String get myBasket => 'My basket';
 
   @override
+  String get basketTab => 'Basket';
+
+  @override
   String get basketEmptyTitle => 'Nothing in your basket yet';
 
   @override

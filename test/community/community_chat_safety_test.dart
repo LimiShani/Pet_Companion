@@ -8,6 +8,7 @@ import 'package:pet_companion/features/community/data/photo_picker.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/data/community_models.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
+import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/features/community/widgets/post_photo_view.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/services/community/data/safety_repository.dart';
@@ -276,24 +277,24 @@ void main() {
       expect(find.byTooltip('Go to the latest message'), findsNothing);
     });
 
-    testWidgets('the advice note can be put away in most rooms, not in Health questions', (tester) async {
+    testWidgets('the advice note is only above Health questions; every room has it in its info', (tester) async {
       await pumpCommunity(tester);
       await openRoom(tester, 'Puppies');
-      expect(find.byTooltip('Hide this note'), findsOneWidget);
-      await tester.tap(find.byTooltip('Hide this note'));
-      await tester.pumpAndSettle();
-      expect(find.byTooltip('Hide this note'), findsNothing);
+      expect(find.byType(AdviceNotice), findsNothing);
 
-      // Still there in the room's info.
+      // There in the room's info.
       await tester.tap(find.byTooltip('About this room'));
       await tester.pumpAndSettle();
       expect(find.text('First weeks, teething and sleep'), findsOneWidget);
+      expect(find.byType(AdviceNotice), findsOneWidget);
       expect(find.text('Community rules'), findsOneWidget);
       await closeSheet(tester);
       await goBack(tester);
 
+      // Above the health room's messages, and nothing to put it away with.
       await openRoom(tester, 'Health questions');
-      expect(find.byTooltip('Hide this note'), findsNothing);
+      expect(find.byType(AdviceNotice), findsOneWidget);
+      expect(find.byIcon(Icons.close_rounded), findsNothing);
     });
   });
 
@@ -362,8 +363,7 @@ void main() {
 
       // Community safety lists him, with a way back.
       await goBack(tester);
-      await tester.tap(find.byTooltip('Community safety'));
-      await tester.pumpAndSettle();
+      await openSafety(tester);
       expect(find.text('Blocked members'), findsOneWidget);
       expect(find.text('Jonas'), findsOneWidget);
       await tester.tap(find.text('Unblock'));
@@ -426,8 +426,7 @@ void main() {
 
     testWidgets('the community safety page holds the rules', (tester) async {
       await pumpCommunity(tester);
-      await tester.tap(find.byTooltip('Community safety'));
-      await tester.pumpAndSettle();
+      await openSafety(tester);
       expect(find.text('Blocking and reporting are private: nobody is told who did it.'), findsOneWidget);
       // Members are not moderators.
       expect(find.text('Review reports'), findsNothing);
@@ -444,8 +443,7 @@ void main() {
       final safety = FakeCommunitySafetyRepository(latency: Duration.zero, now: testClock);
       final h = await pumpCommunity(tester, harness: CommunityHarness(safety: safety, moderator: true));
 
-      await tester.tap(find.byTooltip('Community safety'));
-      await tester.pumpAndSettle();
+      await openSafety(tester);
       expect(find.text('2 waiting'), findsOneWidget);
       await tester.tap(find.text('Review reports'));
       await tester.pumpAndSettle();
@@ -479,7 +477,8 @@ void main() {
     await scrollTo(tester, find.text(he.roomPuppies));
     await tester.tap(find.text(he.roomPuppies));
     await tester.pumpAndSettle();
-    expect(find.byTooltip(he.hideNotice), findsOneWidget);
+    // A topic room other than health carries no advice line.
+    expect(find.byType(AdviceNotice), findsNothing);
 
     await tester.longPress(find.text('Until about six months for us. Frozen carrot sticks were a big help.'));
     await tester.pumpAndSettle();
@@ -491,8 +490,9 @@ void main() {
     expect(tester.takeException(), isNull);
 
     await goBack(tester);
-    await tester.tap(find.byTooltip(he.safetyTitle));
-    await tester.pumpAndSettle();
+    // Safety is on the You page (the Community header has no shield).
+    expect(find.byIcon(Icons.shield_outlined), findsNothing);
+    await openSafety(tester);
     expect(find.text(he.reviewWaiting(2)), findsOneWidget);
     await tester.tap(find.text(he.reviewReports));
     await tester.pumpAndSettle();

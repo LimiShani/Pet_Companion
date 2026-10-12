@@ -36,10 +36,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Squeaky rope tug toy, 2 pack'));
     await tester.pumpAndSettle();
-    expect(find.text('Search deals'), findsNothing);
+    // The Store's header search button is the list's, not the deal page's.
+    expect(find.byTooltip('Search deals'), findsNothing);
 
     expect(await pressBack(tester), isTrue);
-    expect(find.text('Search deals'), findsOneWidget);
+    expect(find.byTooltip('Search deals'), findsOneWidget);
 
     expect(await pressBack(tester), isTrue);
     expect(find.text('Feeding'), findsOneWidget);

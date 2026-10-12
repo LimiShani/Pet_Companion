@@ -10,7 +10,6 @@ import '../../../services/outdoors/data/park_models.dart';
 import '../../../services/outdoors/state/parks_providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/app_icon.dart';
 import '../outdoors_words.dart';
 import '../widgets/park_widgets.dart';
 
@@ -113,41 +112,19 @@ class _UpdateDetailsSheetState extends ConsumerState<UpdateDetailsSheet> {
         const SizedBox(height: 8),
         Text(l10n.updateIntro, style: AppText.body.copyWith(color: AppColors.brown)),
         const SizedBox(height: 12),
-        for (final detail in ParkDetail.values) ...[
-          Row(
-            children: [
-              AppIcon(parkDetailIcon(detail), size: 18, color: AppColors.ink),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  l10n.detail(detail),
-                  style: AppText.body.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ),
-            ],
+        for (final detail in ParkDetail.values)
+          ParkDetailRow(
+            detail: detail,
+            answer: _answers[detail]!,
+            answerKey: (answer) => UpdateDetailsSheet.answerKey(detail, answer),
+            onChanged: _sending
+                ? null
+                : (answer) => setState(() {
+                    _answers[detail] = answer;
+                    _error = null;
+                  }),
           ),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [
-              for (final answer in ParkAnswer.values)
-                ChoiceChip(
-                  key: UpdateDetailsSheet.answerKey(detail, answer),
-                  label: Text(l10n.answer(answer)),
-                  selected: _answers[detail] == answer,
-                  showCheckmark: false,
-                  onSelected: _sending
-                      ? null
-                      : (_) => setState(() {
-                          _answers[detail] = answer;
-                          _error = null;
-                        }),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-        ],
+        const SizedBox(height: 4),
         SwitchListTile(
           key: UpdateDetailsSheet.closedKey,
           contentPadding: EdgeInsets.zero,

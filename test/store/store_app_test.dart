@@ -75,14 +75,14 @@ void main() {
     await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), 'nothing like this');
+    await searchDeals(tester, 'nothing like this');
     await tester.pumpAndSettle();
     expect(find.text('No deals found'), findsOneWidget);
 
     await tester.tap(find.text('Share a deal'));
     await tester.pumpAndSettle();
     expect(find.byType(ShareDealScreen), findsOneWidget);
-    final send = find.widgetWithText(FilledButton, 'Share deal');
+    final send = find.widgetWithText(FilledButton, 'Next');
     await tester.ensureVisible(send);
     await tester.pumpAndSettle();
     await tester.tap(send);

@@ -24,9 +24,9 @@ final guideSourceOpenerProvider = Provider<Future<bool> Function(Uri uri)>(
       (uri) => launchUrl(uri, mode: LaunchMode.externalApplication),
 );
 
-/// Reads one guide: title, reading time, where the guide comes from
-/// ("About this guide"), headed sections, and the closing note that it is
-/// general guidance.
+/// Reads one guide: title, a byline (author, last update, review), reading
+/// time, headed sections, then where the guide comes from ("About this
+/// guide") and the closing note that it is general guidance.
 class GuideReaderScreen extends ConsumerWidget {
   const GuideReaderScreen({super.key, required this.guideId});
 
@@ -105,6 +105,11 @@ class GuideReaderScreen extends ConsumerWidget {
                           child: Text(guide.title, style: AppText.petName),
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      // Who wrote it, when, and whether a professional
+                      // checked it, before anyone reads a word of advice
+                      // (the full account is under the text).
+                      _Byline(guide: guide),
                       const SizedBox(height: 6),
                       Row(
                         children: [
@@ -130,10 +135,6 @@ class GuideReaderScreen extends ConsumerWidget {
                         ],
                       ),
                       const SizedBox(height: 14),
-                      // Before the text, so nobody reads advice without
-                      // knowing where it comes from.
-                      _AboutGuide(guide: guide),
-                      const SizedBox(height: 14),
                       Directionality(
                         textDirection: guide.language.direction,
                         child: Column(
@@ -146,6 +147,8 @@ class GuideReaderScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 22),
+                      _AboutGuide(guide: guide),
+                      const SizedBox(height: 14),
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -173,6 +176,35 @@ class GuideReaderScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// One line under a guide's title: "By Dana · Updated 30.09.26 · Not
+/// reviewed by a veterinarian", or "Reviewed by …" with a review on record.
+class _Byline extends StatelessWidget {
+  const _Byline({required this.guide});
+
+  final Guide guide;
+
+  static const lineKey = Key('guide-byline');
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+    final format = AppFormat.of(context);
+    final review = guide.review;
+
+    return Text(
+      dotted([
+        l10n.guideBy(l10n.inLine(guide.author.name)),
+        l10n.guideUpdated(format.date(guide.updatedAt)),
+        review == null
+            ? l10n.notReviewedByVet
+            : l10n.reviewedByName(l10n.inLine(review.reviewerName)),
+      ]),
+      key: lineKey,
+      style: AppText.label.copyWith(color: AppColors.brown),
     );
   }
 }

@@ -391,7 +391,7 @@ void main() {
       await tester.tap(find.byTooltip('חזרה'));
       await settle(tester);
 
-      await openBasket(tester, store: 'חנות', basket: 'הסל שלי');
+      await openBasket(tester, store: 'חנות', basket: 'סל');
       expect(plain('קניתי שוב'), findsWidgets);
       await scrollTo(tester, plain('מוצר קבוע'));
       expect(plain('מוצר קבוע'), findsOneWidget);

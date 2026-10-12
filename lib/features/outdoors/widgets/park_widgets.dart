@@ -164,6 +164,108 @@ class ParkCard extends StatelessWidget {
   }
 }
 
+/// One detail on a form ("Suggest a park", "Update details"): its icon and
+/// name, then a small Yes · No · ? switch ("Not known" by default).
+class ParkDetailRow extends StatelessWidget {
+  const ParkDetailRow({
+    super.key,
+    required this.detail,
+    required this.answer,
+    required this.onChanged,
+    required this.answerKey,
+  });
+
+  final ParkDetail detail;
+  final ParkAnswer answer;
+
+  /// `null` while the form is sending.
+  final ValueChanged<ParkAnswer>? onChanged;
+
+  /// The key of each answer, for tests.
+  final Key Function(ParkAnswer answer) answerKey;
+
+  /// The track of the switch: the on-page band of `CoralSegmentedControl`.
+  static const _track = Color(0xFFFFF3D6);
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.outdoorsL10n;
+    final name = l10n.detail(detail);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          AppIcon(parkDetailIcon(detail), size: 20, color: AppColors.ink),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              name,
+              style: AppText.body.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: const BoxDecoration(
+              color: _track,
+              borderRadius: BorderRadius.all(Radius.circular(999)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final option in ParkAnswer.values)
+                  Semantics(
+                    button: true,
+                    selected: option == answer,
+                    label: l10n.detailAnswer(name, l10n.answer(option)),
+                    onTap: onChanged == null ? null : () => onChanged!(option),
+                    excludeSemantics: true,
+                    child: Material(
+                      key: answerKey(option),
+                      color: option == answer
+                          ? AppColors.yellow
+                          : Colors.transparent,
+                      shape: const StadiumBorder(),
+                      child: InkWell(
+                        customBorder: const StadiumBorder(),
+                        onTap: onChanged == null
+                            ? null
+                            : () => onChanged!(option),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 44,
+                            minHeight: 40,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Center(
+                              widthFactor: 1,
+                              heightFactor: 1,
+                              child: Text(
+                                option == ParkAnswer.unknown
+                                    ? l10n.answerUnknownShort
+                                    : l10n.answer(option),
+                                maxLines: 1,
+                                style: AppText.body.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.ink,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// "Map data © OpenStreetMap contributors": the licence credit.
 class OsmCredit extends StatelessWidget {
   const OsmCredit({super.key});

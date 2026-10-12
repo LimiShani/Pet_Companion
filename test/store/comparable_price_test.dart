@@ -120,7 +120,7 @@ void main() {
         (tester) async {
       await pumpStore(tester);
       await pickAnimals(tester, 'All animals');
-      await tester.enterText(find.byType(TextField), 'clumping');
+      await searchDeals(tester, 'clumping');
       await tester.pumpAndSettle();
       await openDeal(tester, 'd-clumping-litter-10kg');
 

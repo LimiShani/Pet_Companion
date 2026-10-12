@@ -102,7 +102,7 @@ class _MeetupsAreaPickerState extends State<MeetupsAreaPicker> {
               ),
               Expanded(
                 child: Text(
-                  l10n.areaWhy,
+                  outdoors.locationWhy,
                   style: AppText.body.copyWith(color: AppColors.brown),
                 ),
               ),
