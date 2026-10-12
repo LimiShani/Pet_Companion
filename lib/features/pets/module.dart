@@ -15,7 +15,6 @@ final petsModule = FeatureModule(
       order: 0,
       builder: (_, id) => PetReminderCard(
         petId: id,
-        compact: true,
         margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
       ),
     ),

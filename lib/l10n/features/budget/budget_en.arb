@@ -118,7 +118,6 @@
   "deleteExpenseTitle": "Delete this expense?",
   "deleteExpenseBody": "It will be removed from the budget. This cannot be undone.",
   "deleteRecurringBody": "Every month it counted in will lose it. To keep the past months, stop it from repeating instead.",
-  "expenseSaved": "Saved",
   "expenseDeleted": "Expense deleted",
   "deals": "Deals",
   "@deals": {

@@ -597,9 +597,6 @@ class CommunityL10nEn extends CommunityL10n {
   String get commentReportThanks => 'Thanks. We have hidden this comment and will review it.';
 
   @override
-  String get messageOptions => 'Message options';
-
-  @override
   String replyingTo(String name) {
     return 'Replying to $name';
   }
@@ -886,9 +883,6 @@ class CommunityL10nEn extends CommunityL10n {
   String get markedHelpful => 'Marked as the helpful answer';
 
   @override
-  String get likedByDoubleTap => 'Liked';
-
-  @override
   String get activityTitle => 'Activity';
 
   @override
@@ -986,13 +980,7 @@ class CommunityL10nEn extends CommunityL10n {
   String get muteRoom => 'Mute this room';
 
   @override
-  String get unmuteRoom => 'Unmute this room';
-
-  @override
   String get roomMuted => 'Muted: no unread count for this room';
-
-  @override
-  String get roomUnmuted => 'Unmuted';
 
   @override
   String get mutedTag => 'Muted';
@@ -1260,9 +1248,6 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get noPeopleFound => 'No one by that name';
-
-  @override
-  String get peopleLoadFailed => 'Cannot load community members';
 
   @override
   String get nextStep => 'Next';

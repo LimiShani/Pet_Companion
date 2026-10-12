@@ -143,12 +143,6 @@ abstract class AppL10n {
   /// **'Delete'**
   String get commonDelete;
 
-  /// No description provided for @commonEdit.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit'**
-  String get commonEdit;
-
   /// No description provided for @commonAdd.
   ///
   /// In en, this message translates to:
@@ -856,18 +850,6 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'Activity'**
   String get homeActivity;
-
-  /// No description provided for @homeSteps.
-  ///
-  /// In en, this message translates to:
-  /// **'Steps'**
-  String get homeSteps;
-
-  /// No description provided for @homeActivityTime.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity time'**
-  String get homeActivityTime;
 
   /// No description provided for @homeNextWalk.
   ///

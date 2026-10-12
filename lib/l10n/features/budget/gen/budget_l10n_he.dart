@@ -174,9 +174,6 @@ class BudgetL10nHe extends BudgetL10n {
   String get deleteRecurringBody => 'היא תוסר מכל החודשים שבהם נספרה. כדי לשמור את החודשים הקודמים, אפשר להפסיק את החזרה במקום.';
 
   @override
-  String get expenseSaved => 'נשמר';
-
-  @override
   String get expenseDeleted => 'ההוצאה נמחקה';
 
   @override

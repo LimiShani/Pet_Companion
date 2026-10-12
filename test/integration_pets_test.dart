@@ -46,8 +46,6 @@ void main() {
     expect(find.text("Finish Soya's profile"), findsOneWidget);
     expect(find.textContaining('essentials still to add'), findsOneWidget);
     expect(find.byKey(PetReminderCard.addKey), findsOneWidget);
-    // One pill on the row; "Not now" is in the checklist the row opens.
-    expect(find.text('Not now'), findsNothing);
 
     // "Remind me in a week" in the checklist puts the row away; the
     // dashboard is still there.

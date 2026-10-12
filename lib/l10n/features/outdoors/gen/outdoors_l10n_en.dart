@@ -27,9 +27,6 @@ class OutdoorsL10nEn extends OutdoorsL10n {
   String get partnersShowParks => 'Show the parks';
 
   @override
-  String get parksIntro => 'Dog parks near you, with what is there: a fence, water, shade, lighting.';
-
-  @override
   String get areaQuestion => 'Where should we look?';
 
   @override

@@ -27,9 +27,6 @@ class OutdoorsL10nHe extends OutdoorsL10n {
   String get partnersShowParks => 'לגינות';
 
   @override
-  String get parksIntro => 'גינות כלבים בסביבה, ומה יש בהן: גדר, ברז, צל, תאורה.';
-
-  @override
   String get areaQuestion => 'איפה לחפש?';
 
   @override

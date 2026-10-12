@@ -64,6 +64,8 @@ class WeekChoice extends ConsumerWidget {
       ),
     ];
 
+    final narrow = MediaQuery.sizeOf(context).width < 360;
+
     return Material(
       color: AppColors.white,
       borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
@@ -84,6 +86,11 @@ class WeekChoice extends ConsumerWidget {
                   ChoiceChip(
                     key: firstDayKey(day),
                     label: Text(name),
+                    // Snug on a narrow phone, so the three days share one
+                    // line in English too.
+                    labelPadding: narrow
+                        ? const EdgeInsets.symmetric(horizontal: 2)
+                        : null,
                     selected: week.firstDay == day,
                     showCheckmark: false,
                     onSelected: (_) => controller.setFirstDay(day),

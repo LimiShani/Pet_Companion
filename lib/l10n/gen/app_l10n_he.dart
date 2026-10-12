@@ -33,9 +33,6 @@ class AppL10nHe extends AppL10n {
   String get commonDelete => 'מחיקה';
 
   @override
-  String get commonEdit => 'עריכה';
-
-  @override
   String get commonAdd => 'הוספה';
 
   @override
@@ -426,12 +423,6 @@ class AppL10nHe extends AppL10n {
 
   @override
   String get homeActivity => 'פעילות';
-
-  @override
-  String get homeSteps => 'צעדים';
-
-  @override
-  String get homeActivityTime => 'זמן פעילות';
 
   @override
   String homeNextWalk(String time) {

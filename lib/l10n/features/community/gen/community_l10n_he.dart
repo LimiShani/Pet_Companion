@@ -605,9 +605,6 @@ class CommunityL10nHe extends CommunityL10n {
   String get commentReportThanks => 'תודה. הסתרנו את התגובה ונבדוק אותה.';
 
   @override
-  String get messageOptions => 'אפשרויות ההודעה';
-
-  @override
   String replyingTo(String name) {
     return 'תשובה אל \u2068$name\u2069';
   }
@@ -897,9 +894,6 @@ class CommunityL10nHe extends CommunityL10n {
   String get markedHelpful => 'סומנה כתשובה המועילה';
 
   @override
-  String get likedByDoubleTap => 'לייק';
-
-  @override
   String get activityTitle => 'פעילות';
 
   @override
@@ -998,13 +992,7 @@ class CommunityL10nHe extends CommunityL10n {
   String get muteRoom => 'השתקת החדר';
 
   @override
-  String get unmuteRoom => 'ביטול ההשתקה';
-
-  @override
   String get roomMuted => 'החדר מושתק: לא יוצג בו מספר הודעות שלא נקראו';
-
-  @override
-  String get roomUnmuted => 'ההשתקה בוטלה';
 
   @override
   String get mutedTag => 'מושתק';
@@ -1266,9 +1254,6 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get noPeopleFound => 'לא מצאנו אף אחד בשם הזה';
-
-  @override
-  String get peopleLoadFailed => 'אי אפשר לטעון את חברי הקהילה';
 
   @override
   String get nextStep => 'המשך';

@@ -352,10 +352,10 @@ void main() {
 
   group('the strings files', () {
     Map<String, dynamic> arb(String name) =>
-        jsonDecode(File('lib/features/store/l10n/$name').readAsStringSync()) as Map<String, dynamic>;
+        jsonDecode(File('lib/l10n/features/store/$name').readAsStringSync()) as Map<String, dynamic>;
 
     test('nothing is left untranslated', () {
-      final report = jsonDecode(File('lib/features/store/l10n/gen/untranslated.json').readAsStringSync());
+      final report = jsonDecode(File('lib/l10n/features/store/gen/untranslated.json').readAsStringSync());
       expect(report, isEmpty);
 
       final english = arb('store_en.arb').keys.where((k) => !k.startsWith('@')).toSet();

@@ -54,16 +54,11 @@ class OverviewSection extends ConsumerWidget {
     required this.pet,
     required this.data,
     this.actions = const OverviewActions(),
-    this.reminder,
   });
 
   final Pet pet;
   final PetHealthData data;
   final OverviewActions actions;
-
-  /// Shown at the top: the slot for the Pets feature's "essentials
-  /// missing" reminder card.
-  final Widget? reminder;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
@@ -101,9 +96,7 @@ class OverviewSection extends ConsumerWidget {
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
     final records = ref.watch(capabilityProvider('health.records.view'));
 
-    // One gap between blocks. The reminder brings its own gap above it and
-    // takes no space when hidden, so the first block keeps a gap after it;
-    // the tab starts the Overview one gap higher to match.
+    // One gap between blocks.
     final blocks = <Widget>[
       if (!nothingDue)
         _ComingUp(
@@ -139,10 +132,8 @@ class OverviewSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (reminder != null) reminder!,
         for (var i = 0; i < blocks.length; i++) ...[
-          if (i > 0 || reminder != null)
-            const SizedBox(height: AppSpacing.cardGap),
+          if (i > 0) const SizedBox(height: AppSpacing.cardGap),
           blocks[i],
         ],
       ],

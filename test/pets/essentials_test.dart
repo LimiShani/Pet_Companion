@@ -11,12 +11,12 @@ import 'pets_test_helpers.dart';
 
 /// The reminder card of [petId] (and the dot), the way another tab would
 /// place them.
-Widget reminder(String petId, {bool compact = false}) => Padding(
+Widget reminder(String petId) => Padding(
   padding: const EdgeInsets.all(20),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
-      PetReminderCard(petId: petId, compact: compact, margin: const EdgeInsets.only(bottom: 12)),
+      PetReminderCard(petId: petId, margin: const EdgeInsets.only(bottom: 12)),
       Align(
         alignment: Alignment.centerLeft,
         child: PetAttentionDot(petId: petId),
@@ -44,16 +44,6 @@ void main() {
   });
 
   group('the reminder card', () {
-    testWidgets('says what is missing and offers the next item', (tester) async {
-      await pumpPetsHost(tester, reminder(soya));
-      expect(find.text("Finish Soya's profile"), findsOneWidget);
-      expect(find.text('5 of 5 essentials still to add'), findsOneWidget);
-      expect(find.widgetWithText(FilledButton, "Add the vet's phone"), findsOneWidget);
-      expect(find.text('Not now'), findsOneWidget);
-      expect(find.bySemanticsLabel("Soya's profile: 5 of 5 essentials still to add"), findsOneWidget);
-      expect(dot, findsOneWidget);
-    });
-
     testWidgets('a complete pet costs no space at all, margin included', (tester) async {
       await pumpPetsHost(tester, reminder(kelly));
       expect(find.text("Finish Kelly's profile"), findsNothing);
@@ -61,14 +51,13 @@ void main() {
       expect(dot, findsNothing);
     });
 
-    testWidgets('the compact size is one row: title, count and one "Add" pill', (tester) async {
-      await pumpPetsHost(tester, reminder(soya, compact: true));
+    testWidgets('is one row: title, count and one "Add" pill', (tester) async {
+      await pumpPetsHost(tester, reminder(soya));
       expect(find.text("Finish Soya's profile"), findsOneWidget);
       expect(find.text('5 of 5 essentials still to add'), findsOneWidget);
       expect(find.widgetWithText(OutlinedButton, 'Add'), findsOneWidget);
-      // "Not now" lives in the checklist the row opens, not on the row.
-      expect(find.text('Not now'), findsNothing);
       expect(find.bySemanticsLabel("Soya's profile: 5 of 5 essentials still to add"), findsOneWidget);
+      expect(dot, findsOneWidget);
       expect(find.bySemanticsLabel("Add the vet's phone"), findsOneWidget);
       // One row: the pill sits beside the title, at the end. (The title
       // wraps rather than being cut short, so the height depends on the
@@ -82,26 +71,27 @@ void main() {
       expect(find.text('Choose the regular vet'), findsOneWidget);
     });
 
-    testWidgets('the compact row itself opens the checklist, with "Remind me in a week"', (tester) async {
-      await pumpPetsHost(tester, reminder(soya, compact: true));
+    testWidgets('the rest of the row opens the checklist, with "Remind me in a week"', (tester) async {
+      await pumpPetsHost(tester, reminder(soya));
       await tester.tap(find.text("Finish Soya's profile"));
       await tester.pumpAndSettle();
       expect(find.text("Soya's essentials"), findsOneWidget);
+      expect(find.text('0 of 5 answered. "None known" counts.'), findsOneWidget);
       expect(find.text('Remind me in a week'), findsOneWidget);
       expect(find.text('Choose the regular vet'), findsNothing);
     });
 
     testWidgets('one tap opens the next missing item; then the one after it is offered', (tester) async {
       await pumpPetsHost(tester, reminder(soya));
-      await tester.tap(find.text("Add the vet's phone"));
+      await tester.tap(find.byKey(PetReminderCard.addKey));
       await tester.pumpAndSettle();
       expect(find.text('Choose the regular vet'), findsOneWidget);
       await tapVisible(tester, find.byKey(const ValueKey('use-vet-v-park')));
 
       expect(find.text('4 of 5 essentials still to add'), findsOneWidget);
-      expect(find.text('Answer about allergies'), findsOneWidget);
+      expect(find.bySemanticsLabel('Answer about allergies'), findsOneWidget);
 
-      await tester.tap(find.text('Answer about allergies'));
+      await tester.tap(find.byKey(PetReminderCard.addKey));
       await tester.pumpAndSettle();
       expect(find.text("Soya's health profile"), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('profile-no-allergies')));
@@ -109,21 +99,18 @@ void main() {
       await tapVisible(tester, find.text('Save profile'));
 
       expect(find.text('2 of 5 essentials still to add'), findsOneWidget);
-      expect(find.text("Add Soya's age"), findsOneWidget);
+      expect(find.bySemanticsLabel("Add Soya's age"), findsOneWidget);
     });
 
-    testWidgets('the rest of the card opens the checklist', (tester) async {
-      await pumpPetsHost(tester, reminder(soya));
+    Future<void> remindInAWeek(WidgetTester tester) async {
       await tester.tap(find.text("Finish Soya's profile"));
       await tester.pumpAndSettle();
-      expect(find.text("Soya's essentials"), findsOneWidget);
-      expect(find.text('0 of 5 answered. "None known" counts.'), findsOneWidget);
-    });
+      await tapVisible(tester, find.text('Remind me in a week'));
+    }
 
-    testWidgets('"Not now" hides it for 7 days; the dot stays', (tester) async {
+    testWidgets('"Remind me in a week" hides it for 7 days; the dot stays', (tester) async {
       final h = await pumpPetsHost(tester, reminder(soya));
-      await tester.tap(find.text('Not now'));
-      await tester.pumpAndSettle();
+      await remindInAWeek(tester);
 
       expect(find.text("Finish Soya's profile"), findsNothing);
       expect(tester.getSize(find.byType(PetReminderCard)).height, 0);
@@ -146,11 +133,10 @@ void main() {
       expect(find.text("Finish Soya's profile"), findsOneWidget);
     });
 
-    testWidgets('a "Not now" that cannot be saved says so and keeps the card', (tester) async {
+    testWidgets('a postponement that cannot be saved says so and keeps the card', (tester) async {
       final h = await pumpPetsHost(tester, reminder(soya));
       h.pets.failure = 'Cannot reach the server. Check your connection and try again.';
-      await tester.tap(find.text('Not now'));
-      await tester.pumpAndSettle();
+      await remindInAWeek(tester);
       expect(find.text('Cannot reach the server. Check your connection and try again.'), findsOneWidget);
       expect(find.text("Finish Soya's profile"), findsOneWidget);
     });
@@ -162,14 +148,14 @@ void main() {
         Column(
           children: [
             reminder(kelly),
-            PetReminderCard(petId: kelly, compact: true),
+            PetReminderCard(petId: kelly),
           ],
         ),
         harness: harness,
       );
       expect(find.text('1 of 5 essentials still to add'), findsNWidgets(2));
 
-      await tester.tap(find.widgetWithText(FilledButton, "Add Kelly's weight"));
+      await tester.tap(find.byKey(PetReminderCard.addKey).first);
       await tester.pumpAndSettle();
       expect(find.text("Kelly's weight"), findsOneWidget);
       await typeInto(tester, find.byKey(const Key('pet-weight')), '23');

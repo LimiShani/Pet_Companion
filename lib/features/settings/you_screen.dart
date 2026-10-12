@@ -75,6 +75,7 @@ class YouScreen extends ConsumerWidget {
                         icon: const PetLoopIcon(PetLoopGlyph.pet),
                         title: l10n.menuMyPets,
                         subtitle: l10n.homePetCount(petCount),
+                        subtitleMaxLines: 2,
                         onTap: () => openFeature<Object>(context, 'my-pets', ''),
                       ),
                     if (ref.watch(capabilityProvider('budget.view')))
@@ -83,6 +84,7 @@ class YouScreen extends ConsumerWidget {
                         icon: const Icon(Icons.account_balance_wallet_rounded),
                         title: context.budgetL10n.budgetTitle,
                         subtitle: context.budgetL10n.menuBudgetSummary,
+                        subtitleMaxLines: 2,
                         onTap: () => openFeature<Object>(context, 'budget', ''),
                       ),
                   ],
@@ -95,6 +97,7 @@ class YouScreen extends ConsumerWidget {
                       icon: const PetLoopIcon(PetLoopGlyph.settings),
                       title: l10n.settingsTitle,
                       subtitle: l10n.settingsSummary,
+                      subtitleMaxLines: 2,
                       onTap: () => openSettings(context),
                     ),
                     if (ref.watch(
@@ -107,6 +110,7 @@ class YouScreen extends ConsumerWidget {
                         icon: const Icon(Icons.shield_outlined),
                         title: context.communityL10n.safetyTitle,
                         subtitle: l10n.youCommunitySafetySummary,
+                        subtitleMaxLines: 2,
                         // Into the Community tab: this page closes with it.
                         onTap: () =>
                             GoRouter.maybeOf(context)?.go(_communitySafety),
@@ -128,6 +132,7 @@ class YouScreen extends ConsumerWidget {
                         icon: const Icon(Icons.admin_panel_settings_outlined),
                         title: l10n.youAdminTools,
                         subtitle: l10n.youAdminToolsSummary,
+                        subtitleMaxLines: 2,
                         onTap: () => openAdminTools(context),
                       ),
                     ],

@@ -377,7 +377,4 @@ class CareL10nHe extends CareL10n {
   String todayAt(String time) {
     return 'היום · \u2068$time\u2069';
   }
-
-  @override
-  String get cancelWalk => 'ביטול הטיול';
 }

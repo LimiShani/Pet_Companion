@@ -401,12 +401,6 @@ abstract class BudgetL10n {
   /// **'Every month it counted in will lose it. To keep the past months, stop it from repeating instead.'**
   String get deleteRecurringBody;
 
-  /// No description provided for @expenseSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Saved'**
-  String get expenseSaved;
-
   /// No description provided for @expenseDeleted.
   ///
   /// In en, this message translates to:

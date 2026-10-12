@@ -51,7 +51,6 @@
   "deleteExpenseTitle": "למחוק את ההוצאה?",
   "deleteExpenseBody": "היא תוסר מהתקציב. אי אפשר לבטל את הפעולה הזאת.",
   "deleteRecurringBody": "היא תוסר מכל החודשים שבהם נספרה. כדי לשמור את החודשים הקודמים, אפשר להפסיק את החזרה במקום.",
-  "expenseSaved": "נשמר",
   "expenseDeleted": "ההוצאה נמחקה",
   "deals": "מבצעים",
   "myBasket": "הסל שלי",

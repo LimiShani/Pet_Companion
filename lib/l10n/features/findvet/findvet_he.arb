@@ -1,7 +1,6 @@
 {
   "@@locale": "he",
   "findVetTitle": "חיפוש וטרינר",
-  "findVetMenuSubtitle": "חירום או טיפול שוטף בסביבה",
   "loginEmergencyLink": "מצב חירום? חיפוש וטרינר",
   "emergencySheetFindVet": "חיפוש וטרינר חירום קרוב",
   "choiceQuestion": "מה צריך?",
@@ -67,7 +66,6 @@
   "save": "שמירה",
   "saveName": "שמירת \u2068{name}\u2069 כווטרינר קבוע",
   "saveChoosePet": "שמירה כווטרינר קבוע עבור…",
-  "saveForPet": "שמירה עבור \u2068{pet}\u2069",
   "saveNeedsPet": "כדי לשמור וטרינר קבוע, צריך קודם להוסיף חיה.",
   "savedVet": "נשמר כווטרינר קבוע.",
   "details": "פרטים",

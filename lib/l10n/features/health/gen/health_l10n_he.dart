@@ -196,11 +196,6 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String countAndLabel(int count, String label) {
-    return '$count \u2068$label\u2069';
-  }
-
-  @override
   String get weight => 'משקל';
 
   @override
@@ -989,14 +984,6 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get overviewNoCareDue => 'אין טיפול מתוכנן כרגע';
-
-  @override
-  String overviewLastRecord(String date) {
-    return 'רשומה אחרונה: \u2068$date\u2069';
-  }
-
-  @override
   String get comingUp => 'בקרוב';
 
   @override
@@ -1021,40 +1008,7 @@ class HealthL10nHe extends HealthL10n {
   String get medicines => 'תרופות';
 
   @override
-  String medicinesActive(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count פעילות',
-      two: 'שתיים פעילות',
-      one: 'אחת פעילה',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get noDoseYet => 'עדיין לא נרשמה מנה';
-
-  @override
-  String lastDoseToday(String time) {
-    return 'המנה האחרונה שנרשמה: היום בשעה \u2068$time\u2069';
-  }
-
-  @override
-  String lastDoseYesterday(String time) {
-    return 'המנה האחרונה שנרשמה: אתמול בשעה \u2068$time\u2069';
-  }
-
-  @override
-  String lastDoseOn(String day, String time) {
-    return 'המנה האחרונה שנרשמה: \u2068$day\u2069 בשעה \u2068$time\u2069';
-  }
-
-  @override
   String get smallWeightChart => 'תרשים משקל קטן';
-
-  @override
-  String get medicalRecords => 'תיק רפואי';
 
   @override
   String get vaccinations => 'חיסונים';

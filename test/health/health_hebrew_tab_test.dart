@@ -94,7 +94,6 @@ void main() {
         expect(find.text(format.dots(['3 חיסונים', '4 ביקורי וטרינר', '3 מסמכים'])), findsOneWidget);
         // The medicines are in the Schedule.
         expect(find.text('תרופות'), findsNothing);
-        expect(find.text(he.lastDoseToday('08:05')), findsNothing);
 
         for (final english in [
           'Health',
@@ -221,14 +220,6 @@ void main() {
       expect(en.overviewMedicines(1), '1 medicine');
       expect(en.recordsEntries(1), '1 entry');
       expect(en.recordsEntries(9), '9 entries');
-    });
-
-    test('active medicines: one, two, many', () {
-      expect(he.medicinesActive(1), 'אחת פעילה');
-      expect(he.medicinesActive(2), 'שתיים פעילות');
-      expect(he.medicinesActive(4), '4 פעילות');
-      expect(en.medicinesActive(1), '1 active');
-      expect(en.medicinesActive(2), '2 active');
     });
   });
 }

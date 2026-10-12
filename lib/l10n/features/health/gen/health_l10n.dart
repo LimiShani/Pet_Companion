@@ -323,12 +323,6 @@ abstract class HealthL10n {
   /// **'{value} B'**
   String fileSizeBytes(String value);
 
-  /// What a screen reader says for a count tile: 3 Vaccinations.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} {label}'**
-  String countAndLabel(int count, String label);
-
   /// No description provided for @weight.
   ///
   /// In en, this message translates to:
@@ -1703,18 +1697,6 @@ abstract class HealthL10n {
   /// **'{date}, around {time}'**
   String lostCardAround(String date, String time);
 
-  /// No description provided for @overviewNoCareDue.
-  ///
-  /// In en, this message translates to:
-  /// **'No scheduled care due'**
-  String get overviewNoCareDue;
-
-  /// No description provided for @overviewLastRecord.
-  ///
-  /// In en, this message translates to:
-  /// **'Last record {date}'**
-  String overviewLastRecord(String date);
-
   /// No description provided for @comingUp.
   ///
   /// In en, this message translates to:
@@ -1745,47 +1727,11 @@ abstract class HealthL10n {
   /// **'Medicines'**
   String get medicines;
 
-  /// Tag on the Medicines card: how many medicines are being given now.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 active} other{{count} active}}'**
-  String medicinesActive(int count);
-
-  /// No description provided for @noDoseYet.
-  ///
-  /// In en, this message translates to:
-  /// **'No dose recorded yet'**
-  String get noDoseYet;
-
-  /// No description provided for @lastDoseToday.
-  ///
-  /// In en, this message translates to:
-  /// **'Last recorded dose: today {time}'**
-  String lastDoseToday(String time);
-
-  /// No description provided for @lastDoseYesterday.
-  ///
-  /// In en, this message translates to:
-  /// **'Last recorded dose: yesterday {time}'**
-  String lastDoseYesterday(String time);
-
-  /// No description provided for @lastDoseOn.
-  ///
-  /// In en, this message translates to:
-  /// **'Last recorded dose: {day} {time}'**
-  String lastDoseOn(String day, String time);
-
   /// No description provided for @smallWeightChart.
   ///
   /// In en, this message translates to:
   /// **'Small weight chart'**
   String get smallWeightChart;
-
-  /// No description provided for @medicalRecords.
-  ///
-  /// In en, this message translates to:
-  /// **'Medical records'**
-  String get medicalRecords;
 
   /// No description provided for @vaccinations.
   ///

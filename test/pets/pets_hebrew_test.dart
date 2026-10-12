@@ -174,8 +174,7 @@ void main() {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              const PetReminderCard(petId: soya, compact: true, margin: EdgeInsets.only(bottom: 12)),
-              const PetReminderCard(petId: soya),
+              const PetReminderCard(petId: soya, margin: EdgeInsets.only(bottom: 12)),
               openers(soya),
             ],
           ),
@@ -184,18 +183,14 @@ void main() {
         size: size,
       );
 
-      // The reminder in both sizes. The compact row has one "Add" pill and
-      // no "Not now"; the card has the action and "Not now".
-      expect(find.text(he.finishProfile('Soya')), findsNWidgets(2));
-      expect(find.text('חסרים 5 מתוך 5 פרטים חיוניים'), findsNWidgets(2));
-      expect(find.text(he.actionVetPhone), findsOneWidget);
+      // The reminder row: one "Add" pill, which says what it adds.
+      expect(find.text(he.finishProfile('Soya')), findsOneWidget);
+      expect(find.text('חסרים 5 מתוך 5 פרטים חיוניים'), findsOneWidget);
       expect(find.widgetWithText(OutlinedButton, appHe.commonAdd), findsOneWidget);
-      // The card's action button and the row's "Add" pill both say it.
-      expect(find.bySemanticsLabel(he.actionVetPhone), findsNWidgets(2));
-      expect(find.text('לא עכשיו'), findsOneWidget);
-      expect(find.bySemanticsLabel(he.reminderSemantics('Soya', 5, 5)), findsNWidgets(2));
-      expect(directionOf(tester, find.text(he.finishProfile('Soya')).first), TextDirection.rtl);
-      // "Add" ends the compact row: on the left in Hebrew.
+      expect(find.bySemanticsLabel(he.actionVetPhone), findsOneWidget);
+      expect(find.bySemanticsLabel(he.reminderSemantics('Soya', 5, 5)), findsOneWidget);
+      expect(directionOf(tester, find.text(he.finishProfile('Soya'))), TextDirection.rtl);
+      // "Add" ends the row: on the left in Hebrew.
       expect(tester.getCenter(find.byKey(PetReminderCard.addKey)).dx, lessThan(size.width / 2));
 
       // The checklist, and an answer given from it.
@@ -566,11 +561,11 @@ void main() {
   });
 
   test('nothing of Pets is left untranslated', () {
-    final report = jsonDecode(File('lib/features/pets/l10n/gen/untranslated.json').readAsStringSync()) as Map;
+    final report = jsonDecode(File('lib/l10n/features/pets/gen/untranslated.json').readAsStringSync()) as Map;
     expect(report, isEmpty);
 
-    final english = jsonDecode(File('lib/features/pets/l10n/pets_en.arb').readAsStringSync()) as Map<String, dynamic>;
-    final hebrewStrings = jsonDecode(File('lib/features/pets/l10n/pets_he.arb').readAsStringSync()) as Map<String, dynamic>;
+    final english = jsonDecode(File('lib/l10n/features/pets/pets_en.arb').readAsStringSync()) as Map<String, dynamic>;
+    final hebrewStrings = jsonDecode(File('lib/l10n/features/pets/pets_he.arb').readAsStringSync()) as Map<String, dynamic>;
     final keys = english.keys.where((key) => !key.startsWith('@')).toSet();
     expect(hebrewStrings.keys.where((key) => !key.startsWith('@')).toSet(), keys);
     expect(keys.length, greaterThan(200));

@@ -29,6 +29,11 @@ class PetHero extends ConsumerWidget {
   /// Diameter of the circular photo.
   static const photoSize = 150.0;
 
+  /// Diameter of the photo on a narrow phone (under 360 px), where the
+  /// full size would leave the detail pills too little room ("Weight 23
+  /// kg" cut short at 320 px).
+  static const compactPhotoSize = 120.0;
+
   /// Where the pet's name starts, measured from the top of the hero.
   static const nameTop = 30.0;
 
@@ -85,7 +90,12 @@ class PetHero extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _Photo(pet: pet),
+              _Photo(
+                pet: pet,
+                size: MediaQuery.sizeOf(context).width < 360
+                    ? compactPhotoSize
+                    : photoSize,
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: Padding(
@@ -145,15 +155,16 @@ class PetHero extends ConsumerWidget {
 /// The pet's picture (its photo or its icon) in the white and coral ring.
 /// A tap opens the pet's profile.
 class _Photo extends StatelessWidget {
-  const _Photo({required this.pet});
+  const _Photo({required this.pet, required this.size});
 
   final Pet pet;
+  final double size;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: PetHero.photoSize,
-      height: PetHero.photoSize,
+      width: size,
+      height: size,
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: AppColors.white,
@@ -170,7 +181,7 @@ class _Photo extends StatelessWidget {
       // The ring takes 9 px on each side (4 border + 5 white).
       child: PetAvatar(
         pet: pet,
-        size: PetHero.photoSize - 18,
+        size: size - 18,
         onTap: () => openFeature<Object>(context, 'pet-profile', pet.id),
       ),
     );

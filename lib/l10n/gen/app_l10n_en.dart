@@ -33,9 +33,6 @@ class AppL10nEn extends AppL10n {
   String get commonDelete => 'Delete';
 
   @override
-  String get commonEdit => 'Edit';
-
-  @override
   String get commonAdd => 'Add';
 
   @override
@@ -426,12 +423,6 @@ class AppL10nEn extends AppL10n {
 
   @override
   String get homeActivity => 'Activity';
-
-  @override
-  String get homeSteps => 'Steps';
-
-  @override
-  String get homeActivityTime => 'Activity time';
 
   @override
   String homeNextWalk(String time) {

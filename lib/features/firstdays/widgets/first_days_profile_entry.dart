@@ -152,7 +152,10 @@ class _Summary extends StatelessWidget {
     };
     void open() => openFirstDays(context, view.pet.id);
 
+    // A row like the profile's others: the whole card opens the page, the
+    // word and the chevron say so (no filled pill on a list row).
     return PetsCard(
+      key: FirstDaysProfileEntry.openKey,
       onTap: open,
       padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 12, 12),
       child: Row(
@@ -174,11 +177,11 @@ class _Summary extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          PillButton(
+          Text(
             view.hasEnded ? l10n.viewSummary : l10n.open,
-            key: FirstDaysProfileEntry.openKey,
-            onPressed: open,
+            style: AppText.button(14).copyWith(color: AppColors.coralDark),
           ),
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
       ),
     );

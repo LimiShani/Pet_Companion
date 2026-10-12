@@ -344,6 +344,5 @@
         "type": "String"
       }
     }
-  },
-  "cancelWalk": "Cancel the walk"
+  }
 }

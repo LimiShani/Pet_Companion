@@ -730,12 +730,6 @@ abstract class CareL10n {
   /// In en, this message translates to:
   /// **'Today · {time}'**
   String todayAt(String time);
-
-  /// No description provided for @cancelWalk.
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel the walk'**
-  String get cancelWalk;
 }
 
 class _CareL10nDelegate extends LocalizationsDelegate<CareL10n> {

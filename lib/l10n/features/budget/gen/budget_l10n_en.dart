@@ -174,9 +174,6 @@ class BudgetL10nEn extends BudgetL10n {
   String get deleteRecurringBody => 'Every month it counted in will lose it. To keep the past months, stop it from repeating instead.';
 
   @override
-  String get expenseSaved => 'Saved';
-
-  @override
   String get expenseDeleted => 'Expense deleted';
 
   @override

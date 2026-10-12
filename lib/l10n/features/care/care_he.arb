@@ -105,6 +105,5 @@
   "typePlay": "משחק",
   "typeRun": "ריצה",
   "when": "מתי",
-  "todayAt": "היום · \u2068{time}\u2069",
-  "cancelWalk": "ביטול הטיול"
+  "todayAt": "היום · \u2068{time}\u2069"
 }
