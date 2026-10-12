@@ -14,6 +14,7 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/unsaved_changes_guard.dart';
 import '../../presentation/care_widgets.dart';
+import '../../presentation/more_details.dart';
 import '../../services/pet_records/state/health_providers.dart'
     show healthClockProvider;
 import '../../presentation/budget_words.dart';
@@ -30,6 +31,9 @@ Future<void> openBasketItemForm(BuildContext context, {BasketItem? item}) =>
 /// Adds or changes a regular product: its name, pet, kind, package, last
 /// price and purchase, and how long a package lasts (worked out from the
 /// feeding for food, or the owner's own number).
+///
+/// The name, the pet, the kind, the price and the purchase come first; the
+/// package and how long it lasts are folded under "More details".
 class BasketItemFormScreen extends ConsumerStatefulWidget {
   const BasketItemFormScreen({super.key, this.item});
 
@@ -67,6 +71,16 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
 
   /// Food only: the owner says how long it lasts instead of the feeding.
   late bool _ownLasts = _item?.lastsDays != null;
+
+  /// Whether "More details" (how long a package lasts) is open. An edited
+  /// product opens it when it has its own duration.
+  late bool _moreOpen = _item?.lastsDays != null;
+
+  /// The fields a failed save scrolls to.
+  final _nameAnchor = GlobalKey();
+  final _priceAnchor = GlobalKey();
+  final _sizeAnchor = GlobalKey();
+  final _lastsAnchor = GlobalKey();
   bool _saving = false;
   Object? _error;
 
@@ -139,8 +153,54 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
     if (picked != null && mounted) setState(() => _boughtOn = picked);
   }
 
+  String? _nameProblem(String? text) =>
+      (text ?? '').trim().isEmpty ? context.budgetL10n.nameRequired : null;
+
+  String? _sizeProblem(String? text) {
+    final value = _number(text ?? '');
+    return value == null || value <= 0 || value > 100000
+        ? context.budgetL10n.sizeInvalid
+        : null;
+  }
+
+  String? _priceProblem(String? text) {
+    if ((text ?? '').trim().isEmpty) return null;
+    final value = _number(text!);
+    return value == null || value < 0 || value > 1000000
+        ? context.budgetL10n.amountInvalid
+        : null;
+  }
+
+  String? _lastsProblem(String? text) {
+    final value = (text ?? '').trim();
+    if (value.isEmpty && _kind != BasketKind.food) return null;
+    final n = int.tryParse(value);
+    return n == null || n < 1 || n > 3650
+        ? context.budgetL10n.lastsInvalid
+        : null;
+  }
+
+  /// Opens "More details" when a field folded in it is wrong, and scrolls
+  /// to [anchor], the first wrong field on the page.
+  void _revealFolded(GlobalKey anchor) {
+    if (_moreOpen) return;
+    setState(() => _moreOpen = true);
+    MoreDetails.scrollToOnceOpen(anchor);
+  }
+
   Future<void> _save() async {
-    if (!_form.currentState!.validate()) return;
+    if (!_form.currentState!.validate()) {
+      // The duration is asked for unless the feeding gives it; it is the
+      // only folded field, so only it opens the fold (the fields above it
+      // are in sight with their own errors).
+      final visibleProblem =
+          _nameProblem(_name.text) != null ||
+          _sizeProblem(_size.text) != null ||
+          _priceProblem(_price.text) != null;
+      final lasts = !_byFeeding && _lastsProblem(_lasts.text) != null;
+      if (lasts && !visibleProblem) _revealFolded(_lastsAnchor);
+      return;
+    }
     setState(() {
       _saving = true;
       _error = null;
@@ -259,35 +319,33 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
         ? null
         : (grams / rate.gramsPerDay).floor();
 
-    final lastsField = Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: TextFormField(
-            key: BasketItemFormScreen.lastsKey,
-            controller: _lasts,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            validator: (text) {
-              final value = (text ?? '').trim();
-              if (value.isEmpty && _kind != BasketKind.food) return null;
-              final n = int.tryParse(value);
-              return n == null || n < 1 || n > 3650 ? l10n.lastsInvalid : null;
-            },
-            decoration: InputDecoration(labelText: l10n.lastsAbout),
+    final lastsField = KeyedSubtree(
+      key: _lastsAnchor,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: TextFormField(
+              key: BasketItemFormScreen.lastsKey,
+              controller: _lasts,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              validator: _lastsProblem,
+              decoration: InputDecoration(labelText: l10n.lastsAbout),
+            ),
           ),
-        ),
-        const SizedBox(width: 10),
-        Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: chips(
-            [false, true],
-            _inWeeks,
-            (weeks) => weeks ? l10n.weeks : l10n.days,
-            (v) => _inWeeks = v,
+          const SizedBox(width: 10),
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: chips(
+              [false, true],
+              _inWeeks,
+              (weeks) => weeks ? l10n.weeks : l10n.days,
+              (v) => _inWeeks = v,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
 
     final form = Form(
@@ -296,16 +354,18 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const SizedBox(height: 8),
-          TextFormField(
-            key: BasketItemFormScreen.nameKey,
-            controller: _name,
-            maxLength: 80,
-            validator: (text) =>
-                (text ?? '').trim().isEmpty ? l10n.nameRequired : null,
-            decoration: InputDecoration(
-              labelText: l10n.productName,
-              hintText: l10n.productNameHint,
-              counterText: '',
+          KeyedSubtree(
+            key: _nameAnchor,
+            child: TextFormField(
+              key: BasketItemFormScreen.nameKey,
+              controller: _name,
+              maxLength: 80,
+              validator: _nameProblem,
+              decoration: InputDecoration(
+                labelText: l10n.productName,
+                hintText: l10n.productNameHint,
+                counterText: '',
+              ),
             ),
           ),
           CareSectionLabel(l10n.forLabel),
@@ -318,35 +378,34 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
           CareSectionLabel(l10n.kindLabel),
           chips(BasketKind.values, _kind, l10n.kind, (v) => _kind = v),
           CareSectionLabel(l10n.packageSize),
-          TextFormField(
-            key: BasketItemFormScreen.sizeKey,
-            controller: _size,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: numbers,
-            validator: (text) {
-              final value = _number(text ?? '');
-              return value == null || value <= 0 || value > 100000
-                  ? l10n.sizeInvalid
-                  : null;
-            },
-            decoration: InputDecoration(labelText: l10n.packageSize),
+          KeyedSubtree(
+            key: _sizeAnchor,
+            child: TextFormField(
+              key: BasketItemFormScreen.sizeKey,
+              controller: _size,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: numbers,
+              validator: _sizeProblem,
+              decoration: InputDecoration(labelText: l10n.packageSize),
+            ),
           ),
           const SizedBox(height: 8),
           chips(BasketUnit.values, _unit, l10n.unit, (v) => _unit = v),
           const SizedBox(height: 12),
-          TextFormField(
-            key: BasketItemFormScreen.priceKey,
-            controller: _price,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: numbers,
-            validator: (text) {
-              if ((text ?? '').trim().isEmpty) return null;
-              final value = _number(text!);
-              return value == null || value < 0 || value > 1000000
-                  ? l10n.amountInvalid
-                  : null;
-            },
-            decoration: InputDecoration(labelText: l10n.lastPrice),
+          KeyedSubtree(
+            key: _priceAnchor,
+            child: TextFormField(
+              key: BasketItemFormScreen.priceKey,
+              controller: _price,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: numbers,
+              validator: _priceProblem,
+              decoration: InputDecoration(labelText: l10n.lastPrice),
+            ),
           ),
           CareSectionLabel(l10n.boughtOnLabel),
           CareBox(
@@ -370,40 +429,56 @@ class _BasketItemFormScreenState extends ConsumerState<BasketItemFormScreen> {
               ],
             ),
           ),
-          CareSectionLabel(l10n.lastsLabel),
-          if (_kind == BasketKind.food) ...[
-            chips(
-              [false, true],
-              _ownLasts,
-              (own) => own ? l10n.lastsOwnChoice : l10n.lastsByFeedingChoice,
-              (v) => _ownLasts = v,
+          const SizedBox(height: 8),
+          MoreDetails(
+            moreLabel: context.budgetL10n.formMoreDetails,
+            fewerLabel: context.budgetL10n.formFewerDetails,
+            expanded: _moreOpen,
+            onToggle: () => setState(() => _moreOpen = !_moreOpen),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CareSectionLabel(l10n.lastsLabel),
+                if (_kind == BasketKind.food) ...[
+                  chips(
+                    [false, true],
+                    _ownLasts,
+                    (own) =>
+                        own ? l10n.lastsOwnChoice : l10n.lastsByFeedingChoice,
+                    (v) => _ownLasts = v,
+                  ),
+                  const SizedBox(height: 8),
+                  if (_ownLasts)
+                    KeyedSubtree(
+                      key: BasketItemFormScreen.ownLastsKey,
+                      child: lastsField,
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(start: 6),
+                      child: Text(
+                        byFeedingDays == null
+                            ? l10n.lastsNoFeeding
+                            : l10n.lastsByFeeding(
+                                format.integer(byFeedingDays),
+                                format.integer(rate!.gramsPerDay.round()),
+                              ),
+                        style: AppText.body,
+                      ),
+                    ),
+                ] else ...[
+                  lastsField,
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 6,
+                      top: 4,
+                    ),
+                    child: Text(l10n.lastsOptional, style: AppText.secondary),
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 8),
-            if (_ownLasts)
-              KeyedSubtree(
-                key: BasketItemFormScreen.ownLastsKey,
-                child: lastsField,
-              )
-            else
-              Padding(
-                padding: const EdgeInsetsDirectional.only(start: 6),
-                child: Text(
-                  byFeedingDays == null
-                      ? l10n.lastsNoFeeding
-                      : l10n.lastsByFeeding(
-                          format.integer(byFeedingDays),
-                          format.integer(rate!.gramsPerDay.round()),
-                        ),
-                  style: AppText.body,
-                ),
-              ),
-          ] else ...[
-            lastsField,
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, top: 4),
-              child: Text(l10n.lastsOptional, style: AppText.secondary),
-            ),
-          ],
+          ),
           if (error != null) ...[
             const SizedBox(height: 10),
             Text(

@@ -18,6 +18,8 @@ class MoreDetails extends StatelessWidget {
     required this.expanded,
     required this.onToggle,
     required this.child,
+    this.moreLabel,
+    this.fewerLabel,
   });
 
   /// The "More details" / "Fewer details" button.
@@ -29,6 +31,11 @@ class MoreDetails extends StatelessWidget {
   final bool expanded;
   final VoidCallback onToggle;
   final Widget child;
+
+  /// The button's words in the caller's own strings ("More details" /
+  /// "Fewer details"); Health's when left out.
+  final String? moreLabel;
+  final String? fewerLabel;
 
   /// Scrolls the field under [anchor] into view once a fold that was just
   /// opened has grown to its full height.
@@ -66,7 +73,9 @@ class MoreDetails extends StatelessWidget {
               child: const AppIcon(Icons.expand_more_rounded, size: 20),
             ),
             label: Text(
-              expanded ? l10n.formFewerDetails : l10n.formMoreDetails,
+              expanded
+                  ? fewerLabel ?? l10n.formFewerDetails
+                  : moreLabel ?? l10n.formMoreDetails,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),

@@ -9,7 +9,7 @@ import 'package:pet_companion/auth/fake_auth_repository.dart';
 import 'package:pet_companion/features/community/data/community_providers.dart';
 import 'package:pet_companion/features/community/data/fake_chat_repository.dart';
 import 'package:pet_companion/features/community/data/fake_feed_repository.dart';
-import 'package:pet_companion/features/settings/settings_screen.dart';
+import 'package:pet_companion/features/settings/settings_pages.dart';
 import 'package:pet_companion/navigation/app_router.dart';
 import 'package:pet_companion/notifications/notifications.dart';
 import 'package:pet_companion/services/community/data/push_preferences_repository.dart';
@@ -245,14 +245,14 @@ void main() {
       expect(container.read(pushArrivalsProvider), 1);
     });
 
-    testWidgets('Settings shows the community switches and saves them', (tester) async {
+    testWidgets('Settings > Notifications shows the community switches and saves them', (tester) async {
       await pumpApp(tester, now: DateTime(2025, 6, 10, 9), overrides: [...overrides()]);
       await signInAsDemo(tester);
       await tester.pumpAndSettle();
       final container = ProviderScope.containerOf(tester.element(find.byType(Navigator).first));
-      container.read(routerProvider).push('/settings');
+      container.read(routerProvider).push('/settings/notifications');
       await tester.pumpAndSettle();
-      expect(find.byKey(SettingsScreen.screenKey), findsOneWidget);
+      expect(find.byKey(NotificationSettingsScreen.screenKey), findsOneWidget);
 
       final likes = find.byKey(const ValueKey('push-likes'));
       await tester.scrollUntilVisible(likes, 200, scrollable: find.byType(Scrollable).first);
@@ -268,13 +268,14 @@ void main() {
     });
   });
 
-  testWidgets('without push the Settings page has no community switches', (tester) async {
+  testWidgets('without push the Notifications page has no community switches', (tester) async {
     await pumpApp(tester);
     await signInAsDemo(tester);
     await tester.pumpAndSettle();
     final container = ProviderScope.containerOf(tester.element(find.byType(Navigator).first));
-    container.read(routerProvider).push('/settings');
+    container.read(routerProvider).push('/settings/notifications');
     await tester.pumpAndSettle();
+    expect(find.byKey(NotificationSettingsScreen.screenKey), findsOneWidget);
     expect(find.text('Answers to my chat messages'), findsNothing);
   });
 }

@@ -1,6 +1,5 @@
 import '../../../access/access_provider.dart';
 import '../../../access/feature_gate.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,175 +10,52 @@ import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../../widgets/primary_button.dart';
-import '../../../widgets/unsaved_changes_guard.dart';
 import '../../../platform/feature_ui.dart';
 import '../../../services/pet_records/data/health_models.dart';
+import '../../../services/pet_records/state/health_keeper.dart';
 import '../../../services/pet_records/state/health_providers.dart';
-import '../../../presentation/health_strings.dart';
-import '../checklist_sheet.dart';
 import '../../../services/pets/data/pets_repository_provider.dart';
 import '../pet_actions.dart';
 import '../../../presentation/pet_words.dart';
 import '../../../services/pets/state/pet_completeness.dart';
 import '../../../presentation/pet_avatar.dart';
-import '../widgets/pet_basics_fields.dart';
 import '../widgets/pet_essentials_keeper.dart';
 import '../widgets/pet_reminder_card.dart';
 import '../../../presentation/pets_widgets.dart';
+import 'name_and_kind_sheet.dart';
 import 'remove_pet.dart';
 
-/// The pet's profile: everything the add-a-pet flow asks, on one page, to
-/// change later. The essentials card stays until everything is answered.
-/// The vet and the health basics are Health's pieces. Archive and delete
-/// sit at the very end.
+/// The pet's profile: an overview of what is known, one row per answer.
+/// Each row opens its own small sheet (or Health's page), which saves on
+/// its own, so the page itself has nothing to save. A missing answer reads
+/// "Add". Archive and delete are in the header's "More" menu.
 class PetProfileScreen extends ConsumerStatefulWidget {
-  const PetProfileScreen({
-    super.key,
-    required this.petId,
-    this.fromMyPets = false,
-  });
+  const PetProfileScreen({super.key, required this.petId});
 
   final String petId;
 
-  /// Opened from "My pets": the header's "My pets" goes back there instead
-  /// of opening it again.
-  final bool fromMyPets;
+  /// The picture: the one button of the identity block.
+  static const pictureKey = Key('profile-picture');
+
+  /// The header's "More" menu, and its two entries.
+  static const moreKey = Key('profile-more');
+  static const archiveKey = Key('profile-archive');
+  static const deleteKey = Key('profile-delete');
+
+  /// The row called [name]: `name`, `age`, `weight`, `breed`, `sex`,
+  /// `vets`, `health` or `documents`.
+  static Key rowKey(String name) => Key('profile-row-$name');
 
   @override
   ConsumerState<PetProfileScreen> createState() => _PetProfileScreenState();
 }
 
 class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
-  final _form = GlobalKey<FormState>();
-  final _name = TextEditingController();
-  PetBasicsController? _basics;
-  PetSpecies _species = PetSpecies.dog;
-  bool _saving = false;
   bool _removing = false;
   String? _error;
 
-  DateTime get _now => ref.read(petsClockProvider)();
-  Pet? get _pet => ref.read(petsStoreProvider).byId(widget.petId);
-
-  @override
-  void initState() {
-    super.initState();
-    final pet = _pet;
-    if (pet != null) _fill(pet);
-  }
-
-  /// The pet as the form last saw it.
-  Pet? _shown;
-
-  /// What the form shows when nothing was changed here: the answers as
-  /// they were loaded, saved, or followed from a change made elsewhere.
-  List<Object?> _unchanged = const [];
-
-  void _fill(Pet pet) {
-    _name.text = pet.name;
-    _species = pet.species;
-    _basics?.dispose();
-    _basics = PetBasicsController(pet: pet, now: _now);
-    _shown = pet;
-    _unchanged = _answers(_name.text, _species, _basics!);
-  }
-
-  /// The answers of the form. Switching between the two ways of giving the
-  /// age is not one: it changes nothing by itself.
-  static List<Object?> _answers(
-    String name,
-    PetSpecies species,
-    PetBasicsController basics,
-  ) => [
-    name,
-    species,
-    basics.ageAmount.text,
-    basics.weight.text,
-    basics.breed.text,
-    basics.birthDate,
-    basics.ageUnit,
-    basics.sex,
-    basics.neutered,
-    basics.mixedBreed,
-  ];
-
-  bool get _dirty {
-    final basics = _basics;
-    if (basics == null || _saving || _removing) return false;
-    return !listEquals(_answers(_name.text, _species, basics), _unchanged);
-  }
-
-  /// The pet changed somewhere else while this page is open (a weight added
-  /// from the checklist, a new picture): everything the owner has not
-  /// edited here follows it, so "Save changes" never writes an old value
-  /// back over a newer one.
-  void _follow(Pet pet) {
-    final shown = _shown;
-    if (shown == null || !mounted) return;
-    setState(() {
-      if (_name.text.trim() == shown.name && _name.text != pet.name) {
-        _name.text = pet.name;
-      }
-      if (_species == shown.species) _species = pet.species;
-      _basics
-        ?..refresh(pet, _now)
-        // The weight unit follows the kind chosen here, saved or not.
-        ..species = _species;
-      _shown = pet;
-      // What a form freshly opened on [pet] would show.
-      final fresh = PetBasicsController(pet: pet, now: _now);
-      _unchanged = _answers(pet.name, pet.species, fresh);
-      fresh.dispose();
-    });
-  }
-
-  @override
-  void dispose() {
-    _name.dispose();
-    _basics?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    final pet = _pet;
-    final basics = _basics;
-    if (pet == null || basics == null || !_form.currentState!.validate()) {
-      return;
-    }
-    setState(() {
-      _saving = true;
-      _error = null;
-    });
-    try {
-      final stored = await ref
-          .read(petsStoreProvider.notifier)
-          .save(
-            basics.applyTo(
-              pet,
-              now: _now,
-              name: _name.text.trim(),
-              species: _species,
-            ),
-          );
-      if (!mounted) return;
-      // Saved: from here on the form follows the stored pet again.
-      basics.markSaved();
-      _shown = stored;
-      _unchanged = _answers(_name.text, _species, basics);
-      setState(() => _saving = false);
-      showPetsSnack(context, context.petsL10n.changesSaved);
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _saving = false;
-        _error = petsErrorOf(context, e);
-      });
-    }
-  }
-
   Future<void> _remove() async {
-    final pet = _pet;
+    final pet = ref.read(petsStoreProvider).byId(widget.petId);
     if (pet == null || _removing) return;
     final container = ProviderScope.containerOf(context, listen: false);
     final others = container
@@ -225,15 +101,6 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       ..showSnackBar(SnackBar(content: Text(done)));
   }
 
-  void _openMyPets() {
-    if (widget.fromMyPets) {
-      // Like the back arrow: unsaved changes are asked about first.
-      Navigator.of(context).maybePop();
-    } else {
-      openMyPets(context);
-    }
-  }
-
   @override
   Widget build(BuildContext context) => FeatureGate(
     capability: 'pets.view',
@@ -243,257 +110,362 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   );
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    ref.listen(petsStoreProvider.select((pets) => pets.byId(widget.petId)), (
-      _,
-      next,
-    ) {
-      if (next != null) _follow(next);
-    });
     final pet = ref.watch(
       petsStoreProvider.select((pets) => pets.byId(widget.petId)),
     );
-    final basics = _basics;
-    if (pet == null || basics == null) {
-      // Deleted (or never there): nothing to edit.
+    if (pet == null) {
+      // Deleted (or never there): nothing to show.
       return PetsPage(
         title: context.petsL10n.petProfile,
         child: PetsNote(context.petsL10n.petNoLongerHere),
       );
     }
+    // A row's sheet may answer the last missing essential.
+    announcePetCompletion(ref, context, pet.id);
     final now = ref.watch(petsClockProvider)();
 
     // Stays up to date while Health's pages or a sheet cover this one.
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        _name,
-        basics,
-        basics.ageAmount,
-        basics.weight,
-        basics.breed,
-      ]),
-      builder: (context, child) =>
-          UnsavedChangesGuard(dirty: _dirty, child: child!),
-      child: PetEssentialsKeeper(petId: pet.id, child: _page(pet, basics, now)),
+    return PetEssentialsKeeper(
+      petId: pet.id,
+      child: HealthKeeper(
+        petId: pet.id,
+        child: _DocumentsKeeper(petId: pet.id, child: _page(pet, now)),
+      ),
     );
   }
 
-  Widget _page(Pet pet, PetBasicsController basics, DateTime now) {
+  Widget _page(Pet pet, DateTime now) {
+    final l10n = context.petsL10n;
     return PetsPage(
       title: pet.name,
-      actions: [
-        HeaderTextAction(context.petsL10n.myPetsTitle, onPressed: _openMyPets),
-      ],
-      child: Form(
-        key: _form,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Stack(
-                  children: [
-                    PetAvatar(
-                      pet: pet,
-                      size: 96,
-                      borderColor: AppColors.coral,
-                      borderWidth: 4,
-                      onTap: () => changePetPicture(context, pet.id),
-                    ),
-                    const PositionedDirectional(
-                      end: 0,
-                      bottom: 0,
-                      child: IgnorePointer(child: _SmallCameraBadge()),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      PetsHeading(pet.name),
-                      PetsNote(petSummaryLine(context.petsL10n, pet, now: now)),
-                      TextButton(
-                        onPressed: () => changePetPicture(context, pet.id),
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: const Size(kPetsTapTarget, 40),
-                          alignment: AlignmentDirectional.centerStart,
-                        ),
-                        child: Text(context.petsL10n.changePicture),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            _EssentialsCard(pet: pet),
-            PetsLabel(context.petsL10n.basics),
-            TextFormField(
-              key: const Key('pet-name'),
-              controller: _name,
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                labelText: context.petsL10n.fieldName,
-                errorMaxLines: 3,
-              ),
-              validator: (text) {
-                final value = text?.trim() ?? '';
-                if (value.isEmpty) return context.petsL10n.nameMissing;
-                if (value.length > 60) return context.petsL10n.nameTooLong(60);
-                return null;
-              },
-            ),
-            const SizedBox(height: 10),
-            DropdownButtonFormField<PetSpecies>(
-              key: const Key('pet-kind'),
-              initialValue: _species,
-              isExpanded: true,
-              decoration: InputDecoration(labelText: context.petsL10n.kind),
-              borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-              items: [
-                for (final species in PetSpecies.values)
-                  DropdownMenuItem(
-                    value: species,
-                    child: Text(petSpeciesText(context.petsL10n, species)),
-                  ),
-              ],
-              onChanged: (species) {
-                if (species == null) return;
-                setState(() => _species = species);
-                basics.species = species;
-              },
-            ),
-            PetBasicsFields(controller: basics, now: now),
-            PetsLabel(context.petsL10n.vet),
-            featureSlot('vet-tile', pet.id),
-            const SizedBox(height: 8),
-            featureSlot('vet-tile', pet.id, {'role': VetRole.emergency}),
-            PetsLabel(context.petsL10n.healthBasics),
-            _HealthBasicsCard(pet: pet),
-            // Start the first 30 days, or see them (a summary once over).
-            featureSlot('firstdays-profile', pet.id),
-            if (_error != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(
-                  _error!,
-                  style: AppText.body.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
+      actions: [_MoreMenu(pet: pet, onRemove: _removing ? null : _remove)],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Identity(pet: pet),
+          _SectionLabel(l10n.basics),
+          _BasicsCard(pet: pet, now: now),
+          _HealthCard(pet: pet),
+          _MoreCard(pet: pet),
+          // Start the first 30 days, or see them (a summary once over).
+          featureSlot('firstdays-profile', pet.id),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _error!,
+                style: AppText.body.copyWith(
+                  color: Theme.of(context).colorScheme.error,
                 ),
               ),
-            const SizedBox(height: 20),
-            PrimaryButton(
-              label: context.petsL10n.saveChanges,
-              loading: _saving,
-              onPressed: _save,
             ),
-            const Padding(
-              padding: EdgeInsets.only(top: 24, bottom: 16),
-              child: Divider(),
-            ),
-            PetsOutlineButton(
-              context.petsL10n.archivePet(pet.name),
-              icon: Icons.archive_outlined,
-              onPressed: _removing ? null : _remove,
-            ),
-            const SizedBox(height: 4),
-            PetsTextButton(
-              context.petsL10n.deletePet(pet.name),
-              onPressed: _removing ? null : _remove,
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
 }
 
-class _SmallCameraBadge extends StatelessWidget {
-  const _SmallCameraBadge();
+/// Keeps the pet's documents active while the profile is covered, like
+/// [HealthKeeper] does for the vets and the health profile.
+class _DocumentsKeeper extends StatefulWidget {
+  const _DocumentsKeeper({required this.petId, required this.child});
+
+  final String petId;
+  final Widget child;
 
   @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability: 'pets.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
+  State<_DocumentsKeeper> createState() => _DocumentsKeeperState();
+}
 
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+class _DocumentsKeeperState extends State<_DocumentsKeeper> {
+  ProviderContainer? _container;
+  ProviderSubscription<Object?>? _subscription;
+
+  void _listen() {
+    _subscription?.close();
+    _subscription = _container!.listen(
+      healthDocumentsProvider(widget.petId),
+      (_, _) {},
+      onError: (_, _) {},
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final container = ProviderScope.containerOf(context);
+    if (!identical(container, _container)) {
+      _container = container;
+      _listen();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_DocumentsKeeper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.petId != widget.petId) _listen();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// The header's ⋮: "Archive Kelly" and "Delete Kelly", which both open the
+/// same clear choice.
+class _MoreMenu extends StatelessWidget {
+  const _MoreMenu({required this.pet, required this.onRemove});
+
+  final Pet pet;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.petsL10n;
+    return PopupMenuButton<RemoveChoice>(
+      key: PetProfileScreen.moreKey,
+      tooltip: l10n.profileMoreTooltip,
+      enabled: onRemove != null,
+      icon: const AppIcon(Icons.more_vert_rounded, color: AppColors.white),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 180),
+      color: AppColors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      onSelected: (_) => onRemove?.call(),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          key: PetProfileScreen.archiveKey,
+          value: RemoveChoice.archive,
+          child: _MenuRow(Icons.archive_outlined, l10n.archivePet(pet.name)),
+        ),
+        PopupMenuItem(
+          key: PetProfileScreen.deleteKey,
+          value: RemoveChoice.delete,
+          child: _MenuRow(
+            Icons.delete_outline_rounded,
+            l10n.deletePet(pet.name),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MenuRow extends StatelessWidget {
+  const _MenuRow(this.icon, this.label);
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      AppIcon(icon, size: 20, color: AppColors.brown),
+      const SizedBox(width: 12),
+      Flexible(child: Text(label, style: AppText.cardTitle)),
+    ],
+  );
+}
+
+/// The picture (the only button here), the name and a summary line.
+class _Identity extends StatelessWidget {
+  const _Identity({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.petsL10n;
+    return Row(
+      children: [
+        Semantics(
+          button: true,
+          label: l10n.changePicture,
+          child: Material(
+            type: MaterialType.transparency,
+            shape: const CircleBorder(),
+            child: InkWell(
+              key: PetProfileScreen.pictureKey,
+              customBorder: const CircleBorder(),
+              onTap: () => changePetPicture(context, pet.id),
+              child: ExcludeSemantics(
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    PetAvatar(
+                      pet: pet,
+                      size: 88,
+                      borderColor: AppColors.coral,
+                      borderWidth: 4,
+                    ),
+                    const PositionedDirectional(
+                      end: -2,
+                      bottom: -2,
+                      child: _CameraBadge(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                pet.name,
+                style: AppText.heading.copyWith(
+                  fontSize: 22,
+                  color: AppColors.ink,
+                  height: 1.2,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                profileSummaryLine(l10n, pet),
+                style: AppText.secondary.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.brown,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CameraBadge extends StatelessWidget {
+  const _CameraBadge();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: 34,
-      height: 34,
+      width: 30,
+      height: 30,
       decoration: BoxDecoration(
         color: AppColors.coralDark,
         shape: BoxShape.circle,
-        border: Border.all(color: AppColors.cream, width: 3),
+        border: Border.all(color: AppColors.cream, width: 2),
       ),
       child: const AppIcon(
         Icons.photo_camera_rounded,
-        size: 16,
+        size: 14,
         color: AppColors.white,
       ),
     );
   }
 }
 
-/// "2 of 5 essentials still to add", what they are, and the way to the
-/// checklist. Unlike the reminder it cannot be postponed: on the profile it
-/// stays until everything is answered.
-class _EssentialsCard extends ConsumerWidget {
-  const _EssentialsCard({required this.pet});
+String _lowerFirst(String text) =>
+    text.isEmpty ? text : '${text[0].toLowerCase()}${text.substring(1)}';
 
-  final Pet pet;
+String _upperFirst(String text) =>
+    text.isEmpty ? text : '${text[0].toUpperCase()}${text.substring(1)}';
+
+/// What is known about the pet's sex and neutering, in the order they are
+/// said: "Female", "spayed". Empty when neither is answered.
+List<String> profileSexAndNeutering(PetsL10n l10n, Pet pet) {
+  final sex = pet.sex;
+  final neutered = pet.neutered;
+  // The word for neutering follows the sex: "spayed", "neutered".
+  return [
+    if (sex != null)
+      sex == PetSex.unknown ? l10n.profileSexNotSure : petSexText(l10n, sex),
+    if (neutered != null)
+      switch (neutered) {
+        Neutered.yes => switch (sex) {
+          PetSex.female => l10n.profileSpayed,
+          PetSex.male => l10n.profileNeuteredMale,
+          _ => l10n.profileNeuteredAny,
+        },
+        Neutered.no => switch (sex) {
+          PetSex.female => l10n.profileNotSpayed,
+          PetSex.male => l10n.profileNotNeuteredMale,
+          _ => l10n.profileNotNeuteredAny,
+        },
+        Neutered.unknown => l10n.profileNeuteringNotSure,
+      },
+  ];
+}
+
+/// "Dog · Mix · female, spayed": the kind, the breed, the sex and the
+/// neutering, as far as they are known. The age has its own row.
+String profileSummaryLine(PetsL10n l10n, Pet pet) {
+  final breed = petBreedText(l10n, pet);
+  final sex = profileSexAndNeutering(l10n, pet);
+  return [
+    petSpeciesText(l10n, pet.species),
+    if (breed != null) typedInLine(l10n, breed),
+    if (sex.isNotEmpty) _lowerFirst(sex.join(', ')),
+  ].join(' · ');
+}
+
+/// "BASICS": the small heading above a card of rows.
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.text);
+
+  final String text;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
-    capability: 'pets.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    announcePetCompletion(ref, context, pet.id);
-    final info = ref.watch(petCompletenessProvider(pet.id));
-    if (!info.needsAttention) return const SizedBox.shrink();
-    void open() => showPetChecklist(context, pet.id);
-
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 14),
-      child: PetsCard(
-        onTap: open,
-        padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 12, 12),
-        child: Row(
+      padding: const EdgeInsetsDirectional.fromSTEB(6, 20, 6, 6),
+      child: Semantics(
+        header: true,
+        label: text,
+        child: ExcludeSemantics(
+          child: Text(
+            text.toUpperCase(),
+            style: AppText.label.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.brown,
+              letterSpacing: 0.4,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The line between two rows of a card.
+const _kRowLine = Color(0xFFF3E8CF);
+
+/// A white rounded card of rows, with a line between them.
+class _RowsCard extends StatelessWidget {
+  const _RowsCard({required this.rows});
+
+  final List<Widget> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.white,
+      borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const PetsDisc(Icons.fact_check_rounded),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    essentialsStillToAdd(context.petsL10n, info),
-                    style: AppText.cardTitle,
-                  ),
-                  Text(
-                    [
-                      for (final item in info.missing)
-                        item.labelIn(context.petsL10n),
-                    ].join(' · '),
-                    style: AppText.secondary.copyWith(color: AppColors.brown),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            PillButton(
-              context.l10n.commonAdd,
-              key: const Key('profile-essentials-add'),
-              onPressed: open,
-            ),
+            for (var i = 0; i < rows.length; i++) ...[
+              if (i > 0)
+                Container(
+                  height: 1,
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  color: _kRowLine,
+                ),
+              rows[i],
+            ],
           ],
         ),
       ),
@@ -501,101 +473,320 @@ class _EssentialsCard extends ConsumerWidget {
   }
 }
 
-/// What Health knows about allergies, conditions and the microchip, each
-/// with a link into Health's own profile page.
-class _HealthBasicsCard extends ConsumerWidget {
-  const _HealthBasicsCard({required this.pet});
+/// One row: a label and its value on one line, or a title over a second
+/// line ([subtitle]). A missing answer reads [missing] ("Add") in coral.
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({
+    super.key,
+    required this.label,
+    this.value,
+    this.subtitle,
+    this.missing,
+    this.twoLines = false,
+    this.onTap,
+  });
+
+  final String label;
+
+  /// Shown at the end of the row.
+  final String? value;
+
+  /// Shown under [label] instead of [value].
+  final String? subtitle;
+
+  /// Shown in place of [value] (or [subtitle]) when there is none.
+  final String? missing;
+
+  /// A title over a second line, even while that line is [missing].
+  final bool twoLines;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final valueStyle = AppText.cardTitle.copyWith(
+      fontWeight: FontWeight.w800,
+      color: AppColors.ink,
+    );
+    final addStyle = valueStyle.copyWith(
+      fontSize: 14,
+      color: AppColors.coralDark,
+    );
+    final twoLines = this.twoLines || subtitle != null;
+
+    final Widget content;
+    if (twoLines) {
+      final second = subtitle ?? missing;
+      content = Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: valueStyle),
+          if (second != null)
+            Text(
+              second,
+              style: subtitle == null
+                  ? addStyle.copyWith(fontSize: 13)
+                  : AppText.label.copyWith(color: AppColors.brown),
+            ),
+        ],
+      );
+    } else {
+      final shown = value ?? missing;
+      // The value sits at the end of the label's line, or under the label
+      // when both do not fit on one line.
+      content = Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 2,
+        children: [
+          Text(
+            label,
+            style: AppText.cardTitle.copyWith(color: AppColors.ink),
+          ),
+          if (shown != null)
+            Text(
+              shown,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: value == null ? addStyle : valueStyle,
+            ),
+        ],
+      );
+    }
+
+    return InkWell(
+      onTap: onTap,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: twoLines ? 56 : 52),
+        child: Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            16,
+            twoLines ? 8 : 6,
+            onTap == null ? 16 : 10,
+            twoLines ? 8 : 6,
+          ),
+          child: Row(
+            children: [
+              Expanded(child: content),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const AppIcon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.brown,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Name and kind, age, weight, breed, sex and neutering: each row opens
+/// the small sheet with just that question.
+class _BasicsCard extends StatelessWidget {
+  const _BasicsCard({required this.pet, required this.now});
+
+  final Pet pet;
+  final DateTime now;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.petsL10n;
+    final add = context.l10n.commonAdd;
+    final age = petAgeText(l10n, pet, now: now);
+    final kg = pet.weightKg;
+    final sex = profileSexAndNeutering(l10n, pet);
+    void open(PetInfoItem item) =>
+        openPetInfoItem(context, petId: pet.id, item: item);
+
+    return _RowsCard(
+      rows: [
+        _ProfileRow(
+          key: PetProfileScreen.rowKey('name'),
+          label: l10n.profileNameAndKind,
+          value: [
+            typedInLine(l10n, pet.name),
+            petSpeciesText(l10n, pet.species),
+          ].join(' · '),
+          onTap: () => showPetNameAndKindSheet(context, pet),
+        ),
+        _ProfileRow(
+          key: PetProfileScreen.rowKey('age'),
+          label: l10n.itemAge,
+          value: age == null ? null : _lowerFirst(age),
+          missing: add,
+          onTap: () => open(PetInfoItem.age),
+        ),
+        _ProfileRow(
+          key: PetProfileScreen.rowKey('weight'),
+          label: l10n.itemWeight,
+          value: kg == null ? null : petWeightText(l10n, kg, pet.species),
+          missing: add,
+          onTap: () => open(PetInfoItem.weight),
+        ),
+        _ProfileRow(
+          key: PetProfileScreen.rowKey('breed'),
+          label: l10n.itemBreed,
+          value: switch (petBreedText(l10n, pet)) {
+            final breed? => typedInLine(l10n, breed),
+            null => null,
+          },
+          missing: add,
+          onTap: () => open(PetInfoItem.breed),
+        ),
+        _ProfileRow(
+          key: PetProfileScreen.rowKey('sex'),
+          label: l10n.itemSexAndNeutering,
+          value: sex.isEmpty ? null : _upperFirst(sex.join(' · ')),
+          missing: add,
+          onTap: () => open(PetInfoItem.sexAndNeutering),
+        ),
+      ],
+    );
+  }
+}
+
+/// "Dr. Levi · emergency: City Animal Hospital".
+String _vetsLine(PetsL10n l10n, PetVets vets) {
+  final regular = vets.regular;
+  final emergency = vets.emergency;
+  final emergencyText = emergency == null
+      ? null
+      : l10n.profileVetEmergency(typedInLine(l10n, emergency.name));
+  return [
+    if (regular != null) typedInLine(l10n, regular.name),
+    if (emergencyText != null)
+      regular == null ? emergencyText : _lowerFirst(emergencyText),
+  ].join(' · ');
+}
+
+/// "Allergy: chicken · Arthritis in the hips · Chipped"; `null` when
+/// nothing is answered yet.
+String? _healthLine(PetsL10n l10n, HealthProfile profile) {
+  String list(List<String> entries) =>
+      [for (final entry in entries) typedInLine(l10n, entry)].join(', ');
+  final parts = [
+    if (profile.allergies.isNotEmpty)
+      l10n.profileAllergies(
+        profile.allergies.length,
+        list(profile.allergies),
+      )
+    else if (profile.allergiesNoneKnown)
+      l10n.profileNoAllergies,
+    if (profile.conditions.isNotEmpty)
+      list(profile.conditions)
+    else if (profile.conditionsNoneKnown)
+      l10n.profileNoConditions,
+    if (profile.microchip.trim().isNotEmpty)
+      l10n.profileChipped
+    else if (profile.notChipped)
+      l10n.profileNotChipped,
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
+/// Health's pieces: the pet's vets and its health profile, each one row
+/// that opens Health's own page.
+class _HealthCard extends ConsumerWidget {
+  const _HealthCard({required this.pet});
 
   final Pet pet;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
-    capability: 'pets.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (!ref.watch(capabilityProvider('health.emergency.view'))) {
       return const SizedBox.shrink();
     }
-    final profile = ref.watch(healthProfileProvider(pet.id));
-    final value = profile.value;
-    if (value == null) {
-      return PetsCard(
-        child: profile.hasError
-            ? PetsNote(healthErrorOf(context, profile.error))
-            : const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(8),
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-      );
-    }
-    void open() => openFeature<Object>(context, 'health-profile', pet.id);
     final l10n = context.petsL10n;
-    final app = context.l10n;
-    String list(List<String> entries, bool noneKnown) => entries.isNotEmpty
-        ? [for (final entry in entries) typedInLine(l10n, entry)].join(', ')
-        : (noneKnown ? l10n.noneKnown : l10n.notAnsweredYet);
+    final vets = ref.watch(petVetsProvider(pet.id));
+    final profile = ref.watch(healthProfileProvider(pet.id));
 
-    Widget row(
-      String label,
-      String text,
-      String action, {
-      required String keyName,
-    }) => Row(
+    final vetsValue = vets.value;
+    final noVet = vetsValue != null && vetsValue.isEmpty;
+    final String? vetsLine;
+    if (vetsValue != null) {
+      vetsLine = noVet ? null : _vetsLine(l10n, vetsValue);
+    } else {
+      vetsLine = vets.hasError ? l10n.couldNotCheck : null;
+    }
+
+    final profileValue = profile.value;
+    final String? healthLine;
+    if (profileValue != null) {
+      healthLine = _healthLine(l10n, profileValue);
+    } else {
+      healthLine = profile.hasError ? l10n.couldNotCheck : null;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: AppText.secondary.copyWith(color: AppColors.brown),
-              ),
-              Text(text, style: AppText.cardTitle),
-            ],
-          ),
-        ),
-        TextButton(
-          key: Key('health-$keyName'),
-          onPressed: open,
-          style: TextButton.styleFrom(
-            minimumSize: const Size(kPetsTapTarget, kPetsTapTarget),
-          ),
-          child: Text(action),
+        _SectionLabel(l10n.profileVetAndHealth),
+        _RowsCard(
+          rows: [
+            _ProfileRow(
+              key: PetProfileScreen.rowKey('vets'),
+              label: l10n.profileVets,
+              subtitle: vetsLine,
+              missing: noVet ? l10n.profileAddVet : null,
+              twoLines: true,
+              onTap: () => noVet
+                  ? openFeature<Object>(context, 'vet-picker', pet.id)
+                  : openFeature<Object>(context, 'pet-vets', pet.id),
+            ),
+            _ProfileRow(
+              key: PetProfileScreen.rowKey('health'),
+              label: l10n.profileHealthProfile,
+              subtitle: healthLine,
+              missing: profileValue != null && healthLine == null
+                  ? context.l10n.commonAdd
+                  : null,
+              twoLines: true,
+              onTap: () =>
+                  openFeature<Object>(context, 'health-profile', pet.id),
+            ),
+          ],
         ),
       ],
     );
+  }
+}
 
-    final chip = value.microchip.trim();
-    return PetsCard(
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 6, 8),
-      child: Column(
-        children: [
-          row(
-            l10n.itemAllergies,
-            list(value.allergies, value.allergiesNoneKnown),
-            value.allergiesAnswered ? app.commonEdit : l10n.answer,
-            keyName: 'allergies',
-          ),
-          row(
-            l10n.itemConditions,
-            list(value.conditions, value.conditionsNoneKnown),
-            value.conditionsAnswered ? app.commonEdit : l10n.answer,
-            keyName: 'conditions',
-          ),
-          row(
-            l10n.itemMicrochip,
-            chip.isEmpty ? l10n.notAdded : phoneInLine(l10n, chip),
-            chip.isEmpty ? app.commonAdd : app.commonEdit,
-            keyName: 'microchip',
-          ),
-        ],
-      ),
+/// The pet's documents, a second door to them besides the emergency kit.
+class _MoreCard extends ConsumerWidget {
+  const _MoreCard({required this.pet});
+
+  final Pet pet;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(capabilityProvider('health.records.view'))) {
+      return const SizedBox.shrink();
+    }
+    final l10n = context.petsL10n;
+    final count = ref.watch(healthDocumentsProvider(pet.id)).value?.length;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SectionLabel(l10n.profileMore),
+        _RowsCard(
+          rows: [
+            _ProfileRow(
+              key: PetProfileScreen.rowKey('documents'),
+              label: l10n.profileDocuments,
+              value: count == null || count == 0
+                  ? null
+                  : AppFormat.of(context).integer(count),
+              onTap: () =>
+                  openFeature<Object>(context, 'pet-documents', pet.id),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

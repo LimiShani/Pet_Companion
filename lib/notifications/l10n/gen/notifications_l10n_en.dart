@@ -118,6 +118,18 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get openPhoneSettings => 'Open phone settings';
 
   @override
+  String get summaryQuietOff => 'Reminders on · quiet hours off';
+
+  @override
+  String get summaryQuietOn => 'Reminders on · quiet hours on';
+
+  @override
+  String get summaryOff => 'Reminders off';
+
+  @override
+  String get summaryBlocked => 'Off on this phone';
+
+  @override
   String get askTitle => 'Reminders, right on time';
 
   @override

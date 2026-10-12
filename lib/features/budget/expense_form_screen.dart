@@ -15,6 +15,7 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/primary_button.dart';
 import '../../widgets/unsaved_changes_guard.dart';
 import '../../presentation/care_widgets.dart';
+import '../../presentation/more_details.dart';
 import '../../services/pet_records/state/health_providers.dart'
     show healthClockProvider;
 import '../../presentation/budget_words.dart';
@@ -37,6 +38,9 @@ Future<void> openExpenseForm(
 /// Adds or changes an expense: the amount, the category, the pet (or the
 /// whole home), the date, a note and how often it is paid. A stored
 /// expense can be deleted here, and a recurring one stopped.
+///
+/// The amount, the category and the date come first; the pet, the note
+/// and how often it is paid are folded under "More details".
 class ExpenseFormScreen extends ConsumerStatefulWidget {
   const ExpenseFormScreen({super.key, this.expense, this.petId});
 
@@ -67,6 +71,15 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
   late ExpenseFrequency _frequency =
       _expense?.frequency ?? ExpenseFrequency.once;
   late DateTime? _endedOn = _expense?.endedOn;
+
+  /// Whether "More details" is open. An edited expense opens it when a
+  /// field folded in it is not the default: another pet than the one the
+  /// form was opened for, a note, or a repeat.
+  late bool _moreOpen =
+      _expense != null &&
+      (_expense.petId != widget.petId ||
+          _expense.note.trim().isNotEmpty ||
+          _expense.frequency != ExpenseFrequency.once);
   bool _saving = false;
   Object? _error;
 
@@ -268,11 +281,6 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
             l10n.category,
             (v) => _category = v,
           ),
-          CareSectionLabel(l10n.forLabel),
-          chips<String?>([null, for (final p in pets) p.id], _petId, (id) {
-            if (id == null) return l10n.wholeHome;
-            return pets.firstWhere((p) => p.id == id).name;
-          }, (v) => _petId = v),
           CareSectionLabel(l10n.dateLabel),
           CareBox(
             key: ExpenseFormScreen.dateKey,
@@ -289,67 +297,95 @@ class _ExpenseFormScreenState extends ConsumerState<ExpenseFormScreen> {
               ],
             ),
           ),
-          TextFormField(
-            key: ExpenseFormScreen.noteKey,
-            controller: _note,
-            maxLength: 120,
-            decoration: InputDecoration(
-              labelText: l10n.noteLabel,
-              hintText: l10n.noteHint,
-              counterText: '',
-            ),
-          ),
-          CareSectionLabel(l10n.howOften),
-          chips(
-            ExpenseFrequency.values,
-            _frequency,
-            l10n.frequency,
-            (v) => _frequency = v,
-          ),
-          if (_frequency != ExpenseFrequency.once)
-            Padding(
-              padding: const EdgeInsetsDirectional.only(start: 6, top: 6),
-              child: Text(
-                _frequency == ExpenseFrequency.monthly
-                    ? l10n.monthlyNote
-                    : l10n.yearlyNote,
-                style: AppText.secondary,
-              ),
-            ),
-          if (expense != null &&
-              !expense.isNew &&
-              _frequency != ExpenseFrequency.once) ...[
-            const SizedBox(height: 10),
-            if (_endedOn == null)
-              Align(
-                alignment: AlignmentDirectional.centerStart,
-                child: OutlinedButton.icon(
-                  key: ExpenseFormScreen.stopKey,
-                  onPressed: () => setState(() {
-                    // Not before the first payment.
-                    final today = _today();
-                    _endedOn = today.isBefore(_date) ? _date : today;
-                  }),
-                  icon: const AppIcon(Icons.stop_circle_outlined, size: 18),
-                  label: Text(l10n.stopRepeating),
+          const SizedBox(height: 8),
+          MoreDetails(
+            moreLabel: context.budgetL10n.formMoreDetails,
+            fewerLabel: context.budgetL10n.formFewerDetails,
+            expanded: _moreOpen,
+            onToggle: () => setState(() => _moreOpen = !_moreOpen),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CareSectionLabel(l10n.forLabel),
+                chips<String?>(
+                  [null, for (final p in pets) p.id],
+                  _petId,
+                  (id) {
+                    if (id == null) return l10n.wholeHome;
+                    return pets.firstWhere((p) => p.id == id).name;
+                  },
+                  (v) => _petId = v,
                 ),
-              )
-            else
-              Wrap(
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 8,
-                children: [
-                  Text(
-                    l10n.stoppedOn(format.date(_endedOn!)),
-                    style: AppText.body,
+                TextFormField(
+                  key: ExpenseFormScreen.noteKey,
+                  controller: _note,
+                  maxLength: 120,
+                  decoration: InputDecoration(
+                    labelText: l10n.noteLabel,
+                    hintText: l10n.noteHint,
+                    counterText: '',
                   ),
-                  TextButton(
-                    onPressed: () => setState(() => _endedOn = null),
-                    child: Text(l10n.keepRepeating),
+                ),
+                CareSectionLabel(l10n.howOften),
+                chips(
+                  ExpenseFrequency.values,
+                  _frequency,
+                  l10n.frequency,
+                  (v) => _frequency = v,
+                ),
+                if (_frequency != ExpenseFrequency.once)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 6,
+                      top: 6,
+                    ),
+                    child: Text(
+                      _frequency == ExpenseFrequency.monthly
+                          ? l10n.monthlyNote
+                          : l10n.yearlyNote,
+                      style: AppText.secondary,
+                    ),
                   ),
+                if (expense != null &&
+                    !expense.isNew &&
+                    _frequency != ExpenseFrequency.once) ...[
+                  const SizedBox(height: 10),
+                  if (_endedOn == null)
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: OutlinedButton.icon(
+                        key: ExpenseFormScreen.stopKey,
+                        onPressed: () => setState(() {
+                          // Not before the first payment.
+                          final today = _today();
+                          _endedOn = today.isBefore(_date) ? _date : today;
+                        }),
+                        icon: const AppIcon(
+                          Icons.stop_circle_outlined,
+                          size: 18,
+                        ),
+                        label: Text(l10n.stopRepeating),
+                      ),
+                    )
+                  else
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      children: [
+                        Text(
+                          l10n.stoppedOn(format.date(_endedOn!)),
+                          style: AppText.body,
+                        ),
+                        TextButton(
+                          onPressed: () => setState(() => _endedOn = null),
+                          child: Text(l10n.keepRepeating),
+                        ),
+                      ],
+                    ),
                 ],
-              ),
-          ],
+              ],
+            ),
+          ),
           if (error != null) ...[
             const SizedBox(height: 10),
             Text(

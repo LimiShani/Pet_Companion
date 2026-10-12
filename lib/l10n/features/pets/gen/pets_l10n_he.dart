@@ -495,21 +495,6 @@ class PetsL10nHe extends PetsL10n {
   String get essentialsMissing => 'חסרים פרטים חיוניים';
 
   @override
-  String essentialsToAdd(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'חסרים $count פרטים חיוניים',
-      two: 'חסרים שני פרטים חיוניים',
-      one: 'חסר פרט חיוני אחד',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get complete => 'הכול מולא';
-
-  @override
   String get birthdayOrAge => 'תאריך לידה או גיל';
 
   @override
@@ -680,9 +665,6 @@ class PetsL10nHe extends PetsL10n {
   String get iconsUse => 'שימוש באייקון הזה';
 
   @override
-  String get changesSaved => 'השינויים נשמרו';
-
-  @override
   String petArchived(String name) {
     return 'הפרופיל של \u2068$name\u2069 בארכיון. אפשר להחזיר אותו מ״החיות שלי״.';
   }
@@ -705,15 +687,6 @@ class PetsL10nHe extends PetsL10n {
   String get basics => 'פרטים בסיסיים';
 
   @override
-  String get kind => 'סוג';
-
-  @override
-  String get vet => 'וטרינר';
-
-  @override
-  String get saveChanges => 'שמירת השינויים';
-
-  @override
   String archivePet(String name) {
     return 'העברת \u2068$name\u2069 לארכיון';
   }
@@ -727,13 +700,80 @@ class PetsL10nHe extends PetsL10n {
   String get noneKnown => 'לא ידוע על כאלה';
 
   @override
-  String get notAnsweredYet => 'עדיין אין תשובה';
+  String get profileMoreTooltip => 'עוד';
 
   @override
-  String get notAdded => 'לא נוסף';
+  String get profileVetAndHealth => 'וטרינר ובריאות';
 
   @override
-  String get answer => 'מילוי';
+  String get profileMore => 'עוד';
+
+  @override
+  String get profileNameAndKind => 'שם וסוג';
+
+  @override
+  String get profileVets => 'וטרינרים';
+
+  @override
+  String get profileHealthProfile => 'פרופיל בריאות';
+
+  @override
+  String get profileDocuments => 'מסמכים';
+
+  @override
+  String get profileAddVet => 'הוספת וטרינר';
+
+  @override
+  String profileVetEmergency(String name) {
+    return 'חירום: \u2068$name\u2069';
+  }
+
+  @override
+  String profileAllergies(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'אלרגיות: \u2068$list\u2069',
+      one: 'אלרגיה: \u2068$list\u2069',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileNoAllergies => 'אין אלרגיות ידועות';
+
+  @override
+  String get profileNoConditions => 'אין מחלות רקע ידועות';
+
+  @override
+  String get profileChipped => 'יש שבב';
+
+  @override
+  String get profileNotChipped => 'אין שבב';
+
+  @override
+  String get profileSexNotSure => 'מין לא ידוע';
+
+  @override
+  String get profileSpayed => 'מעוקרת';
+
+  @override
+  String get profileNeuteredMale => 'מסורס';
+
+  @override
+  String get profileNeuteredAny => 'עיקור או סירוס: כן';
+
+  @override
+  String get profileNotSpayed => 'לא מעוקרת';
+
+  @override
+  String get profileNotNeuteredMale => 'לא מסורס';
+
+  @override
+  String get profileNotNeuteredAny => 'עיקור או סירוס: לא';
+
+  @override
+  String get profileNeuteringNotSure => 'עיקור: לא ידוע';
 
   @override
   String removePetTitle(String name) {

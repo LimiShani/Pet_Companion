@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/pets/profile/name_and_kind_sheet.dart';
+import 'package:pet_companion/features/pets/profile/pet_profile_screen.dart';
 import 'package:pet_companion/features/pets/profile/remove_pet.dart';
+import 'package:pet_companion/presentation/pets_widgets.dart' show PetsTag;
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
 
@@ -20,9 +23,35 @@ Future<void> letSnackBarPass(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Opens the "Remove …?" dialog from the end of the profile.
+/// Opens the profile's "More" menu and picks [entry] (archive or delete).
+Future<void> openMenuEntry(WidgetTester tester, Key entry) async {
+  await tester.tap(find.byKey(PetProfileScreen.moreKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(entry));
+  await tester.pumpAndSettle();
+}
+
+/// Opens the "Remove …?" dialog through "Archive …" in the "More" menu.
 Future<void> openRemoveDialog(WidgetTester tester, String name) async {
-  await tapVisible(tester, find.text('Archive $name'));
+  await tester.tap(find.byKey(PetProfileScreen.moreKey));
+  await tester.pumpAndSettle();
+  expect(find.text('Archive $name'), findsOneWidget);
+  await tester.tap(find.byKey(PetProfileScreen.archiveKey));
+  await tester.pumpAndSettle();
+}
+
+/// The text [text] in the profile row called [name].
+Finder rowText(String name, String text) =>
+    find.descendant(of: find.byKey(PetProfileScreen.rowKey(name)), matching: find.text(text));
+
+/// Opens the profile row called [name].
+Future<void> openRow(WidgetTester tester, String name) =>
+    tapVisible(tester, find.byKey(PetProfileScreen.rowKey(name)));
+
+/// The phone's back button.
+Future<void> pressBack(WidgetTester tester) async {
+  await tester.binding.handlePopRoute();
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -31,70 +60,98 @@ void main() {
   });
 
   group('the pet profile', () {
-    testWidgets('a long press on a pet pill opens it, with everything on one page', (tester) async {
+    testWidgets('a long press on a pet pill opens an overview: rows, no form, nothing to save', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
 
       expect(find.text('Home'), findsNothing); // full screen: no bottom bar
-      expect(find.text('Change picture'), findsOneWidget);
-      expect(find.text('My pets'), findsOneWidget);
-      expect(find.text('5 of 5 essentials still to add'), findsOneWidget);
-      expect(
-        find.text("A vet's phone number · Allergies · Medical conditions · Age · Weight"),
-        findsOneWidget,
-      );
-      for (final label in ['Basics', 'Birthday or age', 'Weight', 'Sex', 'Neutered or spayed', 'Breed', 'Vet']) {
+      expect(find.byKey(PetProfileScreen.pictureKey), findsOneWidget);
+      expect(find.byKey(PetProfileScreen.moreKey), findsOneWidget);
+      expect(find.byTooltip('More'), findsOneWidget);
+      expect(find.text('Dog'), findsOneWidget); // the summary line
+      for (final label in ['BASICS', 'VET AND HEALTH', 'MORE']) {
         expect(find.text(label), findsOneWidget);
       }
-      expect(find.text('Health basics'), findsOneWidget);
-      expect(find.text('Not answered yet'), findsNWidgets(2));
-      expect(find.text('Not added'), findsOneWidget);
-      expect(find.text('Save changes'), findsOneWidget);
-      expect(find.text('Archive Soya'), findsOneWidget);
-      expect(find.text('Delete Soya'), findsOneWidget);
+      for (final row in ['name', 'age', 'weight', 'breed', 'sex', 'vets', 'health', 'documents']) {
+        expect(find.byKey(PetProfileScreen.rowKey(row)), findsOneWidget, reason: row);
+      }
+      expect(rowText('name', 'Soya · Dog'), findsOneWidget);
+      // A missing answer reads "Add": four basics and the health profile.
+      for (final row in ['age', 'weight', 'breed', 'sex', 'health']) {
+        expect(rowText(row, 'Add'), findsOneWidget, reason: row);
+      }
+      expect(rowText('vets', 'Add the vet'), findsOneWidget);
+      // One nag only, on Home: no essentials card here, no form, no Save.
+      expect(find.textContaining('essentials still to add'), findsNothing);
+      expect(find.byKey(const Key('profile-essentials-add')), findsNothing);
+      expect(find.byType(TextFormField), findsNothing);
+      expect(find.text('Save changes'), findsNothing);
+      expect(find.text('Change picture'), findsNothing);
+      expect(find.text('My pets'), findsNothing);
+      expect(find.text('Archive Soya'), findsNothing);
+      expect(find.text('Delete Soya'), findsNothing);
     });
 
-    testWidgets('a complete pet shows its answers and no essentials card', (tester) async {
+    testWidgets('a complete pet shows its answers on the rows', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Kelly');
 
-      expect(find.text('Dog · Mix · 13.6 years'), findsOneWidget);
-      expect(find.textContaining('essentials still to add'), findsNothing);
-      expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
-      expect(find.text('City Animal Hospital'), findsOneWidget);
-      expect(find.text('Chicken (skin reaction)'), findsOneWidget);
-      expect(find.text('Arthritis in the hips'), findsOneWidget);
-      expect(find.text('985 112 004 567 321'), findsOneWidget);
+      expect(find.text('Dog · Mix · female, spayed'), findsOneWidget);
+      expect(rowText('name', 'Kelly · Dog'), findsOneWidget);
+      expect(rowText('age', '13.6 years'), findsOneWidget);
+      expect(rowText('weight', '23 kg'), findsOneWidget);
+      expect(rowText('breed', 'Mix'), findsOneWidget);
+      expect(rowText('sex', 'Female · spayed'), findsOneWidget);
+      expect(rowText('vets', 'Dr. Levi, Park Vet Clinic · emergency: City Animal Hospital'), findsOneWidget);
+      expect(rowText('health', 'Allergy: Chicken (skin reaction) · Arthritis in the hips · Chipped'), findsOneWidget);
+      expect(rowText('documents', '4'), findsOneWidget);
+      expect(find.text('Add'), findsNothing);
     });
 
-    testWidgets('"Save changes" stores the basics', (tester) async {
+    testWidgets('each basics row opens its own sheet, which saves on its own', (tester) async {
       final h = await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
 
-      await typeInto(tester, find.byKey(const Key('pet-name')), 'Soya Bean');
+      await openRow(tester, 'age');
+      expect(find.text("Soya's age"), findsOneWidget);
       await typeInto(tester, find.byKey(const Key('pet-age-amount')), '3');
-      await typeInto(tester, find.byKey(const Key('pet-weight')), '18');
-      await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Female'));
-      await typeInto(tester, find.byKey(const Key('pet-breed')), 'Labrador');
-      await tapVisible(tester, find.text('Save changes'));
+      await tapVisible(tester, find.text('Save'));
+      expect(find.text("Soya's age"), findsNothing);
+      expect(rowText('age', 'about 3 years'), findsOneWidget);
 
-      expect(find.text('Changes saved'), findsOneWidget);
-      final pet = petNamed(tester, 'Soya Bean');
-      expect(pet.id, soya);
+      await openRow(tester, 'weight');
+      await typeInto(tester, find.byKey(const Key('pet-weight')), '18');
+      await tapVisible(tester, find.text('Save'));
+      expect(rowText('weight', '18 kg'), findsOneWidget);
+
+      await openRow(tester, 'breed');
+      await typeInto(tester, find.byKey(const Key('pet-breed')), 'Labrador');
+      await tapVisible(tester, find.text('Save'));
+      expect(rowText('breed', 'Labrador'), findsOneWidget);
+
+      await openRow(tester, 'sex');
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Female'));
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, 'No'));
+      await tapVisible(tester, find.text('Save'));
+      expect(rowText('sex', 'Female · not spayed'), findsOneWidget);
+      expect(find.text('Dog · Labrador · female, not spayed'), findsOneWidget);
+
+      final pet = petNamed(tester, 'Soya');
       expect(pet.weightKg, 18);
       expect(pet.ageLabelAt(petsNow), 'About 3 years');
       expect(pet.sex, PetSex.female);
+      expect(pet.neutered, Neutered.no);
       expect(pet.breed, 'Labrador');
-      expect(h.pets.cachedPets('demo')!.last.name, 'Soya Bean');
-      // Three essentials are still Health's to answer.
-      expect(find.text('3 of 5 essentials still to add'), findsOneWidget);
+      expect(h.pets.cachedPets('demo')!.last.breed, 'Labrador');
+      expect(find.text('Changes saved'), findsNothing);
     });
 
-    testWidgets('saving something else leaves an untouched age exactly as it was', (tester) async {
+    testWidgets('saving one row leaves an untouched age exactly as it was', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Kelly');
+      await openRow(tester, 'breed');
       await typeInto(tester, find.byKey(const Key('pet-breed')), 'Canaan mix');
-      await tapVisible(tester, find.text('Save changes'));
+      await tapVisible(tester, find.text('Save'));
 
       final pet = petNamed(tester, 'Kelly');
       expect(pet.breed, 'Canaan mix');
@@ -103,66 +160,90 @@ void main() {
       expect(pet.photoAsset, 'assets/images/kelly.png');
     });
 
-    testWidgets('the kind can be changed, and a bird is then weighed in grams', (tester) async {
-      await pumpPetsApp(tester);
-      await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.byKey(const Key('pet-kind')));
-      await tester.tap(find.text('Bird').last);
-      await tester.pumpAndSettle();
-      await typeInto(tester, find.byKey(const Key('pet-weight')), '35');
-      await tapVisible(tester, find.text('Save changes'));
-
-      final pet = petNamed(tester, 'Soya');
-      expect(pet.species, PetSpecies.bird);
-      expect(pet.weightKg, closeTo(0.035, 1e-9));
-    });
-
-    testWidgets('an answer given from the checklist is not lost when the profile is saved afterwards', (tester) async {
+    testWidgets('"Name and kind" saves a new name and kind, and a bird is then weighed in grams', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
 
-      // The weight is added through the checklist while the profile, whose
-      // own weight field is still empty, stays open underneath.
-      await tapVisible(tester, find.byKey(const Key('profile-essentials-add')));
-      await tapVisible(tester, find.byKey(const Key('add-weight')));
-      await typeInto(tester, find.byKey(const Key('pet-weight')).last, '18');
-      await tapVisible(tester, find.text('Save'));
-      Navigator.of(tester.element(find.text("Soya's essentials"))).pop();
-      await tester.pumpAndSettle();
-
-      // The profile follows: its field now shows the weight.
-      final field = tester.widget<TextFormField>(find.byKey(const Key('pet-weight')));
-      expect(field.controller!.text, '18');
-
+      await openRow(tester, 'name');
+      expect(find.byKey(PetNameAndKindSheet.sheetKey), findsOneWidget);
+      expect(find.text('Name and kind'), findsNWidgets(2)); // the row and the sheet's title
+      final field = tester.widget<TextFormField>(find.byKey(const Key('pet-name')));
+      expect(field.controller!.text, 'Soya');
       await typeInto(tester, find.byKey(const Key('pet-name')), 'Soya Bean');
-      await tapVisible(tester, find.text('Save changes'));
+      await tapVisible(tester, find.byKey(const Key('kind-bird')));
+      await tapVisible(tester, find.text('Save'));
+
+      expect(find.byKey(PetNameAndKindSheet.sheetKey), findsNothing);
       final pet = petNamed(tester, 'Soya Bean');
-      expect(pet.weightKg, 18);
+      expect(pet.id, soya);
+      expect(pet.species, PetSpecies.bird);
+      expect(rowText('name', 'Soya Bean · Bird'), findsOneWidget);
+
+      await openRow(tester, 'weight');
+      await typeInto(tester, find.byKey(const Key('pet-weight')), '35');
+      await tapVisible(tester, find.text('Save'));
+      expect(petNamed(tester, 'Soya Bean').weightKg, closeTo(0.035, 1e-9));
+      expect(rowText('weight', '35 g'), findsOneWidget);
     });
 
-    testWidgets('a pet cannot lose its name', (tester) async {
+    testWidgets('"Name and kind" asks before dropping a change, and a pet cannot lose its name', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
+      final sheet = find.byKey(PetNameAndKindSheet.sheetKey);
+      final dialog = find.text('Discard changes?');
+
+      // Nothing changed: back closes the sheet at once.
+      await openRow(tester, 'name');
+      await pressBack(tester);
+      expect(dialog, findsNothing);
+      expect(sheet, findsNothing);
+      expect(find.byKey(PetProfileScreen.moreKey), findsOneWidget);
+
+      // A new kind: back asks; "Keep editing" stays with the change.
+      await openRow(tester, 'name');
+      await tapVisible(tester, find.byKey(const Key('kind-cat')));
+      await pressBack(tester);
+      expect(dialog, findsOneWidget);
+      await tapVisible(tester, find.text('Keep editing'));
+      expect(sheet, findsOneWidget);
+
+      // A typed name: a tap outside the sheet asks too; "Discard" closes it.
+      await typeInto(tester, find.byKey(const Key('pet-name')), 'Soya Bean');
+      await tester.tapAt(const Offset(195, 20));
+      await tester.pumpAndSettle();
+      expect(dialog, findsOneWidget);
+      await tapVisible(tester, find.text('Discard'));
+      expect(sheet, findsNothing);
+      expect(petNamed(tester, 'Soya').species, PetSpecies.dog);
+
+      // An empty name is not saved.
+      await openRow(tester, 'name');
       await typeInto(tester, find.byKey(const Key('pet-name')), '  ');
-      await tapVisible(tester, find.text('Save changes'));
+      await tapVisible(tester, find.text('Save'));
       expect(find.text('A pet needs a name.'), findsOneWidget);
       expect(petNamed(tester, 'Soya').name, 'Soya');
     });
 
-    testWidgets('a save that fails says why', (tester) async {
+    testWidgets('a save that fails says why and keeps the sheet', (tester) async {
       final h = await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
       h.pets.failure = 'Could not save your pet. Please try again.';
+      await openRow(tester, 'weight');
       await typeInto(tester, find.byKey(const Key('pet-weight')), '18');
-      await tapVisible(tester, find.text('Save changes'));
+      await tapVisible(tester, find.text('Save'));
       expect(find.text('Could not save your pet. Please try again.'), findsOneWidget);
+      expect(find.text("Soya's weight"), findsOneWidget);
       expect(petNamed(tester, 'Soya').weightKg, isNull);
     });
 
-    testWidgets('"Change picture" saves the new picture at once', (tester) async {
+    testWidgets('the picture is the one button of the header block and saves at once', (tester) async {
       final h = await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.text('Change picture'));
+      final picture = find.byKey(PetProfileScreen.pictureKey);
+      expect(find.bySemanticsLabel('Change picture'), findsOneWidget);
+      expect(tester.getSize(picture), const Size(88, 88));
+
+      await tapVisible(tester, picture);
       await tapVisible(tester, find.text('Pick an icon'));
       await tapVisible(tester, find.byKey(const Key('icon-dog_pointy')));
       await tapVisible(tester, find.byKey(const Key('icon-bg-sage')));
@@ -170,13 +251,13 @@ void main() {
       expect(petNamed(tester, 'Soya').iconKey, 'dog_pointy:sage');
 
       // A photo replaces the icon; removing it goes back to the default.
-      await tapVisible(tester, find.text('Change picture'));
+      await tapVisible(tester, picture);
       await tapVisible(tester, find.text('Take a photo'));
       final withPhoto = petNamed(tester, 'Soya');
       expect(withPhoto.photoPath, startsWith('demo/soya/'));
       expect(withPhoto.iconKey, isNull);
 
-      await tapVisible(tester, find.text('Change picture'));
+      await tapVisible(tester, picture);
       await tapVisible(tester, find.text('Remove picture'));
       expect(petNamed(tester, 'Soya').hasPhoto, isFalse);
       // The replaced photo does not stay behind in storage.
@@ -186,7 +267,7 @@ void main() {
     testWidgets("Kelly's bundled photo can be swapped for an icon", (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Kelly');
-      await tapVisible(tester, find.text('Change picture'));
+      await tapVisible(tester, find.byKey(PetProfileScreen.pictureKey));
       expect(find.text('Remove picture'), findsOneWidget);
       await tapVisible(tester, find.text('Remove picture'));
       final pet = petNamed(tester, 'Kelly');
@@ -194,28 +275,37 @@ void main() {
       expect(pet.hasPhoto, isFalse);
     });
 
-    testWidgets('the essentials card opens the checklist', (tester) async {
-      await pumpPetsApp(tester);
-      await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.byKey(const Key('profile-essentials-add')));
-      expect(find.text("Soya's essentials"), findsOneWidget);
-    });
-
-    testWidgets("the vet and the health basics are Health's own pieces", (tester) async {
+    testWidgets("the vets and the health profile rows open Health's own pages", (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
 
-      await tapVisible(tester, find.text('Add a vet'));
+      // No vet yet: the row picks one.
+      await openRow(tester, 'vets');
       expect(find.text('Choose the regular vet'), findsOneWidget);
       await tapVisible(tester, find.byKey(const ValueKey('use-vet-v-park')));
-      expect(find.text('4 of 5 essentials still to add'), findsOneWidget);
+      expect(rowText('vets', 'Dr. Levi, Park Vet Clinic'), findsOneWidget);
 
-      await tapVisible(tester, find.byKey(const Key('health-allergies')));
+      // With a vet, it opens the pet's vets.
+      await openRow(tester, 'vets');
+      expect(find.text("Soya's vets"), findsOneWidget);
+      await tester.tap(find.byTooltip('Back').last);
+      await tester.pumpAndSettle();
+
+      await openRow(tester, 'health');
       expect(find.text("Soya's health profile"), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('profile-no-allergies')));
       await tapVisible(tester, find.text('Save profile'));
-      expect(find.text('None known'), findsOneWidget);
-      expect(find.text('3 of 5 essentials still to add'), findsOneWidget);
+      expect(rowText('health', 'No known allergies'), findsOneWidget);
+      // Health's three answers have one row now, not three "Edit" links.
+      expect(find.byKey(const Key('health-allergies')), findsNothing);
+    });
+
+    testWidgets("the Documents row opens the pet's documents", (tester) async {
+      await pumpPetsApp(tester);
+      await openProfile(tester, 'Kelly');
+      await openRow(tester, 'documents');
+      expect(find.text("Kelly's documents"), findsOneWidget);
+      expect(find.text('blood-test.pdf'), findsOneWidget);
     });
 
     testWidgets('it opens from a page shown on its own too', (tester) async {
@@ -230,7 +320,7 @@ void main() {
       );
       await tester.tap(find.text('Profile'));
       await tester.pumpAndSettle();
-      expect(find.text('Change picture'), findsOneWidget);
+      expect(find.byKey(PetProfileScreen.pictureKey), findsOneWidget);
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('Profile'), findsOneWidget);
@@ -238,25 +328,26 @@ void main() {
   });
 
   group('My pets', () {
-    testWidgets('shows every pet with what is missing, and leads to the profile and back', (tester) async {
+    testWidgets('shows every pet without tags, and leads to the profile and back', (tester) async {
       await pumpPetsApp(tester);
-      await openProfile(tester, 'Kelly');
-      await tester.tap(find.text('My pets'));
+      openMyPets(tester.element(find.text('Feeding')));
       await tester.pumpAndSettle();
 
       expect(find.text('Dog · Mix · 13.6 years'), findsOneWidget);
-      expect(find.text('Complete'), findsOneWidget);
-      expect(find.text('5 essentials to add'), findsOneWidget);
+      expect(find.text('Dog'), findsOneWidget); // Soya
+      // The essentials are nagged about on Home only.
+      expect(find.text('Complete'), findsNothing);
+      expect(find.textContaining('essential'), findsNothing);
+      expect(find.byType(PetsTag), findsNothing);
       expect(find.text('Add a pet'), findsOneWidget);
       expect(find.text('Archived'), findsNothing);
 
       await tapVisible(tester, find.byKey(const Key('my-pet-soya')));
-      expect(find.text('Archive Soya'), findsOneWidget);
-      // "My pets" on a profile opened from My pets goes back to it.
-      await tester.tap(find.text('My pets'));
+      expect(find.byKey(PetProfileScreen.moreKey), findsOneWidget);
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('Add a pet'), findsOneWidget);
-      expect(find.text('Archive Soya'), findsNothing);
+      expect(find.byKey(PetProfileScreen.moreKey), findsNothing);
     });
 
     testWidgets('"Add a pet" opens the flow', (tester) async {
@@ -273,22 +364,18 @@ void main() {
       expect(find.text('Pip'), findsOneWidget);
       expect(find.text('Cat'), findsOneWidget);
     });
-
-    testWidgets('one missing essential is written in the singular', (tester) async {
-      final harness = PetsHarness();
-      await harness.pets.savePet('demo', const Pet(id: kelly, name: 'Kelly', ageYears: 13.6));
-      await pumpPetsApp(tester, harness: harness);
-      openMyPets(tester.element(find.text('Feeding')));
-      await tester.pumpAndSettle();
-      expect(find.text('1 essential to add'), findsOneWidget);
-    });
   });
 
   group('archive and delete', () {
-    testWidgets('both buttons open the same clear choice, and "Cancel" changes nothing', (tester) async {
+    testWidgets('both entries of the "More" menu open the same clear choice, and "Cancel" changes nothing', (tester) async {
       await pumpPetsApp(tester);
       await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.text('Delete Soya'));
+      await tester.tap(find.byKey(PetProfileScreen.moreKey));
+      await tester.pumpAndSettle();
+      expect(find.text('Archive Soya'), findsOneWidget);
+      expect(find.text('Delete Soya'), findsOneWidget);
+      await tester.tap(find.byKey(PetProfileScreen.deleteKey));
+      await tester.pumpAndSettle();
 
       expect(find.text('Remove Soya?'), findsOneWidget);
       expect(find.text('Suggested'), findsOneWidget);
@@ -349,7 +436,7 @@ void main() {
       await harness.pets.uploadPhoto('demo', soya, testPhoto);
       await pumpPetsApp(tester, harness: harness);
       await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.text('Delete Soya'));
+      await openMenuEntry(tester, PetProfileScreen.deleteKey);
       await tapVisible(tester, find.byKey(const Key('remove-delete')));
 
       expect(find.text('Feeding'), findsOneWidget);
@@ -374,11 +461,11 @@ void main() {
       final h = await pumpPetsApp(tester, harness: harness);
       await openProfile(tester, 'Soya');
       h.pets.failure = 'Cannot reach the server. Check your connection and try again.';
-      await tapVisible(tester, find.text('Delete Soya'));
+      await openMenuEntry(tester, PetProfileScreen.deleteKey);
       await tapVisible(tester, find.byKey(const Key('remove-delete')));
 
       expect(find.text('Cannot reach the server. Check your connection and try again.'), findsOneWidget);
-      expect(find.text('Archive Soya'), findsOneWidget);
+      expect(find.byKey(PetProfileScreen.moreKey), findsOneWidget);
       expect(currentPets(tester).length, 2);
       // Health got ready, but its files stay: the pet is still there.
       expect(prepared, [soya]);
@@ -395,7 +482,7 @@ void main() {
       );
       await pumpPetsApp(tester, harness: harness);
       await openProfile(tester, 'Soya');
-      await tapVisible(tester, find.text('Delete Soya'));
+      await openMenuEntry(tester, PetProfileScreen.deleteKey);
       await tapVisible(tester, find.byKey(const Key('remove-delete')));
 
       expect(find.text("Could not remove Soya's documents. Please try again."), findsOneWidget);
@@ -431,7 +518,7 @@ void main() {
       await tapVisible(tester, find.byKey(const Key('remove-archive')));
       await letSnackBarPass(tester);
       await openProfile(tester, 'Kelly');
-      await tapVisible(tester, find.text('Delete Kelly'));
+      await openMenuEntry(tester, PetProfileScreen.deleteKey);
       await tapVisible(tester, find.byKey(const Key('remove-delete')));
 
       expect(find.text('Welcome, Alex'), findsOneWidget);

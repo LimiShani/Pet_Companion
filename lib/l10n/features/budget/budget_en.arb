@@ -301,5 +301,13 @@
   "scopeTooltip": "Choose a pet or the whole home",
   "@scopeTooltip": {
     "description": "Tooltip of the chip in the budget header that opens the menu of pets and \"All the home\"."
+  },
+  "formMoreDetails": "More details",
+  "@formMoreDetails": {
+    "description": "Full-width button under the main fields of the expense and basket product forms; reveals the optional fields folded below it."
+  },
+  "formFewerDetails": "Fewer details",
+  "@formFewerDetails": {
+    "description": "The same button once the optional fields are open; folds them away again."
   }
 }

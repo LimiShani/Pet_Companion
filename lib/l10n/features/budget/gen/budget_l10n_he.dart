@@ -426,4 +426,10 @@ class BudgetL10nHe extends BudgetL10n {
 
   @override
   String get scopeTooltip => 'בחירת חיה או כל הבית';
+
+  @override
+  String get formMoreDetails => 'פרטים נוספים';
+
+  @override
+  String get formFewerDetails => 'פחות פרטים';
 }

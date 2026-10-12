@@ -492,20 +492,6 @@ class PetsL10nEn extends PetsL10n {
   String get essentialsMissing => 'Essentials missing';
 
   @override
-  String essentialsToAdd(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count essentials to add',
-      one: '1 essential to add',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get complete => 'Complete';
-
-  @override
   String get birthdayOrAge => 'Birthday or age';
 
   @override
@@ -676,9 +662,6 @@ class PetsL10nEn extends PetsL10n {
   String get iconsUse => 'Use this icon';
 
   @override
-  String get changesSaved => 'Changes saved';
-
-  @override
   String petArchived(String name) {
     return '$name is archived. You can bring $name back from My pets.';
   }
@@ -701,15 +684,6 @@ class PetsL10nEn extends PetsL10n {
   String get basics => 'Basics';
 
   @override
-  String get kind => 'Kind';
-
-  @override
-  String get vet => 'Vet';
-
-  @override
-  String get saveChanges => 'Save changes';
-
-  @override
   String archivePet(String name) {
     return 'Archive $name';
   }
@@ -723,13 +697,80 @@ class PetsL10nEn extends PetsL10n {
   String get noneKnown => 'None known';
 
   @override
-  String get notAnsweredYet => 'Not answered yet';
+  String get profileMoreTooltip => 'More';
 
   @override
-  String get notAdded => 'Not added';
+  String get profileVetAndHealth => 'Vet and health';
 
   @override
-  String get answer => 'Answer';
+  String get profileMore => 'More';
+
+  @override
+  String get profileNameAndKind => 'Name and kind';
+
+  @override
+  String get profileVets => 'Vets';
+
+  @override
+  String get profileHealthProfile => 'Health profile';
+
+  @override
+  String get profileDocuments => 'Documents';
+
+  @override
+  String get profileAddVet => 'Add the vet';
+
+  @override
+  String profileVetEmergency(String name) {
+    return 'Emergency: $name';
+  }
+
+  @override
+  String profileAllergies(int count, String list) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Allergies: $list',
+      one: 'Allergy: $list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileNoAllergies => 'No known allergies';
+
+  @override
+  String get profileNoConditions => 'No known conditions';
+
+  @override
+  String get profileChipped => 'Chipped';
+
+  @override
+  String get profileNotChipped => 'Not chipped';
+
+  @override
+  String get profileSexNotSure => 'Sex not sure';
+
+  @override
+  String get profileSpayed => 'spayed';
+
+  @override
+  String get profileNeuteredMale => 'neutered';
+
+  @override
+  String get profileNeuteredAny => 'neutered or spayed';
+
+  @override
+  String get profileNotSpayed => 'not spayed';
+
+  @override
+  String get profileNotNeuteredMale => 'not neutered';
+
+  @override
+  String get profileNotNeuteredAny => 'not neutered or spayed';
+
+  @override
+  String get profileNeuteringNotSure => 'neutering not sure';
 
   @override
   String removePetTitle(String name) {

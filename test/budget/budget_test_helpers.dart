@@ -14,6 +14,7 @@ import 'package:pet_companion/features/store/data/fake_store_repository.dart';
 import 'package:pet_companion/features/store/state/store_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/notifications/notification_sink.dart';
+import 'package:pet_companion/presentation/more_details.dart';
 
 import '../helpers.dart';
 
@@ -90,6 +91,15 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
   await tester.tap(finder);
   await settle(tester);
+}
+
+/// Whether "More details" is open on the form on screen.
+bool moreDetailsOpen(WidgetTester tester) => tester.widget<MoreDetails>(find.byType(MoreDetails)).expanded;
+
+/// Opens "More details" on the form on screen, unless it is open already.
+Future<void> openMoreDetails(WidgetTester tester) async {
+  if (moreDetailsOpen(tester)) return;
+  await tapVisible(tester, find.byKey(MoreDetails.toggleKey));
 }
 
 /// Opens the budget page from the side menu.

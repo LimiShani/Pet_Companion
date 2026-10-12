@@ -422,4 +422,10 @@ class BudgetL10nEn extends BudgetL10n {
 
   @override
   String get scopeTooltip => 'Choose a pet or the whole home';
+
+  @override
+  String get formMoreDetails => 'More details';
+
+  @override
+  String get formFewerDetails => 'Fewer details';
 }

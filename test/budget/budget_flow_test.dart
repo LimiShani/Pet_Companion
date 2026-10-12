@@ -183,6 +183,7 @@ void main() {
       await tapVisible(tester, find.byKey(ExpenseFormScreen.saveKey));
       expect(plain('Enter an amount, like 120'), findsOneWidget);
       await tester.enterText(find.byKey(ExpenseFormScreen.amountKey), '60');
+      await openMoreDetails(tester);
       await tester.enterText(find.byKey(ExpenseFormScreen.noteKey), 'Treats');
       await tapVisible(tester, find.byKey(ExpenseFormScreen.saveKey));
 
@@ -193,6 +194,8 @@ void main() {
       await tapVisible(tester, plain('Treats'));
       expect(plain('Edit expense'), findsOneWidget);
       await tester.enterText(find.byKey(ExpenseFormScreen.amountKey), '80');
+      // Let the field bring its caret on screen before scrolling down.
+      await tester.pumpAndSettle();
       await tapVisible(tester, plain('Every year'));
       expect(find.textContaining('1/12 a month'), findsOneWidget);
       await tapVisible(tester, find.byKey(ExpenseFormScreen.saveKey));
@@ -218,6 +221,40 @@ void main() {
       await tapVisible(tester, find.byKey(ExpenseFormScreen.saveKey));
       // June's payment (the 1st) was before it stopped, so it still counts.
       expect(_text(tester, _total()), '₪280');
+    });
+
+    testWidgets('a new expense asks the amount, category and date; More details shows the rest', (tester) async {
+      await pumpBudgetApp(tester);
+      await openBudgetFromMenu(tester);
+
+      await tapVisible(tester, plain('Add expense'));
+      expect(find.byKey(ExpenseFormScreen.amountKey), findsOneWidget);
+      expect(plain('Category'), findsOneWidget);
+      expect(find.byKey(ExpenseFormScreen.dateKey), findsOneWidget);
+      expect(moreDetailsOpen(tester), isFalse);
+      expect(plain('More details'), findsOneWidget);
+      expect(plain('For'), findsNothing);
+      expect(find.byKey(ExpenseFormScreen.noteKey), findsNothing);
+      expect(plain('How often'), findsNothing);
+
+      await openMoreDetails(tester);
+      expect(plain('Fewer details'), findsOneWidget);
+      expect(plain('For'), findsOneWidget);
+      expect(plain('Whole home'), findsOneWidget);
+      expect(find.byKey(ExpenseFormScreen.noteKey), findsOneWidget);
+      expect(plain('How often'), findsOneWidget);
+      expect(plain('Every month'), findsOneWidget);
+    });
+
+    testWidgets('editing a recurring expense starts with More details open', (tester) async {
+      await pumpBudgetApp(tester);
+      await openBudgetFromMenu(tester);
+
+      await tapVisible(tester, plain('Dog walker'));
+      expect(plain('Edit expense'), findsOneWidget);
+      expect(moreDetailsOpen(tester), isTrue);
+      expect(plain('Fewer details'), findsOneWidget);
+      expect(find.byKey(ExpenseFormScreen.stopKey), findsOneWidget);
     });
 
     testWidgets('leaving the expense form with changes asks first', (tester) async {
@@ -297,6 +334,7 @@ void main() {
       expect(plain('New regular product'), findsOneWidget);
       await tester.enterText(find.byKey(BasketItemFormScreen.nameKey), 'Pee pads');
       await tapVisible(tester, plain('Consumable'));
+      await openMoreDetails(tester);
       await tester.enterText(find.byKey(BasketItemFormScreen.sizeKey), '30');
       await tapVisible(tester, plain('units'));
       await tester.enterText(find.byKey(BasketItemFormScreen.priceKey), '45');
@@ -314,10 +352,49 @@ void main() {
 
       await tapVisible(tester, plain('Adult dry food · Kelly'));
       expect(plain('Edit product'), findsOneWidget);
+      // Food lasting by the feeding has no own duration: the fold starts closed.
+      expect(moreDetailsOpen(tester), isFalse);
+      await openMoreDetails(tester);
       expect(plain('About 42 days, by 280 g a day from feeding.'), findsOneWidget);
       await tester.enterText(find.byKey(BasketItemFormScreen.sizeKey), '6');
       await tester.pump();
       expect(plain('About 21 days, by 280 g a day from feeding.'), findsOneWidget);
+    });
+
+    testWidgets('a new product asks the name, pet, kind, size, price and purchase; only the duration is folded', (
+      tester,
+    ) async {
+      await pumpBudgetApp(tester);
+      await openBasket(tester);
+
+      await tapVisible(tester, plain('Regular product'));
+      expect(find.byKey(BasketItemFormScreen.nameKey), findsOneWidget);
+      expect(plain('For'), findsOneWidget);
+      expect(plain('Consumable'), findsOneWidget);
+      expect(find.byKey(BasketItemFormScreen.sizeKey), findsOneWidget);
+      expect(find.byKey(BasketItemFormScreen.priceKey), findsOneWidget);
+      expect(plain('Bought on'), findsOneWidget);
+      expect(moreDetailsOpen(tester), isFalse);
+      expect(plain('How long a package lasts'), findsNothing);
+
+      // The package size is needed and in sight: saving without it shows its
+      // error and leaves the fold closed.
+      await tester.enterText(find.byKey(BasketItemFormScreen.nameKey), 'Pee pads');
+      await tapVisible(tester, find.byKey(BasketItemFormScreen.saveKey));
+      expect(plain('New regular product'), findsOneWidget);
+      expect(plain('Enter a size, like 12'), findsOneWidget);
+      expect(moreDetailsOpen(tester), isFalse);
+    });
+
+    testWidgets('editing a product with its own duration starts with More details open', (tester) async {
+      await pumpBudgetApp(tester);
+      await openBasket(tester);
+
+      await tapVisible(tester, plain('Dental chews · Kelly'));
+      expect(plain('Edit product'), findsOneWidget);
+      expect(moreDetailsOpen(tester), isTrue);
+      expect(find.byKey(BasketItemFormScreen.sizeKey), findsOneWidget);
+      expect(find.byKey(BasketItemFormScreen.lastsKey), findsOneWidget);
     });
 
     testWidgets('the deals link opens the Store on that category for the pet', (tester) async {
@@ -395,6 +472,48 @@ void main() {
       expect(plain('קניתי שוב'), findsWidgets);
       await scrollTo(tester, plain('מוצר קבוע'));
       expect(plain('מוצר קבוע'), findsOneWidget);
+    });
+
+    testWidgets('the expense and product forms fit at 320 px with More details open', (tester) async {
+      await pumpBudgetApp(tester, language: AppLanguage.hebrew);
+      // Signed in at phone size, then down to the narrowest phone.
+      tester.view.physicalSize = const Size(320, 640) * 3;
+      await settle(tester);
+
+      await tapVisible(tester, find.byKey(SpendingCard.cardKey));
+      await tapVisible(tester, plain('הוספת הוצאה'));
+      expect(plain('הוצאה חדשה'), findsOneWidget);
+      expect(plain('פרטים נוספים'), findsOneWidget);
+      await openMoreDetails(tester);
+      expect(plain('פחות פרטים'), findsOneWidget);
+      expect(plain('באיזו תדירות'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byTooltip('חזרה'));
+      await settle(tester);
+
+      // A recurring expense opens with its repeat and the stop button.
+      await tapVisible(tester, plain('Dog walker'));
+      expect(moreDetailsOpen(tester), isTrue);
+      expect(find.byKey(ExpenseFormScreen.stopKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byTooltip('חזרה'));
+      await settle(tester);
+      await tester.tap(find.byTooltip('חזרה'));
+      await settle(tester);
+
+      await openBasket(tester, store: 'חנות', basket: 'סל');
+      await tapVisible(tester, plain('מוצר קבוע'));
+      expect(plain('מוצר קבוע חדש'), findsOneWidget);
+      await openMoreDetails(tester);
+      expect(plain('גודל האריזה'), findsWidgets);
+      expect(tester.takeException(), isNull);
+      // The owner's own duration, then a kind that is not food.
+      await tapVisible(tester, plain('הערכה שלי'));
+      expect(find.byKey(BasketItemFormScreen.lastsKey), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tapVisible(tester, plain('מתכלה'));
+      expect(plain('שבועות'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
   });
 }

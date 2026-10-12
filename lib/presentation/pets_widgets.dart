@@ -837,12 +837,21 @@ Future<T?> pushPetsPage<T>(BuildContext context, Widget page) => Navigator.of(
 
 /// Shows [child] as a bottom sheet over everything. The sheet scrolls when
 /// its content is taller than the screen.
-Future<T?> showPetsSheet<T>(BuildContext context, Widget child) {
+///
+/// A sheet with a form that asks before dropping typed changes passes
+/// `enableDrag: false`: a drag closes the sheet without asking, while the
+/// back button and a tap outside ask first.
+Future<T?> showPetsSheet<T>(
+  BuildContext context,
+  Widget child, {
+  bool enableDrag = true,
+}) {
   return showModalBottomSheet<T>(
     context: context,
     useRootNavigator: true,
     isScrollControlled: true,
     useSafeArea: true,
+    enableDrag: enableDrag,
     builder: (context) => SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(
         AppSpacing.screen,

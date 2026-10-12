@@ -857,18 +857,6 @@ abstract class PetsL10n {
   /// **'Essentials missing'**
   String get essentialsMissing;
 
-  /// No description provided for @essentialsToAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{1 essential to add} other{{count} essentials to add}}'**
-  String essentialsToAdd(int count);
-
-  /// Tag on a pet whose essentials are all answered.
-  ///
-  /// In en, this message translates to:
-  /// **'Complete'**
-  String get complete;
-
   /// No description provided for @birthdayOrAge.
   ///
   /// In en, this message translates to:
@@ -1193,12 +1181,6 @@ abstract class PetsL10n {
   /// **'Use this icon'**
   String get iconsUse;
 
-  /// No description provided for @changesSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'Changes saved'**
-  String get changesSaved;
-
   /// No description provided for @petArchived.
   ///
   /// In en, this message translates to:
@@ -1229,29 +1211,11 @@ abstract class PetsL10n {
   /// **'Change picture'**
   String get changePicture;
 
-  /// Heading of the name, kind, age and weight fields on the pet profile.
+  /// Heading of the name, kind, age, weight, breed and sex rows on the pet profile (shown in capitals in English).
   ///
   /// In en, this message translates to:
   /// **'Basics'**
   String get basics;
-
-  /// Label of the field for the kind of animal.
-  ///
-  /// In en, this message translates to:
-  /// **'Kind'**
-  String get kind;
-
-  /// No description provided for @vet.
-  ///
-  /// In en, this message translates to:
-  /// **'Vet'**
-  String get vet;
-
-  /// No description provided for @saveChanges.
-  ///
-  /// In en, this message translates to:
-  /// **'Save changes'**
-  String get saveChanges;
 
   /// No description provided for @archivePet.
   ///
@@ -1271,23 +1235,137 @@ abstract class PetsL10n {
   /// **'None known'**
   String get noneKnown;
 
-  /// No description provided for @notAnsweredYet.
+  /// Tooltip of the pet profile's header menu (archive, delete).
   ///
   /// In en, this message translates to:
-  /// **'Not answered yet'**
-  String get notAnsweredYet;
+  /// **'More'**
+  String get profileMoreTooltip;
 
-  /// No description provided for @notAdded.
+  /// Heading of the vets and health profile rows on the pet profile (shown in capitals in English).
   ///
   /// In en, this message translates to:
-  /// **'Not added'**
-  String get notAdded;
+  /// **'Vet and health'**
+  String get profileVetAndHealth;
 
-  /// Link that opens a question which has no answer yet.
+  /// Heading of the last rows on the pet profile, such as Documents (shown in capitals in English).
   ///
   /// In en, this message translates to:
-  /// **'Answer'**
-  String get answer;
+  /// **'More'**
+  String get profileMore;
+
+  /// Row on the pet profile, and the title of its sheet: the pet's name and kind of animal.
+  ///
+  /// In en, this message translates to:
+  /// **'Name and kind'**
+  String get profileNameAndKind;
+
+  /// Row on the pet profile that opens the pet's regular and emergency vets.
+  ///
+  /// In en, this message translates to:
+  /// **'Vets'**
+  String get profileVets;
+
+  /// Row on the pet profile: allergies, conditions and the microchip.
+  ///
+  /// In en, this message translates to:
+  /// **'Health profile'**
+  String get profileHealthProfile;
+
+  /// Row on the pet profile that opens the files attached to the pet's records.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get profileDocuments;
+
+  /// Second line of the Vets row when no vet is saved for the pet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the vet'**
+  String get profileAddVet;
+
+  /// The pet's emergency vet in the Vets row; {name} is the vet. After the regular vet the first letter is lowered in English.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency: {name}'**
+  String profileVetEmergency(String name);
+
+  /// The pet's allergies in the Health profile row; {list} is the allergies, separated by commas.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Allergy: {list}} other{Allergies: {list}}}'**
+  String profileAllergies(int count, String list);
+
+  /// No description provided for @profileNoAllergies.
+  ///
+  /// In en, this message translates to:
+  /// **'No known allergies'**
+  String get profileNoAllergies;
+
+  /// No description provided for @profileNoConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'No known conditions'**
+  String get profileNoConditions;
+
+  /// The pet has a microchip number saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Chipped'**
+  String get profileChipped;
+
+  /// No description provided for @profileNotChipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Not chipped'**
+  String get profileNotChipped;
+
+  /// The owner answered "Not sure" about the pet's sex.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex not sure'**
+  String get profileSexNotSure;
+
+  /// A female pet is spayed, after its sex: "Female · spayed".
+  ///
+  /// In en, this message translates to:
+  /// **'spayed'**
+  String get profileSpayed;
+
+  /// A male pet is neutered, after its sex: "Male · neutered".
+  ///
+  /// In en, this message translates to:
+  /// **'neutered'**
+  String get profileNeuteredMale;
+
+  /// Neutered, when the sex is not known.
+  ///
+  /// In en, this message translates to:
+  /// **'neutered or spayed'**
+  String get profileNeuteredAny;
+
+  /// A female pet is not spayed.
+  ///
+  /// In en, this message translates to:
+  /// **'not spayed'**
+  String get profileNotSpayed;
+
+  /// A male pet is not neutered.
+  ///
+  /// In en, this message translates to:
+  /// **'not neutered'**
+  String get profileNotNeuteredMale;
+
+  /// Not neutered, when the sex is not known.
+  ///
+  /// In en, this message translates to:
+  /// **'not neutered or spayed'**
+  String get profileNotNeuteredAny;
+
+  /// The owner answered "Not sure" about neutering; follows the sex: "Female · neutering not sure".
+  ///
+  /// In en, this message translates to:
+  /// **'neutering not sure'**
+  String get profileNeuteringNotSure;
 
   /// No description provided for @removePetTitle.
   ///

@@ -2,112 +2,94 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
-import '../../notifications/push.dart';
+import '../../notifications/notifications.dart';
 import '../../notifications/widgets/notification_settings_card.dart';
-import '../../platform/feature_ui.dart';
-import '../../theme/app_colors.dart';
-import '../../theme/app_theme.dart';
-import '../../widgets/coral_header.dart';
-import '../../widgets/language_choice.dart';
+import '../../widgets/petloop_icon.dart';
+import 'settings_routes.dart';
+import 'widgets/menu_card.dart';
+import 'widgets/menu_entry.dart';
+import 'widgets/settings_page.dart';
 import 'widgets/week_choice.dart';
 
-/// The Settings page: the app's language, the week layout and the
-/// notifications. Every choice applies at once and is remembered on the
-/// phone (see `SettingsStore`). The legal pages and the credits are on
-/// the About page (`AboutScreen`).
+/// The Settings page: three rows, the app's language, the week layout and
+/// the notifications, each with the current choice under its name. Each
+/// row opens a short page with its controls (`LanguageSettingsScreen`,
+/// `WeekSettingsScreen`, `NotificationSettingsScreen`); every choice
+/// applies at once and is remembered on the phone (see `SettingsStore`).
+/// The legal pages and the credits are on the About page (`AboutScreen`).
 ///
 /// Opened from the You page with `openSettings`.
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   static const screenKey = Key('settings-screen');
+  static const languageKey = Key('settings-language');
+  static const weekKey = Key('settings-week');
+  static const notificationsKey = Key('settings-notifications');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final notifications = context.notificationsL10n;
 
-    return Scaffold(
+    return SettingsPage(
       key: screenKey,
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CoralHeader(title: l10n.settingsTitle, showBack: true),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.screen,
-                16,
-                AppSpacing.screen,
-                24 + MediaQuery.paddingOf(context).bottom,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SectionLabel(l10n.accountLanguage),
-                  const LanguageChoice(),
-                  _Note(l10n.languageNote),
-                  const SizedBox(height: 16),
-                  _SectionLabel(l10n.settingsWeek),
-                  const WeekChoice(),
-                  _Note(l10n.settingsWeekNote),
-                  const SizedBox(height: 16),
-                  _SectionLabel(context.notificationsL10n.sectionTitle),
-                  const NotificationSettingsCard(),
-                  // The community's push choices, when push is available.
-                  Consumer(
-                    builder: (context, ref, _) =>
-                        ref.watch(pushMessagingProvider) == null
-                        ? const SizedBox.shrink()
-                        : featureSlot('community-push-settings', ''),
-                  ),
-                  const SizedBox(height: 16),
-                  _Note(l10n.settingsSavedNote),
-                ],
-              ),
+      title: l10n.settingsTitle,
+      children: [
+        // A choice can take two lines under its name on a small phone.
+        MenuCard(
+          children: [
+            MenuEntry(
+              key: languageKey,
+              subtitleMaxLines: 2,
+              icon: const Icon(Icons.translate_rounded),
+              title: l10n.accountLanguage,
+              subtitle: _languageSummary(l10n, ref),
+              onTap: () => openLanguageSettings(context),
             ),
-          ),
-        ],
-      ),
+            MenuEntry(
+              key: weekKey,
+              subtitleMaxLines: 2,
+              icon: const PetLoopIcon(PetLoopGlyph.calendar),
+              title: l10n.settingsWeek,
+              subtitle: WeekChoice.summaryOf(
+                context,
+                ref.watch(weekSettingsProvider),
+              ),
+              onTap: () => openWeekSettings(context),
+            ),
+            MenuEntry(
+              key: notificationsKey,
+              subtitleMaxLines: 2,
+              icon: const PetLoopIcon(PetLoopGlyph.reminder),
+              title: notifications.sectionTitle,
+              subtitle: NotificationSettingsCard.summaryOf(
+                notifications,
+                ref.watch(notificationSettingsProvider),
+                ref.watch(notificationAccessProvider).value,
+              ),
+              onTap: () => openNotificationSettings(context),
+            ),
+          ],
+        ),
+        SettingsNote(l10n.settingsSavedNote),
+      ],
     );
   }
-}
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      header: true,
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(start: 6, bottom: 6),
-        child: Text(
-          text,
-          style: AppText.label.copyWith(color: AppColors.brown),
-        ),
-      ),
-    );
-  }
-}
-
-class _Note extends StatelessWidget {
-  const _Note(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsetsDirectional.only(start: 6, end: 6, top: 8),
-      child: Text(
-        text,
-        style: AppText.label.copyWith(
-          color: AppColors.brown,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
+  /// "Follow the phone · English" while the app follows the phone, else
+  /// the chosen language in its own letters.
+  static String _languageSummary(AppL10n l10n, WidgetRef ref) {
+    final chosen = ref.watch(appLanguageProvider);
+    if (chosen == AppLanguage.system &&
+        ref.watch(hebrewFollowsDeviceProvider)) {
+      final phone = resolveAppLocale(
+        AppLanguage.system,
+        ref.watch(deviceLocalesProvider),
+        hebrewFollowsDevice: true,
+      );
+      return l10n.settingsLanguageFollowing(nativeLanguageName(phone));
+    }
+    return nativeLanguageName(ref.watch(appLocaleProvider));
   }
 }

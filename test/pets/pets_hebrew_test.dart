@@ -8,6 +8,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/pets/data/photo_services.dart';
 import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/pets/picture/crop_photo_screen.dart';
+import 'package:pet_companion/features/pets/profile/name_and_kind_sheet.dart';
+import 'package:pet_companion/features/pets/profile/pet_profile_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/widgets/brand.dart';
@@ -234,39 +236,70 @@ void main() {
       await tester.pump(const Duration(seconds: 5)); // let the message go
       await tester.pumpAndSettle();
 
-      // The profile.
+      // The profile: an overview, one row per answer, nothing to save.
       await tapVisible(tester, find.text('profile'));
       final pet = petNamed(tester, 'Soya');
-      expect(find.text(petSummaryLine(he, pet, now: petsNow)), findsOneWidget);
-      expect(find.text('כלב · בערך ${isolate('שנתיים')}'), findsOneWidget);
-      expect(find.text(he.changePicture), findsOneWidget);
-      expect(find.text(he.myPetsTitle), findsOneWidget);
-      expect(find.text(he.essentialsStillToAdd(3, 5)), findsOneWidget);
-      for (final label in [he.basics, he.birthdayOrAge, he.sex, he.neuteredOrSpayed, he.vet, he.healthBasics]) {
-        expect(find.text(label), findsOneWidget);
+      expect(find.text(profileSummaryLine(he, pet)), findsOneWidget);
+      expect(find.bySemanticsLabel(he.changePicture), findsOneWidget);
+      expect(find.byTooltip(he.profileMoreTooltip), findsOneWidget);
+      expect(find.text(he.myPetsTitle), findsNothing);
+      expect(find.textContaining('פרטים חיוניים'), findsNothing);
+      for (final label in [
+        he.basics,
+        he.profileVetAndHealth,
+        he.profileMore,
+        he.profileNameAndKind,
+        he.itemAge,
+        he.itemWeight,
+        he.itemBreed,
+        he.itemSexAndNeutering,
+        he.profileVets,
+        he.profileHealthProfile,
+        he.profileDocuments,
+      ]) {
+        expect(find.text(label), findsOneWidget, reason: label);
       }
-      expect(find.text(he.notAnsweredYet), findsNWidgets(2));
-      expect(find.text(he.notAdded), findsOneWidget);
-      expect(find.text(he.answer), findsNWidgets(2));
-      expect(find.text(he.saveChanges), findsOneWidget);
+      expect(find.text(he.ageAbout(he.ageYears(2))), findsOneWidget);
+      expect(find.text(he.weightKg('18')), findsOneWidget);
+      // Breed, sex and the health profile are still to add.
+      expect(find.text(appHe.commonAdd), findsNWidgets(3));
+      expect(find.text(he.profileAddVet), findsOneWidget);
       expect(tester.getCenter(find.byTooltip(appHe.commonBack)).dx, greaterThan(size.width / 2));
+      // A row's label starts on the right in Hebrew, its value ends on the left.
+      final ageRow = find.byKey(PetProfileScreen.rowKey('age'));
+      expect(tester.getCenter(find.descendant(of: ageRow, matching: find.text(he.itemAge))).dx, greaterThan(size.width / 2));
+      expect(
+        tester.getCenter(find.descendant(of: ageRow, matching: find.text(he.ageAbout(he.ageYears(2))))).dx,
+        lessThan(size.width / 2),
+      );
 
-      await tapVisible(tester, find.byKey(const Key('pet-kind')));
-      expect(find.text('חתול'), findsWidgets);
-      await tester.tap(find.text('חתול').last);
-      await tester.pumpAndSettle();
+      // Name and kind: a cat now; an empty name is refused.
+      await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('name')));
+      expect(find.text(he.kindOfAnimal), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('kind-cat')));
       await typeInto(tester, find.byKey(const Key('pet-name')), '  ');
-      await tapVisible(tester, find.text(he.saveChanges));
+      await tapVisible(tester, find.text(appHe.commonSave));
       expect(find.text(he.nameMissing), findsOneWidget);
       await typeInto(tester, find.byKey(const Key('pet-name')), 'Soya');
-      await tapVisible(tester, find.text(he.saveChanges));
-      expect(find.text('השינויים נשמרו'), findsOneWidget);
+      await tapVisible(tester, find.text(appHe.commonSave));
+      expect(find.byKey(PetNameAndKindSheet.sheetKey), findsNothing);
       expect(petNamed(tester, 'Soya').species, PetSpecies.cat);
-      await tester.pump(const Duration(seconds: 5));
-      await tester.pumpAndSettle();
+      expect(find.text('${isolate('Soya')} · חתול'), findsOneWidget);
 
-      // Archive or delete.
-      await tapVisible(tester, find.text(he.deletePet('Soya')));
+      // Sex and neutering, in the words for the pet's sex.
+      await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('sex')));
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, he.sexFemale));
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, he.answerYes));
+      await tapVisible(tester, find.text(appHe.commonSave));
+      expect(find.text('נקבה · מעוקרת'), findsOneWidget);
+      expect(find.text('חתול · נקבה, מעוקרת'), findsOneWidget);
+
+      // Archive or delete, from the "More" menu.
+      await tester.tap(find.byKey(PetProfileScreen.moreKey));
+      await tester.pumpAndSettle();
+      expect(find.text(he.archivePet('Soya')), findsOneWidget);
+      await tester.tap(find.byKey(PetProfileScreen.deleteKey));
+      await tester.pumpAndSettle();
       expect(find.text(he.removePetTitle('Soya')), findsOneWidget);
       expect(find.text(he.suggested), findsOneWidget);
       expect(find.text(he.archiveNote('Soya')), findsOneWidget);
@@ -275,14 +308,14 @@ void main() {
       expect(find.text(appHe.commonCancel), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('remove-archive')));
       expect(find.text(he.petArchived('Soya')), findsOneWidget);
-      expect(find.text(he.changePicture), findsNothing);
+      expect(find.byKey(PetProfileScreen.moreKey), findsNothing);
       await tester.pump(const Duration(seconds: 5));
       await tester.pumpAndSettle();
 
-      // My pets, with the archived one.
+      // My pets, with the archived one; no tags on the pets.
       await tapVisible(tester, find.text('my pets'));
       expect(find.text('החיות שלי'), findsOneWidget);
-      expect(find.text(he.complete), findsOneWidget);
+      expect(find.text('הכול מולא'), findsNothing);
       expect(find.text(he.addPetTitle), findsOneWidget);
       expect(find.text(he.archived), findsOneWidget);
       expect(find.text(he.archivedRow('חתול', '10.06.25')), findsOneWidget);
@@ -292,7 +325,7 @@ void main() {
 
       await tapVisible(tester, find.byKey(const Key('restore-soya')));
       expect(find.text(he.petIsBack('Soya')), findsOneWidget);
-      expect(find.text(he.essentialsToAdd(3)), findsOneWidget);
+      expect(find.textContaining('פרטים חיוניים'), findsNothing);
       expect(find.text(he.archived), findsNothing);
     });
   }

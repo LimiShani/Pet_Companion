@@ -21,6 +21,25 @@ class WeekChoice extends ConsumerWidget {
   static const mondayToFridayKey = Key('weekdays-monday-friday');
   static const previewKey = Key('week-preview');
 
+  /// One line on [week], for the Week row of the Settings page: "Starts
+  /// on Sunday · Sunday to Thursday".
+  static String summaryOf(BuildContext context, WeekSettings week) {
+    final l10n = context.l10n;
+    final format = AppFormat.of(context);
+    final firstDay = switch (week.firstDay) {
+      DateTime.saturday => l10n.settingsDaySaturday,
+      DateTime.sunday => l10n.settingsDaySunday,
+      DateTime.monday => l10n.settingsDayMonday,
+      final day => format.weekdayShort(day),
+    };
+    final weekdays = week.isWeekdays(WeekSettings.israeli.weekdays)
+        ? l10n.settingsWeekdaysSunThu
+        : week.isWeekdays(WeekSettings.mondayToFriday.weekdays)
+        ? l10n.settingsWeekdaysMonFri
+        : week.sorted(week.weekdays).map(format.weekdayShort).join(', ');
+    return l10n.settingsWeekSummary(firstDay, weekdays);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;

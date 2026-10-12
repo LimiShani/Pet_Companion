@@ -15,6 +15,7 @@ class MenuEntry extends StatelessWidget {
     required this.title,
     required this.onTap,
     this.subtitle,
+    this.subtitleMaxLines = 1,
     this.color = Colors.transparent,
   });
 
@@ -23,6 +24,9 @@ class MenuEntry extends StatelessWidget {
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
+
+  /// The [subtitle] wraps onto this many lines before it is cut short.
+  final int subtitleMaxLines;
 
   /// The row's own background; transparent on a menu, white as a card.
   final Color color;
@@ -73,7 +77,7 @@ class MenuEntry extends StatelessWidget {
                             style: AppText.secondary.copyWith(
                               color: AppColors.brown,
                             ),
-                            maxLines: 1,
+                            maxLines: subtitleMaxLines,
                             overflow: TextOverflow.ellipsis,
                           ),
                       ],

@@ -728,7 +728,7 @@ abstract class AppL10n {
   /// No description provided for @settingsWeekNote.
   ///
   /// In en, this message translates to:
-  /// **'Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.'**
+  /// **'Your week: the first day and the weekdays. The Health schedule follows this choice.'**
   String get settingsWeekNote;
 
   /// No description provided for @settingsSavedNote.
@@ -736,6 +736,18 @@ abstract class AppL10n {
   /// In en, this message translates to:
   /// **'These settings are saved on this phone.'**
   String get settingsSavedNote;
+
+  /// Under 'Language' on the Settings page when the app follows the phone; {language} is the phone's language in its own letters (English, עברית).
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the phone · {language}'**
+  String settingsLanguageFollowing(String language);
+
+  /// Under 'Week' on the Settings page: the first day of the week (Sunday) and the weekdays (Sunday to Thursday).
+  ///
+  /// In en, this message translates to:
+  /// **'Starts on {day} · {weekdays}'**
+  String settingsWeekSummary(String day, String weekdays);
 
   /// No description provided for @legalTerms.
   ///

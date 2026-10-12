@@ -131,6 +131,19 @@
   "blockedTitle": "PetLoop may not show notifications",
   "blockedNote": "Notifications are off for PetLoop in the phone's settings, so no reminder can ring.",
   "openPhoneSettings": "Open phone settings",
+  "summaryQuietOff": "Reminders on · quiet hours off",
+  "@summaryQuietOff": {
+    "description": "Under 'Notifications' on the Settings page: reminders ring, quiet hours are off."
+  },
+  "summaryQuietOn": "Reminders on · quiet hours on",
+  "summaryOff": "Reminders off",
+  "@summaryOff": {
+    "description": "Under 'Notifications' on the Settings page: the master switch is off."
+  },
+  "summaryBlocked": "Off on this phone",
+  "@summaryBlocked": {
+    "description": "Under 'Notifications' on the Settings page: the phone's own settings block PetLoop's notifications."
+  },
   "askTitle": "Reminders, right on time",
   "@askTitle": {
     "description": "Title of the sheet shown before the phone asks for permission to send notifications."

@@ -5,6 +5,7 @@ import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../widgets/app_icon.dart';
 import '../../../presentation/health_strings.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/pets_widgets.dart';
@@ -83,18 +84,38 @@ class _StartState extends ConsumerState<_Start> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.firstDaysL10n;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        PetsNote(l10n.startNote),
-        const SizedBox(height: 10),
-        PetsOutlineButton(
-          l10n.startPath,
-          key: FirstDaysProfileEntry.startKey,
-          icon: Icons.home_rounded,
-          onPressed: _busy ? null : _start,
-        ),
-      ],
+    // One row like the profile's other rows: what it is, and Start.
+    return PetsCard(
+      key: FirstDaysProfileEntry.startKey,
+      onTap: _busy ? null : _start,
+      semanticLabel: l10n.startPath,
+      padding: const EdgeInsetsDirectional.fromSTEB(14, 12, 12, 12),
+      child: Row(
+        children: [
+          const PetsDisc(Icons.home_rounded),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  l10n.startPath,
+                  style: AppText.button(14).copyWith(
+                    color: AppColors.coralDark,
+                  ),
+                ),
+                Text(
+                  l10n.startNote,
+                  style: AppText.secondary.copyWith(color: AppColors.brown),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Mirrors itself on a right-to-left screen.
+          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
+        ],
+      ),
     );
   }
 }

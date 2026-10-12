@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/features/pets/profile/name_and_kind_sheet.dart';
 import 'package:pet_companion/features/care/care.dart';
 import 'package:pet_companion/features/health/emergency/emergency_button.dart';
 import 'package:pet_companion/features/health/emergency/health_profile_form.dart';
@@ -256,30 +257,36 @@ void main() {
     );
   });
 
-  testWidgets("the pet's profile", (tester) async {
+  testWidgets("the pet's name and kind (the profile itself has nothing to save)", (tester) async {
     await pumpApp(tester, now: DateTime(2025, 6, 10, 15));
     await signInAsDemo(tester);
-    final page = find.byType(PetProfileScreen);
+    final profile = find.byType(PetProfileScreen);
+    final page = find.byKey(PetNameAndKindSheet.sheetKey);
     final name = find.byKey(const Key('pet-name'));
 
     await checkPage(
       tester,
       open: () async {
-        // A long press on the pet's pill on Home.
-        await tester.longPress(find.text('Kelly').first);
-        await tester.pumpAndSettle();
+        if (profile.evaluate().isEmpty) {
+          // A long press on the pet's pill on Home.
+          await tester.longPress(find.text('Kelly').first);
+          await tester.pumpAndSettle();
+        }
+        await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('name')));
       },
       page: page,
       edit: () => tester.enterText(name, 'Kelly Bean'),
       edited: find.text('Kelly Bean'),
       save: () async {
-        // The profile saves in place: once saved, back leaves at once.
+        // The sheet saves and closes; the profile has nothing left to ask
+        // about, so back leaves it at once.
         await tester.enterText(name, 'Kells');
-        await tapText(tester, 'Save changes');
-        expect(page, findsOneWidget);
+        await tapText(tester, 'Save');
+        expect(page, findsNothing);
+        expect(profile, findsOneWidget);
         await pressBack(tester);
         expect(dialog, findsNothing);
-        expect(page, findsNothing);
+        expect(profile, findsNothing);
       },
     );
     expect(find.text('Kells'), findsWidgets);

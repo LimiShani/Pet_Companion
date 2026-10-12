@@ -13,7 +13,7 @@ import 'package:pet_companion/features/community/data/fake_feed_repository.dart'
 import 'package:pet_companion/features/community/members/member_screen.dart';
 import 'package:pet_companion/features/community/members/members_providers.dart';
 import 'package:pet_companion/features/community/widgets/post_photo_view.dart';
-import 'package:pet_companion/features/settings/settings_screen.dart';
+import 'package:pet_companion/features/settings/settings_pages.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/navigation/app_router.dart';
 import 'package:pet_companion/notifications/notifications.dart';
@@ -406,9 +406,10 @@ void main() {
     ]);
     await signInAsDemo(tester);
     await tester.pumpAndSettle();
-    hostContainer(tester).read(routerProvider).push('/settings');
+    // The push switches are on Settings > Notifications.
+    hostContainer(tester).read(routerProvider).push('/settings/notifications');
     await tester.pumpAndSettle();
-    expect(find.byKey(SettingsScreen.screenKey), findsOneWidget);
+    expect(find.byKey(NotificationSettingsScreen.screenKey), findsOneWidget);
 
     final messages = find.byKey(const ValueKey('push-private-messages'));
     await tester.scrollUntilVisible(messages, 200, scrollable: find.byType(Scrollable).first);

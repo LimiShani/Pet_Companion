@@ -21,6 +21,7 @@ import '../../../presentation/pet_words.dart';
 import '../pets_routes.dart';
 import '../picture/pet_picture.dart';
 import '../../../presentation/pet_avatar.dart';
+import '../widgets/kind_picker.dart';
 import '../widgets/pet_basics_fields.dart';
 import '../../../presentation/pets_widgets.dart';
 import 'all_set_view.dart';
@@ -403,7 +404,7 @@ class _AddPetScreenState extends ConsumerState<AddPetScreen> {
             },
           ),
           PetsLabel(context.petsL10n.kindOfAnimal),
-          _KindPicker(
+          PetKindPicker(
             selected: _species,
             onSelected: _busy
                 ? null
@@ -555,84 +556,6 @@ class _CameraBadge extends StatelessWidget {
         size: 20,
         color: AppColors.white,
       ),
-    );
-  }
-}
-
-/// The six kinds of animal, three to a row, each with its default icon.
-class _KindPicker extends StatelessWidget {
-  const _KindPicker({required this.selected, required this.onSelected});
-
-  final PetSpecies selected;
-  final ValueChanged<PetSpecies>? onSelected;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability: 'pets.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    const gap = 8.0;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = (constraints.maxWidth - 2 * gap) / 3;
-        return Wrap(
-          spacing: gap,
-          runSpacing: gap,
-          children: [
-            for (final species in PetSpecies.values)
-              SizedBox(
-                width: width.floorToDouble(),
-                child: Semantics(
-                  button: true,
-                  selected: species == selected,
-                  child: Material(
-                    color: species == selected
-                        ? AppColors.yellow
-                        : AppColors.white,
-                    borderRadius: BorderRadius.circular(22),
-                    clipBehavior: Clip.antiAlias,
-                    child: InkWell(
-                      key: Key('kind-${species.name}'),
-                      onTap: onSelected == null
-                          ? null
-                          : () => onSelected!(species),
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(4, 10, 4, 9),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ExcludeSemantics(
-                              child: PetIconImage(
-                                PetIcon.defaultFor(species),
-                                size: 44,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                petSpeciesText(context.petsL10n, species),
-                                style: AppText.secondary.copyWith(
-                                  fontWeight: species == selected
-                                      ? FontWeight.w800
-                                      : FontWeight.w700,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
     );
   }
 }
