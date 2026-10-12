@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../access/access_provider.dart';
@@ -9,11 +10,11 @@ import '../../../platform/session.dart';
 import '../../community/data/community_models.dart' show ReportReason;
 import '../../community/data/community_providers.dart'
     show communityMembersRepositoryProvider;
-import '../../findvet/data/location_service.dart';
 import '../../findvet/regions/regions.dart';
-import '../../findvet/state/find_vet_providers.dart'
-    show AreaProblem, locationServiceProvider;
+import '../../findvet/state/find_vet_providers.dart' show AreaProblem;
 import '../../outdoors/data/park_area.dart';
+import '../../outdoors/state/parks_providers.dart'
+    show OutsideAreaController, outsideAreaProvider, outsideDefaultRadius;
 import '../data/fake_meetups_repository.dart';
 import '../data/meetup_models.dart';
 import '../data/meetups_repository.dart';
@@ -56,9 +57,8 @@ final meetupsRevisionProvider = NotifierProvider<MeetupsRevision, int>(
 // The area: a city and how far around it.
 // ---------------------------------------------------------------------------
 
-/// Where the board looks: a city of the bundled list and a radius. "Near
-/// me" only picks the nearest city; the position is neither stored nor
-/// sent.
+/// Where the board looks: a city of the bundled list and a radius, read
+/// from Outside's one area ("Near me" stands for its nearest city).
 class MeetupsArea {
   const MeetupsArea(this.city, this.radius);
 
@@ -66,7 +66,19 @@ class MeetupsArea {
   final ParkRadius radius;
 
   /// The radius the board starts on.
-  static const defaultRadius = ParkRadius.km10;
+  static const defaultRadius = outsideDefaultRadius;
+
+  /// The board's view of Outside's [area]: the city, or the city nearest
+  /// to "Near me", with the same radius.
+  static MeetupsArea? of(ParkArea? area) => switch (area) {
+    null => null,
+    CityArea(:final locality, :final radius) => MeetupsArea(locality, radius),
+    NearMeArea(:final point, :final nearest, :final radius) => switch (
+        nearest ?? vetRegionAt(point)?.nearestLocality(point, maxM: 30000)) {
+      final city? => MeetupsArea(city, radius),
+      null => null,
+    },
+  };
 
   /// The localities in range, by their centres: what the server is asked
   /// for (the city itself for "City only").
@@ -107,38 +119,19 @@ class MeetupsAreaState {
     this.resolving = false,
     this.locating = false,
     this.problem,
-    this.fromProfile = false,
   });
 
   /// `null` until known: then the board asks once.
   final MeetupsArea? area;
 
-  /// Looking up the city of the member's profile.
+  /// Looking up the city to start on (see [MeetupsAreaSeed]).
   final bool resolving;
   final bool locating;
   final AreaProblem? problem;
-
-  /// The area is the profile's city (not chosen on this phone).
-  final bool fromProfile;
-
-  MeetupsAreaState copyWith({
-    MeetupsArea? area,
-    bool clearArea = false,
-    bool? resolving,
-    bool? locating,
-    AreaProblem? problem,
-    bool clearProblem = false,
-    bool? fromProfile,
-  }) => MeetupsAreaState(
-    area: clearArea ? null : area ?? this.area,
-    resolving: resolving ?? this.resolving,
-    locating: locating ?? this.locating,
-    problem: clearProblem ? null : problem ?? this.problem,
-    fromProfile: fromProfile ?? this.fromProfile,
-  );
 }
 
-/// The settings key of the area chosen on this phone, per account.
+/// Where the board kept its own area before Outside had one: read once,
+/// to carry the choice over to Outside's area, then removed.
 String meetupsAreaKey(String userId) => 'meetups.area.$userId';
 
 /// The locality a profile's free-text city names, if the bundled list knows
@@ -156,102 +149,94 @@ Locality? localityOfProfileCity(String city) {
   return null;
 }
 
+/// The board's area: Outside's one area ([outsideAreaProvider]), shared
+/// with the parks list. Choosing here chooses there.
 class MeetupsAreaController extends Notifier<MeetupsAreaState> {
   @override
   MeetupsAreaState build() {
-    ref.watch(sessionEpochProvider);
-    final user = ref.watch(authControllerProvider.select((a) => a.value?.id));
-    if (user == null) return const MeetupsAreaState();
-    final saved = MeetupsArea.parse(
-      ref.read(settingsStoreProvider).read(meetupsAreaKey(user)),
+    final outside = ref.watch(outsideAreaProvider);
+    return MeetupsAreaState(
+      area: MeetupsArea.of(outside.area),
+      resolving: outside.area == null && ref.watch(meetupsAreaSeedProvider),
+      locating: outside.locating,
+      problem: outside.problem,
     );
-    if (saved != null) return MeetupsAreaState(area: saved);
-    Future.microtask(() => _fromProfile(user));
-    return const MeetupsAreaState(resolving: true);
   }
 
-  /// The city of the member's profile, the first time.
-  Future<void> _fromProfile(String user) async {
-    final ticket = SessionTicket(ref);
-    Locality? city;
-    try {
-      final profile = await ref
-          .read(communityMembersRepositoryProvider)
-          .fetchMember(user);
-      city = localityOfProfileCity(profile?.city ?? '');
-    } catch (_) {
-      city = null;
-    }
-    if (!ticket.current || !state.resolving) return;
-    state = city == null
-        ? state.copyWith(resolving: false)
-        : MeetupsAreaState(
-            area: MeetupsArea(city, ParkRadius.km10),
-            fromProfile: true,
-          );
-  }
+  OutsideAreaController get _outside => ref.read(outsideAreaProvider.notifier);
 
-  void _set(MeetupsArea area) {
-    state = MeetupsAreaState(area: area);
-    final user = ref.read(authControllerProvider).value?.id;
-    if (user != null) {
-      ref.read(settingsStoreProvider).write(meetupsAreaKey(user), area.key);
-    }
-  }
+  void chooseCity(Locality city) => _outside.chooseCity(city);
 
-  void chooseCity(Locality city) =>
-      _set(MeetupsArea(city, state.area?.radius ?? ParkRadius.km10));
-
-  void setRadius(ParkRadius radius) {
-    final area = state.area;
-    if (area == null || area.radius == radius) return;
-    _set(MeetupsArea(area.city, radius));
-  }
+  void setRadius(ParkRadius radius) => _outside.setRadius(radius);
 
   /// "Change": back to choosing a city.
-  void changeArea() => state = state.copyWith(
-    clearArea: true,
-    resolving: false,
-    clearProblem: true,
-  );
+  void changeArea() => _outside.changeArea();
 
-  /// "Near me": one fix, asked for only on the tap, to pick the nearest
-  /// city. The position is forgotten at once.
-  Future<void> useMyLocation() async {
-    requireCapability(ref, MeetupCapabilities.view);
-    final ticket = SessionTicket(ref);
-    state = state.copyWith(locating: true, clearProblem: true);
-    final result = await ref.read(locationServiceProvider).current();
-    if (!ticket.current) return;
-    final point = result.point;
-    if (result.outcome != LocationOutcome.found || point == null) {
-      state = state.copyWith(
-        locating: false,
-        problem: switch (result.outcome) {
-          LocationOutcome.denied => AreaProblem.denied,
-          LocationOutcome.deniedForever => AreaProblem.deniedForever,
-          LocationOutcome.serviceOff => AreaProblem.serviceOff,
-          _ => AreaProblem.unavailable,
-        },
-      );
-      return;
-    }
-    final city = vetRegionAt(point)?.nearestLocality(point, maxM: 30000);
-    if (city == null) {
-      state = state.copyWith(
-        locating: false,
-        problem: AreaProblem.outsideRegion,
-      );
-      return;
-    }
-    _set(MeetupsArea(city, state.area?.radius ?? ParkRadius.km10));
-  }
+  /// "Near me": one fix, asked for only on the tap. The position is not
+  /// kept; the board looks around the nearest city.
+  Future<void> useMyLocation() => _outside.useMyLocation();
 }
 
 final meetupsAreaProvider =
     NotifierProvider<MeetupsAreaController, MeetupsAreaState>(
       MeetupsAreaController.new,
     );
+
+/// The board's area, read straight from Outside's ([MeetupsArea.of]), for
+/// the providers that list ads. They follow the area at once when it
+/// changes, not when a screen next reads them: Riverpod 3 would otherwise
+/// refresh them in the middle of a build.
+ProviderListenable<MeetupsArea?> get meetupsAreaOfOutsideProvider =>
+    outsideAreaProvider.select((s) => MeetupsArea.of(s.area));
+
+/// The first time Outside has no area, the board starts on a city: the one
+/// this phone chose for the board before Outside had one area, else the
+/// city of the member's profile (not kept on the phone). `true` while it is
+/// looked up.
+class MeetupsAreaSeed extends Notifier<bool> {
+  @override
+  bool build() {
+    ref.watch(sessionEpochProvider);
+    final user = ref.watch(authControllerProvider.select((a) => a.value?.id));
+    if (user == null || ref.read(outsideAreaProvider).area != null) {
+      return false;
+    }
+    Future.microtask(() => _seed(user));
+    return true;
+  }
+
+  Future<void> _seed(String user) async {
+    if (!ref.mounted) return;
+    final ticket = SessionTicket(ref);
+    final settings = ref.read(settingsStoreProvider);
+    final before = MeetupsArea.parse(settings.read(meetupsAreaKey(user)));
+    var city = before?.city;
+    if (city == null) {
+      try {
+        final profile = await ref
+            .read(communityMembersRepositoryProvider)
+            .fetchMember(user);
+        city = localityOfProfileCity(profile?.city ?? '');
+      } catch (_) {
+        city = null;
+      }
+    }
+    if (!ref.mounted || !ticket.current || !state) return;
+    state = false;
+    if (city == null) return;
+    ref
+        .read(outsideAreaProvider.notifier)
+        .suggest(
+          CityArea(city, radius: before?.radius ?? MeetupsArea.defaultRadius),
+          remember: before != null,
+        );
+    if (before != null) settings.write(meetupsAreaKey(user), null);
+  }
+}
+
+final meetupsAreaSeedProvider = NotifierProvider<MeetupsAreaSeed, bool>(
+  MeetupsAreaSeed.new,
+);
 
 // ---------------------------------------------------------------------------
 // Filters.
@@ -340,7 +325,7 @@ bool passesFilters(
 final areaMeetupsProvider = FutureProvider<List<Meetup>>((ref) async {
   ref.watch(sessionEpochProvider);
   ref.watch(meetupsRevisionProvider);
-  final area = ref.watch(meetupsAreaProvider.select((s) => s.area));
+  final area = ref.watch(meetupsAreaOfOutsideProvider);
   if (area == null) return const [];
   requireCapability(ref, MeetupCapabilities.view);
   return ref.read(meetupsRepositoryProvider).openMeetups(area.codes);

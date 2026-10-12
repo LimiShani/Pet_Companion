@@ -425,6 +425,12 @@ abstract class BudgetL10n {
   /// **'My basket'**
   String get myBasket;
 
+  /// Short label of the second half of the Store's switch (the owner's basket); 'My basket' stays the basket page's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Basket'**
+  String get basketTab;
+
   /// No description provided for @basketEmptyTitle.
   ///
   /// In en, this message translates to:

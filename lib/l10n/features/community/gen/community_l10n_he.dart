@@ -33,6 +33,9 @@ class CommunityL10nHe extends CommunityL10n {
   String get scopeEverything => 'הכול';
 
   @override
+  String get scopeMenuTooltip => 'בחירת סוג החיה';
+
+  @override
   String get tagOtherAnimals => 'חיות אחרות';
 
   @override
@@ -45,38 +48,10 @@ class CommunityL10nHe extends CommunityL10n {
   String get forOtherAnimals => 'עבור חיות אחרות';
 
   @override
-  String roomsMatchedTo(String pet) {
-    return 'מותאם עבור \u2068$pet\u2069. לחיצה על ״הכול״ מציגה את כל החדרים.';
-  }
+  String get noRoomsForDogs => 'עדיין אין חדרים עבור כלבים. בחירה ב״הכול״ מציגה את כל החדרים.';
 
   @override
-  String guidesMatchedTo(String pet) {
-    return 'מותאם עבור \u2068$pet\u2069. לחיצה על ״הכול״ מציגה את כל המדריכים.';
-  }
-
-  @override
-  String get roomsShownForDogs => 'מוצגים חדרים עבור כלבים.';
-
-  @override
-  String get roomsShownForCats => 'מוצגים חדרים עבור חתולים.';
-
-  @override
-  String get roomsShownForAll => 'מוצגים החדרים של כל החיות.';
-
-  @override
-  String get guidesShownForDogs => 'מוצגים מדריכים עבור כלבים.';
-
-  @override
-  String get guidesShownForCats => 'מוצגים מדריכים עבור חתולים.';
-
-  @override
-  String get guidesShownForAll => 'מוצגים המדריכים של כל החיות.';
-
-  @override
-  String get noRoomsForDogs => 'עדיין אין חדרים עבור כלבים. לחיצה על ״הכול״ מציגה את כל החדרים.';
-
-  @override
-  String get noRoomsForCats => 'עדיין אין חדרים עבור חתולים. לחיצה על ״הכול״ מציגה את כל החדרים.';
+  String get noRoomsForCats => 'עדיין אין חדרים עבור חתולים. בחירה ב״הכול״ מציגה את כל החדרים.';
 
   @override
   String get feedLoadFailed => 'לא הצלחנו לטעון את הפיד';
@@ -470,6 +445,11 @@ class CommunityL10nHe extends CommunityL10n {
   String get reviewedBy => 'נבדק על ידי';
 
   @override
+  String reviewedByName(String name) {
+    return 'נבדק על ידי \u2068$name\u2069';
+  }
+
+  @override
   String reviewedOn(String date) {
     return 'נבדק בתאריך \u2068$date\u2069';
   }
@@ -499,6 +479,9 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get adviceNotice => 'חברי הקהילה משתפים מניסיון אישי, לא ייעוץ מקצועי.';
+
+  @override
+  String get adviceHide => 'הסתרה';
 
   @override
   String get contactProfessional => 'פנייה לאיש מקצוע';
@@ -682,9 +665,6 @@ class CommunityL10nHe extends CommunityL10n {
   }
 
   @override
-  String get hideNotice => 'הסתרת ההערה';
-
-  @override
   String get roomInfo => 'על החדר';
 
   @override
@@ -862,20 +842,6 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get composerHintLostFound => 'תיאור החיה, איפה ומתי, ואיך אפשר ליצור קשר';
-
-  @override
-  String get postsShownForDogs => 'מוצגים פוסטים על כלבים ופוסטים לכולם.';
-
-  @override
-  String get postsShownForCats => 'מוצגים פוסטים על חתולים ופוסטים לכולם.';
-
-  @override
-  String get postsShownForAll => 'מוצגים כל הפוסטים.';
-
-  @override
-  String postsMatchedTo(String pet) {
-    return 'מותאם ל־\u2068$pet\u2069. אפשר להקיש על ״הכול״ כדי לראות את כל הפוסטים.';
-  }
 
   @override
   String get searchPosts => 'חיפוש פוסטים';

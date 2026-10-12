@@ -2,7 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../access/access_provider.dart';
+import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
+import '../../../l10n/settings_store.dart';
 import '../../../platform/feature_module.dart';
 import '../../../platform/session.dart';
 import '../../findvet/data/location_service.dart';
@@ -61,71 +63,67 @@ final outsideViewProvider =
       OutsideViewController.new,
     );
 
-/// The parks list: where to look, the filters, and what was found. The
-/// area lives in memory only (the phone's position is never stored) and is
-/// forgotten on sign-out.
-class ParksState {
-  const ParksState({
-    this.area,
-    this.filters = const {},
-    this.parks,
-    this.locating = false,
-    this.problem,
-  });
+// ---------------------------------------------------------------------------
+// The area: one for the whole Outside tab, Parks and Partners alike.
+// ---------------------------------------------------------------------------
 
-  final ParkArea? area;
+/// The radius Outside starts on.
+const outsideDefaultRadius = ParkRadius.km10;
 
-  /// Show only parks known to have all of these.
-  final Set<ParkDetail> filters;
+/// The settings key of the area chosen on this phone, per account: a city
+/// and its radius ("raanana|km10"). "Near me" is never kept.
+String outsideAreaKey(String userId) => 'outdoors.area.$userId';
 
-  /// The parks of [area]; `null` before an area is chosen.
-  final AsyncValue<List<DogPark>>? parks;
-  final bool locating;
-  final AreaProblem? problem;
-
-  ParksState copyWith({
-    ParkArea? area,
-    bool clearArea = false,
-    Set<ParkDetail>? filters,
-    AsyncValue<List<DogPark>>? parks,
-    bool clearParks = false,
-    bool? locating,
-    AreaProblem? problem,
-    bool clearProblem = false,
-  }) => ParksState(
-    area: clearArea ? null : area ?? this.area,
-    filters: filters ?? this.filters,
-    parks: clearParks ? null : parks ?? this.parks,
-    locating: locating ?? this.locating,
-    problem: clearProblem ? null : problem ?? this.problem,
-  );
+/// The city area kept as "raanana|km10", or `null`.
+CityArea? parseCityArea(String? value) {
+  if (value == null) return null;
+  final parts = value.split('|');
+  final city = [
+    for (final region in vetRegions) region.localityByCode(parts.first),
+  ].nonNulls.firstOrNull;
+  if (city == null) return null;
+  final radius = ParkRadius.values.asNameMap()[parts.length > 1 ? parts[1] : ''];
+  return CityArea(city, radius: radius ?? outsideDefaultRadius);
 }
 
-class ParksController extends Notifier<ParksState> {
-  int _load = 0;
+/// Where Outside looks, and how "Near me" is going.
+class OutsideAreaState {
+  const OutsideAreaState({this.area, this.locating = false, this.problem});
 
+  /// `null` until chosen: then each side asks once.
+  final ParkArea? area;
+  final bool locating;
+  final AreaProblem? problem;
+}
+
+/// The one area of the Outside tab: the parks list and the partner ads
+/// both look there, and the chip in the tab's header changes it. A chosen
+/// city is kept on the phone with its radius; "Near me" (the phone's
+/// position) lives in memory only and is forgotten on sign-out.
+class OutsideAreaController extends Notifier<OutsideAreaState> {
   @override
-  ParksState build() {
+  OutsideAreaState build() {
     ref.watch(sessionEpochProvider);
-    ref.watch(capabilityProvider(ParkCapabilities.view));
-    _load++;
-    return const ParksState();
+    final user = ref.watch(authControllerProvider.select((a) => a.value?.id));
+    if (user == null) return const OutsideAreaState();
+    return OutsideAreaState(
+      area: parseCityArea(
+        ref.read(settingsStoreProvider).read(outsideAreaKey(user)),
+      ),
+    );
   }
 
-  ParksRepository get _repository => ref.read(parksRepositoryProvider);
-
   /// "Near me": one fix, asked for only on the owner's tap (after the
-  /// screen said why). The position stays on the phone.
+  /// screen said why). The position stays on the phone and is not kept.
   Future<void> useMyLocation() async {
-    requireCapability(ref, ParkCapabilities.view);
     final ticket = SessionTicket(ref);
-    state = state.copyWith(locating: true, clearProblem: true);
+    state = OutsideAreaState(area: state.area, locating: true);
     final result = await ref.read(locationServiceProvider).current();
-    if (!ticket.current) return;
+    if (!ticket.current || !ref.mounted) return;
     final point = result.point;
     if (result.outcome != LocationOutcome.found || point == null) {
-      state = state.copyWith(
-        locating: false,
+      state = OutsideAreaState(
+        area: state.area,
         problem: switch (result.outcome) {
           LocationOutcome.denied => AreaProblem.denied,
           LocationOutcome.deniedForever => AreaProblem.deniedForever,
@@ -137,28 +135,30 @@ class ParksController extends Notifier<ParksState> {
     }
     final region = vetRegionAt(point);
     if (region == null) {
-      state = state.copyWith(
-        locating: false,
+      state = OutsideAreaState(
+        area: state.area,
         problem: AreaProblem.outsideRegion,
       );
       return;
     }
-    state = state.copyWith(locating: false);
     setArea(
       NearMeArea(
         point: point,
         accuracyM: result.accuracyM,
         nearest: region.nearestLocality(point),
-        radius: state.area?.radius ?? ParkRadius.km10,
+        radius: state.area?.radius ?? outsideDefaultRadius,
       ),
     );
   }
 
-  void chooseCity(Locality locality) => setArea(CityArea(locality));
+  /// A city, with the radius already chosen.
+  void chooseCity(Locality locality) => setArea(
+    CityArea(locality, radius: state.area?.radius ?? outsideDefaultRadius),
+  );
 
   void setArea(ParkArea area) {
-    state = state.copyWith(area: area, clearProblem: true);
-    load();
+    state = OutsideAreaState(area: area);
+    _remember(area is CityArea ? area : null);
   }
 
   void setRadius(ParkRadius radius) {
@@ -167,15 +167,101 @@ class ParksController extends Notifier<ParksState> {
     setArea(area.withRadius(radius));
   }
 
-  /// "Change": back to choosing where to look.
-  void changeArea() {
-    _load++;
-    state = state.copyWith(
-      clearArea: true,
-      clearParks: true,
-      clearProblem: true,
-    );
+  /// Back to choosing where to look (what the phone keeps stays).
+  void changeArea() => state = const OutsideAreaState();
+
+  /// A starting city when none is chosen yet (the member's profile city,
+  /// from meetups). Kept on the phone only when [remember] is set.
+  void suggest(CityArea area, {bool remember = false}) {
+    if (state.area != null) return;
+    state = OutsideAreaState(area: area);
+    if (remember) _remember(area);
   }
+
+  void _remember(CityArea? area) {
+    final user = ref.read(authControllerProvider).value?.id;
+    if (user == null) return;
+    ref
+        .read(settingsStoreProvider)
+        .write(
+          outsideAreaKey(user),
+          area == null ? null : '${area.locality.code}|${area.radius.name}',
+        );
+  }
+}
+
+final outsideAreaProvider =
+    NotifierProvider<OutsideAreaController, OutsideAreaState>(
+      OutsideAreaController.new,
+    );
+
+/// The parks list: Outside's area, the filters, and what was found.
+class ParksState {
+  const ParksState({this.area, this.filters = const {}, this.parks});
+
+  /// Outside's area ([outsideAreaProvider]).
+  final ParkArea? area;
+
+  /// Show only parks known to have all of these.
+  final Set<ParkDetail> filters;
+
+  /// The parks of [area]; `null` before an area is chosen.
+  final AsyncValue<List<DogPark>>? parks;
+
+  ParksState copyWith({
+    ParkArea? area,
+    bool clearArea = false,
+    Set<ParkDetail>? filters,
+    AsyncValue<List<DogPark>>? parks,
+    bool clearParks = false,
+  }) => ParksState(
+    area: clearArea ? null : area ?? this.area,
+    filters: filters ?? this.filters,
+    parks: clearParks ? null : parks ?? this.parks,
+  );
+}
+
+class ParksController extends Notifier<ParksState> {
+  int _load = 0;
+
+  @override
+  ParksState build() {
+    ref.watch(sessionEpochProvider);
+    ref.watch(capabilityProvider(ParkCapabilities.view));
+    _load++;
+    ref.listen(outsideAreaProvider.select((s) => s.area), (_, area) {
+      _show(area);
+    });
+    final area = ref.read(outsideAreaProvider).area;
+    if (area != null) Future.microtask(load);
+    return ParksState(area: area);
+  }
+
+  ParksRepository get _repository => ref.read(parksRepositoryProvider);
+
+  OutsideAreaController get _area => ref.read(outsideAreaProvider.notifier);
+
+  void _show(ParkArea? area) {
+    if (area == null) {
+      _load++;
+      state = state.copyWith(clearArea: true, clearParks: true);
+      return;
+    }
+    state = state.copyWith(area: area);
+    load();
+  }
+
+  /// "Near me" for the whole of Outside ([OutsideAreaController]).
+  Future<void> useMyLocation() => _area.useMyLocation();
+
+  void chooseCity(Locality locality) => _area.chooseCity(locality);
+
+  void setArea(ParkArea area) => _area.setArea(area);
+
+  void setRadius(ParkRadius radius) => _area.setRadius(radius);
+
+  /// "Change": back to choosing where to look.
+  void changeArea() => _area.changeArea();
 
   void toggleFilter(ParkDetail detail) {
     final filters = Set.of(state.filters);
@@ -187,8 +273,12 @@ class ParksController extends Notifier<ParksState> {
 
   /// Loads the parks of the area. A slow answer never replaces a newer one.
   Future<void> load() async {
+    if (!ref.mounted) return;
     final area = state.area;
-    if (area == null) return;
+    // An account with partners but no parks shares the area, not the list.
+    if (area == null || !ref.read(capabilityProvider(ParkCapabilities.view))) {
+      return;
+    }
     requireCapability(ref, ParkCapabilities.view);
     final ticket = SessionTicket(ref);
     final id = ++_load;

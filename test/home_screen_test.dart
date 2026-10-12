@@ -72,7 +72,7 @@ void main() {
 
     await tester.tap(find.text('Store'));
     await tester.pumpAndSettle();
-    expect(find.text('Search deals'), findsOneWidget); // the Store tab's search field
+    expect(find.byTooltip('Search deals'), findsOneWidget); // the Store tab's header search
 
     await tester.tap(find.text('Home'));
     await tester.pumpAndSettle();

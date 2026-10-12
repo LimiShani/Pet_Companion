@@ -64,7 +64,7 @@ void main() {
   testWidgets('search narrows the grid and can be cleared', (tester) async {
     await pumpStore(tester);
 
-    await tester.enterText(find.byType(TextField), 'salmon');
+    await searchDeals(tester, 'salmon');
     await tester.pumpAndSettle();
     expect(find.text('2 deals for dogs'), findsOneWidget);
     expect(shownDealIds(tester), ['d-salmon-kibble-12kg', 'd-salmon-training-treats']);
@@ -72,6 +72,59 @@ void main() {
     await tester.tap(find.byTooltip('Clear search'));
     await tester.pumpAndSettle();
     expect(find.text('23 deals for dogs'), findsOneWidget);
+  });
+
+  testWidgets('the search opens from the header in place of the switch, and closing it clears the query',
+      (tester) async {
+    await pumpStore(tester);
+
+    // No search row by default: the header has the switch and a magnifier.
+    expect(searchField, findsNothing);
+    expect(find.byType(TextField), findsNothing);
+    expect(find.text('Deals'), findsOneWidget);
+    expect(find.text('Basket'), findsOneWidget);
+    final magnifier = find.byTooltip('Search deals');
+    expect(magnifier, findsOneWidget);
+    // The magnifier comes before the heart.
+    expect(tester.getCenter(magnifier).dx, lessThan(tester.getCenter(find.byTooltip('Saved deals')).dx));
+
+    await tester.tap(magnifier);
+    await tester.pumpAndSettle();
+    expect(searchField, findsOneWidget);
+    expect(find.text('Search deals'), findsOneWidget);
+    expect(find.text('Deals'), findsNothing);
+    expect(find.text('Basket'), findsNothing);
+    // It opens ready to type.
+    expect(tester.widget<TextField>(searchField).focusNode!.hasFocus, isTrue);
+
+    await tester.enterText(searchField, 'salmon');
+    await tester.pumpAndSettle();
+    expect(find.text('2 deals for dogs'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Close'));
+    await tester.pumpAndSettle();
+    expect(searchField, findsNothing);
+    expect(find.text('Deals'), findsOneWidget);
+    expect(find.text('Basket'), findsOneWidget);
+    expect(find.text('23 deals for dogs'), findsOneWidget);
+
+    // Opening it again starts empty.
+    await tester.tap(magnifier);
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(searchField).controller!.text, isEmpty);
+  });
+
+  testWidgets('the basket has no search', (tester) async {
+    await pumpStore(tester);
+
+    await tester.tap(find.text('Basket'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Search deals'), findsNothing);
+    expect(find.byTooltip('Saved deals'), findsOneWidget);
+
+    await tester.tap(find.text('Deals'));
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('Search deals'), findsOneWidget);
   });
 
   testWidgets('a category chip filters the grid', (tester) async {
@@ -133,7 +186,7 @@ void main() {
   testWidgets('no results shows the empty state, and clearing brings the grid back', (tester) async {
     await pumpStore(tester);
 
-    await tester.enterText(find.byType(TextField), 'hamster wheel');
+    await searchDeals(tester, 'hamster wheel');
     await tester.pumpAndSettle();
 
     expect(find.text('No deals found'), findsOneWidget);

@@ -37,31 +37,49 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> submit(WidgetTester tester) async {
-    final button = find.widgetWithText(FilledButton, 'Share deal');
+  Future<void> press(WidgetTester tester, String label) async {
+    final button = find.widgetWithText(FilledButton, label);
     await tester.ensureVisible(button);
     await tester.pumpAndSettle();
     await tester.tap(button);
     await tester.pumpAndSettle();
   }
 
-  Future<void> fillValidDeal(WidgetTester tester) async {
+  /// Step 1's "Next".
+  Future<void> next(WidgetTester tester) => press(tester, 'Next');
+
+  /// Step 2's "Share deal".
+  Future<void> submit(WidgetTester tester) => press(tester, 'Share deal');
+
+  /// Step 1, filled in and still on screen.
+  Future<void> fillWhat(WidgetTester tester) async {
     await fill(tester, 'title', 'Chicken jerky strips, 300 g');
     await pickCategory(tester, 'Treats');
     await fill(tester, 'price', '22');
     await fill(tester, 'original-price', '36');
-    await fill(tester, 'seller', 'The Treat Jar');
     await fill(tester, 'link', 'https://example.com/jerky');
+    await fill(tester, 'seller', 'The Treat Jar');
+  }
+
+  /// Both steps, ending on step 2 ready to share.
+  Future<void> fillValidDeal(WidgetTester tester) async {
+    await fillWhat(tester);
+    await next(tester);
     await fill(tester, 'description', 'Two bags for the price shown.');
   }
+
+  String typed(WidgetTester tester, String field) =>
+      tester.widget<TextField>(find.descendant(of: find.byKey(Key('share-$field')), matching: find.byType(TextField))).controller!.text;
 
   testWidgets('an empty form names every required field and sends nothing', (tester) async {
     final store = await pumpStore(tester);
     await openForm(tester);
     // Full screen: the bottom bar is covered.
     expect(find.text('Community'), findsNothing);
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+    expect(find.text('What and the price'), findsOneWidget);
 
-    await submit(tester);
+    await next(tester);
 
     expect(find.text('Give the deal a title.'), findsOneWidget);
     expect(find.text('Pick a category.'), findsOneWidget);
@@ -70,6 +88,9 @@ void main() {
     expect(find.text('Who is selling it?'), findsOneWidget);
     expect(find.text('Paste the link to the offer.'), findsOneWidget);
     expect(find.byType(ShareDealScreen), findsOneWidget);
+    // Still on step 1.
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+    expect(find.byKey(const Key('share-package-amount')), findsNothing);
     expect((await store.fetchDeals()).length, 36);
   });
 
@@ -77,11 +98,11 @@ void main() {
     final store = await pumpStore(tester);
     await openForm(tester);
 
-    await fillValidDeal(tester);
+    await fillWhat(tester);
     await fill(tester, 'price', '40');
     await fill(tester, 'link', 'http://example.com/jerky');
     expect(find.textContaining('% off'), findsNothing);
-    await submit(tester);
+    await next(tester);
 
     expect(find.text('The deal price must be below the original price.'), findsOneWidget);
     expect(find.text('Use a full link that starts with https://'), findsOneWidget);
@@ -97,6 +118,72 @@ void main() {
     await fill(tester, 'price', 'cheap');
     await tester.pumpAndSettle();
     expect(find.text('Enter a number, like 49.90.'), findsOneWidget);
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+  });
+
+  testWidgets('a valid step 1 goes on to the details; Back keeps what was typed in both steps', (tester) async {
+    final store = await pumpStore(tester);
+    await openForm(tester);
+    await fillWhat(tester);
+    await next(tester);
+
+    expect(find.text('Step 2 of 2'), findsOneWidget);
+    expect(find.text('Details (optional)'), findsOneWidget);
+    expect(find.byKey(const Key('share-title')), findsNothing);
+    expect(find.byKey(const Key('share-package-amount')), findsOneWidget);
+    // The details start quiet: nothing is flagged before sharing.
+    expect(find.textContaining('Enter'), findsNothing);
+    await fill(tester, 'description', 'Two bags for the price shown.');
+
+    final back = find.byKey(const Key('share-back'));
+    await tester.ensureVisible(back);
+    await tester.pumpAndSettle();
+    await tester.tap(back);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+    expect(typed(tester, 'title'), 'Chicken jerky strips, 300 g');
+    expect(typed(tester, 'price'), '22');
+    expect(typed(tester, 'original-price'), '36');
+    expect(typed(tester, 'link'), 'https://example.com/jerky');
+    expect(typed(tester, 'seller'), 'The Treat Jar');
+    expect(find.descendant(of: find.byKey(const Key('share-category')), matching: find.text('Treats')), findsOneWidget);
+    expect(find.text('That is 39% off'), findsOneWidget);
+
+    await next(tester);
+    expect(typed(tester, 'description'), 'Two bags for the price shown.');
+    await submit(tester);
+
+    expect(find.byType(ShareDealScreen), findsNothing);
+    expect(find.text('Thanks! Your deal is live.'), findsOneWidget);
+    final shared = (await store.fetchDeals()).firstWhere((d) => d.title == 'Chicken jerky strips, 300 g');
+    expect(shared.description, 'Two bags for the price shown.');
+  });
+
+  testWidgets('back on step 2 returns to step 1; leaving from there still asks', (tester) async {
+    final store = await pumpStore(tester);
+    await openForm(tester);
+    await fillValidDeal(tester);
+
+    // The header arrow on step 2 goes to step 1, with the deal kept.
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Discard changes?'), findsNothing);
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Discard changes?'), findsOneWidget);
+    await tester.tap(find.text('Keep editing'));
+    await tester.pumpAndSettle();
+    expect(find.text('Step 1 of 2'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Discard'));
+    await tester.pumpAndSettle();
+    expect(find.byType(ShareDealScreen), findsNothing);
+    expect((await store.fetchDeals()).length, 36);
   });
 
   test('the form checks', () {
@@ -140,7 +227,7 @@ void main() {
     expect(shared.expiresAt, isNull);
 
     // It is in the grid, and its page says whose it is.
-    await tester.enterText(find.byType(TextField), 'jerky');
+    await searchDeals(tester, 'jerky');
     await tester.pumpAndSettle();
     expect(shownDealIds(tester), [shared.id]);
     await openDeal(tester, shared.id);

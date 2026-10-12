@@ -68,7 +68,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  /// Everything the form required before phase 1.
+  /// Step 1's "Next", on to the details.
+  Future<void> next(WidgetTester tester) async {
+    final button = find.widgetWithText(FilledButton, 'Next');
+    await show(tester, button);
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(find.text('Step 2 of 2'), findsOneWidget);
+  }
+
+  /// Everything step 1 requires.
   Future<void> fillBasics(WidgetTester tester) async {
     await fill(tester, 'title', title);
     await pickFrom(tester, 'share-category', 'Litter & cleaning');
@@ -94,6 +103,7 @@ void main() {
     await tapChip(tester, 'share-animals-cat');
     expect(animalChosen(tester, 'dog'), isTrue);
     expect(animalChosen(tester, 'cat'), isTrue);
+    await next(tester);
 
     // No hints until there is something to work out.
     expect(find.textContaining('per kg'), findsNothing);
@@ -122,7 +132,7 @@ void main() {
     expect(deal.priceCheckedAt, fixedNow);
 
     // Its page shows what was entered.
-    await tester.enterText(find.byType(TextField), 'clumping');
+    await searchDeals(tester, 'clumping');
     await tester.pumpAndSettle();
     await openDeal(tester, deal.id);
     final page = find.byType(DealDetailScreen);
@@ -142,6 +152,7 @@ void main() {
     await tapChip(tester, 'share-animals-all');
     expect(animalChosen(tester, 'all'), isTrue);
     expect(animalChosen(tester, 'dog'), isFalse);
+    await next(tester);
 
     await tapChip(tester, 'share-delivery-free');
     expect(find.text('Final price ₪36.90'), findsOneWidget);
@@ -162,6 +173,7 @@ void main() {
     final store = await pumpStore(tester);
     await openForm(tester);
     await fillBasics(tester);
+    await next(tester);
     await submit(tester);
 
     final deal = await sharedDeal(store);
@@ -194,10 +206,21 @@ void main() {
     expect(animalChosen(tester, 'all'), isFalse);
   });
 
+  testWidgets('a kind picked in the Store\'s animals chip is where the form starts', (tester) async {
+    await pumpStore(tester, extraPets: [const Pet(id: 'mitzi', name: 'Mitzi', species: PetSpecies.cat)]);
+    // Kelly the dog stays the app's pet; the Store shops for cats.
+    await pickAnimals(tester, 'Cats');
+    await openForm(tester);
+
+    expect(animalChosen(tester, 'cat'), isTrue);
+    expect(animalChosen(tester, 'dog'), isFalse);
+  });
+
   testWidgets('a package size needs a unit and an amount above zero', (tester) async {
     final store = await pumpStore(tester);
     await openForm(tester);
     await fillBasics(tester);
+    await next(tester);
 
     await fill(tester, 'package-amount', '10');
     await submit(tester);
@@ -229,6 +252,7 @@ void main() {
     final store = await pumpStore(tester);
     await openForm(tester);
     await fillBasics(tester);
+    await next(tester);
 
     await tapChip(tester, 'share-delivery-paid');
     await submit(tester);

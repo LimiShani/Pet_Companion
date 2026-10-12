@@ -56,7 +56,7 @@ Future<void> _pumpHebrewStore(
     );
 
 Future<void> _search(WidgetTester tester, String text) async {
-  await tester.enterText(find.byType(TextField), text);
+  await searchDeals(tester, text);
   await tester.pumpAndSettle();
 }
 
@@ -82,7 +82,8 @@ void main() {
 
       // The tab's name: once in the header, once in the bottom bar.
       expect(find.text('חנות'), findsNWidgets(2));
-      expect(find.text('חיפוש מבצעים'), findsOneWidget);
+      expect(find.byTooltip('חיפוש מבצעים'), findsOneWidget);
+      expect(find.text('סל'), findsOneWidget);
       expect(_plain(animalsChipLabel(tester)), 'עבור כלבים');
       expect(find.widgetWithText(ChoiceChip, 'הכול'), findsOneWidget);
       expect(find.widgetWithText(ChoiceChip, 'מזון'), findsOneWidget);
@@ -507,13 +508,35 @@ void main() {
       await tester.pumpAndSettle();
     }
 
+    /// Step 1's "Next".
+    Future<void> next(WidgetTester tester) async {
+      final button = find.widgetWithText(PrimaryButton, 'הבא');
+      await show(tester, button);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+    }
+
+    /// A valid step 1, then on to the details.
+    Future<void> fillWhat(WidgetTester tester) async {
+      await fill(tester, 'title', 'Dental chews');
+      await pickFrom(tester, 'share-category', 'חטיפים');
+      await fill(tester, 'price', '20');
+      await fill(tester, 'original-price', '30');
+      await fill(tester, 'link', 'https://example.com/chews');
+      await fill(tester, 'seller', 'The Treat Jar');
+      await next(tester);
+      expect(find.text('שלב 2 מתוך 2'), findsOneWidget);
+    }
+
     testWidgets('the form and its checks speak Hebrew', (tester) async {
       await _pumpHebrewStore(tester);
       await openForm(tester);
 
       final form = find.byType(ShareDealScreen);
       expect(_screenDirection(tester, form), TextDirection.rtl);
-      for (final label in ['כותרת', 'קטגוריה', 'לאילו חיות', 'גודל האריזה (לא חובה)', 'משלוח (לא חובה)']) {
+      expect(find.text('שלב 1 מתוך 2'), findsOneWidget);
+      expect(find.text('מה ובכמה'), findsOneWidget);
+      for (final label in ['כותרת', 'קטגוריה', 'לאילו חיות', 'קישור למבצע']) {
         expect(_on(form, find.text(label)), findsOneWidget, reason: label);
       }
       expect(_on(form, _reads('המחיר עכשיו (₪)')), findsOneWidget);
@@ -523,7 +546,7 @@ void main() {
       expect(tester.widget<FilterChip>(find.widgetWithText(FilterChip, 'כלבים')).selected, isTrue);
       expect(find.widgetWithText(FilterChip, 'חתולים'), findsOneWidget);
 
-      await submit(tester);
+      await next(tester);
       for (final problem in [
         'צריך לתת למבצע כותרת.',
         'צריך לבחור קטגוריה.',
@@ -551,7 +574,18 @@ void main() {
       expect(linkProblem, findsOneWidget);
       expect(tester.widget<Text>(linkProblem).data, endsWith(isolate('https://')));
 
+      // Step 2, the details, in Hebrew too.
+      await fillWhat(tester);
+      expect(find.text('פרטים (לא חובה)'), findsOneWidget);
+      for (final label in ['גודל האריזה (לא חובה)', 'משלוח (לא חובה)', 'תיאור (לא חובה)']) {
+        expect(_on(form, find.text(label)), findsOneWidget, reason: label);
+      }
+      expect(find.widgetWithText(TextButton, 'חזרה'), findsOneWidget);
+
       await fill(tester, 'package-amount', '10');
+      // The details stay quiet until the first attempt to share.
+      expect(find.text('צריך לבחור יחידת מידה: ק״ג, גרם, ליטר, מ״ל או יחידות.'), findsNothing);
+      await submit(tester);
       expect(find.text('צריך לבחור יחידת מידה: ק״ג, גרם, ליטר, מ״ל או יחידות.'), findsOneWidget);
       await fill(tester, 'package-amount', '0');
       expect(find.text('צריך להזין גודל גדול מאפס, למשל 2.5.'), findsOneWidget);
@@ -589,6 +623,9 @@ void main() {
       await fill(tester, 'price', '36.90');
       await fill(tester, 'original-price', '59.90');
       expect(find.text('זו הנחה של 38%'), findsOneWidget);
+      await fill(tester, 'link', 'https://example.com/litter');
+      await fill(tester, 'seller', 'Clean Paws');
+      await next(tester);
 
       await fill(tester, 'package-amount', '10');
       await pickFrom(tester, 'share-package-unit', 'ק״ג');
@@ -599,8 +636,6 @@ void main() {
       await fill(tester, 'delivery-cost', '25');
       expect(_reads('מחיר סופי: 61.90 ₪'), findsOneWidget);
 
-      await fill(tester, 'seller', 'Clean Paws');
-      await fill(tester, 'link', 'https://example.com/litter');
       expect(_reads('המחיר יוצג כמחיר שנבדק היום, 30.09.26.'), findsOneWidget);
       await submit(tester);
 
@@ -614,12 +649,7 @@ void main() {
       await pumpStore(tester, repository: store, language: AppLanguage.hebrew);
       await openForm(tester);
 
-      await fill(tester, 'title', 'Dental chews');
-      await pickFrom(tester, 'share-category', 'חטיפים');
-      await fill(tester, 'price', '20');
-      await fill(tester, 'original-price', '30');
-      await fill(tester, 'seller', 'The Treat Jar');
-      await fill(tester, 'link', 'https://example.com/chews');
+      await fillWhat(tester);
       store.failWrites = true;
       await submit(tester);
 
@@ -630,6 +660,7 @@ void main() {
     testWidgets('the calendar for the end date is in Hebrew too', (tester) async {
       await _pumpHebrewStore(tester);
       await openForm(tester);
+      await fillWhat(tester);
 
       await tapKey(tester, 'share-end-date');
       expect(find.text('היום האחרון של המבצע'), findsOneWidget);
@@ -700,9 +731,46 @@ void main() {
       await _search(tester, 'clumping');
       expect(_reads('אין כאן מבצעים עבור כלבים'), findsOneWidget);
 
-      // The whole form, with every problem showing.
+      // Closing the search gives the switch back.
+      await tester.tap(find.byTooltip('סגירה'));
+      await tester.pumpAndSettle();
+      expect(searchField, findsNothing);
+      expect(find.text('סל'), findsOneWidget);
+
+      // The whole form, with every problem showing: step 1, then step 2.
       await tester.tap(find.text('שיתוף מבצע'));
       await tester.pumpAndSettle();
+      final next = find.widgetWithText(PrimaryButton, 'הבא');
+      await tester.ensureVisible(next);
+      await tester.pumpAndSettle();
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      expect(find.text('צריך לבחור קטגוריה.'), findsOneWidget);
+      Future<void> type(String field, String text) async {
+        final input = find.byKey(Key('share-$field'));
+        await tester.ensureVisible(input);
+        await tester.pumpAndSettle();
+        await tester.enterText(input, text);
+        await tester.pumpAndSettle();
+      }
+
+      await type('title', 'Dental chews');
+      final category = find.byKey(const Key('share-category'));
+      await tester.ensureVisible(category);
+      await tester.pumpAndSettle();
+      await tester.tap(category);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('חטיפים').last);
+      await tester.pumpAndSettle();
+      await type('price', '20');
+      await type('original-price', '30');
+      await type('link', 'https://example.com/chews');
+      await type('seller', 'The Treat Jar');
+      await tester.ensureVisible(next);
+      await tester.pumpAndSettle();
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      expect(find.text('שלב 2 מתוך 2'), findsOneWidget);
       await tester.enterText(find.byKey(const Key('share-package-amount')), '10');
       final paid = find.byKey(const Key('share-delivery-paid'));
       await tester.ensureVisible(paid);
@@ -714,7 +782,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(send);
       await tester.pumpAndSettle();
-      expect(find.text('צריך לבחור קטגוריה.'), findsOneWidget);
+      expect(find.text('צריך לבחור יחידת מידה: ק״ג, גרם, ליטר, מ״ל או יחידות.'), findsOneWidget);
       expect(find.text('צריך להזין את עלות המשלוח.'), findsOneWidget);
     });
   });
@@ -729,7 +797,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(_reads('23 מבצעים עבור כלבים'), findsOneWidget);
-      expect(find.text('חיפוש מבצעים'), findsOneWidget);
+      expect(find.byTooltip('חיפוש מבצעים'), findsOneWidget);
       expect(_screenDirection(tester, find.byKey(const Key('store-screen'))), TextDirection.rtl);
       expect(find.text('23 deals for dogs'), findsNothing);
       // Content does not change with the language.

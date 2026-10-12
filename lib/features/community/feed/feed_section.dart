@@ -6,13 +6,12 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/l10n.dart';
 import '../../../services/community/data/community_models.dart';
-import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
-import '../widgets/scope_bar.dart';
+import '../widgets/advice_notice.dart';
+import '../widgets/scope_menu_chip.dart';
 import '../widgets/section_state.dart';
 import 'feed_controller.dart';
 import 'post_actions.dart';
@@ -20,8 +19,9 @@ import 'post_card.dart';
 import 'post_composer_screen.dart';
 
 /// The Feed section of the Community tab: post cards, newest first, under
-/// the Dogs / Cats / Everything chips, the kinds of post and a search
-/// field. More posts load as the list nears its end.
+/// one row of filters (the animal menu, then the kinds of post) and the
+/// line about advice. The search opens from the tab's header. More posts
+/// load as the list nears its end.
 class FeedSection extends ConsumerStatefulWidget {
   const FeedSection({super.key});
 
@@ -30,14 +30,6 @@ class FeedSection extends ConsumerStatefulWidget {
 }
 
 class _FeedSectionState extends ConsumerState<FeedSection> {
-  final _search = TextEditingController();
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) => FeatureGate(
     capability: 'community.feed.view',
@@ -77,7 +69,7 @@ class _FeedSectionState extends ConsumerState<FeedSection> {
     }
 
     final canPost = ref.watch(capabilityProvider('community.feed.post'));
-    final header = _FeedHeader(search: _search);
+    const header = _FeedHeader();
     final Widget? empty = posts.isNotEmpty
         ? null
         : query.narrowed
@@ -176,11 +168,13 @@ class _FeedSectionState extends ConsumerState<FeedSection> {
   }
 }
 
-/// Above the posts: the animal, the kind of post, and words to look for.
+/// Above the posts: one row of filters (the animal, then the kind of post)
+/// and, until it is hidden, the line about advice. The words to look for
+/// are typed in the tab's header.
 class _FeedHeader extends ConsumerWidget {
-  const _FeedHeader({required this.search});
+  const _FeedHeader();
 
-  final TextEditingController search;
+  static const filterRowKey = Key('feed-filter-row');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -193,69 +187,28 @@ class _FeedHeader extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const ScopeBar(what: ScopeBarSubject.posts),
-          const SizedBox(height: 10),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-            child: Row(
-              children: [
-                ChoiceChip(
-                  key: const ValueKey('kind-all'),
-                  label: Text(l10n.kindsAll),
-                  selected: filter.kind == null,
-                  showCheckmark: false,
-                  onSelected: (_) => notifier.kind(null),
-                ),
-                for (final kind in PostKind.values) ...[
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    key: ValueKey('kind-${kind.name}'),
-                    label: Text(l10n.postKind(kind)),
-                    selected: filter.kind == kind,
-                    showCheckmark: false,
-                    onSelected: (selected) =>
-                        notifier.kind(selected ? kind : null),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screen),
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: search,
-              builder: (context, value, _) => TextField(
-                controller: search,
-                textInputAction: TextInputAction.search,
-                onSubmitted: notifier.search,
-                textDirection: contentDirection(context, value.text),
-                style: AppText.body.copyWith(fontSize: 15),
-                decoration: InputDecoration(
-                  isDense: true,
-                  hintText: l10n.searchPostsHint,
-                  prefixIcon: const AppIcon(
-                    Icons.search_rounded,
-                    color: AppColors.brown,
-                  ),
-                  suffixIcon: value.text.isEmpty && filter.search.isEmpty
-                      ? null
-                      : IconButton(
-                          tooltip: l10n.clearSearch,
-                          onPressed: () {
-                            search.clear();
-                            notifier.search('');
-                          },
-                          icon: const AppIcon(
-                            Icons.close_rounded,
-                            color: AppColors.brown,
-                          ),
-                        ),
-                ),
+          ScopeFilterRow(
+            key: filterRowKey,
+            chips: [
+              ChoiceChip(
+                key: const ValueKey('kind-all'),
+                label: Text(l10n.kindsAll),
+                selected: filter.kind == null,
+                showCheckmark: false,
+                onSelected: (_) => notifier.kind(null),
               ),
-            ),
+              for (final kind in PostKind.values)
+                ChoiceChip(
+                  key: ValueKey('kind-${kind.name}'),
+                  label: Text(l10n.postKind(kind)),
+                  selected: filter.kind == kind,
+                  showCheckmark: false,
+                  onSelected: (selected) =>
+                      notifier.kind(selected ? kind : null),
+                ),
+            ],
           ),
+          const FeedAdviceLine(),
         ],
       ),
     );

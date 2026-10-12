@@ -7,7 +7,11 @@
 ///
 /// - `OutsideSection`: the "Partners | Parks" section the Community tab
 ///   shows. Partners shows the 'outside-partners' slot when a module fills
-///   it, a "coming soon" card until then.
+///   it, a "coming soon" card until then; the tab's floating button while
+///   Partners shows is the 'outside-new-ad' slot.
+/// - One area for the whole tab: `outsideAreaProvider` (the parks list and
+///   the partners board both read it), changed from the header's
+///   `OutsideAreaChip` through `openOutsideAreaSheet`.
 /// - `openParkPage(context, parkId)`: a park's page. Its slots
 ///   `ParkPageSlots.meetups` and `ParkPageSlots.postMeetup` receive
 ///   `parkId`, `parkName` and `parkTags`.
@@ -29,9 +33,20 @@ export '../../services/outdoors/data/parks_repository.dart';
 export '../../services/outdoors/state/parks_providers.dart';
 export 'outdoors_words.dart';
 export 'outside_section.dart'
-    show OutsideSection, OutdoorsKeeper, outsidePartnersSlot, slotAvailable;
-export 'outside_screen.dart' show OutsideScreen;
-export 'parks/park_area_picker.dart' show ParkAreaPicker, ParkAreaBar;
+    show
+        OutsideSection,
+        OutdoorsKeeper,
+        outsideNewAdSlot,
+        outsidePartnersSlot,
+        slotAvailable;
+export 'outside_screen.dart' show OutsideScreen, OutsideAreaChip;
+export 'parks/park_area_picker.dart'
+    show
+        ParkAreaPicker,
+        ParkAreaBar,
+        ParkRadiusChip,
+        OutsideAreaSheet,
+        openOutsideAreaSheet;
 export 'parks/park_picker.dart' show PickedPark, ParkPickerScreen, pickPark;
 export 'parks/park_screen.dart' show ParkScreen, ParkPageSlots, openParkPage;
 export 'parks/parks_view.dart' show ParksView;
@@ -42,4 +57,4 @@ export 'review/parks_review_screen.dart'
     show ParksReviewScreen, openParksReview;
 export 'widgets/about_credit.dart' show OsmAboutCredit;
 export 'widgets/park_widgets.dart'
-    show OsmCredit, ParkCard, ParkTags, parkDetailIcon;
+    show OsmCredit, ParkCard, ParkDetailRow, ParkTags, parkDetailIcon;

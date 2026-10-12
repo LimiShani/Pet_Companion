@@ -30,7 +30,7 @@ void main() {
   Finder menuItem(String label) => find.descendant(of: find.byType(PopupMenuItem<String>), matching: find.text(label));
 
   Future<void> search(WidgetTester tester, String text) async {
-    await tester.enterText(find.byType(TextField), text);
+    await searchDeals(tester, text);
     await tester.pumpAndSettle();
   }
 

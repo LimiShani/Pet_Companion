@@ -292,5 +292,14 @@
   "errStoreNeedsUpdate": "The Store is being updated. Please try again later.",
 
   "kindMenuTooltip": "Choose who to shop for",
-  "@kindMenuTooltip": {"description": "Tooltip of the chip at the start of the category row ('For dogs', 'All animals') that opens the menu of kinds of animal."}
+  "@kindMenuTooltip": {"description": "Tooltip of the chip at the start of the category row ('For dogs', 'All animals') that opens the menu of kinds of animal."},
+
+  "searchTooltip": "Search deals",
+  "@searchTooltip": {"description": "Tooltip of the magnifier in the Store header that opens the search field."},
+  "shareStepWhat": "What and the price",
+  "@shareStepWhat": {"description": "Heading of step 1 of 'Share a deal': title, category, animals, prices, link and seller."},
+  "shareStepDetails": "Details (optional)",
+  "@shareStepDetails": {"description": "Heading of step 2 of 'Share a deal': package size, delivery, description and end date, all optional."},
+  "shareNext": "Next",
+  "@shareNext": {"description": "Button at the end of step 1 of 'Share a deal': checks the fields and goes on to the details."}
 }

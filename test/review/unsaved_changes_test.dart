@@ -306,6 +306,8 @@ void main() {
         await fill('original-price', '36');
         await fill('seller', 'The Treat Jar');
         await fill('link', 'https://example.com/jerky');
+        // Two steps: what and the price, then the optional details.
+        await tapVisible(tester, find.widgetWithText(FilledButton, 'Next'));
         await tapVisible(tester, find.widgetWithText(FilledButton, 'Share deal'));
         expect(page, findsNothing);
       },

@@ -38,7 +38,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(DealDetailScreen), findsNothing);
     expect(find.byKey(const ValueKey('deal-card-d-salmon-kibble-12kg')), findsOneWidget);
-    expect(find.text('Search deals'), findsOneWidget);
+    expect(find.byTooltip('Search deals'), findsOneWidget);
   });
 
   testWidgets('"Open offer" hands the deal\'s link to the browser', (tester) async {

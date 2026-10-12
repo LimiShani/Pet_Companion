@@ -14,22 +14,23 @@ import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/empty_state.dart';
-import '../../outdoors/outdoors.dart' show ParkAreaBar;
+import '../../outdoors/outdoors.dart' show ParkRadiusChip;
 import '../meetup_actions.dart';
 import '../meetups_state.dart';
 import 'meetup_card.dart';
 import 'meetups_area_picker.dart';
 import 'partners_filters_sheet.dart';
 
-/// Community > Outside > Partners: the area (the profile's city by
-/// default), the safety line, "New ad" and "My ads", one "Filters" button
-/// (the distance and the rest are in its sheet), and the open ads around,
-/// the soonest first.
+/// Outside > Partners: until Outside has an area (the profile's city by
+/// default), where to look; then one row ("Filters", the distance, "My
+/// ads") and the open ads around, the soonest first. The area is the chip
+/// in the tab's header and "+ New ad" its floating button ([NewAdButton]).
 class PartnersView extends ConsumerWidget {
   const PartnersView({super.key});
 
   static const listKey = Key('partners-list');
-  static const safetyKey = Key('partners-safety');
+  static const controlRowKey = Key('partners-controls');
+  static const radiusChipKey = Key('partners-radius-chip');
   static const newAdKey = Key('partners-new-ad');
   static const myAdsKey = Key('partners-my-ads');
   static const sampleKey = Key('partners-sample-note');
@@ -38,7 +39,6 @@ class PartnersView extends ConsumerWidget {
   static const clearFiltersKey = Key('partners-clear-filters');
   static const myParksKey = Key('partners-filter-my-parks');
   static const filtersKey = Key('partners-filters');
-  static const filtersClearKey = Key('partners-filters-clear');
   static Key radiusKey(ParkRadius radius) =>
       Key('partners-radius-${radius.name}');
   static Key kindKey(MeetupKind? kind) =>
@@ -53,12 +53,12 @@ class PartnersView extends ConsumerWidget {
     final state = ref.watch(meetupsAreaProvider);
     final controller = ref.read(meetupsAreaProvider.notifier);
     final area = state.area;
+    final outsideArea = ref.watch(outsideAreaProvider.select((s) => s.area));
     final demo = ref.watch(meetupsRepositoryProvider).isDemo;
     final canPost = ref.watch(capabilityProvider(MeetupCapabilities.post));
-    final mine = ref.watch(myMeetupsProvider).value ?? const <Meetup>[];
     final listing = ref.watch(partnersListingProvider);
     final filters = ref.watch(meetupFiltersProvider);
-    final scope = ref.watch(communityScopeProvider);
+    final scope = ref.watch(meetupAnimalProvider);
     final filterCount = ref.watch(partnersFilterCountProvider);
 
     final children = <Widget>[
@@ -68,38 +68,8 @@ class PartnersView extends ConsumerWidget {
           key: sampleKey,
           style: AppText.label.copyWith(color: AppColors.brown),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
       ],
-      const _SafetyStrip(),
-      const SizedBox(height: 12),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          if (canPost)
-            FilledButton.icon(
-              key: newAdKey,
-              onPressed: () => openMeetupForm(context),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size(0, kHealthTapTarget),
-              ),
-              icon: const AppIcon(Icons.add_rounded),
-              label: Text(l10n.newAd),
-            ),
-          OutlinedButton.icon(
-            key: myAdsKey,
-            onPressed: () => openMyMeetups(context),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(0, kHealthTapTarget),
-            ),
-            icon: const AppIcon(Icons.campaign_outlined),
-            label: Text(
-              mine.isEmpty ? l10n.myAds : l10n.myAdsCount(mine.length),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 16),
       if (area == null && state.resolving)
         const Padding(
           padding: EdgeInsets.all(24),
@@ -120,14 +90,11 @@ class PartnersView extends ConsumerWidget {
           onCity: controller.chooseCity,
         )
       else ...[
-        ParkAreaBar(
-          area: CityArea(area.city, radius: area.radius),
-          onChange: controller.changeArea,
+        _ControlRow(
+          count: filterCount,
+          area: outsideArea ?? CityArea(area.city, radius: area.radius),
           onRadius: controller.setRadius,
-          showRadius: false,
         ),
-        const SizedBox(height: 10),
-        _FiltersRow(count: filterCount),
         const SizedBox(height: 12),
         ...switch (listing) {
           AsyncValue(:final value?) when value.isNotEmpty => [
@@ -176,9 +143,10 @@ class PartnersView extends ConsumerWidget {
           key: listKey,
           padding: EdgeInsetsDirectional.fromSTEB(
             AppSpacing.screen,
-            14,
+            12,
             AppSpacing.screen,
-            24 + MediaQuery.paddingOf(context).bottom,
+            // Room for the floating "+ New ad" under the last ad.
+            (canPost ? 88 : 24) + MediaQuery.paddingOf(context).bottom,
           ),
           children: children,
         ),
@@ -187,77 +155,107 @@ class PartnersView extends ConsumerWidget {
   }
 }
 
-/// "Meet in a public place and don't share a home address."
-class _SafetyStrip extends StatelessWidget {
-  const _SafetyStrip();
+/// One row: "Filters · 2" (opens the sheet), "Up to 10 km ▾" (Outside's
+/// radius) and, at the end, "My ads (2)".
+class _ControlRow extends ConsumerWidget {
+  const _ControlRow({
+    required this.count,
+    required this.area,
+    required this.onRadius,
+  });
 
-  @override
-  Widget build(BuildContext context) => Container(
-    key: PartnersView.safetyKey,
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-    decoration: BoxDecoration(
-      color: AppColors.sage.withValues(alpha: 0.35),
-      borderRadius: BorderRadius.circular(AppSpacing.fieldRadius),
-    ),
-    child: Row(
-      children: [
-        const AppIcon(Icons.shield_outlined, size: 20, color: AppColors.ink),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(
-            context.meetupsL10n.safetyStrip,
-            style: AppText.body.copyWith(
-              color: AppColors.ink,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-/// "Filters · 2" (opens the sheet) and, when any is on, "Clear".
-class _FiltersRow extends ConsumerWidget {
-  const _FiltersRow({required this.count});
-
-  /// How many filters differ from where the board starts.
+  /// How many of the sheet's filters differ from where the board starts.
   final int count;
+  final ParkArea area;
+  final ValueChanged<ParkRadius> onRadius;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.meetupsL10n;
-    return Wrap(
-      spacing: 8,
-      runSpacing: 6,
-      crossAxisAlignment: WrapCrossAlignment.center,
+    final mine = ref.watch(myMeetupsProvider).value ?? const <Meetup>[];
+    // The chips scroll sideways when a big font leaves them too little
+    // room; "My ads" keeps the end.
+    return Row(
+      key: PartnersView.controlRowKey,
       children: [
-        Semantics(
-          button: true,
-          label: l10n.filtersLabel(count),
-          excludeSemantics: true,
-          child: OutlinedButton.icon(
-            key: PartnersView.filtersKey,
-            onPressed: () => openPartnersFilters(context),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(0, kHealthTapTarget),
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Semantics(
+                  button: true,
+                  label: l10n.filtersLabel(count),
+                  onTap: () => openPartnersFilters(context),
+                  excludeSemantics: true,
+                  child: ActionChip(
+                    key: PartnersView.filtersKey,
+                    backgroundColor: count == 0
+                        ? AppColors.white
+                        : AppColors.yellow,
+                    // Snug, so the row fits a 320 px phone.
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 6,
+                    ),
+                    labelPadding: const EdgeInsetsDirectional.only(
+                      start: 4,
+                      end: 6,
+                    ),
+                    avatar: const AppIcon(Icons.filter_list_rounded, size: 18),
+                    label: Text(
+                      count == 0 ? l10n.filters : l10n.filtersCount(count),
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    onPressed: () => openPartnersFilters(context),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ParkRadiusChip(
+                  key: PartnersView.radiusChipKey,
+                  area: area,
+                  onRadius: onRadius,
+                  optionKey: PartnersView.radiusKey,
+                ),
+              ],
             ),
-            icon: const AppIcon(Icons.filter_list_rounded),
-            label: Text(count == 0 ? l10n.filters : l10n.filtersCount(count)),
           ),
         ),
-        if (count > 0)
-          TextButton(
-            key: PartnersView.filtersClearKey,
-            onPressed: () => clearPartnersFilters(ref),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 150),
+          child: TextButton(
+            key: PartnersView.myAdsKey,
+            onPressed: () => openMyMeetups(context),
             style: TextButton.styleFrom(
               minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
             ),
-            child: Text(l10n.filtersClear),
+            child: Text(
+              mine.isEmpty ? l10n.myAds : l10n.myAdsCount(mine.length),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            ),
           ),
+        ),
       ],
     );
   }
+}
+
+/// "+ New ad": the Outside tab's floating button while Partners shows
+/// (the module fills Outside's 'outside-new-ad' slot with it).
+class NewAdButton extends StatelessWidget {
+  const NewAdButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => FloatingActionButton.extended(
+    key: PartnersView.newAdKey,
+    heroTag: null,
+    onPressed: () => openMeetupForm(context),
+    icon: const AppIcon(Icons.add_rounded),
+    label: Text(context.meetupsL10n.newAd),
+  );
 }
 
 class _Empty extends ConsumerWidget {
@@ -283,7 +281,7 @@ class _Empty extends ConsumerWidget {
             onPressed: () {
               ref.read(meetupFiltersProvider.notifier).clear();
               ref
-                  .read(communityScopeProvider.notifier)
+                  .read(meetupAnimalProvider.notifier)
                   .select(CommunityScope.everything);
             },
             style: TextButton.styleFrom(

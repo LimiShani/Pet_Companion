@@ -11,6 +11,7 @@ import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
+import 'package:pet_companion/widgets/header_search.dart';
 
 import 'community_helpers.dart';
 
@@ -291,7 +292,21 @@ void main() {
         expect(tag(he.tagEnglishOnly), findsNothing);
         expect(screenDirection(tester, find.text('מתי להתקשר לווטרינר בנוגע לחתול')), TextDirection.rtl);
 
-        // The box about the guide comes first, and says it plainly.
+        // The byline under the title says it plainly before the text.
+        expect(reads('מאת צוות PetLoop · עודכן בתאריך 30.09.26 · לא נבדק על ידי וטרינר'), findsOneWidget);
+        final intro = find.textContaining('רק וטרינר שבודק אותו יכול');
+        await readDownTo(tester, intro);
+        expect(screenDirection(tester, intro), TextDirection.rtl);
+
+        // The four headed parts, in order.
+        for (final heading in ['להתקשר מיד', 'להתקשר באותו יום', 'לקבוע ביקור בקרוב', 'להיות מוכנים']) {
+          await readDownTo(tester, find.text(heading));
+          expect(screenDirection(tester, find.text(heading)), TextDirection.rtl);
+        }
+        await readDownTo(tester, find.textContaining('נותנים רק מה שהווטרינר רשם לחתול הזה.'));
+
+        // Then the box about the guide, down to the closing note and the
+        // way to a professional.
         final about = find.byKey(const Key('about-guide'));
         Finder inAbout(String text) => find.descendant(of: about, matching: find.text(text));
         await readDownTo(tester, inAbout('מקורות'));
@@ -304,17 +319,6 @@ void main() {
         expect(inAbout('לא צוינו מקורות'), findsOneWidget);
         expect(find.byKey(const Key('guide-review')), findsNothing);
         expect(find.text('נבדק על ידי'), findsNothing);
-        final intro = find.textContaining('רק וטרינר שבודק אותו יכול');
-        await readDownTo(tester, intro);
-        expect(screenDirection(tester, intro), TextDirection.rtl);
-
-        // The four headed parts, in order, down to the closing note and the
-        // way to a professional.
-        for (final heading in ['להתקשר מיד', 'להתקשר באותו יום', 'לקבוע ביקור בקרוב', 'להיות מוכנים']) {
-          await readDownTo(tester, find.text(heading));
-          expect(screenDirection(tester, find.text(heading)), TextDirection.rtl);
-        }
-        await readDownTo(tester, find.textContaining('נותנים רק מה שהווטרינר רשם לחתול הזה.'));
         await readDownTo(tester, find.text(he.guideDisclaimer));
         final contact = find.text(he.contactProfessional);
         await readDownTo(tester, contact);
@@ -329,12 +333,11 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(appLanguage: AppLanguage.hebrew));
       await openSection(tester, he.sectionGuides);
 
-      await tester.enterText(find.byType(TextField), 'קסיליטול');
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'קסיליטול');
       expect(find.text('מאכלים שאסור לתת לכלב'), findsOneWidget);
       expect(find.text('השבוע הראשון של הגור בבית'), findsNothing);
-      // The search field types in the direction of the search.
-      expect(tester.widget<EditableText>(find.byType(EditableText)).textDirection, TextDirection.rtl);
+      // The header's search field types right to left on a Hebrew screen.
+      expect(screenDirection(tester, find.byKey(HeaderSearchField.fieldKey)), TextDirection.rtl);
     });
 
     testWidgets('a guide being read changes language with the app, both ways', (tester) async {
@@ -343,14 +346,12 @@ void main() {
       await scrollTo(tester, find.text('How many litter boxes do you need?'));
       await tester.tap(find.text('How many litter boxes do you need?'));
       await tester.pumpAndSettle();
-      expect(find.text('PetLoop team'), findsOneWidget);
-      expect(find.text('Not reviewed by a veterinarian'), findsOneWidget);
+      expect(reads('By PetLoop team · Updated 30.09.26 · Not reviewed by a veterinarian'), findsOneWidget);
 
       await switchLanguage(tester, AppLanguage.hebrew);
       expect(find.text('כמה ארגזי חול צריך?'), findsOneWidget);
       expect(find.text('How many litter boxes do you need?'), findsNothing);
-      expect(find.text('צוות PetLoop'), findsOneWidget);
-      expect(find.text('לא נבדק על ידי וטרינר'), findsOneWidget);
+      expect(reads('מאת צוות PetLoop · עודכן בתאריך 30.09.26 · לא נבדק על ידי וטרינר'), findsOneWidget);
       expect(tag(he.tagEnglishOnly), findsNothing);
       expect(
         screenDirection(tester, find.textContaining('הכלל המקובל פשוט')),
@@ -359,7 +360,7 @@ void main() {
 
       await switchLanguage(tester, AppLanguage.english);
       expect(find.text('How many litter boxes do you need?'), findsOneWidget);
-      expect(find.text('PetLoop team'), findsOneWidget);
+      expect(reads('By PetLoop team · Updated 30.09.26 · Not reviewed by a veterinarian'), findsOneWidget);
       expect(screenDirection(tester, find.textContaining('The usual guideline is simple')), TextDirection.ltr);
     });
   });

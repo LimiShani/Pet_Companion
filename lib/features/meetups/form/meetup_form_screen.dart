@@ -9,6 +9,8 @@ import '../../../services/findvet/regions/regions.dart';
 import '../../../services/meetups/data/meetup_models.dart';
 import '../../../services/meetups/state/meetups_providers.dart';
 import '../../../services/outdoors/data/park_models.dart';
+import '../../../services/outdoors/state/parks_providers.dart'
+    show outsideAreaProvider;
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
@@ -95,7 +97,8 @@ class _MeetupFormScreenState extends ConsumerState<MeetupFormScreen> {
     _from = TimeOfDay(hour: next.hour, minute: 0);
     _to = TimeOfDay(hour: (next.hour + 1).clamp(0, 23), minute: 0);
     _days = {now.weekday};
-    _city = ref.read(meetupsAreaProvider).area?.city;
+    // Outside's area, read at its source (nothing to work out mid-build).
+    _city = MeetupsArea.of(ref.read(outsideAreaProvider).area)?.city;
 
     final pets = ref.read(petsProvider);
     final from = widget.edit ?? widget.copyOf;

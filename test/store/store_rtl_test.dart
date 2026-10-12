@@ -127,8 +127,8 @@ void main() {
       greaterThan(centerX(tester, find.byKey(const Key('share-original-price')))),
     );
 
-    // Walking the form to its end lays out every part without an overflow.
-    final send = find.widgetWithText(FilledButton, 'Share deal');
+    // Walking step 1 to its end lays out every part without an overflow.
+    final send = find.widgetWithText(FilledButton, 'Next');
     await tester.ensureVisible(send);
     await tester.pumpAndSettle();
     await tester.tap(send);

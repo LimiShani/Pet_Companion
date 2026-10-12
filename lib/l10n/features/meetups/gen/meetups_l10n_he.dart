@@ -12,9 +12,6 @@ class MeetupsL10nHe extends MeetupsL10n {
   String get areaQuestion => 'באיזה אזור יוצאים?';
 
   @override
-  String get areaWhy => 'אפשר לבחור עיר ולראות מודעות לטיול ולמשחק סביבה. ״לידי״ מבקש מהטלפון את המיקום פעם אחת, רק כדי למצוא את העיר הקרובה. המיקום לא נשמר ולא נשלח.';
-
-  @override
   String get problemOutsideRegion => 'בינתיים יש שותפים רק בישראל. אפשר לבחור עיר בישראל.';
 
   @override
@@ -74,13 +71,7 @@ class MeetupsL10nHe extends MeetupsL10n {
   }
 
   @override
-  String get filtersClear => 'ניקוי';
-
-  @override
   String get filtersTitle => 'אילו מודעות להציג';
-
-  @override
-  String get filterDistance => 'מרחק';
 
   @override
   String get filterKind => 'טיול או משחק';

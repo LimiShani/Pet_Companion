@@ -103,8 +103,8 @@ Future<void> openBudgetFromMenu(WidgetTester tester) async {
   expect(find.byKey(BudgetScreen.screenKey), findsOneWidget);
 }
 
-/// Opens the Store tab on "My basket".
-Future<void> openBasket(WidgetTester tester, {String store = 'Store', String basket = 'My basket'}) async {
+/// Opens the Store tab on its "Basket" segment.
+Future<void> openBasket(WidgetTester tester, {String store = 'Store', String basket = 'Basket'}) async {
   await tester.tap(find.text(store).last);
   await settle(tester);
   await tester.tap(find.text(basket));

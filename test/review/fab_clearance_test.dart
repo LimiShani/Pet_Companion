@@ -72,6 +72,9 @@ void main() {
     await pumpStore(tester);
     tester.view.physicalSize = const Size(320, 568) * 3;
     await tester.pumpAndSettle();
+    // Search opens from the header.
+    await tester.tap(find.byTooltip('Search deals'));
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField).first, 'no such thing anywhere');
     await tester.pumpAndSettle();
 

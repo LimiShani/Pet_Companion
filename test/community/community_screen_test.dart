@@ -48,14 +48,20 @@ void main() {
       expect(find.text("Your puppy's first week at home"), findsOneWidget);
       expect(find.text('General'), findsNothing);
 
-      // Type a search, leave the section and come back: it is still there.
-      await tester.enterText(find.byType(TextField), 'xylitol');
-      await tester.pumpAndSettle();
+      // A search from the header narrows the section; closing it gives the
+      // whole list back.
+      await searchFor(tester, 'xylitol');
+      expect(find.text('Foods your dog should never eat'), findsOneWidget);
+      expect(find.text("Your puppy's first week at home"), findsNothing);
+      await closeSearch(tester);
+      expect(find.text("Your puppy's first week at home"), findsOneWidget);
+
+      // A category chosen here is kept while another section is shown.
+      await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Senior care'));
       await openSection(tester, 'Feed');
       expect(find.text(mayaPost), findsOneWidget);
       await openSection(tester, 'Guides');
-      expect(find.text('xylitol'), findsOneWidget);
-      expect(find.text('Foods your dog should never eat'), findsOneWidget);
+      expect(find.text('Keeping an older dog comfortable'), findsOneWidget);
       expect(find.text("Your puppy's first week at home"), findsNothing);
     });
   });
@@ -375,12 +381,10 @@ void main() {
       await tapVisible(tester, find.widgetWithText(ChoiceChip, 'All'));
 
       // Search, including a miss.
-      await tester.enterText(find.byType(TextField), 'zzzz');
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'zzzz');
       expect(find.text('No guides match'), findsOneWidget);
 
-      await tester.enterText(find.byType(TextField), 'loose lead');
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'loose lead');
       expect(find.text('Walking nicely on a loose lead'), findsOneWidget);
       expect(find.text('Foods your dog should never eat'), findsNothing);
 

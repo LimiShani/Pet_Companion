@@ -1,11 +1,10 @@
 {
   "@@locale": "en",
   "areaQuestion": "Where do you go out?",
-  "areaWhy": "Pick a city to see walk and play ads around it. \"Near me\" asks the phone for your location once, only to find the nearest city. It is never saved or sent.",
   "problemOutsideRegion": "Partners are listed in Israel for now. Pick a city in Israel.",
   "safetyStrip": "Meet in a public place and don't share a home address.",
   "@safetyStrip": {
-    "description": "The fixed safety line at the top of the board."
+    "description": "The safety line in the footer of the new-ad form."
   },
   "newAd": "New ad",
   "myAds": "My ads",
@@ -58,12 +57,7 @@
       }
     }
   },
-  "filtersClear": "Clear",
-  "@filtersClear": {
-    "description": "Beside the filters button: every filter back to the start."
-  },
   "filtersTitle": "Which ads to show",
-  "filterDistance": "Distance",
   "filterKind": "Walk or play",
   "filterAnimal": "Animal",
   "filterWhen": "When",

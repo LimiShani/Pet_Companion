@@ -7,12 +7,10 @@ import '../../../presentation/health_widgets.dart'
 import '../../../services/community/data/audience.dart';
 import '../../../services/meetups/data/meetup_models.dart';
 import '../../../services/meetups/state/meetups_providers.dart';
-import '../../../services/outdoors/data/park_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../community/community_words.dart';
-import '../../outdoors/outdoors_words.dart';
 import '../meetups_state.dart';
 import 'partners_view.dart';
 
@@ -27,8 +25,9 @@ Future<void> openPartnersFilters(BuildContext context) =>
       builder: (_) => const HealthSheetBody(child: PartnersFiltersSheet()),
     );
 
-/// Distance, walk or play, the animal (the Community's shared choice),
-/// when, and "At my parks", with "Clear all" and "Show N ads".
+/// Walk or play, the animal (the board's own choice, apart from the
+/// Community's), when, and "At my parks", with "Clear all" and "Show N
+/// ads". The distance is a chip on the board itself.
 class PartnersFiltersSheet extends ConsumerWidget {
   const PartnersFiltersSheet({super.key});
 
@@ -39,11 +38,9 @@ class PartnersFiltersSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.meetupsL10n;
-    final outdoors = context.outdoorsL10n;
     final community = context.communityL10n;
-    final radius = ref.watch(meetupsAreaProvider.select((s) => s.area?.radius));
     final filters = ref.watch(meetupFiltersProvider);
-    final scope = ref.watch(communityScopeProvider);
+    final scope = ref.watch(meetupAnimalProvider);
     final count = ref.watch(partnersFilterCountProvider);
     final listing = ref.watch(partnersListingProvider);
     final controller = ref.read(meetupFiltersProvider.notifier);
@@ -54,21 +51,6 @@ class PartnersFiltersSheet extends ConsumerWidget {
       children: [
         const SizedBox(height: 4),
         SheetTitle(l10n.filtersTitle),
-        if (radius != null)
-          _Group(
-            title: l10n.filterDistance,
-            chips: [
-              for (final option in ParkRadius.values)
-                ChoiceChip(
-                  key: PartnersView.radiusKey(option),
-                  label: Text(outdoors.radius(option)),
-                  selected: radius == option,
-                  showCheckmark: false,
-                  onSelected: (_) =>
-                      ref.read(meetupsAreaProvider.notifier).setRadius(option),
-                ),
-            ],
-          ),
         _Group(
           title: l10n.filterKind,
           chips: [
@@ -96,7 +78,7 @@ class PartnersFiltersSheet extends ConsumerWidget {
                 selected: option == scope,
                 showCheckmark: false,
                 onSelected: (_) =>
-                    ref.read(communityScopeProvider.notifier).select(option),
+                    ref.read(meetupAnimalProvider.notifier).select(option),
               ),
           ],
         ),

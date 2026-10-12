@@ -44,33 +44,37 @@ Before 0028 is run the app still works: the server does not grant
   now shows first (it falls back to Parks when the account may not see
   partners, and an account with partners but no parks sees the board
   alone).
-- **The area.** The city of the member's community profile by default
-  (the free-text city is matched to the bundled localities: "Tel Aviv" is
-  Tel Aviv-Yafo). Without one the board asks once: **Near me** (the phone
-  is asked for one fix only on the tap, after saying why, and only to pick
-  the nearest city; the position is forgotten at once) or a city from the
-  list. The choice is kept on the phone (`meetups.area.<user id>` =
-  `raanana|km10`), never the position. Radius **City only / Up to 10 km /
-  Up to 25 km** (10 km by default), chosen in the filters sheet (the area
-  row itself is the city and **Change**). The server is sent only the locality
-  codes in range (`MeetupsArea.codes`: the cities whose centres are within
-  the radius of the chosen city's centre).
-- **The board:** the fixed line "Meet in a public place and don't share a
-  home address", **New ad**, **My ads (n)**, the area row, one **Filters**
-  button ("סינון"; "Filters · 2" when two differ from where the board
-  starts, with **Clear** beside it), then the open ads, the soonest first,
-  then the nearest. The first ads show on an ordinary phone without
+- **The area** is ONE for the whole Outside tab (Partners and Parks),
+  `outsideAreaProvider` in `lib/services/outdoors/state/parks_providers.dart`;
+  `meetupsAreaProvider` is a view of it (`MeetupsArea.of`). It shows as a
+  chip in the Outside header (pin + city + ▾, `OutsideAreaChip`), which
+  opens the area picker in a sheet. By default the city of the member's
+  community profile (`MeetupsAreaSeed`, not stored; the free-text city is
+  matched to the bundled localities: "Tel Aviv" is Tel Aviv-Yafo). Without
+  one the board asks once: **Near me** (one fix on the tap, after saying
+  why; never stored, and choosing it clears a remembered city) or a city
+  from the list. A chosen city and its radius are kept on the phone
+  (`outdoors.area.<user id>`; an old `meetups.area.<user id>` is moved there
+  once). The server is sent only the locality codes in range
+  (`MeetupsArea.codes`).
+- **The board:** one control row: **Filters** ("סינון"; "Filters · 2"
+  when two differ from where the board starts), the distance chip ("Up to
+  10 km ▾": City only / Up to 10 km / Up to 25 km) and **My ads (n)** at
+  the end; **New ad** is the floating button of the Outside tab while
+  Partners shows (slot `outside-new-ad`, filled by meetups). The safety
+  sentence is in the New ad form's footer, not on the board. Then the open
+  ads, the soonest first, then the nearest. The first ads show on an ordinary phone without
   scrolling. The button opens a bottom sheet with the groups below as
   chips under headings, **Clear all** and **Show N ads** (**Done** while
   loading). A choice applies at once, so the ads behind the sheet follow
   it and the button only closes the sheet. "Where the board starts":
-  10 km, all kinds, the selected pet's animal, any time, not only my
-  parks; **Clear** / **Clear all** go back there (the distance is kept on
-  the phone as when it is chosen). The groups:
-  - distance: City only / Up to 10 km / Up to 25 km;
+  all kinds, the selected pet's animal, any time, not only my parks;
+  **Clear all** goes back there (the distance is not a filter of the sheet
+  and is not counted). The groups:
   - kind: All / Walk / Play;
-  - animal: Dogs / Cats / Everything, the Community's shared chips
-    (`communityScopeProvider`, starting on the selected pet's kind); an ad
+  - animal: Dogs / Cats / Everything, the board's own choice
+    (`meetupAnimalProvider`, starting on the selected pet's kind; it no
+    longer moves the Community's filter, nor the other way round); an ad
     without a pet shows under every chip, as posts do;
   - when: Today / This week (the next seven days) / Regular;
   - **At my parks** (one of the saved parks).

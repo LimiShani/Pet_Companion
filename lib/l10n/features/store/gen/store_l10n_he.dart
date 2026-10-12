@@ -743,4 +743,16 @@ class StoreL10nHe extends StoreL10n {
 
   @override
   String get kindMenuTooltip => 'בחירת סוג החיה';
+
+  @override
+  String get searchTooltip => 'חיפוש מבצעים';
+
+  @override
+  String get shareStepWhat => 'מה ובכמה';
+
+  @override
+  String get shareStepDetails => 'פרטים (לא חובה)';
+
+  @override
+  String get shareNext => 'הבא';
 }

@@ -101,19 +101,13 @@ abstract class MeetupsL10n {
   /// **'Where do you go out?'**
   String get areaQuestion;
 
-  /// No description provided for @areaWhy.
-  ///
-  /// In en, this message translates to:
-  /// **'Pick a city to see walk and play ads around it. \"Near me\" asks the phone for your location once, only to find the nearest city. It is never saved or sent.'**
-  String get areaWhy;
-
   /// No description provided for @problemOutsideRegion.
   ///
   /// In en, this message translates to:
   /// **'Partners are listed in Israel for now. Pick a city in Israel.'**
   String get problemOutsideRegion;
 
-  /// The fixed safety line at the top of the board.
+  /// The safety line in the footer of the new-ad form.
   ///
   /// In en, this message translates to:
   /// **'Meet in a public place and don\'t share a home address.'**
@@ -197,23 +191,11 @@ abstract class MeetupsL10n {
   /// **'{count, plural, =0{Filters: none on} =1{Filters: 1 on} other{Filters: {count} on}}'**
   String filtersLabel(int count);
 
-  /// Beside the filters button: every filter back to the start.
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get filtersClear;
-
   /// No description provided for @filtersTitle.
   ///
   /// In en, this message translates to:
   /// **'Which ads to show'**
   String get filtersTitle;
-
-  /// No description provided for @filterDistance.
-  ///
-  /// In en, this message translates to:
-  /// **'Distance'**
-  String get filterDistance;
 
   /// No description provided for @filterKind.
   ///

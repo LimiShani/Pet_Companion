@@ -10,7 +10,6 @@ import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
-import '../widgets/advice_notice.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/message_bar.dart';
@@ -119,8 +118,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       ),
                     ),
                   ),
-                  const AdviceNotice(),
-                  const SizedBox(height: 10),
                   _Comments(post: post),
                 ],
               ),

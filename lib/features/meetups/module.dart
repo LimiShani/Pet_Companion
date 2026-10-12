@@ -3,7 +3,7 @@ import '../../platform/feature_ui.dart';
 import '../../services/meetups/state/meetups_providers.dart';
 import '../community/members/member_screen.dart' show memberPageMeetupsSlot;
 import '../outdoors/outdoors.dart'
-    show ParkCard, ParkPageSlots, outsidePartnersSlot;
+    show ParkCard, ParkPageSlots, outsideNewAdSlot, outsidePartnersSlot;
 import 'board/partners_view.dart';
 import 'meetup_actions.dart';
 import 'slots/meetup_slots.dart';
@@ -17,6 +17,11 @@ final meetupsModule = FeatureModule(
     outsidePartnersSlot: FeatureSlot(
       capability: MeetupCapabilities.view,
       build: (c, r) => const PartnersView(),
+    ),
+    // Outside's floating "+ New ad" while Partners shows.
+    outsideNewAdSlot: FeatureSlot(
+      capability: MeetupCapabilities.post,
+      build: (c, r) => const NewAdButton(),
     ),
     ParkPageSlots.meetups: FeatureSlot(
       capability: MeetupCapabilities.view,

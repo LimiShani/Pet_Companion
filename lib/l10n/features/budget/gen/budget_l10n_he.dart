@@ -186,6 +186,9 @@ class BudgetL10nHe extends BudgetL10n {
   String get myBasket => 'הסל שלי';
 
   @override
+  String get basketTab => 'סל';
+
+  @override
   String get basketEmptyTitle => 'הסל שלך עדיין ריק';
 
   @override

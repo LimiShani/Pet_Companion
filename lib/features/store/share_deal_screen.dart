@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
+import '../../presentation/pets_widgets.dart' show StepProgress;
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -117,8 +118,9 @@ class DealValidators {
 /// What the sharer knows about delivery.
 enum _Delivery { notSure, free, paid }
 
-/// Full-screen form for sharing a bargain with other pet owners. Pops with
-/// the new [Deal] once it is stored.
+/// Full-screen form for sharing a bargain with other pet owners, in two
+/// steps: what the deal is and its price (checked on "Next"), then the
+/// optional details. Pops with the new [Deal] once it is stored.
 class ShareDealScreen extends ConsumerStatefulWidget {
   const ShareDealScreen({super.key});
 
@@ -142,11 +144,14 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   DateTime? _endDate;
   bool _sending = false;
 
+  /// 1 for what and the price, 2 for the optional details.
+  int _step = 1;
+
   /// Why the last attempt to share failed; shown above the button.
   Object? _error;
 
   /// The animals the deal is for; empty means every pet. Starts on the kind
-  /// of the pet being shopped for.
+  /// picked in the Store's animals chip, else the selected pet's kind.
   late final Set<PetSpecies> _species = _initialSpecies();
 
   // Quiet until the first attempt to send, then problems update as they
@@ -154,6 +159,8 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
   AutovalidateMode _validation = AutovalidateMode.disabled;
 
   Set<PetSpecies> _initialSpecies() {
+    final kind = ref.read(storeFilterProvider).kind;
+    if (kind != null) return {kind};
     final pet = ref.read(selectedPetProvider);
     return pet.id.isEmpty ? {} : {pet.species};
   }
@@ -245,6 +252,30 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
     _Delivery.paid => DealValidators.parsePrice(_deliveryCost.text),
   };
 
+  /// Checks step 1 and goes on to the details.
+  void _next() {
+    FocusScope.of(context).unfocus();
+    if (!_form.currentState!.validate()) {
+      setState(() => _validation = AutovalidateMode.onUserInteraction);
+      return;
+    }
+    // The details start quiet, as the form did.
+    setState(() {
+      _step = 2;
+      _validation = AutovalidateMode.disabled;
+    });
+  }
+
+  /// Back to step 1, with everything typed in either step kept.
+  void _backToWhat() {
+    FocusScope.of(context).unfocus();
+    setState(() {
+      _step = 1;
+      _error = null;
+      _validation = AutovalidateMode.disabled;
+    });
+  }
+
   Future<void> _submit() async {
     FocusScope.of(context).unfocus();
     setState(() => _error = null);
@@ -296,19 +327,22 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.storeL10n;
-    final format = StoreFormat.of(context);
-    final valid = DealValidators(l10n);
-    final symbol = format.currencySymbol(kStoreDefaultCurrency);
+    final details = _step == 2;
     final today = ref.watch(storeClockProvider)();
-    final error = _error;
 
     final page = Scaffold(
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          CoralHeader(title: l10n.shareADeal, showBack: true),
+          CoralHeader(
+            title: l10n.shareADeal,
+            showBack: true,
+            bottom: StepProgress(step: _step, total: 2),
+          ),
           Expanded(
             child: SingleChildScrollView(
+              // A new page per step, so each one starts scrolled to its top.
+              key: ValueKey('share-step-$_step'),
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsetsDirectional.fromSTEB(
                 AppSpacing.screen,
@@ -325,366 +359,16 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        l10n.shareIntro,
-                        style: AppText.body.copyWith(color: AppColors.brown),
-                      ),
-                      const SizedBox(height: 14),
-                      _Labeled(
-                        label: l10n.fieldTitle,
-                        child: TextFormField(
-                          key: const Key('share-title'),
-                          controller: _title,
-                          validator: valid.title,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.sentences,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(120),
-                          ],
-                          decoration: InputDecoration(
-                            hintText: l10n.fieldTitleHint,
-                            errorMaxLines: 3,
-                          ),
+                        details ? l10n.shareStepDetails : l10n.shareStepWhat,
+                        key: const Key('share-step-title'),
+                        style: AppText.sectionTitle.copyWith(
+                          color: AppColors.ink,
                         ),
                       ),
-                      _Labeled(
-                        label: l10n.fieldCategory,
-                        child: DropdownButtonFormField<DealCategory>(
-                          key: const Key('share-category'),
-                          initialValue: _category,
-                          isExpanded: true,
-                          validator: valid.category,
-                          onChanged: (value) =>
-                              setState(() => _category = value),
-                          icon: const AppIcon(
-                            Icons.expand_more_rounded,
-                            color: AppColors.brown,
-                          ),
-                          dropdownColor: AppColors.white,
-                          borderRadius: BorderRadius.circular(
-                            AppSpacing.fieldRadius,
-                          ),
-                          style: _fieldStyle,
-                          decoration: const InputDecoration(errorMaxLines: 3),
-                          hint: _DropdownHint(l10n.fieldCategoryHint),
-                          items: [
-                            for (final category in DealCategory.values)
-                              DropdownMenuItem(
-                                value: category,
-                                child: Text(
-                                  l10n.category(category),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      _Labeled(
-                        label: l10n.fieldAnimals,
-                        help: l10n.fieldAnimalsHelp,
-                        child: _AnimalChips(
-                          selected: _species,
-                          onToggle: _toggleSpecies,
-                        ),
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: _Labeled(
-                              label: l10n.fieldPriceNow(symbol),
-                              child: TextFormField(
-                                key: const Key('share-price'),
-                                controller: _price,
-                                validator: (value) =>
-                                    valid.price(value, _original.text),
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  hintText: '0',
-                                  errorMaxLines: 4,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: _Labeled(
-                              label: l10n.fieldPriceBefore(symbol),
-                              child: TextFormField(
-                                key: const Key('share-original-price'),
-                                controller: _original,
-                                validator: valid.originalPrice,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                textInputAction: TextInputAction.next,
-                                decoration: const InputDecoration(
-                                  hintText: '0',
-                                  errorMaxLines: 4,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      _Hint(
-                        listenTo: [_price, _original],
-                        text: () {
-                          final now = DealValidators.parsePrice(_price.text);
-                          final before = DealValidators.parsePrice(
-                            _original.text,
-                          );
-                          if (now == null ||
-                              before == null ||
-                              now <= 0 ||
-                              now >= before) {
-                            return null;
-                          }
-                          return l10n.hintPercentOff(
-                            ((1 - now / before) * 100).round(),
-                          );
-                        },
-                      ),
-                      _Labeled(
-                        label: l10n.fieldPackageSize,
-                        help: l10n.fieldPackageHelp,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: TextFormField(
-                                key: const Key('share-package-amount'),
-                                controller: _packageAmount,
-                                validator: valid.packageAmount,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                textInputAction: TextInputAction.next,
-                                // The unit's "choose a unit" problem depends on this field.
-                                onChanged: (_) {
-                                  if (_validation != AutovalidateMode.disabled) {
-                                    _form.currentState?.validate();
-                                  }
-                                },
-                                decoration: InputDecoration(
-                                  hintText: l10n.fieldPackageAmountHint,
-                                  errorMaxLines: 4,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: DropdownButtonFormField<PackageUnit>(
-                                key: const Key('share-package-unit'),
-                                initialValue: _packageUnit,
-                                isExpanded: true,
-                                validator: (unit) => valid.packageUnit(
-                                  unit,
-                                  _packageAmount.text,
-                                ),
-                                onChanged: (value) =>
-                                    setState(() => _packageUnit = value),
-                                icon: const AppIcon(
-                                  Icons.expand_more_rounded,
-                                  color: AppColors.brown,
-                                ),
-                                dropdownColor: AppColors.white,
-                                borderRadius: BorderRadius.circular(
-                                  AppSpacing.fieldRadius,
-                                ),
-                                style: _fieldStyle,
-                                decoration: const InputDecoration(
-                                  errorMaxLines: 4,
-                                ),
-                                hint: _DropdownHint(l10n.fieldPackageUnitHint),
-                                items: [
-                                  for (final unit in PackageUnit.values)
-                                    DropdownMenuItem(
-                                      value: unit,
-                                      child: Text(
-                                        l10n.unit(unit),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      _Hint(
-                        key: const Key('share-unit-price-hint'),
-                        listenTo: [_price, _packageAmount],
-                        text: () {
-                          final price = DealValidators.parsePrice(_price.text);
-                          final size = _package;
-                          if (price == null || price <= 0 || size == null) {
-                            return null;
-                          }
-                          final unitPrice = UnitPrice(
-                            price / size.inBaseUnits,
-                            size.unit.kind,
-                          );
-                          return l10n.hintUnitPrice(
-                            format.unitPrice(unitPrice, kStoreDefaultCurrency),
-                          );
-                        },
-                      ),
-                      _Labeled(
-                        label: l10n.fieldDelivery,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 4,
-                              children: [
-                                for (final (option, label) in [
-                                  (_Delivery.notSure, l10n.deliveryNotSure),
-                                  (_Delivery.free, l10n.deliveryFree),
-                                  (_Delivery.paid, l10n.deliveryPaid),
-                                ])
-                                  ChoiceChip(
-                                    key: Key('share-delivery-${option.name}'),
-                                    label: Text(label),
-                                    selected: _delivery == option,
-                                    showCheckmark: false,
-                                    onSelected: (_) =>
-                                        setState(() => _delivery = option),
-                                  ),
-                              ],
-                            ),
-                            if (_delivery == _Delivery.paid) ...[
-                              const SizedBox(height: 8),
-                              TextFormField(
-                                key: const Key('share-delivery-cost'),
-                                controller: _deliveryCost,
-                                validator: valid.deliveryCost,
-                                keyboardType:
-                                    const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
-                                textInputAction: TextInputAction.next,
-                                decoration: InputDecoration(
-                                  hintText: l10n.fieldDeliveryCost(symbol),
-                                  errorMaxLines: 3,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      _Hint(
-                        key: const Key('share-final-price-hint'),
-                        listenTo: [_price, _deliveryCost],
-                        text: () {
-                          final price = DealValidators.parsePrice(_price.text);
-                          final delivery = _deliveryAmount;
-                          if (price == null ||
-                              price <= 0 ||
-                              delivery == null ||
-                              delivery < 0) {
-                            return null;
-                          }
-                          return l10n.hintFinalPrice(
-                            format.money(
-                              price + delivery,
-                              kStoreDefaultCurrency,
-                            ),
-                          );
-                        },
-                      ),
-                      _Labeled(
-                        label: l10n.sellerLabel,
-                        child: TextFormField(
-                          key: const Key('share-seller'),
-                          controller: _seller,
-                          validator: valid.seller,
-                          textInputAction: TextInputAction.next,
-                          textCapitalization: TextCapitalization.words,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(80),
-                          ],
-                          decoration: InputDecoration(
-                            hintText: l10n.fieldSellerHint,
-                            errorMaxLines: 3,
-                          ),
-                        ),
-                      ),
-                      _Labeled(
-                        label: l10n.fieldLink,
-                        child: TextFormField(
-                          key: const Key('share-link'),
-                          controller: _link,
-                          validator: valid.link,
-                          keyboardType: TextInputType.url,
-                          textInputAction: TextInputAction.next,
-                          autocorrect: false,
-                          // A link reads left to right in every language,
-                          // and so does the hint that shows how it starts.
-                          textDirection: TextDirection.ltr,
-                          decoration: const InputDecoration(
-                            hintText: httpsPrefix,
-                            hintTextDirection: TextDirection.ltr,
-                            errorMaxLines: 3,
-                          ),
-                        ),
-                      ),
-                      _Labeled(
-                        label: l10n.fieldDescription,
-                        child: TextFormField(
-                          key: const Key('share-description'),
-                          controller: _description,
-                          minLines: 3,
-                          maxLines: 6,
-                          textCapitalization: TextCapitalization.sentences,
-                          inputFormatters: [
-                            LengthLimitingTextInputFormatter(1000),
-                          ],
-                          decoration: InputDecoration(
-                            hintText: l10n.fieldDescriptionHint,
-                          ),
-                        ),
-                      ),
-                      _Labeled(
-                        label: l10n.fieldEndDate,
-                        child: _EndDateField(
-                          date: _endDate,
-                          onPick: _pickEndDate,
-                          onClear: () => setState(() => _endDate = null),
-                        ),
-                      ),
-                      if (error != null) ...[
-                        Text(
-                          storeErrorText(context, error),
-                          style: AppText.body.copyWith(
-                            color: Theme.of(context).colorScheme.error,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      Text(
-                        l10n.checkedTodayNote(format.date(today)),
-                        style: AppText.label.copyWith(
-                          color: AppColors.brown,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      PrimaryButton(
-                        label: l10n.shareDealButton,
-                        onPressed: _submit,
-                        loading: _sending,
-                      ),
+                      const SizedBox(height: 8),
+                      ...details
+                          ? _detailsStep(context, today)
+                          : _whatStep(context),
                     ],
                   ),
                 ),
@@ -694,6 +378,7 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
         ],
       ),
     );
+
     return ListenableBuilder(
       listenable: Listenable.merge([
         _title,
@@ -705,10 +390,417 @@ class _ShareDealScreenState extends ConsumerState<ShareDealScreen> {
         _link,
         _description,
       ]),
-      builder: (context, child) =>
-          UnsavedChangesGuard(dirty: _dirty, child: child!),
+      // On step 2, back (the header arrow or the phone's button) returns
+      // to step 1 with everything kept; on step 1 it asks before dropping
+      // a started deal.
+      builder: (context, child) => details
+          ? PopScope<Object?>(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) {
+                if (!didPop) _backToWhat();
+              },
+              child: child!,
+            )
+          : UnsavedChangesGuard(dirty: _dirty, child: child!),
       child: page,
     );
+  }
+
+  /// Step 1: what the deal is, what it costs and where it is.
+  List<Widget> _whatStep(BuildContext context) {
+    final l10n = context.storeL10n;
+    final valid = DealValidators(l10n);
+    final symbol = StoreFormat.of(
+      context,
+    ).currencySymbol(kStoreDefaultCurrency);
+    return [
+      Text(
+        l10n.shareIntro,
+        style: AppText.body.copyWith(color: AppColors.brown),
+      ),
+      const SizedBox(height: 14),
+      _Labeled(
+        label: l10n.fieldTitle,
+        child: TextFormField(
+          key: const Key('share-title'),
+          controller: _title,
+          validator: valid.title,
+          textInputAction: TextInputAction.next,
+          textCapitalization: TextCapitalization.sentences,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(120),
+          ],
+          decoration: InputDecoration(
+            hintText: l10n.fieldTitleHint,
+            errorMaxLines: 3,
+          ),
+        ),
+      ),
+      _Labeled(
+        label: l10n.fieldCategory,
+        child: DropdownButtonFormField<DealCategory>(
+          key: const Key('share-category'),
+          initialValue: _category,
+          isExpanded: true,
+          validator: valid.category,
+          onChanged: (value) =>
+              setState(() => _category = value),
+          icon: const AppIcon(
+            Icons.expand_more_rounded,
+            color: AppColors.brown,
+          ),
+          dropdownColor: AppColors.white,
+          borderRadius: BorderRadius.circular(
+            AppSpacing.fieldRadius,
+          ),
+          style: _fieldStyle,
+          decoration: const InputDecoration(errorMaxLines: 3),
+          hint: _DropdownHint(l10n.fieldCategoryHint),
+          items: [
+            for (final category in DealCategory.values)
+              DropdownMenuItem(
+                value: category,
+                child: Text(
+                  l10n.category(category),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+        ),
+      ),
+      _Labeled(
+        label: l10n.fieldAnimals,
+        help: l10n.fieldAnimalsHelp,
+        child: _AnimalChips(
+          selected: _species,
+          onToggle: _toggleSpecies,
+        ),
+      ),
+      Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: _Labeled(
+              label: l10n.fieldPriceNow(symbol),
+              child: TextFormField(
+                key: const Key('share-price'),
+                controller: _price,
+                validator: (value) =>
+                    valid.price(value, _original.text),
+                keyboardType:
+                    const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  hintText: '0',
+                  errorMaxLines: 4,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: _Labeled(
+              label: l10n.fieldPriceBefore(symbol),
+              child: TextFormField(
+                key: const Key('share-original-price'),
+                controller: _original,
+                validator: valid.originalPrice,
+                keyboardType:
+                    const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                textInputAction: TextInputAction.next,
+                decoration: const InputDecoration(
+                  hintText: '0',
+                  errorMaxLines: 4,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      _Hint(
+        listenTo: [_price, _original],
+        text: () {
+          final now = DealValidators.parsePrice(_price.text);
+          final before = DealValidators.parsePrice(
+            _original.text,
+          );
+          if (now == null ||
+              before == null ||
+              now <= 0 ||
+              now >= before) {
+            return null;
+          }
+          return l10n.hintPercentOff(
+            ((1 - now / before) * 100).round(),
+          );
+        },
+      ),
+      _Labeled(
+        label: l10n.fieldLink,
+        child: TextFormField(
+          key: const Key('share-link'),
+          controller: _link,
+          validator: valid.link,
+          keyboardType: TextInputType.url,
+          textInputAction: TextInputAction.next,
+          autocorrect: false,
+          // A link reads left to right in every language,
+          // and so does the hint that shows how it starts.
+          textDirection: TextDirection.ltr,
+          decoration: const InputDecoration(
+            hintText: httpsPrefix,
+            hintTextDirection: TextDirection.ltr,
+            errorMaxLines: 3,
+          ),
+        ),
+      ),
+      _Labeled(
+        label: l10n.sellerLabel,
+        child: TextFormField(
+          key: const Key('share-seller'),
+          controller: _seller,
+          validator: valid.seller,
+          textInputAction: TextInputAction.next,
+          textCapitalization: TextCapitalization.words,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(80),
+          ],
+          decoration: InputDecoration(
+            hintText: l10n.fieldSellerHint,
+            errorMaxLines: 3,
+          ),
+        ),
+      ),
+      const SizedBox(height: 4),
+      PrimaryButton(
+        key: const Key('share-next'),
+        label: l10n.shareNext,
+        onPressed: _next,
+      ),
+    ];
+  }
+
+  /// Step 2: the optional details, then sharing.
+  List<Widget> _detailsStep(BuildContext context, DateTime today) {
+    final l10n = context.storeL10n;
+    final format = StoreFormat.of(context);
+    final valid = DealValidators(l10n);
+    final symbol = format.currencySymbol(kStoreDefaultCurrency);
+    final error = _error;
+    return [
+      _Labeled(
+        label: l10n.fieldPackageSize,
+        help: l10n.fieldPackageHelp,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextFormField(
+                key: const Key('share-package-amount'),
+                controller: _packageAmount,
+                validator: valid.packageAmount,
+                keyboardType:
+                    const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                textInputAction: TextInputAction.next,
+                // The unit's "choose a unit" problem depends on this field.
+                onChanged: (_) {
+                  if (_validation != AutovalidateMode.disabled) {
+                    _form.currentState?.validate();
+                  }
+                },
+                decoration: InputDecoration(
+                  hintText: l10n.fieldPackageAmountHint,
+                  errorMaxLines: 4,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<PackageUnit>(
+                key: const Key('share-package-unit'),
+                initialValue: _packageUnit,
+                isExpanded: true,
+                validator: (unit) => valid.packageUnit(
+                  unit,
+                  _packageAmount.text,
+                ),
+                onChanged: (value) =>
+                    setState(() => _packageUnit = value),
+                icon: const AppIcon(
+                  Icons.expand_more_rounded,
+                  color: AppColors.brown,
+                ),
+                dropdownColor: AppColors.white,
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.fieldRadius,
+                ),
+                style: _fieldStyle,
+                decoration: const InputDecoration(
+                  errorMaxLines: 4,
+                ),
+                hint: _DropdownHint(l10n.fieldPackageUnitHint),
+                items: [
+                  for (final unit in PackageUnit.values)
+                    DropdownMenuItem(
+                      value: unit,
+                      child: Text(
+                        l10n.unit(unit),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+      _Hint(
+        key: const Key('share-unit-price-hint'),
+        listenTo: [_price, _packageAmount],
+        text: () {
+          final price = DealValidators.parsePrice(_price.text);
+          final size = _package;
+          if (price == null || price <= 0 || size == null) {
+            return null;
+          }
+          final unitPrice = UnitPrice(
+            price / size.inBaseUnits,
+            size.unit.kind,
+          );
+          return l10n.hintUnitPrice(
+            format.unitPrice(unitPrice, kStoreDefaultCurrency),
+          );
+        },
+      ),
+      _Labeled(
+        label: l10n.fieldDelivery,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                for (final (option, label) in [
+                  (_Delivery.notSure, l10n.deliveryNotSure),
+                  (_Delivery.free, l10n.deliveryFree),
+                  (_Delivery.paid, l10n.deliveryPaid),
+                ])
+                  ChoiceChip(
+                    key: Key('share-delivery-${option.name}'),
+                    label: Text(label),
+                    selected: _delivery == option,
+                    showCheckmark: false,
+                    onSelected: (_) =>
+                        setState(() => _delivery = option),
+                  ),
+              ],
+            ),
+            if (_delivery == _Delivery.paid) ...[
+              const SizedBox(height: 8),
+              TextFormField(
+                key: const Key('share-delivery-cost'),
+                controller: _deliveryCost,
+                validator: valid.deliveryCost,
+                keyboardType:
+                    const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                textInputAction: TextInputAction.next,
+                decoration: InputDecoration(
+                  hintText: l10n.fieldDeliveryCost(symbol),
+                  errorMaxLines: 3,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+      _Hint(
+        key: const Key('share-final-price-hint'),
+        listenTo: [_price, _deliveryCost],
+        text: () {
+          final price = DealValidators.parsePrice(_price.text);
+          final delivery = _deliveryAmount;
+          if (price == null ||
+              price <= 0 ||
+              delivery == null ||
+              delivery < 0) {
+            return null;
+          }
+          return l10n.hintFinalPrice(
+            format.money(
+              price + delivery,
+              kStoreDefaultCurrency,
+            ),
+          );
+        },
+      ),
+      _Labeled(
+        label: l10n.fieldDescription,
+        child: TextFormField(
+          key: const Key('share-description'),
+          controller: _description,
+          minLines: 3,
+          maxLines: 6,
+          textCapitalization: TextCapitalization.sentences,
+          inputFormatters: [
+            LengthLimitingTextInputFormatter(1000),
+          ],
+          decoration: InputDecoration(
+            hintText: l10n.fieldDescriptionHint,
+          ),
+        ),
+      ),
+      _Labeled(
+        label: l10n.fieldEndDate,
+        child: _EndDateField(
+          date: _endDate,
+          onPick: _pickEndDate,
+          onClear: () => setState(() => _endDate = null),
+        ),
+      ),
+      if (error != null) ...[
+        Text(
+          storeErrorText(context, error),
+          style: AppText.body.copyWith(
+            color: Theme.of(context).colorScheme.error,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+      ],
+      Text(
+        l10n.checkedTodayNote(format.date(today)),
+        style: AppText.label.copyWith(
+          color: AppColors.brown,
+          fontWeight: FontWeight.w600,
+        ),
+        textAlign: TextAlign.center,
+      ),
+      const SizedBox(height: 12),
+      PrimaryButton(
+        label: l10n.shareDealButton,
+        onPressed: _submit,
+        loading: _sending,
+      ),
+      const SizedBox(height: 4),
+      Center(
+        child: TextButton(
+          key: const Key('share-back'),
+          onPressed: _sending ? null : _backToWhat,
+          child: Text(context.l10n.commonBack),
+        ),
+      ),
+    ];
   }
 
   static final _fieldStyle = AppText.bodyLarge.copyWith(

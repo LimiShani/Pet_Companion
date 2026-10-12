@@ -18,12 +18,16 @@ import 'park_area_picker.dart';
 import 'park_screen.dart';
 import 'suggest_park_screen.dart';
 
-/// Outside > Parks: where to look, the filters, "My parks" first, then the
-/// area's parks nearest first, and "Missing a park? Suggest a park".
+/// Outside > Parks: where to look (until an area is chosen; then it is the
+/// chip in the tab's header), one row of filters (the radius, then what is
+/// there), "My parks" first, then the area's parks nearest first, and
+/// "Missing a park? Suggest a park".
 class ParksView extends ConsumerWidget {
   const ParksView({super.key});
 
   static const listKey = Key('parks-list');
+  static const filterRowKey = Key('parks-filter-row');
+  static const radiusChipKey = Key('parks-radius-chip');
   static const sampleKey = Key('parks-sample-note');
   static const suggestKey = Key('parks-suggest');
   static const reviewKey = Key('parks-review-entry');
@@ -36,6 +40,7 @@ class ParksView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.outdoorsL10n;
     final state = ref.watch(parksControllerProvider);
+    final where = ref.watch(outsideAreaProvider);
     final controller = ref.read(parksControllerProvider.notifier);
     final demo = ref.watch(parksRepositoryProvider).isDemo;
     final reviewer = ref.watch(capabilityProvider(ParkCapabilities.review));
@@ -51,13 +56,13 @@ class ParksView extends ConsumerWidget {
       if (reviewer) ...[const _ReviewEntry(), const SizedBox(height: 12)],
       if (area == null) ...[
         ParkAreaPicker(
-          locating: state.locating,
-          problem: state.problem,
+          locating: where.locating,
+          problem: where.problem,
           onNearMe: controller.useMyLocation,
           onOpenSettings: () => ref
               .read(locationServiceProvider)
               .openSettings(
-                state.problem == AreaProblem.serviceOff
+                where.problem == AreaProblem.serviceOff
                     ? LocationOutcome.serviceOff
                     : LocationOutcome.deniedForever,
               ),
@@ -76,16 +81,20 @@ class ParksView extends ConsumerWidget {
             ),
         ],
       ] else ...[
-        ParkAreaBar(
+        _FilterRow(
           area: area,
-          onChange: controller.changeArea,
           onRadius: controller.setRadius,
-        ),
-        const SizedBox(height: 10),
-        _Filters(
           selected: state.filters,
           onToggle: controller.toggleFilter,
         ),
+        if (area is NearMeArea && area.isApproximate)
+          Padding(
+            padding: const EdgeInsetsDirectional.only(start: 6, top: 6),
+            child: Text(
+              l10n.approximateLocation(((area.accuracyM ?? 0) / 1000).ceil()),
+              style: AppText.secondary.copyWith(color: AppColors.ink),
+            ),
+          ),
         const SizedBox(height: 12),
         ...switch (listing) {
           null || AsyncLoading() => [
@@ -218,30 +227,59 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _Filters extends StatelessWidget {
-  const _Filters({required this.selected, required this.onToggle});
+/// One row that scrolls sideways: "Up to 10 km ▾", a divider, then the
+/// details a park must have.
+class _FilterRow extends StatelessWidget {
+  const _FilterRow({
+    required this.area,
+    required this.onRadius,
+    required this.selected,
+    required this.onToggle,
+  });
 
+  final ParkArea area;
+  final ValueChanged<ParkRadius> onRadius;
   final Set<ParkDetail> selected;
   final ValueChanged<ParkDetail> onToggle;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.outdoorsL10n;
-    return Semantics(
-      label: l10n.filtersLabel,
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 6,
+    return SingleChildScrollView(
+      key: ParksView.filterRowKey,
+      scrollDirection: Axis.horizontal,
+      child: Row(
         children: [
-          for (final detail in ParkDetail.filters)
-            FilterChip(
-              key: ParksView.filterKey(detail),
-              avatar: AppIcon(parkDetailIcon(detail), size: 16),
-              label: Text(l10n.detail(detail)),
-              selected: selected.contains(detail),
-              showCheckmark: false,
-              onSelected: (_) => onToggle(detail),
+          ParkRadiusChip(
+            key: ParksView.radiusChipKey,
+            area: area,
+            onRadius: onRadius,
+          ),
+          Container(
+            width: 1,
+            height: 24,
+            margin: const EdgeInsets.symmetric(horizontal: 10),
+            color: AppColors.brown.withValues(alpha: 0.3),
+          ),
+          Semantics(
+            label: l10n.filtersLabel,
+            child: Row(
+              children: [
+                for (final detail in ParkDetail.filters)
+                  Padding(
+                    padding: const EdgeInsetsDirectional.only(end: 8),
+                    child: FilterChip(
+                      key: ParksView.filterKey(detail),
+                      avatar: AppIcon(parkDetailIcon(detail), size: 16),
+                      label: Text(l10n.detail(detail)),
+                      selected: selected.contains(detail),
+                      showCheckmark: false,
+                      onSelected: (_) => onToggle(detail),
+                    ),
+                  ),
+              ],
             ),
+          ),
         ],
       ),
     );

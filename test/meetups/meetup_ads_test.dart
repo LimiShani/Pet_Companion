@@ -18,14 +18,19 @@ Future<void> openForm(WidgetTester tester) async {
 
 Future<void> submit(WidgetTester tester) => tapOn(tester, find.byKey(MeetupFormScreen.submitKey));
 
-/// Picks a park in the park picker: Ra'anana, then [parkId].
+/// Picks a park in the park picker: Ra'anana, then [parkId]. The picker
+/// starts on Outside's area (the profile's Tel Aviv-Yafo); its "Change"
+/// opens the same sheet as the header's chip.
 Future<void> pickRaananaPark(WidgetTester tester, String parkId) async {
   await tapOn(tester, find.byKey(MeetupFormScreen.chooseParkKey));
   expect(find.byKey(ParkPickerScreen.screenKey), findsOneWidget);
+  await tapOn(tester, find.byKey(ParkAreaBar.changeKey));
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsOneWidget);
   await tester.enterText(find.byKey(ParkAreaPicker.cityFieldKey), 'raan');
   await tester.pumpAndSettle();
   await tester.tap(find.byKey(ParkAreaPicker.cityKey('raanana')));
   await tester.pumpAndSettle();
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsNothing);
   await tapOn(tester, find.byKey(ParkCard.keyOf(parkId)));
 }
 
@@ -199,11 +204,10 @@ void main() {
     Future<void> openRaananaParks(WidgetTester tester) async {
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(ParkAreaPicker.cityFieldKey), 'raan');
-      await tester.pumpAndSettle();
-      await tapOn(tester, find.byKey(ParkAreaPicker.cityKey('raanana')));
-      // Up to 10 km: Kfar Saba's parks too.
-      await tapOn(tester, find.byKey(ParkAreaBar.radiusKey(ParkRadius.km10)));
+      // Outside's area (Tel Aviv-Yafo from the profile), changed from the
+      // header; up to 10 km as before: Kfar Saba's parks too.
+      await changeArea(tester, 'raan', 'raanana');
+      expect(containerOf(tester).read(outsideAreaProvider).area?.radius, ParkRadius.km10);
     }
 
     testWidgets('park cards say "Meetup today" or how many this week', (tester) async {
@@ -259,8 +263,9 @@ void main() {
     testWidgets('the board, a card, the join sheet, the form and My ads fit', (tester) async {
       await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       expect(tester.takeException(), isNull);
-      expect(find.text(he.safetyStrip), findsOneWidget);
+      expect(find.text(he.safetyStrip), findsNothing, reason: 'the form keeps it, not the board');
       expect(find.text(he.newAd), findsOneWidget);
+      expect(find.text(he.myAdsCount(2)), findsOneWidget);
       await scrollTo(tester, find.byKey(MeetupCard.joinKey('demo-meetup-noa')));
       expect(tester.takeException(), isNull);
       expect(find.text('ב׳, ד׳ · ערב'), findsOneWidget, reason: 'Hebrew day letters');
@@ -273,7 +278,7 @@ void main() {
       Navigator.of(tester.element(find.byType(JoinMeetupSheet))).pop();
       await tester.pumpAndSettle();
 
-      await scrollTo(tester, find.byKey(PartnersView.newAdKey), delta: -200);
+      // The floating button, wherever the list is.
       await tester.tap(find.byKey(PartnersView.newAdKey));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
@@ -287,6 +292,7 @@ void main() {
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(MeetupFormScreen.submitKey), within: form);
       expect(tester.takeException(), isNull);
+      expect(find.textContaining(he.safetyStrip), findsOneWidget, reason: 'the footer of the form');
       Navigator.of(tester.element(form)).pop();
       await tester.pumpAndSettle();
 
@@ -299,16 +305,19 @@ void main() {
       expect(find.text(he.renew), findsOneWidget);
     });
 
-    testWidgets('the Filters button and its sheet fit', (tester) async {
+    testWidgets('the row of controls, the distance menu and the filters sheet fit', (tester) async {
       await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       expect(find.text(he.filters), findsOneWidget);
+      expect(find.text(outdoorsHe.radiusKm(10)), findsOneWidget);
+      await chooseRadius(tester, ParkRadius.km25);
+      expect(tester.takeException(), isNull);
+      expect(find.text(outdoorsHe.radiusKm(25)), findsOneWidget);
       await openFilters(tester);
       expect(tester.takeException(), isNull);
       expect(find.text(he.filtersTitle), findsOneWidget);
-      for (final heading in [he.filterDistance, he.filterKind, he.filterAnimal, he.filterWhen, he.filterWhere]) {
+      for (final heading in [he.filterKind, he.filterAnimal, he.filterWhen, he.filterWhere]) {
         expect(find.text(heading), findsOneWidget);
       }
-      await tapOn(tester, find.byKey(PartnersView.radiusKey(ParkRadius.km25)));
       await tapOn(tester, find.byKey(PartnersView.kindKey(MeetupKind.walk)));
       await tapOn(tester, find.byKey(PartnersView.myParksKey));
       expect(tester.takeException(), isNull);
@@ -316,12 +325,10 @@ void main() {
       await tapOn(tester, find.byKey(PartnersView.myParksKey));
       await closeFilters(tester);
       expect(tester.takeException(), isNull);
-      expect(find.text(he.filtersCount(2)), findsOneWidget);
-      expect(find.text(he.filtersClear), findsOneWidget);
-      // A plain tap: the button is on screen (scrolling it to the top first
-      // would leave it above the shorter list).
-      await tester.tap(find.byKey(PartnersView.filtersClearKey));
-      await tester.pumpAndSettle();
+      expect(find.text(he.filtersCount(1)), findsOneWidget);
+      await openFilters(tester);
+      await tapOn(tester, find.byKey(PartnersFiltersSheet.clearAllKey));
+      await closeFilters(tester);
       expect(find.text(he.filters), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -330,9 +337,7 @@ void main() {
       await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byKey(ParkAreaPicker.cityFieldKey), 'רענ');
-      await tester.pumpAndSettle();
-      await tapOn(tester, find.byKey(ParkAreaPicker.cityKey('raanana')));
+      await changeArea(tester, 'רענ', 'raanana');
       expect(tester.takeException(), isNull);
       await tester.scrollUntilVisible(
         find.byKey(ParkCard.keyOf('demo-raanana-park')),

@@ -57,3 +57,16 @@ final guideLibraryProvider = FutureProvider<GuideLibrary>((ref) async {
   final guides = await repo.fetchGuides(language);
   return GuideLibrary(categories: categories, guides: guides);
 }, retry: noRetry);
+
+/// The words the Guides section is searched for, typed in the tab's
+/// header. Empty when there is no search.
+class GuidesQuery extends Notifier<String> {
+  @override
+  String build() => '';
+
+  void set(String words) => state = words;
+}
+
+final guidesQueryProvider = NotifierProvider<GuidesQuery, String>(
+  GuidesQuery.new,
+);

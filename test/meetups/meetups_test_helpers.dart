@@ -211,6 +211,30 @@ Future<void> openFilters(WidgetTester tester) async {
   expect(find.byKey(PartnersFiltersSheet.sheetKey), findsOneWidget);
 }
 
+/// Picks [radius] from the board's distance chip.
+Future<void> chooseRadius(WidgetTester tester, ParkRadius radius) async {
+  await tapOn(tester, find.byKey(PartnersView.radiusChipKey));
+  await tester.tap(find.byKey(PartnersView.radiusKey(radius)));
+  await tester.pumpAndSettle();
+}
+
+/// Changes Outside's one area from the chip in the tab's header: [query]
+/// in the sheet's city field, then [cityCode].
+Future<void> changeArea(
+  WidgetTester tester,
+  String query,
+  String cityCode,
+) async {
+  await tester.tap(find.byKey(OutsideScreen.areaChipKey));
+  await tester.pumpAndSettle();
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsOneWidget);
+  await tester.enterText(find.byKey(ParkAreaPicker.cityFieldKey), query);
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(ParkAreaPicker.cityKey(cityCode)));
+  await tester.pumpAndSettle();
+  expect(find.byKey(OutsideAreaSheet.sheetKey), findsNothing);
+}
+
 /// Closes the filters sheet with its "Show N ads" button.
 Future<void> closeFilters(WidgetTester tester) async {
   await tapOn(tester, find.byKey(PartnersFiltersSheet.showKey));

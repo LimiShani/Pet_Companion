@@ -733,4 +733,16 @@ class StoreL10nEn extends StoreL10n {
 
   @override
   String get kindMenuTooltip => 'Choose who to shop for';
+
+  @override
+  String get searchTooltip => 'Search deals';
+
+  @override
+  String get shareStepWhat => 'What and the price';
+
+  @override
+  String get shareStepDetails => 'Details (optional)';
+
+  @override
+  String get shareNext => 'Next';
 }

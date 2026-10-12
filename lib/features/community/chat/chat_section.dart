@@ -16,7 +16,7 @@ import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
 import '../widgets/auto_direction_text.dart';
 import '../widgets/icon_disc.dart';
-import '../widgets/scope_bar.dart';
+import '../widgets/scope_menu_chip.dart';
 import '../widgets/small_tag.dart';
 import '../widgets/section_state.dart';
 import '../members/members_providers.dart';
@@ -110,8 +110,9 @@ class ChatSection extends ConsumerWidget {
         padding: EdgeInsets.only(top: 16, bottom: private ? 88 : 24),
         children: [
           if (private) const _PrivateChats(),
-          const ScopeBar(what: ScopeBarSubject.rooms),
-          const SizedBox(height: 12),
+          // The animal menu filters only the topic rooms, so it sits on
+          // their heading's line, below the member's own chats.
+          _RoomsHeading(l10n.topicRooms),
           if (visible.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -339,8 +340,49 @@ class _Heading extends StatelessWidget {
   );
 }
 
+/// The "Topic rooms" heading, with the animal menu at the end of its line.
+class _RoomsHeading extends StatelessWidget {
+  const _RoomsHeading(this.text);
+
+  final String text;
+
+  static const rowKey = Key('rooms-heading');
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    key: rowKey,
+    padding: const EdgeInsetsDirectional.fromSTEB(
+      AppSpacing.screen + 4,
+      0,
+      AppSpacing.screen,
+      8,
+    ),
+    child: Row(
+      children: [
+        Expanded(
+          child: Semantics(
+            header: true,
+            child: Text(
+              text,
+              style: AppText.label.copyWith(
+                color: AppColors.brown,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        const ScopeMenuChip(),
+      ],
+    ),
+  );
+}
+
 /// Invitations, then "My chats": the member's private chats, most recently
-/// active first, and the heading of the topic rooms below. A chat of two
+/// active first. A chat of two
 /// with someone the member blocked is left out. Without any chat or
 /// invitation the section shows only the rooms, as before private chats
 /// (the "New chat" button starts one).
@@ -440,7 +482,6 @@ class _PrivateChats extends ConsumerWidget {
               child: _PrivateChatCard(chat: chat, summary: summaries[chat.id]),
             ),
         const SizedBox(height: 4),
-        _Heading(l10n.topicRooms),
       ],
     );
   }

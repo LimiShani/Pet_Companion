@@ -91,9 +91,7 @@ void main() {
 
     testWidgets('searching the posts', (tester) async {
       await pumpCommunity(tester);
-      await tester.enterText(find.widgetWithText(TextField, 'Search posts'), 'sea');
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      await tester.pumpAndSettle();
+      await searchFor(tester, 'sea');
       expect(find.text(pepperPost), findsOneWidget);
       expect(find.text(mayaPost), findsNothing);
 
@@ -107,7 +105,7 @@ void main() {
       // Kelly, the selected pet, is tagged: the post is about a dog.
       await writePost(tester, 'Kelly found a new favourite bench.');
       expect(find.text('Kelly found a new favourite bench.'), findsOneWidget);
-      expect(find.text('Matched to Kelly. Tap Everything to see all posts.'), findsOneWidget);
+      expect(find.descendant(of: scopeMenu, matching: find.text('Dogs')), findsOneWidget);
 
       await chooseScope(tester, 'cats');
       expect(find.text('Kelly found a new favourite bench.'), findsNothing);
@@ -327,7 +325,7 @@ void main() {
       size: const Size(320, 568),
     );
     expect(find.text(he.kindsAll), findsOneWidget);
-    expect(find.widgetWithText(TextField, he.searchPostsHint), findsOneWidget);
+    expect(find.byTooltip(he.searchPosts), findsOneWidget);
 
     await scrollTo(tester, labelled(he.openProfile('Maya')));
     await tester.tap(labelled(he.openProfile('Maya')).first);

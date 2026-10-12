@@ -12,6 +12,7 @@ import 'package:pet_companion/features/community/data/guides_repository.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
 import 'package:pet_companion/features/community/widgets/advice_notice.dart';
 import 'package:pet_companion/features/community/widgets/message_bar.dart';
+import 'package:pet_companion/features/community/widgets/scope_menu_chip.dart';
 import 'package:pet_companion/widgets/app_tag.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
@@ -56,6 +57,11 @@ Finder inCard(String author, Finder matching) => find.descendant(of: cardOf(auth
 
 Finder tag(String label) => find.widgetWithText(AppTag, label);
 
+/// The animal menu chip of the section on screen, reading [label] (it may
+/// have scrolled sideways with its row).
+Finder scopeChipReads(String label) =>
+    find.descendant(of: find.byKey(ScopeMenuChip.chipKey), matching: find.text(label));
+
 final adviceLine = find.byType(AdviceNotice);
 
 Finder adviceWordsIn(CommunityL10n words) => find.descendant(
@@ -82,7 +88,7 @@ TextDirection? typingDirection(WidgetTester tester) =>
 
 /// Scrolls the screen's main list back to its top.
 Future<void> toTop(WidgetTester tester) async {
-  await tester.drag(find.byType(Scrollable).first, const Offset(0, 8000));
+  await tester.drag(mainList, const Offset(0, 8000));
   await tester.pumpAndSettle();
 }
 
@@ -156,11 +162,11 @@ void main() {
         await toTop(tester);
 
         // The post with its comments (below the feed's chips on a small
-        // phone).
+        // phone). The advice line is the feed's, not the post page's.
         await tapVisible(tester, find.text(mayaPost));
         expect(headerTitle('פוסט'), findsOneWidget);
         await scrollTo(tester, find.text('תגובות'));
-        expect(adviceWordsIn(he), findsOneWidget);
+        expect(adviceLine, findsNothing);
         await scrollTo(tester, reads('Jonas · לפני 9 דקות'));
         expect(
           tester.widget<Text>(find.text('Well done Biscuit! The early weeks are the hardest part.')).textDirection,
@@ -264,10 +270,9 @@ void main() {
         final h = await pumpCommunity(tester, harness: hebrew(), size: size);
         await openSection(tester, 'צ׳אט');
 
-        expect(reads('מותאם עבור Kelly. לחיצה על ״הכול״ מציגה את כל החדרים.'), findsOneWidget);
-        for (final chip in ['כלבים', 'חתולים', 'הכול']) {
-          expect(find.widgetWithText(ChoiceChip, chip), findsOneWidget, reason: chip);
-        }
+        // One menu chip on the "Topic rooms" line, no caption.
+        expect(scopeChipReads('כלבים'), findsOneWidget);
+        expect(find.textContaining('מותאם עבור'), findsNothing);
         for (final room in ['כללי', 'גורים', 'טיפים לאילוף', 'כלבים מבוגרים', 'שאלות בריאות']) {
           await scrollTo(tester, find.text(room));
         }
@@ -277,14 +282,14 @@ void main() {
         expect(reads('Priya: Until about six months for us. Frozen carrot sticks were a big help.'), findsOneWidget);
 
         await chooseScope(tester, 'cats');
-        expect(find.text('מוצגים חדרים עבור חתולים.'), findsOneWidget);
+        expect(scopeChipReads('חתולים'), findsOneWidget);
         for (final room in ['גורי חתולים', 'חול וניקיון', 'התנהגות ומשחק של חתולים', 'חתולים מבוגרים']) {
           await scrollTo(tester, find.text(room));
         }
         await toTop(tester);
 
         await chooseScope(tester, 'everything');
-        expect(find.text('מוצגים החדרים של כל החיות.'), findsOneWidget);
+        expect(scopeChipReads('הכול'), findsOneWidget);
         expect(tag('כלבים'), findsWidgets);
         await scrollTo(tester, find.text('חתולים מבוגרים'));
         expect(tag('חתולים'), findsWidgets);
@@ -294,7 +299,7 @@ void main() {
         await chooseScope(tester, 'dogs');
         await tapVisible(tester, find.text('גורים'));
         expect(headerTitle('גורים'), findsOneWidget);
-        expect(adviceWordsIn(he), findsOneWidget);
+        expect(adviceLine, findsNothing);
         expect(reads('הודעה בחדר ״גורים״'), findsOneWidget);
         // At 320 px the day's heading may sit just above the view.
         await tester.scrollUntilVisible(find.text('היום'), 100, scrollable: find.byType(Scrollable).hitTestable().first);
@@ -328,7 +333,13 @@ void main() {
           lessThan(tester.getCenter(find.byType(TextField)).dx),
         );
 
-        // The way to a professional opens the pet's emergency and vet sheet.
+        // The health room keeps its line: the way to a professional opens
+        // the pet's emergency and vet sheet.
+        await goBack(tester);
+        await scrollTo(tester, find.text('שאלות בריאות'));
+        await tester.tap(find.text('שאלות בריאות'));
+        await tester.pumpAndSettle();
+        expect(adviceWordsIn(he), findsOneWidget);
         await tester.tap(adviceLine);
         await settleHealth(tester);
         expect(find.byType(BottomSheet), findsOneWidget);
@@ -340,9 +351,9 @@ void main() {
         await pumpCommunity(tester, harness: hebrew(pets: catFirst, guides: bilingualGuides), size: size);
         await openSection(tester, 'מדריכים');
 
-        expect(reads('מותאם עבור Mitzi. לחיצה על ״הכול״ מציגה את כל המדריכים.'), findsOneWidget);
-        expect(find.text('חיפוש מדריכים'), findsOneWidget);
-        expect(find.widgetWithText(ChoiceChip, 'הכול'), findsNWidgets(2)); // the view and the category
+        expect(scopeChipReads('חתולים'), findsOneWidget);
+        expect(find.byTooltip('חיפוש מדריכים'), findsOneWidget); // the header's magnifier
+        expect(find.widgetWithText(ChoiceChip, 'הכול'), findsOneWidget); // the category (the animal is a menu)
         for (final id in ['start', 'home', 'behaviour', 'health']) {
           expect(find.byKey(ValueKey('category-$id'), skipOffstage: false), findsOneWidget, reason: id);
         }
@@ -366,26 +377,25 @@ void main() {
         await toTop(tester);
 
         // A search that finds nothing for this animal.
-        await tester.enterText(find.byType(TextField), 'xylitol');
-        await tester.pumpAndSettle();
+        await searchFor(tester, 'xylitol');
         await scrollTo(tester, find.text('חיפוש בכל המדריכים'));
         expect(find.text('לא נמצאו מדריכים מתאימים עבור חתולים'), findsOneWidget);
         expect(find.text('יש התאמה אחת במדריכים של כל החיות.'), findsOneWidget);
         await tester.tap(find.text('חיפוש בכל המדריכים'));
         await tester.pumpAndSettle();
         await toTop(tester);
-        expect(find.text('מוצגים המדריכים של כל החיות.'), findsOneWidget);
+        expect(scopeChipReads('הכול'), findsOneWidget);
         await scrollTo(tester, find.text('Foods your dog should never eat'));
         expect(tag('כלבים'), findsOneWidget);
         await toTop(tester);
 
-        await tester.enterText(find.byType(TextField), 'zzzz');
-        await tester.pumpAndSettle();
+        await searchFor(tester, 'zzzz');
         await scrollTo(tester, find.text('אפשר לנסות מילה אחרת או קטגוריה אחרת.'));
         expect(find.text('לא נמצאו מדריכים מתאימים'), findsOneWidget);
         await toTop(tester);
         await tester.tap(find.byTooltip('ניקוי החיפוש'));
         await tester.pumpAndSettle();
+        await closeSearch(tester);
         await chooseScope(tester, 'cats');
 
         // The reader, for the guide that has Hebrew text.
@@ -395,6 +405,8 @@ void main() {
         expect(find.text('בית וניקיון'), findsOneWidget);
         expect(tag('באנגלית בלבד'), findsNothing);
         expect(reads('דקת קריאה · עבור חתולים'), findsOneWidget);
+        // The byline under the title, in Hebrew, the author's name kept whole.
+        expect(reads('מאת מחבר לבדיקה · עודכן בתאריך 01.10.26 · לא נבדק על ידי וטרינר'), findsOneWidget);
 
         final about = find.byKey(const Key('about-guide'));
         Finder inAbout(String text) => find.descendant(of: about, matching: find.text(text));
@@ -421,7 +433,7 @@ void main() {
         expect(find.text('נבדק על ידי'), findsNothing);
         expect(tag('נבדק'), findsNothing);
 
-        await tester.scrollUntilVisible(find.text('המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.'), 300);
+        await scrollOnTop(tester, find.text('המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.'));
         final contact = find.text('פנייה לאיש מקצוע');
         await tester.scrollUntilVisible(contact, 200);
         await tapVisible(tester, contact);
@@ -436,12 +448,12 @@ void main() {
         await scrollTo(tester, find.text('Setting up the litter box'));
         await tapVisible(tester, find.text('Setting up the litter box'));
         expect(tag('באנגלית בלבד'), findsOneWidget);
-        expect(inAbout('לא נבדק על ידי וטרינר'), findsOneWidget);
-        expect(tester.widget<Text>(inAbout('PetLoop team')).textDirection, TextDirection.ltr);
         final intro = find.textContaining('Most cats take to a litter box');
         await tester.scrollUntilVisible(intro, 200);
         expect(screenDirection(tester, intro), TextDirection.ltr);
-        await tester.scrollUntilVisible(find.text('המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.'), 300);
+        await scrollOnTop(tester, inAbout('לא נבדק על ידי וטרינר'));
+        expect(tester.widget<Text>(inAbout('PetLoop team')).textDirection, TextDirection.ltr);
+        await scrollOnTop(tester, find.text('המדריך נותן מידע כללי ואינו תחליף לייעוץ של וטרינר.'));
         expect(tester.takeException(), isNull);
       });
 
@@ -517,7 +529,7 @@ void main() {
         await tester.tap(find.text('כללי'));
         await tester.pumpAndSettle();
         expect(find.text('לא הצלחנו לטעון את השיחה'), findsOneWidget);
-        expect(adviceWordsIn(he), findsOneWidget);
+        expect(adviceLine, findsNothing);
         h.chat.failing = false;
         await tapVisible(tester, find.text('לנסות שוב'));
         expect(find.text('Here she is, guarding the living room.'), findsOneWidget);
@@ -728,7 +740,7 @@ void main() {
       expect(headerTitle('Guide'), findsOneWidget);
       expect(find.text('How many litter boxes do you need?'), findsOneWidget);
       expect(find.text(hebrewFixture.title), findsNothing);
-      expect(find.text('About this guide'), findsOneWidget);
+      expect(reads('By PetLoop team · Updated 30.09.26 · Not reviewed by a veterinarian'), findsOneWidget);
       expect(screenDirection(tester, find.textContaining('The usual guideline is simple')), TextDirection.ltr);
 
       await goBack(tester);

@@ -57,6 +57,7 @@ class ParkPickerScreen extends ConsumerWidget {
         final l10n = context.outdoorsL10n;
         final language = languageOf(context);
         final state = ref.watch(parksControllerProvider);
+        final where = ref.watch(outsideAreaProvider);
         final controller = ref.read(parksControllerProvider.notifier);
         final listing = ref.watch(parksListingProvider);
         final area = state.area;
@@ -86,8 +87,8 @@ class ParkPickerScreen extends ConsumerWidget {
                   children: [
                     if (area == null)
                       ParkAreaPicker(
-                        locating: state.locating,
-                        problem: state.problem,
+                        locating: where.locating,
+                        problem: where.problem,
                         onNearMe: controller.useMyLocation,
                         onOpenSettings: () => ref
                             .read(locationServiceProvider)
@@ -97,7 +98,9 @@ class ParkPickerScreen extends ConsumerWidget {
                     else ...[
                       ParkAreaBar(
                         area: area,
-                        onChange: controller.changeArea,
+                        // Outside's one area: changed in place, as from
+                        // the tab's header.
+                        onChange: () => openOutsideAreaSheet(context),
                         onRadius: controller.setRadius,
                       ),
                       const SizedBox(height: 12),
