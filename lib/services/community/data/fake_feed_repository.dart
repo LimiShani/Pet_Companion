@@ -318,7 +318,9 @@ class FakeFeedRepository implements FeedRepository {
         text:
             'Kelly is thirteen and still insists on carrying the biggest stick in the park. '
             'Slower walks these days, same big ambitions.',
-        photo: const AssetPostPhoto('assets/images/kelly.png'),
+        // A rectangular crop of Kelly's photo (the avatar is a round
+        // cut-out, which looked oval in the 4:3 post frame).
+        photo: const AssetPostPhoto('assets/images/kelly_post.jpg'),
         otherLikes: 23,
         comments: [
           (
