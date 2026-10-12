@@ -478,9 +478,6 @@ class PetsL10nEn extends PetsL10n {
   }
 
   @override
-  String get notNow => 'Not now';
-
-  @override
   String get remindAgainInAWeek => 'We\'ll remind you again in a week';
 
   @override

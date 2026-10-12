@@ -218,11 +218,13 @@ class _ChannelCard extends StatelessWidget {
                       children: [
                         // A room the app does not know by id keeps its
                         // stored name, which reads in its own direction.
+                        // Two lines on a narrow phone, so "Health
+                        // questions" is not cut short beside the time.
                         Expanded(
                           child: AutoDirectionText(
                             l10n.roomName(channel),
                             style: AppText.rowTitle,
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),

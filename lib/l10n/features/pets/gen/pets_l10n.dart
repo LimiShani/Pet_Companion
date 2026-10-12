@@ -833,12 +833,6 @@ abstract class PetsL10n {
   /// **'Finish {name}\'s profile'**
   String finishProfile(String name);
 
-  /// No description provided for @notNow.
-  ///
-  /// In en, this message translates to:
-  /// **'Not now'**
-  String get notNow;
-
   /// No description provided for @remindAgainInAWeek.
   ///
   /// In en, this message translates to:

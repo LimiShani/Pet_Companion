@@ -135,7 +135,6 @@
   "essentialsStillToAdd": "חסרים {missing} מתוך {total} פרטים חיוניים",
   "reminderSemantics": "הפרופיל של \u2068{name}\u2069: חסרים {missing} מתוך {total} פרטים חיוניים",
   "finishProfile": "השלמת הפרופיל של \u2068{name}\u2069",
-  "notNow": "לא עכשיו",
   "remindAgainInAWeek": "נזכיר שוב בעוד שבוע",
   "essentialsComplete": "כל הפרטים החיוניים של \u2068{name}\u2069 מולאו",
   "essentialsMissing": "חסרים פרטים חיוניים",

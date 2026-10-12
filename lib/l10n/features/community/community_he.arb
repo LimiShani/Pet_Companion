@@ -183,7 +183,6 @@
   "commentReportTitle": "דיווח על התגובה",
   "commentReportBody": "מה לא בסדר בתגובה? נסתיר אותה אצלך מיד ונבדוק אותה.",
   "commentReportThanks": "תודה. הסתרנו את התגובה ונבדוק אותה.",
-  "messageOptions": "אפשרויות ההודעה",
   "replyingTo": "תשובה אל \u2068{name}\u2069",
   "cancelReply": "ביטול התשובה",
   "replyUnavailable": "ההודעה המקורית אינה זמינה",
@@ -270,7 +269,6 @@
   "markHelpful": "סימון כתשובה המועילה",
   "unmarkHelpful": "ביטול הסימון כתשובה מועילה",
   "markedHelpful": "סומנה כתשובה המועילה",
-  "likedByDoubleTap": "לייק",
 
   "activityTitle": "פעילות",
   "activityTooltip": "פעילות",
@@ -300,9 +298,7 @@
   "blockedMemberNote": "החשבון הזה חסום אצלך.",
 
   "muteRoom": "השתקת החדר",
-  "unmuteRoom": "ביטול ההשתקה",
   "roomMuted": "החדר מושתק: לא יוצג בו מספר הודעות שלא נקראו",
-  "roomUnmuted": "ההשתקה בוטלה",
   "mutedTag": "מושתק",
   "pushTitle": "קהילה",
   "pushReplies": "תשובות להודעות שלי בצ׳אט",
@@ -375,7 +371,6 @@
   "recentPeople": "דיברת איתם לאחרונה",
   "communityMembersTitle": "חברי הקהילה",
   "noPeopleFound": "לא מצאנו אף אחד בשם הזה",
-  "peopleLoadFailed": "אי אפשר לטעון את חברי הקהילה",
   "nextStep": "המשך",
   "createChat": "יצירת השיחה",
   "groupNameTitle": "שם לשיחה",

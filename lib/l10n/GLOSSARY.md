@@ -7,7 +7,7 @@ followed by `dart run tool/gen_l10n.dart`.
 ## Adding a string (any feature)
 
 1. Add the key to your feature's English file, for example
-   `lib/features/health/l10n/health_en.arb`. Give it a `@key` entry with a
+   `lib/l10n/features/health/health_en.arb`. Give it a `@key` entry with a
    `description` when the meaning is not obvious, and with `placeholders`
    when it has any (`"type": "String"` or `"int"`).
 2. Add the same key to the Hebrew file beside it (`health_he.arb`),

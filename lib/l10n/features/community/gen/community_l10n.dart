@@ -1103,12 +1103,6 @@ abstract class CommunityL10n {
   /// **'Thanks. We have hidden this comment and will review it.'**
   String get commentReportThanks;
 
-  /// No description provided for @messageOptions.
-  ///
-  /// In en, this message translates to:
-  /// **'Message options'**
-  String get messageOptions;
-
   /// Above the message field while answering a message.
   ///
   /// In en, this message translates to:
@@ -1595,12 +1589,6 @@ abstract class CommunityL10n {
   /// **'Marked as the helpful answer'**
   String get markedHelpful;
 
-  /// No description provided for @likedByDoubleTap.
-  ///
-  /// In en, this message translates to:
-  /// **'Liked'**
-  String get likedByDoubleTap;
-
   /// No description provided for @activityTitle.
   ///
   /// In en, this message translates to:
@@ -1757,23 +1745,11 @@ abstract class CommunityL10n {
   /// **'Mute this room'**
   String get muteRoom;
 
-  /// No description provided for @unmuteRoom.
-  ///
-  /// In en, this message translates to:
-  /// **'Unmute this room'**
-  String get unmuteRoom;
-
   /// No description provided for @roomMuted.
   ///
   /// In en, this message translates to:
   /// **'Muted: no unread count for this room'**
   String get roomMuted;
-
-  /// No description provided for @roomUnmuted.
-  ///
-  /// In en, this message translates to:
-  /// **'Unmuted'**
-  String get roomUnmuted;
 
   /// No description provided for @mutedTag.
   ///
@@ -2200,12 +2176,6 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'No one by that name'**
   String get noPeopleFound;
-
-  /// No description provided for @peopleLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Cannot load community members'**
-  String get peopleLoadFailed;
 
   /// No description provided for @nextStep.
   ///

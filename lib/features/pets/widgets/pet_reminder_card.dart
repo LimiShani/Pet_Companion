@@ -7,7 +7,6 @@ import '../../../presentation/care_widgets.dart' show CarePillButton;
 import '../../../state/pets_provider.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
-import '../../../widgets/app_icon.dart';
 import '../checklist_sheet.dart';
 import '../pet_actions.dart';
 import '../../../presentation/pet_words.dart';
@@ -44,7 +43,7 @@ void announcePetCompletion(WidgetRef ref, BuildContext context, String petId) {
   });
 }
 
-/// "Not now": postpones the reminder of the pet with [petId] for a week and
+/// "Remind me in a week": postpones the reminder of the pet with [petId] for a week and
 /// says so. [context] is only used before anything is awaited, so the
 /// caller may close its sheet or page straight away.
 Future<void> postponePetReminder(BuildContext context, String petId) async {
@@ -71,14 +70,12 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 /// The reminder for one pet, shown while an essential is missing and the
 /// reminder was not postponed.
 ///
-/// `compact: false` is the card: the title, "2 of 5 essentials still to
-/// add", a progress line, the action button and "Not now". `compact: true`
-/// is one row for Home: the title, the count and an "Add" pill; there,
-/// "Not now" is in the checklist it opens. Home's row is the app's one
-/// essentials nag: no page places the full card any more.
+/// One row for Home, the app's one essentials nag: the title, "2 of 5
+/// essentials still to add" and an "Add" pill.
 ///
-/// The action ("Add") opens the next missing item; the rest of the card
-/// opens the checklist. "Not now" hides the reminder everywhere for 7 days.
+/// The pill opens the next missing item; the rest of the row opens the
+/// checklist, where "Remind me in a week" hides the reminder everywhere for
+/// 7 days.
 ///
 /// Shows nothing at all, and takes no space including [margin], when there
 /// is nothing to remind of: no `if` is needed around it.
@@ -86,15 +83,13 @@ class PetReminderCard extends ConsumerWidget {
   const PetReminderCard({
     super.key,
     required this.petId,
-    this.compact = false,
     this.margin = EdgeInsets.zero,
   });
 
   final String petId;
-  final bool compact;
   final EdgeInsetsGeometry margin;
 
-  /// The "Add" pill of the compact row.
+  /// The "Add" pill of the row.
   static const addKey = Key('reminder-add');
 
   @override
@@ -109,56 +104,21 @@ class PetReminderCard extends ConsumerWidget {
       return PetEssentialsKeeper(petId: petId, child: const SizedBox.shrink());
     }
 
-    void openNext() => openPetInfoItem(context, petId: petId, item: next);
-    void notNow() => postponePetReminder(context, petId);
     final l10n = context.petsL10n;
-    final count = essentialsStillToAdd(l10n, info);
-    final label = l10n.reminderSemantics(name, info.missing.length, info.total);
-    final action = next.actionIn(l10n, name);
 
     return PetEssentialsKeeper(
       petId: petId,
       child: Padding(
         padding: margin,
-        child: compact
-            ? _Line(
-                label: label,
-                title: l10n.finishProfile(name),
-                action: action,
-                count: count,
-                onOpen: openNext,
-                onChecklist: () => showPetChecklist(context, petId),
-              )
-            : _Card(
-                label: label,
-                title: l10n.finishProfile(name),
-                action: action,
-                count: count,
-                info: info,
-                onOpen: openNext,
-                onChecklist: () => showPetChecklist(context, petId),
-                onNotNow: notNow,
-              ),
+        child: _Line(
+          label: l10n.reminderSemantics(name, info.missing.length, info.total),
+          title: l10n.finishProfile(name),
+          action: next.actionIn(l10n, name),
+          count: essentialsStillToAdd(l10n, info),
+          onOpen: () => openPetInfoItem(context, petId: petId, item: next),
+          onChecklist: () => showPetChecklist(context, petId),
+        ),
       ),
-    );
-  }
-}
-
-class _NotNow extends StatelessWidget {
-  const _NotNow({required this.onPressed});
-
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: onPressed,
-      style: TextButton.styleFrom(
-        minimumSize: const Size(kPetsTapTarget, kPetsTapTarget),
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        textStyle: AppText.button(13),
-      ),
-      child: Text(context.petsL10n.notNow),
     );
   }
 }
@@ -234,114 +194,6 @@ class _Line extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// The reminder card for the Health overview.
-class _Card extends StatelessWidget {
-  const _Card({
-    required this.label,
-    required this.title,
-    required this.action,
-    required this.count,
-    required this.info,
-    required this.onOpen,
-    required this.onChecklist,
-    required this.onNotNow,
-  });
-
-  final String label;
-  final String title;
-  final String action;
-  final String count;
-  final PetCompleteness info;
-  final VoidCallback onOpen;
-  final VoidCallback onChecklist;
-  final VoidCallback onNotNow;
-
-  @override
-  Widget build(BuildContext context) {
-    return PetsCard(
-      shadow: true,
-      onTap: onChecklist,
-      semanticLabel: label,
-      padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 12, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const PetsDisc(Icons.fact_check_rounded),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(title, style: AppText.cardTitle),
-                    Text(
-                      count,
-                      style: AppText.secondary.copyWith(color: AppColors.brown),
-                    ),
-                  ],
-                ),
-              ),
-              const AppIcon(
-                Icons.chevron_right_rounded,
-                color: AppColors.brown,
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          EssentialsProgress(answered: info.answered, total: info.total),
-          const SizedBox(height: 6),
-          Wrap(
-            alignment: WrapAlignment.spaceBetween,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 8,
-            children: [
-              PillButton(action, icon: Icons.add_rounded, onPressed: onOpen),
-              _NotNow(onPressed: onNotNow),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Five short bars, one per essential, filled for the answered ones.
-class EssentialsProgress extends StatelessWidget {
-  const EssentialsProgress({
-    super.key,
-    required this.answered,
-    required this.total,
-  });
-
-  final int answered;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    return ExcludeSemantics(
-      child: Row(
-        children: [
-          for (var i = 0; i < total; i++) ...[
-            if (i > 0) const SizedBox(width: 5),
-            Expanded(
-              child: Container(
-                height: 6,
-                decoration: BoxDecoration(
-                  color: i < answered ? AppColors.sage : kPetsLine,
-                  borderRadius: BorderRadius.circular(3),
-                ),
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

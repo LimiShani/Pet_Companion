@@ -377,7 +377,4 @@ class CareL10nEn extends CareL10n {
   String todayAt(String time) {
     return 'Today · $time';
   }
-
-  @override
-  String get cancelWalk => 'Cancel the walk';
 }

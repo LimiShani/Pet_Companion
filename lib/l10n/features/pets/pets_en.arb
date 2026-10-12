@@ -182,7 +182,6 @@
   "@reminderSemantics": {"description": "What a screen reader says for the reminder.", "placeholders": {"name": {"type": "String"}, "missing": {"type": "int"}, "total": {"type": "int"}}},
   "finishProfile": "Finish {name}'s profile",
   "@finishProfile": {"placeholders": {"name": {"type": "String"}}},
-  "notNow": "Not now",
   "remindAgainInAWeek": "We'll remind you again in a week",
   "essentialsComplete": "{name}'s essentials are complete",
   "@essentialsComplete": {"placeholders": {"name": {"type": "String"}}},

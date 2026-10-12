@@ -40,19 +40,21 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('the strings files', () {
-    final english = _messages('lib/features/community/l10n/community_en.arb');
-    final hebrew = _messages('lib/features/community/l10n/community_he.arb');
+    final english = _messages('lib/l10n/features/community/community_en.arb');
+    final hebrew = _messages('lib/l10n/features/community/community_he.arb');
 
     test('every Community string is in Hebrew', () {
       expect(hebrew.keys.toSet(), english.keys.toSet());
-      final report = jsonDecode(File('lib/features/community/l10n/gen/untranslated.json').readAsStringSync());
+      final report = jsonDecode(File('lib/l10n/features/community/gen/untranslated.json').readAsStringSync());
       expect(report, isEmpty);
     });
 
     test('every Hebrew message is written in Hebrew', () {
       for (final MapEntry(:key, :value) in hebrew.entries) {
-        // "{title}, {publisher}" is punctuation around two placeholders.
-        if (key == 'sourceWithPublisher') continue;
+        // "{title}, {publisher}", "{name}: {text}", "{emoji} {count}":
+        // only placeholders and punctuation, no words to translate.
+        const onlyPlaceholders = {'sourceWithPublisher', 'roomLastOther', 'reactionsSummary'};
+        if (onlyPlaceholders.contains(key)) continue;
         expect(_hebrewLetter.hasMatch(value), isTrue, reason: key);
       }
     });

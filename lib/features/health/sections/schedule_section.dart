@@ -442,14 +442,11 @@ class _MedicineRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          FilledButton(
+          // Outlined: the Quick log is the screen's one filled button.
+          OutlinedButton(
             key: ValueKey('record-${item.id}'),
             onPressed: () => showRecordDoseSheet(context, pet, entry: entry),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              textStyle: AppText.button(14),
-            ),
+            style: _smallOutlined(),
             child: Text(l10n.recordDose),
           ),
         ],

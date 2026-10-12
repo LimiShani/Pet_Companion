@@ -12,9 +12,6 @@ class FindVetL10nEn extends FindVetL10n {
   String get findVetTitle => 'Find a vet';
 
   @override
-  String get findVetMenuSubtitle => 'Emergency or regular care nearby';
-
-  @override
   String get loginEmergencyLink => 'Pet emergency? Find a vet';
 
   @override
@@ -27,15 +24,13 @@ class FindVetL10nEn extends FindVetL10n {
   String get emergencyChoiceTitle => 'Emergency care';
 
   @override
-  String get emergencyChoiceBody =>
-      'The nearest places that advertise emergency care, with Call and Directions.';
+  String get emergencyChoiceBody => 'The nearest places that advertise emergency care, with Call and Directions.';
 
   @override
   String get longTermChoiceTitle => 'Long term care';
 
   @override
-  String get longTermChoiceBody =>
-      'Nearby practices with their details, and a regular vet to save.';
+  String get longTermChoiceBody => 'Nearby practices with their details, and a regular vet to save.';
 
   @override
   String get modeEmergency => 'Emergency';
@@ -47,8 +42,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get areaQuestion => 'Where should we look?';
 
   @override
-  String get locationWhy =>
-      'To find vets near you, PetLoop asks the phone for your location once. It is used for this search only and is not saved.';
+  String get locationWhy => 'To find vets near you, PetLoop asks the phone for your location once. It is used for this search only and is not saved.';
 
   @override
   String get useMyLocation => 'Use my location';
@@ -66,32 +60,25 @@ class FindVetL10nEn extends FindVetL10n {
   String get placeSearchButton => 'Search';
 
   @override
-  String get placeNoMatch =>
-      'We could not find that place. Try the name of a city.';
+  String get placeNoMatch => 'We could not find that place. Try the name of a city.';
 
   @override
-  String get placeLookupFailed =>
-      'Could not look that up right now. Try the name of a city.';
+  String get placeLookupFailed => 'Could not look that up right now. Try the name of a city.';
 
   @override
-  String get problemDenied =>
-      'Location access was not allowed. You can type a place instead.';
+  String get problemDenied => 'Location access was not allowed. You can type a place instead.';
 
   @override
-  String get problemDeniedForever =>
-      'Location access is off for PetLoop. It can be turned on in the phone\'s settings, or you can type a place.';
+  String get problemDeniedForever => 'Location access is off for PetLoop. It can be turned on in the phone\'s settings, or you can type a place.';
 
   @override
-  String get problemServiceOff =>
-      'Location is switched off on this phone. Turn it on, or type a place.';
+  String get problemServiceOff => 'Location is switched off on this phone. Turn it on, or type a place.';
 
   @override
-  String get problemUnavailable =>
-      'We could not get your location. Type a place instead.';
+  String get problemUnavailable => 'We could not get your location. Type a place instead.';
 
   @override
-  String get problemOutsideRegion =>
-      'Find a vet works in Israel for now. Type a place in Israel.';
+  String get problemOutsideRegion => 'Find a vet works in Israel for now. Type a place in Israel.';
 
   @override
   String get openSettings => 'Open settings';
@@ -127,8 +114,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get callFirstTitle => 'Call before you go';
 
   @override
-  String get callFirstBody =>
-      'Opening hours and \"24/7\" do not tell us whether they can take your pet right now.';
+  String get callFirstBody => 'Opening hours and \"24/7\" do not tell us whether they can take your pet right now.';
 
   @override
   String get callToConfirm => 'Call to confirm they can receive your pet';
@@ -137,8 +123,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get evidenceListed => 'Listed nearby';
 
   @override
-  String get evidenceListedNote =>
-      'Found in a map listing. Emergency care is not confirmed by PetLoop.';
+  String get evidenceListedNote => 'Found in a map listing. Emergency care is not confirmed by PetLoop.';
 
   @override
   String get evidenceAdvertised => 'Emergency service advertised';
@@ -154,8 +139,7 @@ class FindVetL10nEn extends FindVetL10n {
   }
 
   @override
-  String get evidenceSourceNotChecked =>
-      'On their own website, not checked again yet';
+  String get evidenceSourceNotChecked => 'On their own website, not checked again yet';
 
   @override
   String get evidenceUnverified => 'Emergency service not re-confirmed';
@@ -166,8 +150,7 @@ class FindVetL10nEn extends FindVetL10n {
   }
 
   @override
-  String get evidenceUnverifiedNoDate =>
-      'We could not confirm it on their website lately. Ask when you call.';
+  String get evidenceUnverifiedNoDate => 'We could not confirm it on their website lately. Ask when you call.';
 
   @override
   String get evidenceOpenNow => 'Published hours: open now';
@@ -250,11 +233,6 @@ class FindVetL10nEn extends FindVetL10n {
   String get saveChoosePet => 'Save as the regular vet of…';
 
   @override
-  String saveForPet(String pet) {
-    return 'Save for $pet';
-  }
-
-  @override
   String get saveNeedsPet => 'Add a pet first to save a regular vet.';
 
   @override
@@ -321,8 +299,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get sectionOther => 'Other vets nearby';
 
   @override
-  String get sectionOtherNote =>
-      'Not confirmed as emergency services. Call to ask.';
+  String get sectionOtherNote => 'Not confirmed as emergency services. Call to ask.';
 
   @override
   String get sectionUnverified => 'Emergency service not re-confirmed';
@@ -344,12 +321,10 @@ class FindVetL10nEn extends FindVetL10n {
   }
 
   @override
-  String get noticeProviderDown =>
-      'Live search is not working right now. These are emergency facilities from PetLoop\'s own directory, each with the date we last checked it.';
+  String get noticeProviderDown => 'Live search is not working right now. These are emergency facilities from PetLoop\'s own directory, each with the date we last checked it.';
 
   @override
-  String get noticeProviderDownLongTerm =>
-      'Live search is not working right now. These practices come from PetLoop\'s own directory.';
+  String get noticeProviderDownLongTerm => 'Live search is not working right now. These practices come from PetLoop\'s own directory.';
 
   @override
   String noticeDirectoryCopy(String date) {
@@ -381,16 +356,13 @@ class FindVetL10nEn extends FindVetL10n {
   String get errorTitle => 'Could not search';
 
   @override
-  String get errorOffline =>
-      'No connection, and no saved copy of the directory yet. Check the connection and try again.';
+  String get errorOffline => 'No connection, and no saved copy of the directory yet. Check the connection and try again.';
 
   @override
-  String get errorRateLimited =>
-      'Too many searches in a short time. Please try again in a few minutes.';
+  String get errorRateLimited => 'Too many searches in a short time. Please try again in a few minutes.';
 
   @override
-  String get errorUnavailable =>
-      'Search is not available right now. Please try again.';
+  String get errorUnavailable => 'Search is not available right now. Please try again.';
 
   @override
   String get errorInvalid => 'That place cannot be searched. Try another one.';
@@ -399,8 +371,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get tryAgain => 'Try again';
 
   @override
-  String get demoBanner =>
-      'Sample data: these places are made up. The real search works once the app is connected to its server.';
+  String get demoBanner => 'Sample data: these places are made up. The real search works once the app is connected to its server.';
 
   @override
   String get listingsFrom => 'Map listings:';
@@ -409,24 +380,19 @@ class FindVetL10nEn extends FindVetL10n {
   String get legendLink => 'What the labels mean';
 
   @override
-  String get legendListedBody =>
-      'Found in a map listing near the area. That alone says nothing about emergency care, whatever the name says.';
+  String get legendListedBody => 'Found in a map listing near the area. That alone says nothing about emergency care, whatever the name says.';
 
   @override
-  String get legendAdvertisedBody =>
-      'The facility\'s own website (or the facility itself) says it offers emergency care. PetLoop checks this every week and shows the date of the last check.';
+  String get legendAdvertisedBody => 'The facility\'s own website (or the facility itself) says it offers emergency care. PetLoop checks this every week and shows the date of the last check.';
 
   @override
-  String get legendOpenBody =>
-      'Its published hours say it is open now. That does not mean a vet is free to see your pet.';
+  String get legendOpenBody => 'Its published hours say it is open now. That does not mean a vet is free to see your pet.';
 
   @override
-  String get legendAcceptingBody =>
-      'Shown only when the facility itself has reported that it is taking patients, and only until that report expires. Otherwise you will see \"Call to confirm\".';
+  String get legendAcceptingBody => 'Shown only when the facility itself has reported that it is taking patients, and only until that report expires. Otherwise you will see \"Call to confirm\".';
 
   @override
-  String get legendCallBody =>
-      'Calling does not mark anything as confirmed. Only the facility can tell you whether it can take your pet now.';
+  String get legendCallBody => 'Calling does not mark anything as confirmed. Only the facility can tell you whether it can take your pet now.';
 
   @override
   String get adminTitle => 'Directory review';
@@ -480,8 +446,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get adminSourceUrl => 'Source link (https://…)';
 
   @override
-  String get adminSourceRequired =>
-      'A source link starting with https:// is needed.';
+  String get adminSourceRequired => 'A source link starting with https:// is needed.';
 
   @override
   String get adminValueRequired => 'A value is needed.';
@@ -594,8 +559,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get adminLinkTitle => 'Link this Google listing to…';
 
   @override
-  String get adminLinkNote =>
-      'Pick the facility this listing belongs to. From then on they show as one place, with PetLoop\'s checked details.';
+  String get adminLinkNote => 'Pick the facility this listing belongs to. From then on they show as one place, with PetLoop\'s checked details.';
 
   @override
   String adminLinkConfirm(String listing, String facility) {
@@ -609,8 +573,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get adminLinkFailed => 'Could not link. Please try again.';
 
   @override
-  String get adminLinkNoFacilities =>
-      'There are no facilities in the directory yet.';
+  String get adminLinkNoFacilities => 'There are no facilities in the directory yet.';
 
   @override
   String get adminLink => 'Link';

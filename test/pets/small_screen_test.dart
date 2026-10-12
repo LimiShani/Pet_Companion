@@ -101,24 +101,20 @@ void main() {
     expect(find.text('Add a pet'), findsOneWidget);
   });
 
-  testWidgets('both reminder sizes fit a small phone', (tester) async {
+  testWidgets('the reminder row fits a small phone', (tester) async {
     await pumpPetsHost(
       tester,
       const Padding(
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            PetReminderCard(petId: soya, compact: true, margin: EdgeInsets.only(bottom: 12)),
-            PetReminderCard(petId: soya),
+            PetReminderCard(petId: soya, margin: EdgeInsets.only(bottom: 12)),
           ],
         ),
       ),
       size: small,
     );
-    expect(find.text("Finish Soya's profile"), findsNWidgets(2));
-    expect(find.text("Add the vet's phone"), findsOneWidget);
+    expect(find.text("Finish Soya's profile"), findsOneWidget);
     expect(find.byKey(PetReminderCard.addKey), findsOneWidget);
-    // "Not now" is on the card only; the compact row has the "Add" pill.
-    expect(find.text('Not now'), findsOneWidget);
   });
 }

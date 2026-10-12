@@ -62,8 +62,7 @@ import 'findvet_l10n_he.dart';
 /// be consistent with the languages listed in the FindVetL10n.supportedLocales
 /// property.
 abstract class FindVetL10n {
-  FindVetL10n(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  FindVetL10n(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class FindVetL10n {
     return Localizations.of<FindVetL10n>(context, FindVetL10n)!;
   }
 
-  static const LocalizationsDelegate<FindVetL10n> delegate =
-      _FindVetL10nDelegate();
+  static const LocalizationsDelegate<FindVetL10n> delegate = _FindVetL10nDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class FindVetL10n {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('he'),
+    Locale('he')
   ];
 
   /// No description provided for @findVetTitle.
@@ -103,12 +100,6 @@ abstract class FindVetL10n {
   /// In en, this message translates to:
   /// **'Find a vet'**
   String get findVetTitle;
-
-  /// No description provided for @findVetMenuSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Emergency or regular care nearby'**
-  String get findVetMenuSubtitle;
 
   /// Link on the sign-in screen: opens the emergency search without an account.
   ///
@@ -499,12 +490,6 @@ abstract class FindVetL10n {
   /// In en, this message translates to:
   /// **'Save as the regular vet of…'**
   String get saveChoosePet;
-
-  /// No description provided for @saveForPet.
-  ///
-  /// In en, this message translates to:
-  /// **'Save for {pet}'**
-  String saveForPet(String pet);
 
   /// No description provided for @saveNeedsPet.
   ///
@@ -1164,26 +1149,25 @@ class _FindVetL10nDelegate extends LocalizationsDelegate<FindVetL10n> {
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['en', 'he'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['en', 'he'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_FindVetL10nDelegate old) => false;
 }
 
 FindVetL10n lookupFindVetL10n(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'en':
-      return FindVetL10nEn();
-    case 'he':
-      return FindVetL10nHe();
+    case 'en': return FindVetL10nEn();
+    case 'he': return FindVetL10nHe();
   }
 
   throw FlutterError(
     'FindVetL10n.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

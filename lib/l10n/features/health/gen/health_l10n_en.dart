@@ -191,11 +191,6 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String countAndLabel(int count, String label) {
-    return '$count $label';
-  }
-
-  @override
   String get weight => 'Weight';
 
   @override
@@ -983,14 +978,6 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get overviewNoCareDue => 'No scheduled care due';
-
-  @override
-  String overviewLastRecord(String date) {
-    return 'Last record $date';
-  }
-
-  @override
   String get comingUp => 'Coming up';
 
   @override
@@ -1014,39 +1001,7 @@ class HealthL10nEn extends HealthL10n {
   String get medicines => 'Medicines';
 
   @override
-  String medicinesActive(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count active',
-      one: '1 active',
-    );
-    return '$_temp0';
-  }
-
-  @override
-  String get noDoseYet => 'No dose recorded yet';
-
-  @override
-  String lastDoseToday(String time) {
-    return 'Last recorded dose: today $time';
-  }
-
-  @override
-  String lastDoseYesterday(String time) {
-    return 'Last recorded dose: yesterday $time';
-  }
-
-  @override
-  String lastDoseOn(String day, String time) {
-    return 'Last recorded dose: $day $time';
-  }
-
-  @override
   String get smallWeightChart => 'Small weight chart';
-
-  @override
-  String get medicalRecords => 'Medical records';
 
   @override
   String get vaccinations => 'Vaccinations';

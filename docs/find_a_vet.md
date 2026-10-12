@@ -375,7 +375,7 @@ says Find a vet is not available there yet.
   place, with a "Sample data" banner and no live status ever.
 - **Directory review:** side-menu entry for accounts in
   `vet_directory_admins` (the demo account is one, on made-up data).
-- **Hebrew / RTL** throughout (`lib/features/findvet/l10n/`, 168 strings);
+- **Hebrew / RTL** throughout (`lib/l10n/features/findvet/`, 168 strings);
   "Google Maps" is never translated.
 
 ## Decisions made

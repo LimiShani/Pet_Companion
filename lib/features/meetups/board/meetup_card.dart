@@ -313,10 +313,11 @@ class MeetupCard extends ConsumerWidget {
                       label: Text(l10n.openChat),
                     )
                   else if (canChat && ad.isLiveAt(now))
-                    FilledButton.icon(
+                    // Outlined: "New ad" is the board's one filled button.
+                    OutlinedButton.icon(
                       key: joinKey(ad.id),
                       onPressed: () => joinMeetupFlow(context, ref, ad),
-                      style: FilledButton.styleFrom(
+                      style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(kHealthTapTarget),
                       ),
                       icon: const AppIcon(Icons.waving_hand_rounded),

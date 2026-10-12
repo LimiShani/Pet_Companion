@@ -12,9 +12,6 @@ class FindVetL10nHe extends FindVetL10n {
   String get findVetTitle => 'חיפוש וטרינר';
 
   @override
-  String get findVetMenuSubtitle => 'חירום או טיפול שוטף בסביבה';
-
-  @override
   String get loginEmergencyLink => 'מצב חירום? חיפוש וטרינר';
 
   @override
@@ -27,15 +24,13 @@ class FindVetL10nHe extends FindVetL10n {
   String get emergencyChoiceTitle => 'טיפול חירום';
 
   @override
-  String get emergencyChoiceBody =>
-      'המקומות הקרובים שמפרסמים שירות חירום, עם חיוג וניווט.';
+  String get emergencyChoiceBody => 'המקומות הקרובים שמפרסמים שירות חירום, עם חיוג וניווט.';
 
   @override
   String get longTermChoiceTitle => 'טיפול שוטף';
 
   @override
-  String get longTermChoiceBody =>
-      'מרפאות בסביבה עם הפרטים שלהן, ושמירה של וטרינר קבוע.';
+  String get longTermChoiceBody => 'מרפאות בסביבה עם הפרטים שלהן, ושמירה של וטרינר קבוע.';
 
   @override
   String get modeEmergency => 'חירום';
@@ -47,8 +42,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get areaQuestion => 'איפה לחפש?';
 
   @override
-  String get locationWhy =>
-      'כדי למצוא וטרינרים קרובים, PetLoop מבקשת מהטלפון את המיקום שלך פעם אחת. הוא משמש רק לחיפוש הזה ולא נשמר.';
+  String get locationWhy => 'כדי למצוא וטרינרים קרובים, PetLoop מבקשת מהטלפון את המיקום שלך פעם אחת. הוא משמש רק לחיפוש הזה ולא נשמר.';
 
   @override
   String get useMyLocation => 'שימוש במיקום שלי';
@@ -69,28 +63,22 @@ class FindVetL10nHe extends FindVetL10n {
   String get placeNoMatch => 'לא מצאנו את המקום הזה. אפשר לנסות שם של עיר.';
 
   @override
-  String get placeLookupFailed =>
-      'לא הצלחנו לחפש את זה כרגע. אפשר לנסות שם של עיר.';
+  String get placeLookupFailed => 'לא הצלחנו לחפש את זה כרגע. אפשר לנסות שם של עיר.';
 
   @override
-  String get problemDenied =>
-      'לא ניתנה גישה למיקום. אפשר להקליד מקום במקום זה.';
+  String get problemDenied => 'לא ניתנה גישה למיקום. אפשר להקליד מקום במקום זה.';
 
   @override
-  String get problemDeniedForever =>
-      'הגישה למיקום כבויה עבור PetLoop. אפשר להפעיל אותה בהגדרות הטלפון, או להקליד מקום.';
+  String get problemDeniedForever => 'הגישה למיקום כבויה עבור PetLoop. אפשר להפעיל אותה בהגדרות הטלפון, או להקליד מקום.';
 
   @override
-  String get problemServiceOff =>
-      'שירותי המיקום כבויים בטלפון. אפשר להפעיל אותם, או להקליד מקום.';
+  String get problemServiceOff => 'שירותי המיקום כבויים בטלפון. אפשר להפעיל אותם, או להקליד מקום.';
 
   @override
-  String get problemUnavailable =>
-      'לא הצלחנו לאתר את המיקום. אפשר להקליד מקום.';
+  String get problemUnavailable => 'לא הצלחנו לאתר את המיקום. אפשר להקליד מקום.';
 
   @override
-  String get problemOutsideRegion =>
-      'חיפוש וטרינר פועל כרגע רק בישראל. אפשר להקליד מקום בישראל.';
+  String get problemOutsideRegion => 'חיפוש וטרינר פועל כרגע רק בישראל. אפשר להקליד מקום בישראל.';
 
   @override
   String get openSettings => 'פתיחת ההגדרות';
@@ -126,8 +114,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get callFirstTitle => 'כדאי להתקשר לפני שיוצאים';
 
   @override
-  String get callFirstBody =>
-      'שעות פתיחה ו״24/7״ לא אומרים אם יוכלו לקבל את החיה שלך עכשיו.';
+  String get callFirstBody => 'שעות פתיחה ו״24/7״ לא אומרים אם יוכלו לקבל את החיה שלך עכשיו.';
 
   @override
   String get callToConfirm => 'כדאי להתקשר ולוודא שיוכלו לקבל את החיה שלך';
@@ -136,8 +123,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get evidenceListed => 'מופיע ברשימה באזור';
 
   @override
-  String get evidenceListedNote =>
-      'נמצא ברשימת מקומות במפה. PetLoop לא אימתה שיש שם שירות חירום.';
+  String get evidenceListedNote => 'נמצא ברשימת מקומות במפה. PetLoop לא אימתה שיש שם שירות חירום.';
 
   @override
   String get evidenceAdvertised => 'מפרסמים שירות חירום';
@@ -164,8 +150,7 @@ class FindVetL10nHe extends FindVetL10n {
   }
 
   @override
-  String get evidenceUnverifiedNoDate =>
-      'לא הצלחנו לאמת את זה באתר שלהם לאחרונה. כדאי לשאול בטלפון.';
+  String get evidenceUnverifiedNoDate => 'לא הצלחנו לאמת את זה באתר שלהם לאחרונה. כדאי לשאול בטלפון.';
 
   @override
   String get evidenceOpenNow => 'לפי השעות שפורסמו: פתוח עכשיו';
@@ -248,11 +233,6 @@ class FindVetL10nHe extends FindVetL10n {
   String get saveChoosePet => 'שמירה כווטרינר קבוע עבור…';
 
   @override
-  String saveForPet(String pet) {
-    return 'שמירה עבור \u2068$pet\u2069';
-  }
-
-  @override
   String get saveNeedsPet => 'כדי לשמור וטרינר קבוע, צריך קודם להוסיף חיה.';
 
   @override
@@ -319,8 +299,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get sectionOther => 'וטרינרים נוספים באזור';
 
   @override
-  String get sectionOtherNote =>
-      'לא אומת שיש להם שירות חירום. כדאי להתקשר ולשאול.';
+  String get sectionOtherNote => 'לא אומת שיש להם שירות חירום. כדאי להתקשר ולשאול.';
 
   @override
   String get sectionUnverified => 'שירות חירום שלא אומת מחדש';
@@ -342,12 +321,10 @@ class FindVetL10nHe extends FindVetL10n {
   }
 
   @override
-  String get noticeProviderDown =>
-      'החיפוש החי לא זמין כרגע. אלה מקומות חירום מהמאגר של PetLoop, כל אחד עם תאריך הבדיקה האחרונה.';
+  String get noticeProviderDown => 'החיפוש החי לא זמין כרגע. אלה מקומות חירום מהמאגר של PetLoop, כל אחד עם תאריך הבדיקה האחרונה.';
 
   @override
-  String get noticeProviderDownLongTerm =>
-      'החיפוש החי לא זמין כרגע. המרפאות האלה מגיעות מהמאגר של PetLoop.';
+  String get noticeProviderDownLongTerm => 'החיפוש החי לא זמין כרגע. המרפאות האלה מגיעות מהמאגר של PetLoop.';
 
   @override
   String noticeDirectoryCopy(String date) {
@@ -379,12 +356,10 @@ class FindVetL10nHe extends FindVetL10n {
   String get errorTitle => 'החיפוש לא הצליח';
 
   @override
-  String get errorOffline =>
-      'אין חיבור, ועדיין אין עותק שמור של המאגר. כדאי לבדוק את החיבור ולנסות שוב.';
+  String get errorOffline => 'אין חיבור, ועדיין אין עותק שמור של המאגר. כדאי לבדוק את החיבור ולנסות שוב.';
 
   @override
-  String get errorRateLimited =>
-      'יותר מדי חיפושים בזמן קצר. אפשר לנסות שוב בעוד כמה דקות.';
+  String get errorRateLimited => 'יותר מדי חיפושים בזמן קצר. אפשר לנסות שוב בעוד כמה דקות.';
 
   @override
   String get errorUnavailable => 'החיפוש לא זמין כרגע. אפשר לנסות שוב.';
@@ -396,8 +371,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get tryAgain => 'ניסיון נוסף';
 
   @override
-  String get demoBanner =>
-      'נתוני דוגמה: המקומות האלה מומצאים. החיפוש האמיתי עובד כשהאפליקציה מחוברת לשרת.';
+  String get demoBanner => 'נתוני דוגמה: המקומות האלה מומצאים. החיפוש האמיתי עובד כשהאפליקציה מחוברת לשרת.';
 
   @override
   String get listingsFrom => 'רשימת המקומות במפה:';
@@ -406,24 +380,19 @@ class FindVetL10nHe extends FindVetL10n {
   String get legendLink => 'מה אומרות התוויות';
 
   @override
-  String get legendListedBody =>
-      'נמצא ברשימת מקומות במפה באזור. זה לבד לא אומר כלום על שירות חירום, גם אם השם אומר.';
+  String get legendListedBody => 'נמצא ברשימת מקומות במפה באזור. זה לבד לא אומר כלום על שירות חירום, גם אם השם אומר.';
 
   @override
-  String get legendAdvertisedBody =>
-      'האתר של המקום עצמו (או המקום עצמו) אומר שיש שם שירות חירום. PetLoop בודקת את זה כל שבוע ומראה את תאריך הבדיקה האחרונה.';
+  String get legendAdvertisedBody => 'האתר של המקום עצמו (או המקום עצמו) אומר שיש שם שירות חירום. PetLoop בודקת את זה כל שבוע ומראה את תאריך הבדיקה האחרונה.';
 
   @override
-  String get legendOpenBody =>
-      'לפי השעות שפורסמו, המקום פתוח עכשיו. זה לא אומר שיש וטרינר פנוי לחיה שלך.';
+  String get legendOpenBody => 'לפי השעות שפורסמו, המקום פתוח עכשיו. זה לא אומר שיש וטרינר פנוי לחיה שלך.';
 
   @override
-  String get legendAcceptingBody =>
-      'מוצג רק כשהמקום עצמו דיווח שהוא מקבל מטופלים, ורק עד שהדיווח פג. אחרת יופיע ״כדאי להתקשר ולוודא״.';
+  String get legendAcceptingBody => 'מוצג רק כשהמקום עצמו דיווח שהוא מקבל מטופלים, ורק עד שהדיווח פג. אחרת יופיע ״כדאי להתקשר ולוודא״.';
 
   @override
-  String get legendCallBody =>
-      'החיוג לא מסמן שום דבר כמאושר. רק המקום יכול לומר אם יוכלו לקבל את החיה שלך עכשיו.';
+  String get legendCallBody => 'החיוג לא מסמן שום דבר כמאושר. רק המקום יכול לומר אם יוכלו לקבל את החיה שלך עכשיו.';
 
   @override
   String get adminTitle => 'בדיקת מאגר הווטרינרים';
@@ -590,8 +559,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get adminLinkTitle => 'קישור הרישום הזה של Google אל…';
 
   @override
-  String get adminLinkNote =>
-      'בחירת המקום שהרישום הזה שייך אליו. מעכשיו הם יופיעו כמקום אחד, עם הפרטים שנבדקו ב-PetLoop.';
+  String get adminLinkNote => 'בחירת המקום שהרישום הזה שייך אליו. מעכשיו הם יופיעו כמקום אחד, עם הפרטים שנבדקו ב-PetLoop.';
 
   @override
   String adminLinkConfirm(String listing, String facility) {

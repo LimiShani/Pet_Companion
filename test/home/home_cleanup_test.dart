@@ -106,7 +106,7 @@ void main() {
       expect(find.descendant(of: find.byType(PetHero), matching: find.text(app.commonAdd)), findsNothing);
     });
 
-    testWidgets('profile reminder on Home: one "Add" pill, no "Not now"; the row opens the checklist ($lang, 320 px)', (
+    testWidgets('profile reminder on Home: one "Add" pill; the row opens the checklist ($lang, 320 px)', (
       tester,
     ) async {
       await pumpPetsApp(tester, harness: harnessFor(language), size: small);
@@ -116,7 +116,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(pets.finishProfile('Soya')), findsOneWidget);
       expect(find.text(pets.essentialsStillToAdd(5, 5)), findsOneWidget);
-      expect(find.text(pets.notNow), findsNothing);
       final add = find.byKey(PetReminderCard.addKey);
       expect(find.descendant(of: add, matching: find.text(app.commonAdd)), findsOneWidget);
       expect(find.bySemanticsLabel(pets.actionVetPhone), findsOneWidget);

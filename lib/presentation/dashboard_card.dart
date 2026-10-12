@@ -146,8 +146,11 @@ class CardTitleRow extends StatelessWidget {
       builder: (context, constraints) {
         final scaler = MediaQuery.textScalerOf(context);
         final direction = Directionality.of(context);
+        // Measured as the Text widgets draw it: on top of the inherited
+        // style (its letter spacing widens the line by a few pixels).
+        final inherited = DefaultTextStyle.of(context).style;
         double width(String s, TextStyle style) => (TextPainter(
-          text: TextSpan(text: s, style: style),
+          text: TextSpan(text: s, style: inherited.merge(style)),
           textDirection: direction,
           textScaler: scaler,
           maxLines: 1,
@@ -240,8 +243,10 @@ class CardActionRow extends StatelessWidget {
       builder: (context, constraints) {
         final scaler = MediaQuery.textScalerOf(context);
         final direction = Directionality.of(context);
+        // On top of the inherited style, as the Text widgets draw it.
+        final inherited = DefaultTextStyle.of(context).style;
         double width(String s, TextStyle style) => (TextPainter(
-          text: TextSpan(text: s, style: style),
+          text: TextSpan(text: s, style: inherited.merge(style)),
           textDirection: direction,
           textScaler: scaler,
           maxLines: 1,

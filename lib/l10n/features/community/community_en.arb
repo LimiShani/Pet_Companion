@@ -220,7 +220,6 @@
   "commentReportTitle": "Report this comment",
   "commentReportBody": "Tell us what is wrong. We hide the comment for you right away and review it.",
   "commentReportThanks": "Thanks. We have hidden this comment and will review it.",
-  "messageOptions": "Message options",
   "replyingTo": "Replying to {name}",
   "@replyingTo": {"description": "Above the message field while answering a message.", "placeholders": {"name": {"type": "String"}}},
   "cancelReply": "Cancel reply",
@@ -321,7 +320,6 @@
   "markHelpful": "Mark as the helpful answer",
   "unmarkHelpful": "Not the helpful answer",
   "markedHelpful": "Marked as the helpful answer",
-  "likedByDoubleTap": "Liked",
 
   "activityTitle": "Activity",
   "activityTooltip": "Activity",
@@ -357,9 +355,7 @@
   "blockedMemberNote": "You blocked this member.",
 
   "muteRoom": "Mute this room",
-  "unmuteRoom": "Unmute this room",
   "roomMuted": "Muted: no unread count for this room",
-  "roomUnmuted": "Unmuted",
   "mutedTag": "Muted",
   "pushTitle": "Community",
   "@pushTitle": {"description": "Title of the card in Settings with the community push notification switches."},
@@ -469,7 +465,6 @@
   "recentPeople": "People you talked with recently",
   "communityMembersTitle": "Community members",
   "noPeopleFound": "No one by that name",
-  "peopleLoadFailed": "Cannot load community members",
   "nextStep": "Next",
   "createChat": "Create chat",
   "groupNameTitle": "Name the chat",

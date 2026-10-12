@@ -131,12 +131,6 @@ abstract class OutdoorsL10n {
   /// **'Show the parks'**
   String get partnersShowParks;
 
-  /// No description provided for @parksIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'Dog parks near you, with what is there: a fence, water, shade, lighting.'**
-  String get parksIntro;
-
   /// No description provided for @areaQuestion.
   ///
   /// In en, this message translates to:
