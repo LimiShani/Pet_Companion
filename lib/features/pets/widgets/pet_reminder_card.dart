@@ -74,7 +74,8 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 /// `compact: false` is the card: the title, "2 of 5 essentials still to
 /// add", a progress line, the action button and "Not now". `compact: true`
 /// is one row for Home: the title, the count and an "Add" pill; there,
-/// "Not now" is in the checklist it opens.
+/// "Not now" is in the checklist it opens. Home's row is the app's one
+/// essentials nag: no page places the full card any more.
 ///
 /// The action ("Add") opens the next missing item; the rest of the card
 /// opens the checklist. "Not now" hides the reminder everywhere for 7 days.

@@ -4,15 +4,20 @@ import 'package:go_router/go_router.dart';
 import '../../widgets/coral_header.dart' show HeaderAvatar;
 import 'about_screen.dart';
 import 'admin_tools_screen.dart';
+import 'settings_pages.dart';
 import 'settings_screen.dart';
 import 'you_screen.dart';
 
-/// The locations of the You page, Settings, About and Admin tools. Only
-/// the router uses them; the rest of the app opens the pages with
-/// [openYou] and [openSettings] (and the headers' [HeaderAvatar]).
+/// The locations of the You page, Settings (and its Language, Week and
+/// Notifications pages), About and Admin tools. Only the router uses them;
+/// the rest of the app opens the pages with [openYou] and [openSettings]
+/// (and the headers' [HeaderAvatar]).
 abstract final class SettingsRoutes {
   static const you = HeaderAvatar.route;
   static const root = '/settings';
+  static const language = '/settings/language';
+  static const week = '/settings/week';
+  static const notifications = '/settings/notifications';
   static const about = '/about';
   static const admin = '/admin';
 }
@@ -26,6 +31,18 @@ final settingsRoutes = <RouteBase>[
   GoRoute(
     path: SettingsRoutes.root,
     builder: (context, state) => const SettingsScreen(),
+  ),
+  GoRoute(
+    path: SettingsRoutes.language,
+    builder: (context, state) => const LanguageSettingsScreen(),
+  ),
+  GoRoute(
+    path: SettingsRoutes.week,
+    builder: (context, state) => const WeekSettingsScreen(),
+  ),
+  GoRoute(
+    path: SettingsRoutes.notifications,
+    builder: (context, state) => const NotificationSettingsScreen(),
   ),
   GoRoute(
     path: SettingsRoutes.about,
@@ -66,6 +83,27 @@ Future<void> pushSettings({
     );
   }
 }
+
+/// Opens Settings > Language.
+Future<void> openLanguageSettings(BuildContext context) => _push(
+  context,
+  SettingsRoutes.language,
+  (_) => const LanguageSettingsScreen(),
+);
+
+/// Opens Settings > Week.
+Future<void> openWeekSettings(BuildContext context) => _push(
+  context,
+  SettingsRoutes.week,
+  (_) => const WeekSettingsScreen(),
+);
+
+/// Opens Settings > Notifications.
+Future<void> openNotificationSettings(BuildContext context) => _push(
+  context,
+  SettingsRoutes.notifications,
+  (_) => const NotificationSettingsScreen(),
+);
 
 /// Opens the About page.
 Future<void> openAbout(BuildContext context) => _push(

@@ -5,7 +5,7 @@ import 'package:pet_companion/features/pets/pets.dart';
 import 'helpers.dart';
 
 /// How the Pets feature is wired into the Home dashboard and the Health
-/// tab, in the app as shipped (demo account: Kelly is complete, Soya is
+/// tab (which has no reminder of its own), in the app as shipped (demo account: Kelly is complete, Soya is
 /// missing her essentials).
 void main() {
   setUpAll(() {
@@ -68,14 +68,17 @@ void main() {
     expect(find.textContaining('Kelly'), findsWidgets);
   });
 
-  testWidgets('the Health overview shows the reminder card for Soya', (tester) async {
+  testWidgets('the Health overview has no reminder card: the one nag is on Home', (tester) async {
     await pumpHome(tester);
     await tapAndSettle(tester, find.text('Soya'));
+    expect(find.byType(PetReminderCard), findsOneWidget);
 
     // "Health" is also the title of a dashboard card; the tab is the last.
     await tapAndSettle(tester, find.text('Health').last);
 
-    expect(find.byType(PetReminderCard), findsOneWidget);
-    expect(find.textContaining('essentials still to add'), findsOneWidget);
+    expect(find.text('Overview'), findsWidgets);
+    expect(find.byType(PetReminderCard), findsNothing);
+    expect(find.textContaining('essentials still to add'), findsNothing);
+    expect(find.text("Finish Soya's profile"), findsNothing);
   });
 }

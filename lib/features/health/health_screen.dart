@@ -1,4 +1,3 @@
-import '../../platform/feature_ui.dart';
 import '../../access/feature_gate.dart';
 import '../../access/access_provider.dart';
 import 'package:flutter/material.dart';
@@ -26,11 +25,6 @@ import 'share/share_actions.dart';
 import '../../services/pet_records/state/health_keeper.dart';
 import '../../services/pet_records/state/health_providers.dart';
 import '../../presentation/health_widgets.dart';
-
-/// The Pets feature's full-size reminder card, shown at the top of the
-/// Overview while an essential is missing. It draws nothing,
-/// and takes no space, for a pet whose essentials are all answered.
-Widget? petReminderSlot(Pet pet) => featureSlot('pet-reminder', pet.id);
 
 /// The Health tab: a personal health organiser for the selected pet, in
 /// three sections (Overview, Schedule, Records). The Emergency button and
@@ -67,9 +61,6 @@ class HealthScreen extends ConsumerWidget {
         section != HealthSection.overview &&
         ref.watch(capabilityProvider('health.records.edit'));
     final l10n = context.healthL10n;
-    final reminder = section == HealthSection.overview
-        ? petReminderSlot(pet)
-        : null;
 
     return HealthKeeper(
       petId: pet.id,
@@ -126,22 +117,14 @@ class HealthScreen extends ConsumerWidget {
                       // Room for the Quick log button under the last item.
                       padding: EdgeInsetsDirectional.fromSTEB(
                         AppSpacing.screen,
-                        // The reminder brings its own gap above it.
-                        reminder == null ? 16 : 16 - AppSpacing.cardGap,
+                        16,
                         AppSpacing.screen,
                         quickLogButton
                             ? AppSpacing.fabClearance +
                                   MediaQuery.paddingOf(context).bottom
                             : 24,
                       ),
-                      child: _section(
-                        context,
-                        ref,
-                        pet,
-                        section,
-                        value,
-                        reminder,
-                      ),
+                      child: _section(context, ref, pet, section, value),
                     ),
             ),
           ],
@@ -156,13 +139,11 @@ class HealthScreen extends ConsumerWidget {
     Pet pet,
     HealthSection section,
     PetHealthData data,
-    Widget? reminder,
   ) {
     return switch (section) {
       HealthSection.overview => OverviewSection(
         pet: pet,
         data: data,
-        reminder: reminder,
         actions: OverviewActions(
           onQuickLog: ref.watch(capabilityProvider('health.records.edit'))
               ? () => showQuickLog(context, pet)

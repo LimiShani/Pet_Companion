@@ -342,10 +342,20 @@ class AppL10nHe extends AppL10n {
   }
 
   @override
-  String get settingsWeekNote => 'השבוע שלך: איזה יום ראשון בסדר, ואילו ימים הם ימי חול. הימים המעומעמים הם סוף השבוע. לוח הזמנים בבריאות מתאים את עצמו לבחירה הזו: סדר הימים, ומה נחשב שם ״ימי חול״ ו״סוף שבוע״.';
+  String get settingsWeekNote => 'השבוע שלך: היום הראשון וימי החול. לוח הזמנים בבריאות מתאים את עצמו לבחירה הזו.';
 
   @override
   String get settingsSavedNote => 'ההגדרות נשמרות בטלפון הזה.';
+
+  @override
+  String settingsLanguageFollowing(String language) {
+    return 'לפי שפת המכשיר · \u2068$language\u2069';
+  }
+
+  @override
+  String settingsWeekSummary(String day, String weekdays) {
+    return 'מתחיל ביום \u2068$day\u2069 · \u2068$weekdays\u2069';
+  }
 
   @override
   String get legalTerms => 'תנאי השימוש';

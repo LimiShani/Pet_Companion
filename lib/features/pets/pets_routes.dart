@@ -18,11 +18,8 @@ abstract final class PetsRoutes {
   /// The add-a-pet flow.
   static const addPet = '/pets/new';
 
-  /// The profile (edit page) of one pet.
+  /// The profile of one pet.
   static String profile(String petId) => '/pets/${Uri.encodeComponent(petId)}';
-
-  /// Passed as `extra` when the profile is opened from "My pets".
-  static const fromMyPets = 'from-my-pets';
 
   /// The app's start: from here the router sends a signed-in owner to the
   /// dashboard, or to the welcome when there is no pet.
@@ -50,9 +47,7 @@ final petsRoutes = <RouteBase>[
   ),
   GoRoute(
     path: '${PetsRoutes.myPets}/:petId',
-    builder: (context, state) => PetProfileScreen(
-      petId: state.pathParameters['petId']!,
-      fromMyPets: state.extra == PetsRoutes.fromMyPets,
-    ),
+    builder: (context, state) =>
+        PetProfileScreen(petId: state.pathParameters['petId']!),
   ),
 ];

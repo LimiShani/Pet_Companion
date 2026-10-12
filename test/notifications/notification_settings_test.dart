@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pet_companion/features/settings/settings_pages.dart';
 import 'package:pet_companion/features/settings/settings_screen.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/notifications/notifications.dart';
@@ -12,15 +13,18 @@ import '../helpers.dart';
 import 'notification_test_helpers.dart';
 
 // Settings > Notifications: the switches, quiet hours, and what the phone
-// allows, in English and Hebrew.
+// allows, in English and Hebrew; and the line under the Notifications row
+// of the Settings page.
 
-/// The Settings page on its own, with [platform] as the phone (none when
-/// `null`, as in the other tests of the app).
+/// The Settings > Notifications page on its own ([home] instead, when
+/// given), with [platform] as the phone (none when `null`, as in the other
+/// tests of the app).
 Future<ProviderContainer> _pumpSettings(
   WidgetTester tester, {
   AppLanguage language = AppLanguage.english,
   SettingsStore? store,
   FakeNotificationPlatform? platform,
+  Widget home = const NotificationSettingsScreen(),
 }) async {
   tester.view.physicalSize = const Size(390, 844) * 3;
   tester.view.devicePixelRatio = 3;
@@ -35,12 +39,12 @@ Future<ProviderContainer> _pumpSettings(
       locale: language == AppLanguage.hebrew ? hebrewLocale : englishLocale,
       supportedLocales: appSupportedLocales,
       localizationsDelegates: appLocalizationsDelegates,
-      home: const SettingsScreen(),
+      home: home,
     ),
   );
   await tester.pumpWidget(scope);
   await tester.pumpAndSettle();
-  return ProviderScope.containerOf(tester.element(find.byType(SettingsScreen)));
+  return ProviderScope.containerOf(tester.element(find.byType(Navigator).first));
 }
 
 bool _on(WidgetTester tester, Key key) => tester.widget<SwitchListTile>(find.byKey(key)).value;
@@ -58,7 +62,7 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
   });
 
-  testWidgetsInBothLanguages('the section lists every switch, all on and quiet hours off', (tester, language) async {
+  testWidgetsInBothLanguages('the page lists every switch, all on and quiet hours off', (tester, language) async {
     final l10n = lookupNotificationsL10n(language == AppLanguage.hebrew ? hebrewLocale : englishLocale);
     await _pumpSettings(tester, language: language);
 
@@ -151,6 +155,39 @@ void main() {
     await _pumpSettings(tester, platform: phone);
     expect(find.byKey(NotificationSettingsCard.exactKey), findsNothing);
     expect(find.byKey(NotificationSettingsCard.blockedKey), findsNothing);
+  });
+
+  testWidgetsInBothLanguages('the Settings row sums it up and opens the page', (tester, language) async {
+    final locale = language == AppLanguage.hebrew ? hebrewLocale : englishLocale;
+    final l10n = lookupNotificationsL10n(locale);
+    final back = lookupAppL10n(locale).commonBack;
+    final store = MemorySettingsStore();
+    await _pumpSettings(tester, language: language, store: store, home: const SettingsScreen());
+    final row = find.byKey(SettingsScreen.notificationsKey);
+    expect(find.descendant(of: row, matching: find.text(l10n.sectionTitle)), findsOneWidget);
+    expect(find.descendant(of: row, matching: find.text(l10n.summaryQuietOff)), findsOneWidget);
+
+    await _tap(tester, row);
+    expect(find.byKey(NotificationSettingsScreen.screenKey), findsOneWidget);
+    await _tap(tester, find.byKey(NotificationSettingsCard.quietHoursKey));
+    await _tap(tester, find.byTooltip(back));
+    expect(find.descendant(of: row, matching: find.text(l10n.summaryQuietOn)), findsOneWidget);
+
+    await _tap(tester, row);
+    await _tap(tester, find.byKey(NotificationSettingsCard.masterKey));
+    await _tap(tester, find.byTooltip(back));
+    expect(find.descendant(of: row, matching: find.text(l10n.summaryOff)), findsOneWidget);
+  });
+
+  testWidgets('when the phone blocks notifications, the Settings row says so', (tester) async {
+    final l10n = lookupNotificationsL10n(englishLocale);
+    final phone = FakeNotificationPlatform(currentAccess: const NotificationAccess(allowed: false, exact: true));
+    await _pumpSettings(tester, platform: phone, home: const SettingsScreen());
+    expect(
+      find.descendant(of: find.byKey(SettingsScreen.notificationsKey), matching: find.text(l10n.summaryBlocked)),
+      findsOneWidget,
+    );
+    expect(l10n.summaryBlocked, 'Off on this phone');
   });
 
   testWidgets('the section fits a small phone with large text', (tester) async {

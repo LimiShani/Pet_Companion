@@ -6,7 +6,7 @@ import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../notifications.dart';
 
-/// The Notifications section of the Settings page: the master switch, one
+/// The card of the Settings > Notifications page: the master switch, one
 /// switch per kind of reminder, quiet hours, and what the phone allows
 /// (notifications at all, and Android's "Alarms & reminders" for exact
 /// times). Every switch applies at once and is remembered on the phone.
@@ -22,6 +22,19 @@ class NotificationSettingsCard extends ConsumerWidget {
 
   static Key kindKey(NotificationKind kind) =>
       ValueKey('notifications-${kind.name}');
+
+  /// One line on what rings, for the Notifications row of the Settings
+  /// page: "Reminders on · quiet hours off", "Reminders off", or "Off on
+  /// this phone" when the phone blocks PetLoop's notifications.
+  static String summaryOf(
+    NotificationsL10n l10n,
+    NotificationSettings settings,
+    NotificationAccess? access,
+  ) {
+    if (access != null && !access.allowed) return l10n.summaryBlocked;
+    if (!settings.enabled) return l10n.summaryOff;
+    return settings.quietHours ? l10n.summaryQuietOn : l10n.summaryQuietOff;
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

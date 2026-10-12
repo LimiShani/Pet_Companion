@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pet_companion/features/settings/about_screen.dart';
 import 'package:pet_companion/features/settings/admin_tools_screen.dart';
+import 'package:pet_companion/features/settings/settings_pages.dart';
 import 'package:pet_companion/features/settings/settings_screen.dart';
 import 'package:pet_companion/features/settings/widgets/week_choice.dart';
 import 'package:pet_companion/features/settings/you_screen.dart';
@@ -15,6 +16,9 @@ const smallPhone = Size(320, 568);
 
 final youPage = find.byKey(YouScreen.screenKey);
 final settingsPage = find.byKey(SettingsScreen.screenKey);
+final languagePage = find.byKey(LanguageSettingsScreen.screenKey);
+final weekPage = find.byKey(WeekSettingsScreen.screenKey);
+final notificationsPage = find.byKey(NotificationSettingsScreen.screenKey);
 final adminToolsPage = find.byKey(AdminToolsScreen.screenKey);
 
 /// The strings of [language], for expectations that must hold in both.
@@ -69,6 +73,33 @@ Future<void> openSettingsFromYou(WidgetTester tester, AppL10n l10n) async {
   expect(settingsPage, findsOneWidget);
 }
 
+/// Opens a page of Settings with its row ([rowKey]) on the Settings page.
+Future<void> openSettingsRow(WidgetTester tester, Key rowKey, Finder page) async {
+  await tester.ensureVisible(find.byKey(rowKey));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(rowKey));
+  await settle(tester);
+  expect(page, findsOneWidget);
+}
+
+/// Opens Settings through the You page, then its Language page.
+Future<void> openLanguageFromYou(WidgetTester tester, AppL10n l10n) async {
+  await openSettingsFromYou(tester, l10n);
+  await openSettingsRow(tester, SettingsScreen.languageKey, languagePage);
+}
+
+/// Opens Settings through the You page, then its Week page.
+Future<void> openWeekFromYou(WidgetTester tester, AppL10n l10n) async {
+  await openSettingsFromYou(tester, l10n);
+  await openSettingsRow(tester, SettingsScreen.weekKey, weekPage);
+}
+
+/// The line under a row of the Settings page.
+String subtitleOf(WidgetTester tester, Key rowKey) {
+  final texts = find.descendant(of: find.byKey(rowKey), matching: find.byType(Text));
+  return tester.widget<Text>(texts.at(1)).data!;
+}
+
 /// Opens About through the You page.
 Future<void> openAboutFromYou(WidgetTester tester, AppL10n l10n) async {
   await openYou(tester, l10n);
@@ -92,7 +123,7 @@ bool isChosen(WidgetTester tester, Key rowKey) {
   return tester.widget<Semantics>(row.first).properties.selected ?? false;
 }
 
-/// Scrolls [finder] into view on the Settings page, then taps it.
+/// Scrolls [finder] into view on a Settings page, then taps it.
 Future<void> tapOnSettings(WidgetTester tester, Finder finder) async {
   await tester.ensureVisible(finder);
   await tester.pumpAndSettle();
@@ -112,4 +143,4 @@ List<String> previewLetters(WidgetTester tester) {
 
 /// The week layout the app is using.
 WeekSettings weekOf(WidgetTester tester) =>
-    ProviderScope.containerOf(tester.element(settingsPage)).read(weekSettingsProvider);
+    ProviderScope.containerOf(tester.element(find.byType(Navigator).first)).read(weekSettingsProvider);

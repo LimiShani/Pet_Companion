@@ -12,13 +12,11 @@ import '../../services/pets/data/pets_repository_provider.dart';
 import 'pet_actions.dart';
 import '../../presentation/pet_words.dart';
 import 'profile/remove_pet.dart';
-import '../../services/pets/state/pet_completeness.dart';
 import '../../presentation/pet_avatar.dart';
-import 'widgets/pet_essentials_keeper.dart';
 import '../../presentation/pets_widgets.dart';
 
-/// All the owner's pets at a glance: who is complete, who has gaps, "Add a
-/// pet", and the archived ones with "Restore".
+/// All the owner's pets at a glance, "Add a pet", and the archived ones
+/// with "Restore". The essentials are nagged about on Home only.
 class MyPetsScreen extends ConsumerWidget {
   const MyPetsScreen({super.key});
 
@@ -82,22 +80,15 @@ class _PetRow extends ConsumerWidget {
   );
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    final info = ref.watch(petCompletenessProvider(pet.id));
-
     return PetsCard(
       key: Key('my-pet-${pet.id}'),
-      onTap: () => openPetProfile(context, pet.id, fromMyPets: true),
+      onTap: () => openPetProfile(context, pet.id),
       padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 10, 10),
-      // Stays up to date while a profile covers this page.
-      child: PetEssentialsKeeper(
-        petId: pet.id,
-        child: _content(context.petsL10n, info),
-      ),
+      child: _content(context.petsL10n),
     );
   }
 
-  Widget _content(PetsL10n l10n, PetCompleteness info) {
-    final missing = info.missing.length;
+  Widget _content(PetsL10n l10n) {
     return Row(
       children: [
         PetAvatar(pet: pet, size: 56),
@@ -114,17 +105,6 @@ class _PetRow extends ConsumerWidget {
                 petSummaryLine(l10n, pet, now: now),
                 style: AppText.secondary.copyWith(color: AppColors.brown),
               ),
-              if (info.isKnown) ...[
-                const SizedBox(height: 5),
-                if (info.isComplete)
-                  PetsTag(
-                    l10n.complete,
-                    tone: TagTone.green,
-                    icon: Icons.check_rounded,
-                  )
-                else
-                  PetsTag(l10n.essentialsToAdd(missing), tone: TagTone.yellow),
-              ],
             ],
           ),
         ),

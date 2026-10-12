@@ -802,6 +802,18 @@ abstract class BudgetL10n {
   /// In en, this message translates to:
   /// **'Choose a pet or the whole home'**
   String get scopeTooltip;
+
+  /// Full-width button under the main fields of the expense and basket product forms; reveals the optional fields folded below it.
+  ///
+  /// In en, this message translates to:
+  /// **'More details'**
+  String get formMoreDetails;
+
+  /// The same button once the optional fields are open; folds them away again.
+  ///
+  /// In en, this message translates to:
+  /// **'Fewer details'**
+  String get formFewerDetails;
 }
 
 class _BudgetL10nDelegate extends LocalizationsDelegate<BudgetL10n> {

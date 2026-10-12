@@ -117,5 +117,7 @@
   "errorGone": "הפריט הזה כבר לא קיים.",
   "errorNeedsUpdate": "התקציב עוד לא הוגדר בשרת.",
   "errorUnknown": "משהו השתבש. אפשר לנסות שוב.",
-  "scopeTooltip": "בחירת חיה או כל הבית"
+  "scopeTooltip": "בחירת חיה או כל הבית",
+  "formMoreDetails": "פרטים נוספים",
+  "formFewerDetails": "פחות פרטים"
 }

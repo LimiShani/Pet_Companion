@@ -281,6 +281,30 @@ abstract class NotificationsL10n {
   /// **'Open phone settings'**
   String get openPhoneSettings;
 
+  /// Under 'Notifications' on the Settings page: reminders ring, quiet hours are off.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders on · quiet hours off'**
+  String get summaryQuietOff;
+
+  /// No description provided for @summaryQuietOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders on · quiet hours on'**
+  String get summaryQuietOn;
+
+  /// Under 'Notifications' on the Settings page: the master switch is off.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders off'**
+  String get summaryOff;
+
+  /// Under 'Notifications' on the Settings page: the phone's own settings block PetLoop's notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Off on this phone'**
+  String get summaryBlocked;
+
   /// Title of the sheet shown before the phone asks for permission to send notifications.
   ///
   /// In en, this message translates to:

@@ -146,8 +146,18 @@
     "description": "Screen-reader text of the row of seven day letters; the days are short names, e.g. 'Fri, Sat'.",
     "placeholders": {"days": {"type": "String"}}
   },
-  "settingsWeekNote": "Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.",
+  "settingsWeekNote": "Your week: the first day and the weekdays. The Health schedule follows this choice.",
   "settingsSavedNote": "These settings are saved on this phone.",
+  "settingsLanguageFollowing": "Follow the phone · {language}",
+  "@settingsLanguageFollowing": {
+    "description": "Under 'Language' on the Settings page when the app follows the phone; {language} is the phone's language in its own letters (English, עברית).",
+    "placeholders": {"language": {"type": "String"}}
+  },
+  "settingsWeekSummary": "Starts on {day} · {weekdays}",
+  "@settingsWeekSummary": {
+    "description": "Under 'Week' on the Settings page: the first day of the week (Sunday) and the weekdays (Sunday to Thursday).",
+    "placeholders": {"day": {"type": "String"}, "weekdays": {"type": "String"}}
+  },
   "legalTerms": "Terms of Use",
   "legalPrivacy": "Privacy Policy",
   "legalOpensInBrowser": "Opens in the browser.",

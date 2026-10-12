@@ -118,6 +118,18 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get openPhoneSettings => 'פתיחת הגדרות הטלפון';
 
   @override
+  String get summaryQuietOff => 'תזכורות פועלות · שעות שקטות כבויות';
+
+  @override
+  String get summaryQuietOn => 'תזכורות פועלות · שעות שקטות פועלות';
+
+  @override
+  String get summaryOff => 'התזכורות כבויות';
+
+  @override
+  String get summaryBlocked => 'חסומות בהגדרות הטלפון';
+
+  @override
   String get askTitle => 'תזכורות בזמן';
 
   @override

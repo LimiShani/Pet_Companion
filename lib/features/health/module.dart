@@ -8,6 +8,8 @@ import '../../widgets/petloop_icon.dart';
 import '../../services/pet_records/data/health_models.dart';
 import 'health_routes.dart';
 import 'emergency/emergency.dart';
+import 'emergency/vets_screen.dart';
+import 'records/pet_documents_screen.dart';
 import 'records/record_form_screen.dart';
 import 'widgets/upcoming_card.dart';
 import '../../state/pets_provider.dart';
@@ -61,6 +63,17 @@ final healthModule = FeatureModule(
     'health-profile': FeatureAction.task(
       capability: 'health.emergency.edit',
       open: (c, r) => openHealthProfile(c, r.petId),
+    ),
+    // The pet's two vets (the pet profile's "Vets" row).
+    'pet-vets': FeatureAction.task(
+      capability: 'health.emergency.view',
+      open: (c, r) => VetsScreen.open(c, requestPet(c, r)),
+    ),
+    // Every file attached to the pet's records (the pet profile's
+    // "Documents" row; the emergency kit opens the same page).
+    'pet-documents': FeatureAction.task(
+      capability: 'health.records.view',
+      open: (c, r) => PetDocumentsScreen.open(c, requestPet(c, r)),
     ),
     'health-critical': FeatureAction.task(
       capability: 'health.emergency.edit',

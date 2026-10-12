@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/pets/profile/name_and_kind_sheet.dart';
+import 'package:pet_companion/features/pets/profile/pet_profile_screen.dart';
 
 import 'pets_test_helpers.dart';
 
@@ -65,24 +67,38 @@ void main() {
     await tester.tap(find.text('Profile'));
     await tester.pumpAndSettle();
 
-    await tapVisible(tester, find.byKey(const Key('profile-essentials-add')));
-    expect(find.text("Soya's essentials"), findsOneWidget);
-    await tapVisible(tester, find.byKey(const Key('add-age')));
+    // Every row, and a sheet from each kind of row.
+    for (final row in ['name', 'age', 'weight', 'breed', 'sex', 'vets', 'health', 'documents']) {
+      await tester.ensureVisible(find.byKey(PetProfileScreen.rowKey(row)));
+      await tester.pumpAndSettle();
+    }
+    await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('name')));
+    expect(find.byKey(PetNameAndKindSheet.sheetKey), findsOneWidget);
+    Navigator.of(tester.element(find.byKey(PetNameAndKindSheet.sheetKey))).pop();
+    await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('age')));
     expect(find.text("Soya's age"), findsOneWidget);
-    // Close the two sheets (they fill a screen this small).
+    // Close the sheet (it fills a screen this small).
     Navigator.of(tester.element(find.text("Soya's age"))).pop();
     await tester.pumpAndSettle();
-    Navigator.of(tester.element(find.text("Soya's essentials"))).pop();
-    await tester.pumpAndSettle();
 
-    await tapVisible(tester, find.text('Delete Soya'));
+    await tester.tap(find.byKey(PetProfileScreen.moreKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(PetProfileScreen.deleteKey));
+    await tester.pumpAndSettle();
     expect(find.text('Remove Soya?'), findsOneWidget);
     await tapVisible(tester, find.text('Cancel'));
 
-    await tester.tap(find.text('My pets'));
+    // The checklist the Home reminder opens.
+    showPetChecklist(tester.element(find.byKey(PetProfileScreen.moreKey)), soya);
     await tester.pumpAndSettle();
-    expect(find.text('5 essentials to add'), findsOneWidget);
-    expect(find.text('Complete'), findsOneWidget);
+    expect(find.text("Soya's essentials"), findsOneWidget);
+    Navigator.of(tester.element(find.text("Soya's essentials"))).pop();
+    await tester.pumpAndSettle();
+
+    openMyPets(tester.element(find.byKey(PetProfileScreen.moreKey)));
+    await tester.pumpAndSettle();
+    expect(find.text('Add a pet'), findsOneWidget);
   });
 
   testWidgets('both reminder sizes fit a small phone', (tester) async {

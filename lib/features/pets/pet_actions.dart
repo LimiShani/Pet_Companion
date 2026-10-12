@@ -30,25 +30,16 @@ Future<Pet?> openAddPet(BuildContext context) {
   return pushPetsPage<Pet>(context, const AddPetScreen());
 }
 
-/// Opens the profile of the pet with [petId]: the edit page, with archive
-/// and delete at the end. Nothing opens for an unknown id.
-Future<void> openPetProfile(
-  BuildContext context,
-  String petId, {
-  bool fromMyPets = false,
-}) async {
+/// Opens the profile of the pet with [petId]: an overview whose rows open
+/// small editors, with archive and delete in its "More" menu. Nothing
+/// opens for an unknown id.
+Future<void> openPetProfile(BuildContext context, String petId) async {
   if (_petOf(context, petId, 'openPetProfile') == null) return;
   final router = GoRouter.maybeOf(context);
   if (router != null) {
-    await router.push<void>(
-      PetsRoutes.profile(petId),
-      extra: fromMyPets ? PetsRoutes.fromMyPets : null,
-    );
+    await router.push<void>(PetsRoutes.profile(petId));
   } else {
-    await pushPetsPage<void>(
-      context,
-      PetProfileScreen(petId: petId, fromMyPets: fromMyPets),
-    );
+    await pushPetsPage<void>(context, PetProfileScreen(petId: petId));
   }
 }
 

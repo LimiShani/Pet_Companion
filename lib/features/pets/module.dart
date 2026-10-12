@@ -49,12 +49,5 @@ final petsModule = FeatureModule(
       capability: 'pets.view',
       build: (c, r) => PetAttentionDot(petId: r.petId),
     ),
-    'pet-reminder': FeatureSlot(
-      capability: 'pets.view',
-      build: (c, r) => PetReminderCard(
-        petId: r.petId,
-        margin: const EdgeInsets.only(top: AppSpacing.cardGap),
-      ),
-    ),
   },
 );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/pets/profile/pet_profile_screen.dart';
 import 'package:pet_companion/features/pets/state/pet_completeness.dart' show kReminderSnooze;
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/state/pets_provider.dart';
@@ -214,15 +215,17 @@ void main() {
     });
 
     testWidgets('stays up to date while the tabs are covered by another page', (tester) async {
-      // A vet is added on Kelly's profile, which covers the tabs. Nothing on
-      // that page is about Soya, yet Soya's dot depends on the owner's vets
-      // too: when the tabs come back, a moment later, they must simply be
-      // there (paused providers catching up mid-build used to fail here).
+      // A vet is added from Kelly's profile (its vets page), which covers
+      // the tabs. Nothing there is about Soya, yet Soya's dot depends on the
+      // owner's vets too: when the tabs come back, a moment later, they must
+      // simply be there (paused providers catching up mid-build used to
+      // fail here).
       await pumpPetsApp(tester);
       openPetProfile(tester.element(find.text('Feeding')), kelly);
       await tester.pumpAndSettle();
 
-      await tapVisible(tester, find.text('Dr. Levi, Park Vet Clinic'));
+      await tapVisible(tester, find.byKey(PetProfileScreen.rowKey('vets')));
+      await tapVisible(tester, find.byKey(const ValueKey('change-vet-regular')));
       await tapVisible(tester, find.text('Add a new vet'));
       await typeInto(tester, find.byKey(const Key('vet-name')), 'Dr. Noa');
       await typeInto(tester, find.byKey(const Key('vet-phone')), '+972 3 555 0100');
@@ -230,6 +233,10 @@ void main() {
       expect(find.text('Dr. Noa'), findsOneWidget);
 
       await tester.pump(const Duration(seconds: 1));
+      // The vets page, then the profile.
+      await tester.tap(find.byTooltip('Back').last);
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Dr. Noa'), findsOneWidget);
       await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
 

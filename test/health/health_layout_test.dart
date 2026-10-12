@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/data/fake_health_repository.dart';
 import 'package:pet_companion/features/pets/pets.dart';
 import 'package:pet_companion/features/health/health_screen.dart';
-import 'package:pet_companion/features/health/sections/overview_section.dart';
-import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/models/pet.dart';
-import 'package:pet_companion/state/pets_provider.dart';
 
 import '../helpers.dart';
 import 'health_test_helpers.dart';
@@ -379,41 +375,19 @@ void main() {
   });
 
   testWidgets(
-    'the Overview keeps a slot for the Pets reminder at its top',
+    'the Overview has no Pets reminder: the one essentials nag is on Home',
     (tester) async {
-      // The slot holds the Pets feature's reminder card, which draws nothing
-      // for a pet whose essentials are all answered.
-      final slot = petReminderSlot(const Pet(id: 'kelly', name: 'Kelly'));
-      expect(slot, isNotNull);
-      await pumpHealthHost(tester, slot!);
+      await pumpApp(tester);
+      await signInAsDemo(tester);
+      // Soya misses her essentials: Home shows its one-line reminder.
+      await tester.tap(find.text('Soya'));
+      await tester.pumpAndSettle();
       expect(find.byType(PetReminderCard), findsOneWidget);
 
-      await pumpHealthHost(
-        tester,
-        Consumer(
-          builder: (context, ref, _) {
-            final pet = ref.watch(selectedPetProvider);
-            final data = ref.watch(petHealthDataProvider(pet.id)).value;
-            if (data == null) return const SizedBox.shrink();
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: OverviewSection(
-                pet: pet,
-                data: data,
-                reminder: const Text('Reminder card goes here'),
-              ),
-            );
-          },
-        ),
-      );
-
-      expect(find.byKey(const Key('overview-pet')), findsNothing);
-      final reminder = tester.getRect(find.text('Reminder card goes here'));
-      final comingUp = tester.getRect(
-        find.byKey(const Key('overview-coming-up')),
-      );
-      expect(reminder.top, 20);
-      expect(reminder.bottom, lessThan(comingUp.top));
+      await openHealthTab(tester);
+      expect(find.text('Overview'), findsWidgets);
+      expect(find.byType(PetReminderCard), findsNothing);
+      expect(find.textContaining('essentials still to add'), findsNothing);
     },
   );
 

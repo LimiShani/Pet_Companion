@@ -342,10 +342,20 @@ class AppL10nEn extends AppL10n {
   }
 
   @override
-  String get settingsWeekNote => 'Your week: which day comes first, and which days are weekdays. The dimmed days are the weekend. The Health schedule follows this choice: the order of the days, and what \"Weekdays\" and \"Weekends\" mean there.';
+  String get settingsWeekNote => 'Your week: the first day and the weekdays. The Health schedule follows this choice.';
 
   @override
   String get settingsSavedNote => 'These settings are saved on this phone.';
+
+  @override
+  String settingsLanguageFollowing(String language) {
+    return 'Follow the phone · $language';
+  }
+
+  @override
+  String settingsWeekSummary(String day, String weekdays) {
+    return 'Starts on $day · $weekdays';
+  }
 
   @override
   String get legalTerms => 'Terms of Use';
