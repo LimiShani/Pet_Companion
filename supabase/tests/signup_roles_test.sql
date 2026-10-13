@@ -12,8 +12,11 @@ do $$ declare new_user uuid; begin
   '77777777-7777-4777-8777-777777777771'::uuid,
   '77777777-7777-4777-8777-777777777772'::uuid
  ] loop
-  assert (select count(*) from public.access_group_members where user_id=new_user)=1,
-   'Signup creates exactly one group membership';
+  -- Standard owners, plus Beta testers while the beta is open (0029).
+  assert (select count(*) from public.access_group_members where user_id=new_user)=2,
+   'Signup joins exactly two groups during the beta';
+  assert exists(select 1 from public.access_group_members where user_id=new_user
+   and group_id='acc35500-0000-4000-8000-000000000002'), 'Signup joins Beta testers while the beta is open';
   assert exists(select 1 from public.access_group_members where user_id=new_user
    and group_id='acc35500-0000-4000-8000-000000000001'), 'Signup joins Standard owners';
   assert not exists(select 1 from public.access_admins where user_id=new_user),

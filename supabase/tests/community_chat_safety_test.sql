@@ -21,9 +21,11 @@ begin
 end $$;
 
 -- Bea writes; Carl answers her with a photo-only reply.
-select pg_temp.act_as('c2222222-2222-4222-8222-222222222222');
+-- A message from a minute ago: the app cannot backdate (0029), so the
+-- fixture writes it as the database owner.
 insert into public.chat_messages(id,channel_id,author_id,body,created_at) values
  ('d0000000-0000-4000-8000-000000000001','general','c2222222-2222-4222-8222-222222222222','Hello from Bea',now()-interval '1 minute');
+select pg_temp.act_as('c2222222-2222-4222-8222-222222222222');
 do $$ begin
  assert not public.can_use('community.moderate'), 'Members are not moderators by default';
  begin
