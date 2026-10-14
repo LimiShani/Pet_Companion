@@ -37,6 +37,9 @@ class YouScreen extends ConsumerWidget {
   static const signOutKey = Key('you-sign-out');
   static const deleteKey = Key('you-delete-account');
 
+  /// Where the Household module puts its row, under My pets.
+  static const householdSlot = 'you-household';
+
   /// The location of the Community tab's safety page (rules, blocked
   /// members); `CommunityRoutes.safety` is this.
   static const _communitySafety = '/community/safety';
@@ -76,8 +79,14 @@ class YouScreen extends ConsumerWidget {
                         title: l10n.menuMyPets,
                         subtitle: l10n.homePetCount(petCount),
                         subtitleMaxLines: 2,
-                        onTap: () => openFeature<Object>(context, 'my-pets', ''),
+                        onTap: () =>
+                            openFeature<Object>(context, 'my-pets', ''),
                       ),
+                    // Only when the module is in the build and allowed: an
+                    // empty slot would leave a line in the card.
+                    if (ref.watch(capabilityProvider('household.view')) &&
+                        canOpenFeature(context, 'household'))
+                      featureSlot(householdSlot, ''),
                     if (ref.watch(capabilityProvider('budget.view')))
                       MenuEntry(
                         key: budgetKey,

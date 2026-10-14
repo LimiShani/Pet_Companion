@@ -730,6 +730,7 @@ class CareLog {
     this.doneAt,
     this.note = '',
     this.loggedByName = '',
+    this.loggedBy,
     this.kind,
     this.amountGrams,
     this.calories,
@@ -769,6 +770,19 @@ class CareLog {
   final String loggedByName;
   final DateTime loggedAt;
 
+  /// The account that recorded it (`care_logs.logged_by`, 0030): the
+  /// server sets it, so it is `null` until the log is stored, on a backend
+  /// without households, and after that account was deleted.
+  final String? loggedBy;
+
+  /// The name of whoever recorded it when that was somebody other than
+  /// [me] (another member of the pet's household), else `null`.
+  String? loggedByOther(String? me) {
+    final name = loggedByName.trim();
+    if (name.isEmpty || loggedBy == null || loggedBy == me) return null;
+    return name;
+  }
+
   bool get isNew => id.isEmpty;
 
   CareLog copyWith({String? id}) => CareLog(
@@ -784,6 +798,7 @@ class CareLog {
     note: note,
     loggedByName: loggedByName,
     loggedAt: loggedAt,
+    loggedBy: loggedBy,
     kind: kind,
     amountGrams: amountGrams,
     calories: calories,

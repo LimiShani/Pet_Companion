@@ -65,6 +65,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
     'basket' => _l10n.featureBasket,
     'firstdays' => _l10n.featureFirstDays,
     'findvet' => _l10n.featureFindVet,
+    'household' => _l10n.featureHousehold,
     _ => id,
   };
   String _capabilityLabel(String id) {

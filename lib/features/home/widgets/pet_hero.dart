@@ -37,6 +37,10 @@ class PetHero extends ConsumerWidget {
   /// Where the pet's name starts, measured from the top of the hero.
   static const nameTop = 30.0;
 
+  /// Where the Household module puts the people who share the pet, on the
+  /// photo's bottom edge.
+  static const peopleSlot = 'pet-hero-people';
+
   /// Key of the "Add" pill of [item] (breed, age or weight).
   static Key addKey(PetInfoItem item) => Key('hero-add-${item.name}');
 
@@ -90,11 +94,21 @@ class PetHero extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _Photo(
-                pet: pet,
-                size: MediaQuery.sizeOf(context).width < 360
-                    ? compactPhotoSize
-                    : photoSize,
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  _Photo(
+                    pet: pet,
+                    size: MediaQuery.sizeOf(context).width < 360
+                        ? compactPhotoSize
+                        : photoSize,
+                  ),
+                  PositionedDirectional(
+                    bottom: -6,
+                    end: -10,
+                    child: featureSlot(peopleSlot, pet.id),
+                  ),
+                ],
               ),
               const SizedBox(width: 16),
               Expanded(

@@ -158,12 +158,15 @@ class _ArchivedRowState extends ConsumerState<_ArchivedRow> {
       subtitle: when == null
           ? kind
           : l10n.archivedRow(kind, AppFormat.of(context).date(when)),
-      trailing: PillButton(
-        l10n.restore,
-        key: Key('restore-${pet.id}'),
-        outlined: true,
-        onPressed: _busy ? null : _restore,
-      ),
+      // Only the owner archives and restores (0030); a carer sees the row.
+      trailing: !pet.ownedByMe
+          ? null
+          : PillButton(
+              l10n.restore,
+              key: Key('restore-${pet.id}'),
+              outlined: true,
+              onPressed: _busy ? null : _restore,
+            ),
     );
   }
 }

@@ -103,7 +103,7 @@ final installedFeaturesProvider = Provider<Set<String>>(
       const String.fromEnvironment(
             'PETLOOP_MODULES',
             defaultValue:
-                'pets,care,health,community,store,budget,basket,firstdays,findvet,access',
+                'pets,care,health,community,store,budget,basket,firstdays,findvet,household,access',
           )
           .split(',')
           .map((id) => id.trim())
