@@ -43,7 +43,8 @@ void main() {
       expect(find.text(l10n.roleOwner), findsOneWidget);
       expect(find.text(l10n.roleCarer), findsNWidgets(2));
       expect(find.text(l10n.you), findsOneWidget);
-      expect(find.text('${l10n.openInvitation} · KELY-7Q4M'), findsOneWidget);
+      expect(find.text(l10n.openInvitation), findsOneWidget);
+      expect(find.textContaining('KELY-7Q4M'), findsOneWidget);
       expect(find.text(l10n.invitedTag), findsOneWidget);
       expect(find.text('Kelly'), findsOneWidget);
       expect(find.text('Soya'), findsOneWidget);

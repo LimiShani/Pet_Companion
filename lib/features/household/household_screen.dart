@@ -216,9 +216,10 @@ class _HouseholdBody extends ConsumerWidget {
             key: HouseholdScreen.inviteRowKey(invitation.code),
             dashed: true,
             leading: const _InviteDisc(),
-            title:
-                '${l10n.openInvitation} · ${formatInviteCode(invitation.code)}',
+            title: l10n.openInvitation,
+            // The code reads left to right in a Hebrew line too.
             subtitle: [
+              isolate(formatInviteCode(invitation.code)),
               if (invitation.createdByName.trim().isNotEmpty)
                 l10n.invitedBy(invitation.createdByName.trim()),
               l10n.daysLeft(invitation.daysLeft(now)),
