@@ -14,6 +14,7 @@ final outdoorsModule = FeatureModule(
   tab: FeatureTab(
     capability: OutsideScreen.capability,
     glyph: PetLoopGlyph.walk,
+    area: AppArea.community,
     label: (c) => c.outdoorsL10n.sectionOutside,
     routes: [
       GoRoute(

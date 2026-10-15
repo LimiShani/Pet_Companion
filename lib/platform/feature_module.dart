@@ -5,7 +5,10 @@ import '../access/access_provider.dart';
 import 'feature_ui.dart';
 import '../composition/modules.g.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_area.dart';
 import '../widgets/petloop_icon.dart';
+
+export '../theme/app_area.dart' show AppArea;
 
 /// Feature implementations register contributions here. The app shell
 /// consumes this contract and never constructs an optional feature itself.
@@ -47,9 +50,13 @@ class FeatureTab {
     required this.glyph,
     required this.label,
     required this.routes,
+    required this.area,
   });
   final String capability;
   final PetLoopGlyph glyph;
+
+  /// The tab's colour in the bottom bar (see [AppArea]).
+  final AppArea area;
   final String Function(BuildContext context) label;
   final List<RouteBase> routes;
 }

@@ -1004,7 +1004,10 @@ class _RoutineCard extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          IconDisc(careKindIcon(item.kind)),
+          IconDisc(
+            careKindIcon(item.kind),
+            color: careKindArea(item.kind).disc,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

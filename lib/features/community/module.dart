@@ -18,6 +18,7 @@ final communityModule = FeatureModule(
     glyph: PetLoopGlyph.community,
     label: (c) => c.l10n.navCommunity,
     routes: communityRoutes,
+    area: AppArea.community,
   ),
   // The community's push choices, on the Settings page.
   slots: {

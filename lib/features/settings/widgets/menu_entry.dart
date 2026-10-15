@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../../../theme/app_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 
-/// A row that leads somewhere: an icon disc, a title with a quieter line
+/// A row that leads somewhere: an icon disc in its [area]'s colour, a title with a quieter line
 /// under it, and a chevron at the end. Used by the side menu and by the
 /// "Settings" row of the account sheet. The chevron mirrors by itself on a
 /// right-to-left screen.
@@ -17,10 +18,14 @@ class MenuEntry extends StatelessWidget {
     this.subtitle,
     this.subtitleMaxLines = 1,
     this.color = Colors.transparent,
+    this.area = AppArea.you,
   });
 
-  /// An [Icon] or a [PetLoopIcon]; drawn 22 px in ink on a yellow disc.
+  /// An [Icon] or a [PetLoopIcon]; drawn 22 px in ink on a disc of [area].
   final Widget icon;
+
+  /// The part of the app the row leads to: the account by default.
+  final AppArea area;
   final String title;
   final String? subtitle;
   final VoidCallback onTap;
@@ -50,8 +55,8 @@ class MenuEntry extends StatelessWidget {
                   Container(
                     width: 40,
                     height: 40,
-                    decoration: const BoxDecoration(
-                      color: AppColors.yellow,
+                    decoration: BoxDecoration(
+                      color: area.disc,
                       shape: BoxShape.circle,
                     ),
                     child: IconTheme.merge(

@@ -25,6 +25,30 @@ abstract final class AppColors {
   /// Health card.
   static const peach = Color(0xFFE8AC73);
 
+  /// The Care area's disc and tag (a light tint of [coral]).
+  static const coralTint = Color(0xFFFBD0C3);
+
+  /// The You (account) area's disc and tag: a warm neutral.
+  static const neutral = Color(0xFFEADFCB);
+
+  // The deep variant of each area colour: an unselected bottom-bar icon is
+  // stroked in it. Each passes 3:1 against white (WCAG for icons): care
+  // 3.95, health 4.41, community 4.24, store 4.09, you 4.16. Ink on every
+  // area fill passes 4.5:1. `test/widgets/area_colors_test.dart` checks it.
+  // Care's deep variant is [coralDeep].
+
+  /// Health's deep variant (from [peach]).
+  static const peachDeep = Color(0xFFA86A2E);
+
+  /// Community's and Outside's deep variant (from [sage]).
+  static const sageDeep = Color(0xFF6E8248);
+
+  /// Store's deep variant (from [yellow]).
+  static const yellowDeep = Color(0xFFA27613);
+
+  /// The You area's deep variant (from [neutral]).
+  static const neutralDeep = Color(0xFF8A7A63);
+
   /// Label / secondary text and line icons (brand brown).
   static const brown = Color(0xFF5B4636);
 

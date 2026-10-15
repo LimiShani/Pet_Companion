@@ -59,6 +59,26 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 * Empty states invite with one sentence and one action, never a zero or a
   dash ("Add Soya's food and meal times to count calories." + Set up).
 
+## Colour by area
+
+* Every part of the app has a colour from the brand palette (`AppArea` in
+  `lib/theme/app_area.dart`): **Care** coral tint `#FBD0C3`
+  (`AppColors.coralTint`), **Health** peach, **Community and Outside**
+  sage, **Store, Budget and the basket** yellow, **You** (the account)
+  neutral `#EADFCB` (`AppColors.neutral`).
+* The colour sits on **icon discs** (`AreaDisc`: an ink line icon in a
+  34 px circle; `MenuEntry(area:)` on the You and Settings pages; the
+  Health and Community discs), on **tags** (`AppTag.area`) and on the
+  **bottom-bar icons**: the selected tab's icon on a pill of its area's
+  fill, in ink, with an ink bold label; the others stroked in the area's
+  deep variant (`AppArea.deep`, 3:1 on white), labels brown.
+* Text is never coloured by area: ink or brown only. The coral header
+  stays coral everywhere; yellow still means "selected" for chips and
+  segmented controls; the three illustrated Home cards (Feeding sage,
+  Activity yellow, Health peach) keep their colours.
+* A new disc goes where a row already shows a round icon, not on every
+  row.
+
 ## Pages and forms
 
 * Overview pages with small editors: a page that shows a thing lists rows
@@ -85,7 +105,8 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 * Sizes only from `AppText`: appTitle 23, petName 24, heading 20,
   sectionTitle 18, rowTitle 16, bodyLarge 16, cardTitle 15, body 14,
   secondary 13, label 12, navLabel 11, metric 28/30, button(size).
-* One tag (`AppTag` with tones yellow / sage / peach / neutral / ink), one
+* One tag (`AppTag` with tones yellow / sage / peach / neutral / ink, or
+  an area's colour with `AppTag.area`), one
   segmented control, one menu chip (`CoralMenuChip` on coral).
 * Tap targets at least 44 px.
 

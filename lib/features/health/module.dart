@@ -23,6 +23,7 @@ final healthModule = FeatureModule(
     glyph: PetLoopGlyph.health,
     label: (c) => c.l10n.navHealth,
     routes: healthRoutes,
+    area: AppArea.health,
   ),
   home: [
     FeatureContribution(

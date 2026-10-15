@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../platform/feature_ui.dart';
+import '../../../theme/app_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
@@ -181,6 +182,9 @@ class _ComingUp extends StatelessWidget {
       if (e != null)
         _ComingUpRow(
           icon: careKindIcon(e.item.kind),
+          // Daily care in Care's tint; Health's own rows sit light on
+          // the peach card.
+          care: careKindArea(e.item.kind) == AppArea.care,
           title: e.item.title,
           detail: l10n.dayAndTime(
             format.common.commonToday,
@@ -280,6 +284,7 @@ class _ComingUpRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    this.care = false,
     this.trailing,
     this.onTap,
   });
@@ -287,6 +292,9 @@ class _ComingUpRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String detail;
+
+  /// A routine of daily care (a meal, a walk), not a health item.
+  final bool care;
   final Widget? trailing;
   final VoidCallback? onTap;
 
@@ -306,7 +314,12 @@ class _ComingUpRow extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: kHealthTapTarget),
         child: Row(
           children: [
-            IconDisc(icon, color: AppColors.white.withValues(alpha: 0.6)),
+            IconDisc(
+              icon,
+              color: care
+                  ? AppArea.care.disc
+                  : AppColors.white.withValues(alpha: 0.6),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

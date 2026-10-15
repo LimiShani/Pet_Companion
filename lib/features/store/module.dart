@@ -16,6 +16,7 @@ final storeModule = FeatureModule(
     glyph: PetLoopGlyph.shop,
     label: (c) => c.l10n.navStore,
     routes: storeRoutes,
+    area: AppArea.store,
   ),
   actions: {
     'store-category': FeatureAction.task(
