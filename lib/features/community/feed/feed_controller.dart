@@ -1,5 +1,6 @@
 import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/app_user.dart';
@@ -228,6 +229,7 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
         kind: kind,
         audience: audience,
       );
+      ref.read(usageProvider).count(UsageKind.postCreated);
       state = AsyncData([post, ..._posts]);
     });
   }
@@ -409,6 +411,7 @@ class CommentsController extends SessionSafeAsyncNotifier<List<Comment>> {
       final comment = await ref
           .read(feedRepositoryProvider)
           .addComment(author: author, postId: postId, text: text);
+      ref.read(usageProvider).count(UsageKind.commentCreated);
       state = AsyncData([...?state.value, comment]);
       ref.read(feedControllerProvider.notifier).commentAdded(postId);
     });

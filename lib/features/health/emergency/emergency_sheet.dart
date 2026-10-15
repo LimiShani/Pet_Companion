@@ -14,6 +14,7 @@ import '../../../services/pet_records/state/health_keeper.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../presentation/health_widgets.dart';
 import '../../../platform/feature_ui.dart';
+import '../../../platform/usage.dart';
 import '../../../services/findvet/data/vet_models.dart';
 import 'contact_actions.dart';
 import '../../../platform/contact_launcher.dart';
@@ -49,6 +50,10 @@ Future<void> showEmergencySheet(BuildContext context, String petId) {
     'showEmergencySheet: no pet with id "$petId" in petsProvider',
   );
   if (pet == null) return Future.value();
+  ProviderScope.containerOf(
+    context,
+    listen: false,
+  ).read(usageProvider).count(UsageKind.emergencyOpened);
   return showHealthSheet<void>(context, EmergencySheet(pet: pet));
 }
 

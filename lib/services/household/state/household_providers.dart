@@ -5,6 +5,7 @@ import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
 import '../../../models/pet.dart';
+import '../../../platform/usage.dart';
 import '../../../state/pets_provider.dart';
 import '../data/fake_household_repository.dart';
 import '../data/household_models.dart';
@@ -69,6 +70,7 @@ class HouseholdsController extends AsyncNotifier<List<Household>> {
       if (invite.createdBy == me && invite.daysLeft(now) >= 1) return invite;
     }
     final made = await _repo.createInvite(household.id);
+    ref.read(usageProvider).count(UsageKind.householdInviteSent);
     await _reload();
     return HouseholdInvite(
       code: made.code,

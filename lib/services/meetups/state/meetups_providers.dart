@@ -7,6 +7,7 @@ import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
 import '../../../l10n/settings_store.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 import '../../community/data/community_models.dart' show ReportReason;
 import '../../community/data/community_providers.dart'
     show communityMembersRepositoryProvider;
@@ -443,7 +444,11 @@ class MeetupsController extends Notifier<void> {
   }
 
   Future<String> save(MeetupDraft draft, {String? id}) =>
-      _change(MeetupCapabilities.post, () => _repository.save(draft, id: id));
+      _change(MeetupCapabilities.post, () async {
+        final saved = await _repository.save(draft, id: id);
+        if (id == null) ref.read(usageProvider).count(UsageKind.meetupPosted);
+        return saved;
+      });
 
   Future<void> close(String id) =>
       _change(MeetupCapabilities.view, () => _repository.close(id));
@@ -452,7 +457,11 @@ class MeetupsController extends Notifier<void> {
       _change(MeetupCapabilities.post, () => _repository.renew(id));
 
   Future<int> answer(String id) =>
-      _change(MeetupCapabilities.view, () => _repository.answer(id));
+      _change(MeetupCapabilities.view, () async {
+        final answered = await _repository.answer(id);
+        ref.read(usageProvider).count(UsageKind.meetupJoined);
+        return answered;
+      });
 
   Future<void> report(String id, ReportReason reason) =>
       _change(MeetupCapabilities.view, () => _repository.report(id, reason));

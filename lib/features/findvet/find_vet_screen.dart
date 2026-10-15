@@ -15,6 +15,7 @@ import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../presentation/launch_or_explain.dart';
 import '../../platform/feature_ui.dart';
+import '../../platform/usage.dart';
 import '../../services/pet_records/data/health_models.dart' show Vet, VetRole;
 import '../../presentation/health_widgets.dart'
     show kHealthTapTarget, showHealthSheet, SheetTitle, FinePrint;
@@ -58,6 +59,7 @@ class _FindVetScreenState extends ConsumerState<FindVetScreen> {
   @override
   void initState() {
     super.initState();
+    ref.read(usageProvider).count(UsageKind.findVetOpened);
     // Keeps the copy of our own directory on the phone fresh, for a search
     // with no connection. It holds facilities, never the owner's searches.
     final repository = ref.read(findVetRepositoryProvider);

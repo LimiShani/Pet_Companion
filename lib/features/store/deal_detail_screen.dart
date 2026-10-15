@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
+import '../../platform/usage.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/app_icon.dart';
@@ -36,6 +37,12 @@ class _DealDetailScreenState extends ConsumerState<DealDetailScreen> {
   // so it does not flash "This deal is gone" on its way out.
   Deal? _lastShown;
   bool _deleting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    ref.read(usageProvider).count(UsageKind.dealOpened);
+  }
 
   Future<void> _delete(Deal deal) async {
     final l10n = context.storeL10n;
