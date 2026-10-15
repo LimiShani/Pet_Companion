@@ -66,6 +66,28 @@ class FakeNotificationPlatform implements NotificationPlatform {
     waiting.forEach(handler);
   }
 
+  void Function(DoneAction action)? _onDone;
+  final _waitingDone = <DoneAction>[];
+
+  /// The owner presses "Done" on a reminder.
+  void pressDone(DoneAction action) {
+    final handler = _onDone;
+    if (handler == null) {
+      _waitingDone.add(action);
+    } else {
+      handler(action);
+    }
+  }
+
+  @override
+  set onDone(void Function(DoneAction action)? handler) {
+    _onDone = handler;
+    if (handler == null) return;
+    final waiting = [..._waitingDone];
+    _waitingDone.clear();
+    waiting.forEach(handler);
+  }
+
   @override
   Future<List<(int, ScheduledNotification?)>> pending() async => [
     for (final MapEntry(:key, :value) in scheduled.entries) (key, value),
@@ -125,7 +147,8 @@ List<Override> notificationOverrides(FakeNotificationPlatform platform) => [
 /// The whole app on its fakes with real reminders on [platform]: like
 /// `pumpApp` in `test/helpers.dart`, with Health's sample data answering at
 /// once around [now] (10 June 2025, the sample data's day, by default).
-/// Pass [health] to start from a repository of your own.
+/// Pass [health] to start from a repository of your own, and [doneQueue]
+/// for "Done" presses that wait from before the start.
 Future<void> pumpAppWithNotifications(
   WidgetTester tester,
   FakeNotificationPlatform platform, {
@@ -133,6 +156,7 @@ Future<void> pumpAppWithNotifications(
   SettingsStore? settings,
   DateTime? now,
   FakeHealthRepository? health,
+  DoneQueue? doneQueue,
 }) async {
   tester.view.physicalSize = const Size(390, 844) * 3;
   tester.view.devicePixelRatio = 3;
@@ -150,6 +174,7 @@ Future<void> pumpAppWithNotifications(
         ),
         careRepositoryProvider.overrideWithValue(FakeCareRepository(latency: Duration.zero)),
         ...notificationOverrides(platform),
+        if (doneQueue != null) notificationDoneQueueProvider.overrideWithValue(doneQueue),
       ],
       child: const PetLoopApp(),
     ),
