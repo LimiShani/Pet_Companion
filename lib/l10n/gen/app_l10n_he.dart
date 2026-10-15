@@ -290,7 +290,106 @@ class AppL10nHe extends AppL10n {
   String get youAdminTools => 'כלי ניהול';
 
   @override
-  String get youAdminToolsSummary => 'הרשאות לתכונות, בדיקת המאגר, הצעות לגינות';
+  String get youAdminToolsSummary => 'הרשאות לתכונות, בדיקת המאגר, הצעות לגינות, שימוש';
+
+  @override
+  String get adminUsage => 'שימוש';
+
+  @override
+  String get adminUsageSummary => 'אילו פעולות חוזרות';
+
+  @override
+  String get usageTitle => 'שימוש';
+
+  @override
+  String get usageDaysTitle => '28 הימים האחרונים';
+
+  @override
+  String get usageColumnDay => 'יום';
+
+  @override
+  String get usageColumnActive => 'פעילים';
+
+  @override
+  String get usageColumnTicks => 'סימונים ב״היום״';
+
+  @override
+  String get usageNote => 'פעילים: חשבונות שהשתמשו באפליקציה באותו יום. סימונים ב״היום״: כמה מהם סימנו שורה ברשימת היום.';
+
+  @override
+  String get usageKindsTitle => 'פעולות';
+
+  @override
+  String get usageColumnWeek => '7 ימים';
+
+  @override
+  String get usageColumnMonth => '28 ימים';
+
+  @override
+  String get usageEmptyTitle => 'עדיין אין נתוני שימוש';
+
+  @override
+  String get usageEmptyMessage => 'הטלפונים שולחים את הספירה פעם ביום, אז כל יום מופיע למחרת.';
+
+  @override
+  String get usageErrorTitle => 'לא הצלחנו לטעון את נתוני השימוש';
+
+  @override
+  String get usageErrorMessage => 'כדאי לבדוק את החיבור ולנסות שוב.';
+
+  @override
+  String get usageKindTodayTick => 'סימונים ברשימת היום';
+
+  @override
+  String get usageKindCareLogged => 'רישומי טיפול';
+
+  @override
+  String get usageKindDoseRecorded => 'מנות תרופה שנרשמו';
+
+  @override
+  String get usageKindRecordAdded => 'רשומות בריאות חדשות';
+
+  @override
+  String get usageKindQuickLog => 'רישום מהיר';
+
+  @override
+  String get usageKindMeetupJoined => 'הצטרפות למפגשים';
+
+  @override
+  String get usageKindMeetupPosted => 'מפגשים שפורסמו';
+
+  @override
+  String get usageKindPostCreated => 'פוסטים';
+
+  @override
+  String get usageKindCommentCreated => 'תגובות';
+
+  @override
+  String get usageKindChatMessageSent => 'הודעות צ׳אט';
+
+  @override
+  String get usageKindDealOpened => 'מבצעים שנפתחו';
+
+  @override
+  String get usageKindDealShared => 'מבצעים ששותפו';
+
+  @override
+  String get usageKindBasketBoughtAgain => 'קניתי שוב';
+
+  @override
+  String get usageKindExpenseAdded => 'הוצאות שנוספו';
+
+  @override
+  String get usageKindEmergencyOpened => 'פתיחות של חירום';
+
+  @override
+  String get usageKindFindVetOpened => 'פתיחות של חיפוש וטרינר';
+
+  @override
+  String get usageKindHouseholdInviteSent => 'הזמנות לבית';
+
+  @override
+  String get usageKindAppOpened => 'פתיחות של האפליקציה';
 
   @override
   String get aboutTitle => 'על PetLoop';

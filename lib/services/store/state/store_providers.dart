@@ -1,5 +1,6 @@
 import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
@@ -74,6 +75,7 @@ class DealsController extends SessionSafeAsyncNotifier<List<Deal>> {
       final deal = await ref
           .read(storeRepositoryProvider)
           .shareDeal(userId: user.id, userName: user.displayName, draft: draft);
+      ref.read(usageProvider).count(UsageKind.dealShared);
       if (ref.mounted) state = AsyncData([deal, ...?state.value]);
       return deal;
     });

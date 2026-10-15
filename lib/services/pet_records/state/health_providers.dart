@@ -2,6 +2,7 @@ import 'dart:async';
 
 import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
@@ -364,6 +365,9 @@ class RecordsController extends SessionSafeAsyncNotifier<List<HealthRecord>> {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'health.records.edit');
       final saved = await _repo.saveRecord(record);
+      if (record.id.isEmpty) {
+        ref.read(usageProvider).count(UsageKind.recordAdded);
+      }
       _put(saved);
       try {
         await _syncFollowUp(saved);
@@ -952,6 +956,13 @@ class CarePlanController extends SessionSafeAsyncNotifier<CarePlan> {
           minutes: status == CareLogStatus.done ? minutes : null,
         ),
       );
+      ref
+          .read(usageProvider)
+          .count(
+            saved.medicationId == null
+                ? UsageKind.careLogged
+                : UsageKind.doseRecorded,
+          );
       final plan = _plan;
       _set(
         plan.copyWith(
@@ -1036,6 +1047,9 @@ class ObservationsController
       final saved = await ref
           .read(observationsRepositoryProvider)
           .saveObservation(observation);
+      if (observation.id.isEmpty) {
+        ref.read(usageProvider).count(UsageKind.quickLog);
+      }
       if (ref.mounted) {
         state = AsyncData([
           for (final o in state.value ?? const <Observation>[])

@@ -5,6 +5,7 @@ import '../../../auth/app_user.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../notifications/push.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 
 import '../../../services/community/data/chat_repository.dart';
 import '../../../services/community/data/community_models.dart';
@@ -235,6 +236,7 @@ class ChatRoomController extends Notifier<ChatRoomState> {
         replyToId: pending.reply?.messageId,
       );
       if (!ticket.current) return null;
+      ref.read(usageProvider).count(UsageKind.chatMessageSent);
       final live = ref.read(chatMessagesProvider(channelId)).value ?? const [];
       state = state.copyWith(
         pending: [

@@ -632,8 +632,206 @@ abstract class AppL10n {
   /// No description provided for @youAdminToolsSummary.
   ///
   /// In en, this message translates to:
-  /// **'Feature access, directory review, park suggestions'**
+  /// **'Feature access, directory review, park suggestions, usage'**
   String get youAdminToolsSummary;
+
+  /// No description provided for @adminUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get adminUsage;
+
+  /// No description provided for @adminUsageSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Which actions people repeat'**
+  String get adminUsageSummary;
+
+  /// Admin tools > Usage: daily counts of the actions people repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get usageTitle;
+
+  /// No description provided for @usageDaysTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 28 days'**
+  String get usageDaysTitle;
+
+  /// No description provided for @usageColumnDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get usageColumnDay;
+
+  /// No description provided for @usageColumnActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get usageColumnActive;
+
+  /// No description provided for @usageColumnTicks.
+  ///
+  /// In en, this message translates to:
+  /// **'Today ticks'**
+  String get usageColumnTicks;
+
+  /// No description provided for @usageNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Active: accounts that used the app that day. Today ticks: the share of them that ticked a row of the Today list.'**
+  String get usageNote;
+
+  /// No description provided for @usageKindsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Actions'**
+  String get usageKindsTitle;
+
+  /// No description provided for @usageColumnWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'7 days'**
+  String get usageColumnWeek;
+
+  /// No description provided for @usageColumnMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'28 days'**
+  String get usageColumnMonth;
+
+  /// No description provided for @usageEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No usage yet'**
+  String get usageEmptyTitle;
+
+  /// No description provided for @usageEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Phones send their counts once a day, so each day shows up the day after.'**
+  String get usageEmptyMessage;
+
+  /// No description provided for @usageErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load usage'**
+  String get usageErrorTitle;
+
+  /// No description provided for @usageErrorMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Check the connection and try again.'**
+  String get usageErrorMessage;
+
+  /// No description provided for @usageKindTodayTick.
+  ///
+  /// In en, this message translates to:
+  /// **'Today rows ticked'**
+  String get usageKindTodayTick;
+
+  /// No description provided for @usageKindCareLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'Care logged'**
+  String get usageKindCareLogged;
+
+  /// No description provided for @usageKindDoseRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Doses recorded'**
+  String get usageKindDoseRecorded;
+
+  /// No description provided for @usageKindRecordAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Health records added'**
+  String get usageKindRecordAdded;
+
+  /// No description provided for @usageKindQuickLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick logs'**
+  String get usageKindQuickLog;
+
+  /// No description provided for @usageKindMeetupJoined.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetups joined'**
+  String get usageKindMeetupJoined;
+
+  /// No description provided for @usageKindMeetupPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Meetups posted'**
+  String get usageKindMeetupPosted;
+
+  /// No description provided for @usageKindPostCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get usageKindPostCreated;
+
+  /// No description provided for @usageKindCommentCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Comments'**
+  String get usageKindCommentCreated;
+
+  /// No description provided for @usageKindChatMessageSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat messages'**
+  String get usageKindChatMessageSent;
+
+  /// No description provided for @usageKindDealOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Deals opened'**
+  String get usageKindDealOpened;
+
+  /// No description provided for @usageKindDealShared.
+  ///
+  /// In en, this message translates to:
+  /// **'Deals shared'**
+  String get usageKindDealShared;
+
+  /// No description provided for @usageKindBasketBoughtAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Bought again'**
+  String get usageKindBasketBoughtAgain;
+
+  /// No description provided for @usageKindExpenseAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenses added'**
+  String get usageKindExpenseAdded;
+
+  /// No description provided for @usageKindEmergencyOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Emergency opened'**
+  String get usageKindEmergencyOpened;
+
+  /// No description provided for @usageKindFindVetOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a vet opened'**
+  String get usageKindFindVetOpened;
+
+  /// No description provided for @usageKindHouseholdInviteSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Household invites'**
+  String get usageKindHouseholdInviteSent;
+
+  /// No description provided for @usageKindAppOpened.
+  ///
+  /// In en, this message translates to:
+  /// **'App opened'**
+  String get usageKindAppOpened;
 
   /// No description provided for @aboutTitle.
   ///

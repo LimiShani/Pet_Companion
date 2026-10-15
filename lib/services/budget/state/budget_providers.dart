@@ -1,5 +1,6 @@
 import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
+import '../../../platform/usage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_riverpod/misc.dart' show ProviderListenable;
@@ -86,6 +87,9 @@ class ExpensesController extends SessionSafeAsyncNotifier<List<Expense>> {
       final saved = await ref
           .read(expensesRepositoryProvider)
           .saveExpense(expense);
+      if (expense.id.isEmpty) {
+        ref.read(usageProvider).count(UsageKind.expenseAdded);
+      }
       _replace(
         (current) => [
           for (final e in current)
@@ -356,6 +360,7 @@ class BasketController extends SessionSafeAsyncNotifier<List<BasketItem>> {
             recordExpense: canUse(ref, 'budget.edit'),
           );
       checkSession();
+      ref.read(usageProvider).count(UsageKind.basketBoughtAgain);
       _replace(
         (items) => [
           for (final i in items)
