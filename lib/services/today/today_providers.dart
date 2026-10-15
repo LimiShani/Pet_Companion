@@ -55,20 +55,21 @@ final todayProvider = Provider.autoDispose<AsyncValue<TodayDay>>((ref) {
       if (pet.id.isNotEmpty) pet,
   ];
 
+  // Everything is watched before any early return, so it all loads
+  // together rather than one source after the other.
   final plans = <String, CarePlan>{};
+  AsyncValue<CarePlan>? failed;
   var loading = false;
   for (final pet in pets) {
     final value = ref.watch(carePlanProvider(pet.id));
     if (value.hasError) {
-      return AsyncError(value.error!, value.stackTrace ?? StackTrace.current);
-    }
-    if (value.hasValue) {
+      failed ??= value;
+    } else if (value.hasValue) {
       plans[pet.id] = value.requireValue;
     } else {
       loading = true;
     }
   }
-  if (loading) return const AsyncLoading();
 
   final settings = <String, CareSettings>{};
   final carers = <String, List<HouseholdMember>>{};
@@ -91,6 +92,10 @@ final todayProvider = Provider.autoDispose<AsyncValue<TodayDay>>((ref) {
       ? ref.watch(runningLowProvider).value ?? const <BasketLine>[]
       : const <BasketLine>[];
 
+  if (failed != null) {
+    return AsyncError(failed.error!, failed.stackTrace ?? StackTrace.current);
+  }
+  if (loading) return const AsyncLoading();
   return AsyncData(
     TodayDay(
       now: now,

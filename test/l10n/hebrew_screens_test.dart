@@ -226,8 +226,10 @@ void main() {
       expect(find.text(isolate('25')), findsOneWidget);
       expect(find.text('דקות פעילות'), findsOneWidget);
       expect(find.text(_he.homeNextWalk('18:30')), findsOneWidget);
-      expect(find.text('האכלתי'), findsOneWidget);
-      expect(find.text('טיול'), findsOneWidget);
+      // No pills on the cards: the day's ticks are in the Today list.
+      expect(find.text('האכלתי'), findsNothing);
+      expect(find.text('טיול'), findsNothing);
+      expect(find.text(lookupTodayL10n(hebrewLocale).title), findsOneWidget);
       expect(find.text('בקרוב'), findsOneWidget);
       expect(find.text(lookupCareL10n(hebrewLocale).medicineItem('Joint tablets')), findsOneWidget);
       expect(find.text('12.06.25 · 18:20'), findsOneWidget);
@@ -276,10 +278,11 @@ void main() {
       await tester.tap(find.text('Soya'));
       await _settle(tester);
 
-      // One sentence and one "Set up" button per daily card, nothing "not set".
+      // One sentence per daily card and no button (the card opens its page),
+      // nothing "not set".
       expect(find.text('הוסיפו את המזון ואת שעות הארוחות של ${isolate('Soya')} כדי לספור קלוריות.'), findsOneWidget);
       expect(find.text('הוסיפו שעות טיול כדי לעקוב אחרי הפעילות.'), findsOneWidget);
-      expect(find.text('הגדרה'), findsNWidgets(2));
+      expect(find.text('הגדרה'), findsNothing);
       expect(find.text('עוד לא נקבע יעד'), findsNothing);
       expect(find.text('ההאכלה הבאה · עוד לא נקבעה'), findsNothing);
       expect(find.text('הטיול הבא · עוד לא נקבע'), findsNothing);
