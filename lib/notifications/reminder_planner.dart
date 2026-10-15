@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../services/pet_records/data/health_models.dart';
 import '../services/pet_records/data/reminder_scheduler.dart';
 import '../l10n/l10n.dart';
+import 'notification_done.dart';
 import 'notification_sink.dart';
 
 /// How many days of routines and medicine times are planned ahead. The app
@@ -32,6 +33,14 @@ NotificationKind? notificationKindOf(CareKind kind) => switch (kind) {
   _ => null,
 };
 
+/// What "Done" on a reminder of a care plan item of [kind] records.
+CareDoneKind careDoneKindOf(CareKind kind) => switch (kind) {
+  CareKind.feeding => CareDoneKind.meal,
+  CareKind.walk => CareDoneKind.walk,
+  CareKind.medication => CareDoneKind.dose,
+  _ => CareDoneKind.routine,
+};
+
 /// Turns a pet's [plan] into the notifications of the coming
 /// [routineDaysAhead] days, soonest first, with their texts in [l10n]'s
 /// language. [now] is the real clock: reminders ring in the real world.
@@ -39,7 +48,8 @@ NotificationKind? notificationKindOf(CareKind kind) => switch (kind) {
 /// - Meals, walks and medicine times ring at their time on every day they
 ///   occur, from today; an occurrence that already has an answer in the
 ///   log (done, skipped or "not sure") does not ring. Grooming and the
-///   other routines never ring.
+///   other routines never ring. Each carries its occurrence ([CareDone]),
+///   for the notification's "Done" button.
 /// - Every planned record (appointment or due date) rings the evening
 ///   before at 18:00 and 2 hours before.
 ///
@@ -106,6 +116,14 @@ List<PlannedNotification> planReminders(
           title: title,
           body: body,
           payload: target,
+          done: CareDone(
+            petId: petId,
+            itemId: item.id,
+            kind: careDoneKindOf(item.kind),
+            dueOn: planDay,
+            dueMinutes: minutesOf(item.time),
+            shiftDays: shift,
+          ),
         ),
       );
     }

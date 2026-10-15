@@ -98,12 +98,20 @@
   "@snooze": {
     "description": "Button on a reminder: show it again in 15 minutes."
   },
+  "done": "Done",
+  "@done": {
+    "description": "Button on a meal, walk or medicine reminder: records it as done (the dose as given now) without opening the app."
+  },
   "sectionTitle": "Notifications",
   "@sectionTitle": {
     "description": "Section of the Settings page."
   },
   "masterTitle": "Reminders on this phone",
   "masterNote": "PetLoop rings at the time of each reminder",
+  "masterDoneNote": "Meals, walks and medicines can be marked done right from the notification",
+  "@masterDoneNote": {
+    "description": "Under the master switch in Settings > Notifications: the reminder's Done button records it."
+  },
   "meals": "Meals",
   "@meals": {
     "description": "Switch in Settings, and the name of the phone's notification category."

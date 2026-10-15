@@ -14,8 +14,11 @@ until it is signed.
 - Permission texts in `ios/Runner/Info.plist`: photo library, camera, saving
   to photos (the share sheet's "Save Image" needs it), and the export
   compliance answer (no special encryption) so TestFlight does not ask.
-- Reminders: local notifications with the "In 15 min" action
-  (`ios/Runner/AppDelegate.swift`), at most 60 waiting on iOS (Apple's limit
+- Reminders: local notifications with the "In 15 min" action, and "Done"
+  on meal, walk and medicine reminders (category `petloop_care`, registered
+  in `FlutterNotificationPlatform.start`; both buttons run in the background
+  isolate, which `ios/Runner/AppDelegate.swift` gives the plugins), at most
+  60 waiting on iOS (Apple's limit
   is 64). iOS has no "Alarms & reminders" permission: reminders arrive on
   time once notifications are allowed.
 - Calls, SMS, WhatsApp and web links open with `launchUrl`, which needs no
@@ -38,7 +41,7 @@ until it is signed.
 5. **Test on the phone**, the same list as on Android: sign-up and email
    confirmation, add a pet with a photo (camera and library), feeding and
    walks, the walk clock, reminders (allow, a reminder on time, "In 15 min",
-   tapping opens the right page), emergency call / SMS / WhatsApp, PDF and
+   "Done" with the app open and closed, tapping opens the right page), emergency call / SMS / WhatsApp, PDF and
    lost-pet card sharing, the budget and basket, the first 30 days, Hebrew
    and English, and the back gesture (swipe from the edge).
 

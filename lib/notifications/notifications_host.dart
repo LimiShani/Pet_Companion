@@ -76,7 +76,8 @@ Future<void> openNotificationTarget(
 
 /// Sits above every page of the app (in `MaterialApp.router`'s builder)
 /// and does what needs the whole app: keeps every pet's reminders
-/// scheduled ([ReminderCoordinator]), opens the page of a tapped reminder,
+/// scheduled ([ReminderCoordinator]), records "Done" pressed on a reminder
+/// ([NotificationDoneRecorder]), opens the page of a tapped reminder,
 /// asks for permission the first time the account has something to remind
 /// about, and checks again what the phone allows when the app comes back.
 ///
@@ -100,6 +101,7 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
   NotificationPlatform? _platform;
   PushMessaging? _push;
   ReminderCoordinator? _coordinator;
+  NotificationDoneRecorder? _doneRecorder;
   GoRouter? _router;
   bool _asking = false;
   final _pushSubscriptions = <StreamSubscription<Object?>>[];
@@ -118,10 +120,14 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (platform != null) {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final done = _doneRecorder = NotificationDoneRecorder(container);
         _coordinator = ReminderCoordinator(
-          ProviderScope.containerOf(context, listen: false),
+          container,
+          beforeLoad: done.flush,
         )..start();
         platform.onTap = _tapped;
+        platform.onDone = done.handle;
       }
       if (push != null) _startPush(push);
       // A sheet or a page opened on top of the sign-in screen would go
@@ -156,6 +162,7 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
     if (_active) {
       WidgetsBinding.instance.removeObserver(this);
       _platform?.onTap = null;
+      _platform?.onDone = null;
       _router?.routerDelegate.removeListener(_onRoute);
       _coordinator?.dispose();
       for (final sub in _pushSubscriptions) {
@@ -169,6 +176,8 @@ class _NotificationsHostState extends ConsumerState<NotificationsHost>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
     ref.read(accessProvider.notifier).refresh();
+    // "Done" pressed while the app was away, before planning again.
+    _doneRecorder?.flush();
     _coordinator?.resumed();
     ref.read(notificationAccessProvider.notifier).refresh();
   }

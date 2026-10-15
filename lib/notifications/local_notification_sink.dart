@@ -13,26 +13,31 @@ const maxPerGroup = 48;
 const _margin = Duration(seconds: 10);
 
 /// The texts the sink adds to every notification: the phone's name of each
-/// kind's channel and the label of the snooze button.
+/// kind's channel, the label of the snooze button, and the label of the
+/// "Done" button (on the reminders that have one).
 @immutable
 class NotificationChrome {
   const NotificationChrome({
     this.channelNames = const {},
     this.snoozeLabel = '',
+    this.doneLabel = '',
   });
 
   final Map<NotificationKind, String> channelNames;
   final String snoozeLabel;
+  final String doneLabel;
 
   @override
   bool operator ==(Object other) =>
       other is NotificationChrome &&
       other.snoozeLabel == snoozeLabel &&
+      other.doneLabel == doneLabel &&
       mapEquals(other.channelNames, channelNames);
 
   @override
   int get hashCode => Object.hash(
     snoozeLabel,
+    doneLabel,
     Object.hashAllUnordered(channelNames.entries.map((e) => e.toString())),
   );
 }
@@ -82,6 +87,7 @@ List<PlannedNotification> applySettings(
         title: item.title,
         body: item.body,
         payload: item.payload,
+        done: item.done,
       ),
     );
   }
@@ -120,6 +126,8 @@ List<ScheduledNotification> notificationsToSchedule({
           exact: exact,
           channelName: chrome.channelNames[item.kind] ?? '',
           snoozeLabel: chrome.snoozeLabel,
+          done: item.done,
+          doneLabel: item.done == null ? '' : chrome.doneLabel,
         ),
       );
     }

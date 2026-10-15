@@ -55,6 +55,9 @@ class NotificationsL10nEn extends NotificationsL10n {
   String get snooze => 'In 15 min';
 
   @override
+  String get done => 'Done';
+
+  @override
   String get sectionTitle => 'Notifications';
 
   @override
@@ -62,6 +65,9 @@ class NotificationsL10nEn extends NotificationsL10n {
 
   @override
   String get masterNote => 'PetLoop rings at the time of each reminder';
+
+  @override
+  String get masterDoneNote => 'Meals, walks and medicines can be marked done right from the notification';
 
   @override
   String get meals => 'Meals';
