@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
 import 'package:pet_companion/features/home/widgets/home_header.dart';
 import 'package:pet_companion/theme/app_colors.dart';
@@ -95,12 +95,12 @@ void main() {
       expect(emergencyDot, findsNothing);
 
       // Soya has none: a dot on the pill. The pill adds no card of its own;
-      // the one-line essentials reminder under the hero (the Pets feature)
+      // the essentials row of the Today list (the Pets feature's reminder)
       // is what asks for the vet's phone.
       await tapAndSettle(tester, find.text('Soya'));
       expect(find.descendant(of: emergencyPill, matching: emergencyDot), findsOneWidget);
       expect(find.bySemanticsLabel(RegExp('^Emergency contacts for Soya. No phone number saved yet')), findsOneWidget);
-      expect(find.byType(PetReminderCard), findsOneWidget);
+      expect(find.byKey(TodayCard.rowKey('essentials:soya')), findsOneWidget);
       // The pill looks and works the same with the dot.
       expect(find.text('Emergency'), findsOneWidget);
       expect(emergencyPill.hitTestable(), findsOneWidget);

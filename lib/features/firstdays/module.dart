@@ -17,6 +17,13 @@ final firstDaysModule = FeatureModule(
       ),
     ),
   ],
+  actions: {
+    // Home's Today row of the next step.
+    'first-days': FeatureAction.task(
+      capability: 'firstdays.view',
+      open: (c, r) => openFirstDays(c, r.petId),
+    ),
+  },
   slots: {
     'arrival-question': FeatureSlot(
       capability: 'firstdays.edit',

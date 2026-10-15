@@ -20,7 +20,8 @@ import '../widgets/app_icon.dart';
 ///   with `filled: true`), at the end of the last line ([CardActionRow],
 ///   which drops it under the line when both do not fit);
 /// * a card with nothing to do has no pill, and the whole card is the
-///   button ([onTap]).
+///   button ([onTap]), with a chevron at the end. Home's cards are status
+///   only: the day's ticks are in the Today list above them.
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
     super.key,
@@ -51,6 +52,9 @@ class DashboardCard extends StatelessWidget {
 
   /// What tapping the card does, for screen readers ("Open feeding").
   final String? tapLabel;
+
+  /// The chevron of a card that opens a page.
+  static const chevronKey = Key('dashboard-card-chevron');
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +107,14 @@ class DashboardCard extends StatelessWidget {
             ],
           ),
         ),
+        if (onTap != null) ...[
+          const SizedBox(width: 4),
+          const AppIcon(
+            Icons.chevron_right_rounded,
+            key: DashboardCard.chevronKey,
+            color: AppColors.ink,
+          ),
+        ],
       ],
     );
   }

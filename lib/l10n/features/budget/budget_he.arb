@@ -106,8 +106,6 @@
   "addedToBudget": "\u2068{amount}\u2069 נוספו לתקציב",
   "spendingTitle": "ההוצאות החודש",
   "openBudget": "פתיחת התקציב",
-  "runningLowTitle": "מלאי נמוך",
-  "openBasket": "פתיחת הסל שלי",
   "errorOffline": "לא הצלחנו להתחבר לשרת. כדאי לבדוק את החיבור ולנסות שוב.",
   "errorSessionEnded": "פג תוקף החיבור. צריך להיכנס שוב.",
   "errorNotAllowed": "אין הרשאה לפעולה הזאת. צריך להיכנס שוב.",

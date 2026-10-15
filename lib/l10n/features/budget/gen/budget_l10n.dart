@@ -731,18 +731,6 @@ abstract class BudgetL10n {
   /// **'Open the budget'**
   String get openBudget;
 
-  /// No description provided for @runningLowTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Running low'**
-  String get runningLowTitle;
-
-  /// No description provided for @openBasket.
-  ///
-  /// In en, this message translates to:
-  /// **'Open my basket'**
-  String get openBasket;
-
   /// No description provided for @errorOffline.
   ///
   /// In en, this message translates to:

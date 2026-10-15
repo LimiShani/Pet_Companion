@@ -10,15 +10,12 @@ import '../../../theme/app_theme.dart';
 import '../care.dart';
 import '../../../presentation/dashboard_card.dart';
 
-/// Today's calories toward the goal, the next feeding, and a "Fed" button.
-/// A pet with nothing set up yet (no food, no meal times, nothing logged
-/// today) gets one invitation line and a "Set up" button instead. Tapping
-/// the card opens the feeding page.
+/// Today's calories toward the goal and the next feeding: status only (the
+/// meals are ticked in Home's Today list). A pet with nothing set up yet
+/// (no food, no meal times, nothing logged today) gets one invitation line
+/// instead. Tapping the card opens the feeding page.
 class FeedingCard extends ConsumerWidget {
   const FeedingCard({super.key, required this.pet});
-
-  static const fedKey = Key('home-fed');
-  static const setUpKey = Key('home-feeding-set-up');
 
   /// Nothing to count and nothing to log against: no food, no meal times
   /// and no meal logged today.
@@ -50,23 +47,9 @@ class FeedingCard extends ConsumerWidget {
       child: day == null
           ? HomeCardState(value: value, petId: pet.id)
           : setUp
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  care.feedingSetUpLine(pet.name),
-                  style: AppText.body.copyWith(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: 6),
-                CardActionRow.alone(
-                  action: CarePillButton(
-                    key: setUpKey,
-                    label: care.setUp,
-                    filled: true,
-                    onPressed: () => openFeeding(context, pet),
-                  ),
-                ),
-              ],
+          ? Text(
+              care.feedingSetUpLine(pet.name),
+              style: AppText.body.copyWith(fontWeight: FontWeight.w700),
             )
           : Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -112,15 +95,9 @@ class FeedingCard extends ConsumerWidget {
                     style: AppText.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                 const SizedBox(height: 6),
-                CardActionRow(
+                NextEventLine(
                   text: nextFeedingText(context, day.next),
-                  actionLabel: care.fed,
-                  action: CarePillButton(
-                    key: fedKey,
-                    label: care.fed,
-                    filled: true,
-                    onPressed: () => showLogMealSheet(context, pet),
-                  ),
+                  maxLines: 2,
                 ),
               ],
             ),

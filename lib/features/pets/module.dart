@@ -1,25 +1,17 @@
 import 'pets_routes.dart';
-import 'package:flutter/material.dart';
 import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
-import '../../theme/app_theme.dart';
 import 'pets.dart';
 
 final petsModule = FeatureModule(
   id: 'pets',
   routes: petsRoutes,
-  home: [
-    FeatureContribution(
-      id: 'pet-reminders',
-      capability: 'pets.view',
-      order: 0,
-      builder: (_, id) => PetReminderCard(
-        petId: id,
-        margin: const EdgeInsets.only(bottom: AppSpacing.cardGap),
-      ),
-    ),
-  ],
   actions: {
+    // The essentials checklist (Home's Today row of a pet's profile).
+    'pet-checklist': FeatureAction.task(
+      capability: 'pets.view',
+      open: (c, r) => showPetChecklist(c, r.petId),
+    ),
     'add-pet': FeatureAction(
       capability: 'pets.edit',
       open: (c, r) => openAddPet(c),

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/features/home/widgets/pet_hero.dart';
 import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import '../pets/pets_test_helpers.dart';
@@ -106,30 +107,25 @@ void main() {
       expect(find.descendant(of: find.byType(PetHero), matching: find.text(app.commonAdd)), findsNothing);
     });
 
-    testWidgets('profile reminder on Home: one "Add" pill; the row opens the checklist ($lang, 320 px)', (
+    testWidgets('profile reminder on Home: a Today row with a chevron that opens the checklist ($lang, 320 px)', (
       tester,
     ) async {
       await pumpPetsApp(tester, harness: harnessFor(language), size: small);
-      expect(find.byKey(PetReminderCard.addKey), findsNothing); // Kelly is complete
+      // Kelly is complete; the compact reminder card is gone from Home.
+      expect(find.byKey(TodayCard.rowKey('essentials:kelly')), findsNothing);
+      expect(find.byType(PetReminderCard), findsNothing);
 
-      await tester.tap(find.text('Soya'));
-      await tester.pumpAndSettle();
-      expect(find.text(pets.finishProfile('Soya')), findsOneWidget);
-      expect(find.text(pets.essentialsStillToAdd(5, 5)), findsOneWidget);
-      final add = find.byKey(PetReminderCard.addKey);
-      expect(find.descendant(of: add, matching: find.text(app.commonAdd)), findsOneWidget);
-      expect(find.bySemanticsLabel(pets.actionVetPhone), findsOneWidget);
-      // The pill ends the row: on the left in Hebrew.
-      final center = tester.getCenter(add).dx;
+      final row = find.byKey(TodayCard.rowKey('essentials:soya'));
+      expect(find.descendant(of: row, matching: find.text(pets.finishProfile('Soya'))), findsOneWidget);
+      expect(find.descendant(of: row, matching: find.text(pets.essentialsStillToAdd(5, 5))), findsOneWidget);
+      // The chevron ends the row: on the left in Hebrew.
+      final chevron = find.byKey(TodayCard.chevronKey('essentials:soya'));
+      expect(chevron, findsOneWidget);
+      final center = tester.getCenter(chevron).dx;
       expect(hebrew ? center < small.width / 2 : center > small.width / 2, isTrue);
 
-      // The pill opens the next missing item: the vet.
-      await tapInMiddle(tester, add);
-      expect(find.text(health.chooseRegularVet), findsOneWidget);
-      await closeOver(tester, find.text(health.chooseRegularVet));
-
       // The row opens the checklist, where "Remind me in a week" is.
-      await tapInMiddle(tester, find.text(pets.finishProfile('Soya')));
+      await tapInMiddle(tester, row);
       expect(find.text(pets.checklistTitle('Soya')), findsOneWidget);
       expect(find.text(pets.remindInAWeek), findsOneWidget);
     });

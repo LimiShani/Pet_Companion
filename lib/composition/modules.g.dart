@@ -12,6 +12,7 @@ import '../features/findvet/module.dart';
 import '../features/household/module.dart';
 import '../features/outdoors/module.dart';
 import '../features/meetups/module.dart';
+import '../features/today/module.dart';
 
 const builtInFeatureIds = <String>{
   'access',
@@ -27,6 +28,7 @@ const builtInFeatureIds = <String>{
   'outdoors',
   'pets',
   'store',
+  'today',
 };
 final builtInFeatureModules = <FeatureModule>[
   petsModule,
@@ -42,5 +44,6 @@ final builtInFeatureModules = <FeatureModule>[
   firstDaysModule,
   findVetModule,
   householdModule,
+  todayModule,
   const FeatureModule(id: 'access'),
 ];
