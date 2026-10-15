@@ -48,10 +48,10 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 ## Cards and actions
 
 * `DashboardCard` contract (Home): 64 px illustrated icon, a title that owns
-  its line (`CardTitleRow`), one metric block, at most ONE pill
-  (`CarePillButton(filled: true)`, outlined) at the end of the last line
-  (`CardActionRow`). A card with nothing to do has no pill; the card is the
-  button.
+  its line (`CardTitleRow`), one metric block, a trailing chevron; the card
+  is the button and opens its page. Since the Today list (October 2026) Home
+  cards carry no pill: daily actions are ticks on Today rows, not buttons on
+  cards.
 * A list row acts by a tick or a chevron, not a pill.
 * One filled button per screen: the one thing to do. A floating button
   means no other filled button on that screen.

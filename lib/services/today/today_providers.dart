@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../access/access_provider.dart';
 import '../../auth/auth_controller.dart';
+import '../../platform/usage.dart';
 import '../../state/pets_provider.dart';
 import '../budget/state/basket_logic.dart';
 import '../budget/state/budget_providers.dart';
@@ -139,7 +140,7 @@ class TodayController extends Notifier<void> {
     if (entry == null || item.isDone) return null;
     final plan = ref.read(carePlanProvider(item.petId).notifier);
     final now = ref.read(healthClockProvider)();
-    return switch (item.kind) {
+    final log = await switch (item.kind) {
       TodayKind.meal => plan.record(
         item: entry.item,
         dueOn: entry.due,
@@ -170,6 +171,8 @@ class TodayController extends Notifier<void> {
       ),
       _ => Future<CareLog?>.value(),
     };
+    if (log != null) ref.read(usageProvider).count(UsageKind.todayTick);
+    return log;
   }
 
   /// Takes back the answer of a done row (see [TodayItem.canUndo]).
