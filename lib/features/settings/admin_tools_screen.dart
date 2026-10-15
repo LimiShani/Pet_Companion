@@ -11,6 +11,7 @@ import '../../services/outdoors/state/parks_providers.dart'
     show ParkCapabilities;
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
+import 'usage_screen.dart';
 import 'widgets/menu_card.dart';
 import 'widgets/menu_entry.dart';
 
@@ -21,16 +22,21 @@ class AdminTools {
     required this.featureAccess,
     required this.directoryReview,
     required this.parkSuggestions,
+    this.usage = false,
   });
 
   /// Watches the capabilities behind each tool.
-  factory AdminTools.of(WidgetRef ref) => AdminTools(
-    featureAccess: ref.watch(capabilityProvider('access.admin')),
-    directoryReview:
-        ref.watch(capabilityProvider('findvet.admin')) &&
-        (ref.watch(vetIsAdminProvider).value ?? false),
-    parkSuggestions: ref.watch(capabilityProvider(ParkCapabilities.review)),
-  );
+  factory AdminTools.of(WidgetRef ref) {
+    final admin = ref.watch(capabilityProvider('access.admin'));
+    return AdminTools(
+      featureAccess: admin,
+      directoryReview:
+          ref.watch(capabilityProvider('findvet.admin')) &&
+          (ref.watch(vetIsAdminProvider).value ?? false),
+      parkSuggestions: ref.watch(capabilityProvider(ParkCapabilities.review)),
+      usage: admin,
+    );
+  }
 
   /// Feature access: who may use which feature.
   final bool featureAccess;
@@ -41,7 +47,11 @@ class AdminTools {
   /// Park suggestions waiting for a reviewer.
   final bool parkSuggestions;
 
-  bool get any => featureAccess || directoryReview || parkSuggestions;
+  /// Usage: the daily counts of the actions people repeat (the same
+  /// administrators as [featureAccess]).
+  final bool usage;
+
+  bool get any => featureAccess || directoryReview || parkSuggestions || usage;
 }
 
 /// The Admin tools page, from the You page: the admin entries that apply
@@ -53,6 +63,7 @@ class AdminToolsScreen extends ConsumerWidget {
   static const featureAccessKey = Key('admin-tools-feature-access');
   static const directoryReviewKey = Key('admin-tools-directory-review');
   static const parkSuggestionsKey = Key('admin-tools-park-suggestions');
+  static const usageKey = Key('admin-tools-usage');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -98,6 +109,14 @@ class AdminToolsScreen extends ConsumerWidget {
                         title: context.outdoorsL10n.reviewEntryEmpty,
                         onTap: () =>
                             openFeature<Object>(context, 'parks-review', ''),
+                      ),
+                    if (tools.usage)
+                      MenuEntry(
+                        key: usageKey,
+                        icon: const Icon(Icons.insights_outlined),
+                        title: context.l10n.adminUsage,
+                        subtitle: context.l10n.adminUsageSummary,
+                        onTap: () => openUsage(context),
                       ),
                   ],
                 ),

@@ -290,7 +290,106 @@ class AppL10nEn extends AppL10n {
   String get youAdminTools => 'Admin tools';
 
   @override
-  String get youAdminToolsSummary => 'Feature access, directory review, park suggestions';
+  String get youAdminToolsSummary => 'Feature access, directory review, park suggestions, usage';
+
+  @override
+  String get adminUsage => 'Usage';
+
+  @override
+  String get adminUsageSummary => 'Which actions people repeat';
+
+  @override
+  String get usageTitle => 'Usage';
+
+  @override
+  String get usageDaysTitle => 'Last 28 days';
+
+  @override
+  String get usageColumnDay => 'Day';
+
+  @override
+  String get usageColumnActive => 'Active';
+
+  @override
+  String get usageColumnTicks => 'Today ticks';
+
+  @override
+  String get usageNote => 'Active: accounts that used the app that day. Today ticks: the share of them that ticked a row of the Today list.';
+
+  @override
+  String get usageKindsTitle => 'Actions';
+
+  @override
+  String get usageColumnWeek => '7 days';
+
+  @override
+  String get usageColumnMonth => '28 days';
+
+  @override
+  String get usageEmptyTitle => 'No usage yet';
+
+  @override
+  String get usageEmptyMessage => 'Phones send their counts once a day, so each day shows up the day after.';
+
+  @override
+  String get usageErrorTitle => 'Could not load usage';
+
+  @override
+  String get usageErrorMessage => 'Check the connection and try again.';
+
+  @override
+  String get usageKindTodayTick => 'Today rows ticked';
+
+  @override
+  String get usageKindCareLogged => 'Care logged';
+
+  @override
+  String get usageKindDoseRecorded => 'Doses recorded';
+
+  @override
+  String get usageKindRecordAdded => 'Health records added';
+
+  @override
+  String get usageKindQuickLog => 'Quick logs';
+
+  @override
+  String get usageKindMeetupJoined => 'Meetups joined';
+
+  @override
+  String get usageKindMeetupPosted => 'Meetups posted';
+
+  @override
+  String get usageKindPostCreated => 'Posts';
+
+  @override
+  String get usageKindCommentCreated => 'Comments';
+
+  @override
+  String get usageKindChatMessageSent => 'Chat messages';
+
+  @override
+  String get usageKindDealOpened => 'Deals opened';
+
+  @override
+  String get usageKindDealShared => 'Deals shared';
+
+  @override
+  String get usageKindBasketBoughtAgain => 'Bought again';
+
+  @override
+  String get usageKindExpenseAdded => 'Expenses added';
+
+  @override
+  String get usageKindEmergencyOpened => 'Emergency opened';
+
+  @override
+  String get usageKindFindVetOpened => 'Find a vet opened';
+
+  @override
+  String get usageKindHouseholdInviteSent => 'Household invites';
+
+  @override
+  String get usageKindAppOpened => 'App opened';
 
   @override
   String get aboutTitle => 'About PetLoop';
