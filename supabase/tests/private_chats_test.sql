@@ -71,10 +71,14 @@ begin
  delete from public.chat_messages where channel_id=walks and system is not null;
  assert (select count(*) from public.chat_messages where channel_id=walks and system is not null)=2, 'System lines stay';
 end $$;
--- An earlier message (before anyone else was brought in) and one now.
+-- An earlier message (before anyone else was brought in) and one now. The
+-- app cannot backdate (0029), so the fixture writes the old one as the
+-- database owner.
+reset role;
 insert into public.chat_messages(id,channel_id,author_id,body,created_at)
 select 'f0000000-0000-4000-8000-000000000001', id, 'e1111111-1111-4111-8111-111111111111', 'Before the invitations', now() - interval '1 hour'
 from pg_temp.ids where name='walks';
+select pg_temp.act_as('e1111111-1111-4111-8111-111111111111');
 insert into public.chat_messages(id,channel_id,author_id,body)
 select 'f0000000-0000-4000-8000-000000000002', id, 'e1111111-1111-4111-8111-111111111111', 'Out at seven?'
 from pg_temp.ids where name='walks';
@@ -434,9 +438,10 @@ select public.mark_chat_read((select id from pg_temp.ids where name='pushy'));
 reset role;
 update public.chat_reads set last_read_at = now() where user_id='e2222222-2222-4222-8222-222222222222';
 update public.chat_messages set created_at = now() - interval '1 minute' where body in ('First','Second','Third');
-select pg_temp.act_as('e1111111-1111-4111-8111-111111111111');
+-- A message a second after the read marker, written as the database
+-- owner (the app cannot choose created_at since 0029).
+select set_config('request.jwt.claim.sub','e1111111-1111-4111-8111-111111111111',true);
 insert into public.chat_messages(channel_id,author_id,body,created_at) select id, 'e1111111-1111-4111-8111-111111111111', 'Fourth', now() + interval '1 second' from pg_temp.ids where name='pushy';
-reset role;
 do $$ begin
  assert (select count from public.push_outbox where preview='Fourth')=1, 'After reading, the count starts again';
 end $$;
