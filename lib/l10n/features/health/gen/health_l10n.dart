@@ -1715,12 +1715,6 @@ abstract class HealthL10n {
   /// **'{count, plural, =1{1 reminder needs review} other{{count} reminders need review}}'**
   String remindersNeedReview(int count);
 
-  /// No description provided for @addRecord.
-  ///
-  /// In en, this message translates to:
-  /// **'Add record'**
-  String get addRecord;
-
   /// No description provided for @medicines.
   ///
   /// In en, this message translates to:
@@ -1763,42 +1757,6 @@ abstract class HealthL10n {
   /// **'No need to enter {name}\'s whole history. Add things as they come up.'**
   String startNote(String name);
 
-  /// No description provided for @startDocument.
-  ///
-  /// In en, this message translates to:
-  /// **'Add a document you already have'**
-  String get startDocument;
-
-  /// No description provided for @startDocumentNote.
-  ///
-  /// In en, this message translates to:
-  /// **'A photo or PDF of the vaccination booklet or a vet letter'**
-  String get startDocumentNote;
-
-  /// No description provided for @startAppointment.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter an upcoming appointment'**
-  String get startAppointment;
-
-  /// No description provided for @startAppointmentNote.
-  ///
-  /// In en, this message translates to:
-  /// **'So it shows under Coming up'**
-  String get startAppointmentNote;
-
-  /// No description provided for @startMedicine.
-  ///
-  /// In en, this message translates to:
-  /// **'Create a medicine reminder'**
-  String get startMedicine;
-
-  /// No description provided for @startMedicineNote.
-  ///
-  /// In en, this message translates to:
-  /// **'With the vet\'s instructions and the times'**
-  String get startMedicineNote;
-
   /// No description provided for @addToSchedule.
   ///
   /// In en, this message translates to:
@@ -1814,7 +1772,7 @@ abstract class HealthL10n {
   /// No description provided for @addAppointmentNote.
   ///
   /// In en, this message translates to:
-  /// **'A vet visit, a vaccination, a treatment'**
+  /// **'A visit, a vaccine, a treatment'**
   String get addAppointmentNote;
 
   /// No description provided for @medicine.
@@ -1826,7 +1784,7 @@ abstract class HealthL10n {
   /// No description provided for @addMedicineNote.
   ///
   /// In en, this message translates to:
-  /// **'The vet\'s instructions and the reminder times'**
+  /// **'Doses and reminder times'**
   String get addMedicineNote;
 
   /// No description provided for @routine.
@@ -1838,7 +1796,7 @@ abstract class HealthL10n {
   /// No description provided for @addRoutineNote.
   ///
   /// In en, this message translates to:
-  /// **'Feeding, walks, grooming, cleaning'**
+  /// **'Meals, walks, grooming'**
   String get addRoutineNote;
 
   /// No description provided for @scheduleEmpty.
@@ -3550,6 +3508,36 @@ abstract class HealthL10n {
   /// In en, this message translates to:
   /// **'Fewer details'**
   String get formFewerDetails;
+
+  /// The Health tab's "+" button (for a screen reader) and the title of the sheet it opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Health'**
+  String get addToHealth;
+
+  /// Add sheet: the line under "Quick log".
+  ///
+  /// In en, this message translates to:
+  /// **'Something you noticed today'**
+  String get addQuickLogNote;
+
+  /// Add sheet row: a new medical record.
+  ///
+  /// In en, this message translates to:
+  /// **'Record'**
+  String get addSheetRecord;
+
+  /// Add sheet: the line under "Record".
+  ///
+  /// In en, this message translates to:
+  /// **'A visit, a vaccine or a document'**
+  String get addSheetRecordNote;
+
+  /// Add sheet row: a routine of daily care (meals, walks, grooming).
+  ///
+  /// In en, this message translates to:
+  /// **'Care routine'**
+  String get addSheetRoutine;
 }
 
 class _HealthL10nDelegate extends LocalizationsDelegate<HealthL10n> {

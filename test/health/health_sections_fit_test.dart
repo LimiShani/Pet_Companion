@@ -57,12 +57,11 @@ void main() {
       await pumpHealth(tester, harness: HealthHarness(language: language), size: const Size(320, 640));
       expect(tester.takeException(), isNull);
 
-      // The switcher and the Overview's two actions.
+      // The switcher; adding is the tab's "+".
       for (final label in [l10n.sectionOverview, l10n.sectionSchedule, l10n.recordsSection]) {
         expectWhole(tester, text(label).first, label);
       }
-      expectWhole(tester, text(l10n.quickLog), l10n.quickLog);
-      expectWhole(tester, text(l10n.addRecord), l10n.addRecord);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
 
       // The rows: their titles on one line.
       await tester.ensureVisible(find.byKey(const Key('overview-records')));
@@ -74,12 +73,11 @@ void main() {
         'the weight row',
       );
 
-      // Records: the count line with Share and "Add record".
+      // Records: the count line with Share.
       await openSection(tester, l10n.recordsSection);
       expect(tester.takeException(), isNull);
       expectWhole(tester, find.byKey(const Key('history-count')), 'the count');
       expectWhole(tester, text(app.commonShare), app.commonShare);
-      expectWhole(tester, text(l10n.addRecord), l10n.addRecord);
 
       // The weight, and the journal with its Category chip.
       await tapVisible(tester, find.byKey(const Key('filter-weight')));

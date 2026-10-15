@@ -55,9 +55,11 @@ void main() {
         expect(find.textContaining('12.06.25'), findsOneWidget);
         expect(find.text('תזכורת אחת ממתינה לעדכון'), findsOneWidget);
 
-        // The two actions; Share is on Records.
-        expect(find.text('רישום מהיר'), findsOneWidget);
-        expect(find.text('הוספת רשומה'), findsOneWidget);
+        // No add buttons on the page: the "+" (named in Hebrew); Share is
+        // on Records.
+        expect(find.byTooltip('הוספה לבריאות'), findsOneWidget);
+        expect(find.text('רישום מהיר'), findsNothing);
+        expect(find.text('הוספת רשומה'), findsNothing);
         expect(find.text('שיתוף'), findsNothing);
 
         // The vet: its hours as typed, Call and Message; the map is on the
@@ -124,12 +126,9 @@ void main() {
 
         expect(find.text(he.startWithOneThing), findsOneWidget);
         expect(find.text(he.startNote('Soya')), findsOneWidget);
-        expect(find.text(he.startDocument), findsOneWidget);
-        expect(find.text(he.startDocumentNote), findsOneWidget);
-        expect(find.text(he.startAppointment), findsOneWidget);
-        expect(find.text(he.startAppointmentNote), findsOneWidget);
-        expect(find.text(he.startMedicine), findsOneWidget);
-        expect(find.text(he.startMedicineNote), findsOneWidget);
+        // One action: the tab's Add sheet.
+        expect(find.byKey(const Key('getting-started-add')), findsOneWidget);
+        expect(find.text(he.addToHealth), findsOneWidget);
         expect(find.text('הוספת וטרינר עבור \u2068Soya\u2069'), findsOneWidget);
         expect(find.text(he.overviewProfileEmpty), findsOneWidget);
         expect(find.text(he.noWeightYet), findsOneWidget);
@@ -157,7 +156,7 @@ void main() {
   testWidgetsInBothLanguages('the tab follows the language of the app', (tester, language) async {
     final h = await pumpHealth(tester, harness: HealthHarness(language: language));
     expect(find.text(h.l10n.comingUp), findsOneWidget);
-    expect(find.text(h.l10n.quickLog), findsOneWidget);
+    expect(find.byTooltip(h.l10n.addToHealth), findsOneWidget);
     expect(directionOf(tester, find.text(h.l10n.comingUp)), h.isHebrew ? TextDirection.rtl : TextDirection.ltr);
   });
 

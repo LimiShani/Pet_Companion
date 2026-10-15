@@ -64,7 +64,7 @@ void main() {
 
     testWidgets('is entered in the record form, optional, and validated', (tester) async {
       final h = await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await openMoreDetails(tester);
       expect(find.text('Cost (optional)'), findsOneWidget);
 

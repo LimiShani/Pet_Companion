@@ -7,6 +7,7 @@ import '../../l10n/l10n.dart';
 import '../../widgets/petloop_icon.dart';
 import '../../services/store/data/deal.dart';
 import '../../services/store/state/store_providers.dart';
+import 'share_deal_screen.dart';
 import 'store_routes.dart';
 
 final storeModule = FeatureModule(
@@ -18,6 +19,20 @@ final storeModule = FeatureModule(
     routes: storeRoutes,
     area: AppArea.store,
   ),
+  // The Store tab's "+" (basket and budget add their rows after it).
+  add: {
+    AddTab.store: [
+      AddEntry(
+        id: 'share-deal',
+        capability: 'store.deals.share',
+        area: AppArea.store,
+        icon: Icons.local_offer_rounded,
+        label: (c) => c.storeL10n.shareADeal,
+        order: 0,
+        open: (c, r) => openShareDeal(c),
+      ),
+    ],
+  },
   actions: {
     'store-category': FeatureAction.task(
       capability: 'store.deals.view',

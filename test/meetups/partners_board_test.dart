@@ -8,6 +8,7 @@ import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/platform/feature_ui.dart';
 import 'package:pet_companion/services/community/data/audience.dart';
+import 'package:pet_companion/widgets/add_sheet.dart';
 import 'package:pet_companion/services/findvet/data/location_service.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
 
@@ -59,9 +60,9 @@ void main() {
     expect(find.descendant(of: row, matching: find.text(en.filters)), findsOneWidget);
     expect(find.descendant(of: row, matching: find.text(outdoorsEn.radiusKm(10))), findsOneWidget);
     expect(find.byKey(PartnersView.scopeKey(CommunityScope.dogs)), findsNothing);
-    // "New ad" is the floating button of the tab.
-    expect(tester.widget(find.byKey(PartnersView.newAdKey)), isA<FloatingActionButton>());
-    expect(find.text(en.newAd), findsOneWidget);
+    // A new ad is a row of the tab's "+" (its Add sheet).
+    expect(tester.widget(find.byKey(AddFab.fabKey)), isA<AddFab>());
+    expect(find.text(en.newAd), findsNothing);
     expect(listedIds(tester), ['demo-meetup-noa', 'demo-meetup-priya', 'demo-meetup-mine']);
     await openFilters(tester);
     expect(find.text(en.filterAnimal), findsOneWidget);

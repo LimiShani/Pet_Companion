@@ -54,11 +54,11 @@ void main() {
         'filter-journal',
       ]);
       expect(chip(tester, 'filter-all').selected, isTrue);
-      // The search, the count, Share and "Add record".
+      // The search, the count and Share; adding is the tab's "+".
       expect(find.byKey(const Key('history-search')), findsOneWidget);
       expect(find.text('12 records'), findsOneWidget);
       expect(find.byKey(const Key('records-share')), findsOneWidget);
-      expect(find.text('Add record'), findsOneWidget);
+      expect(find.text('Add record'), findsNothing);
       expect(find.byKey(const Key('journal-category')), findsNothing);
     });
 
@@ -125,14 +125,14 @@ void main() {
       expect(h.sharer.shared.single.name, 'kelly-health-summary.pdf');
     });
 
-    testWidgets('the Quick log button stays on Schedule and Records only', (tester) async {
+    testWidgets('the "+" is on every section', (tester) async {
       await pumpHealth(tester);
-      expect(find.byKey(const Key('quick-log-button')), findsNothing);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
       await openSection(tester, 'Schedule');
-      expect(find.byKey(const Key('quick-log-button')), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
       for (final key in ['filter-all', 'filter-weight', 'filter-journal']) {
         await openRecords(tester, chip: key);
-        expect(find.byKey(const Key('quick-log-button')), findsOneWidget, reason: key);
+        expect(find.byKey(const Key('add-fab')), findsOneWidget, reason: key);
       }
     });
 
@@ -152,7 +152,15 @@ void main() {
     testWidgets('no pet card, no Medicines card, no Weight card and no record tiles', (tester) async {
       await pumpHealth(tester);
 
-      for (final key in ['overview-pet', 'overview-medicines', 'overview-share', 'insights-weight']) {
+      // Adding is the tab's "+": no Quick log or "Add record" buttons here.
+      for (final key in [
+        'overview-pet',
+        'overview-medicines',
+        'overview-share',
+        'insights-weight',
+        'overview-quick-log',
+        'overview-add-record',
+      ]) {
         expect(find.byKey(Key(key)), findsNothing, reason: key);
       }
       expect(find.text('Medical records'), findsNothing);
@@ -161,7 +169,6 @@ void main() {
       // What is there, top to bottom.
       final order = [
         'overview-coming-up',
-        'overview-quick-log',
         'overview-vet',
         'overview-profile',
         'overview-weight',
@@ -172,11 +179,6 @@ void main() {
         final below = tester.getRect(find.byKey(Key(order[i])));
         expect(above.top, lessThan(below.top), reason: '${order[i - 1]} above ${order[i]}');
       }
-      // The two actions share one row.
-      expect(
-        tester.getCenter(find.byKey(const Key('overview-quick-log'))).dy,
-        tester.getCenter(find.byKey(const Key('overview-add-record'))).dy,
-      );
     });
 
     testWidgets('the Health profile row opens the health profile', (tester) async {

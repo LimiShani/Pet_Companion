@@ -127,7 +127,7 @@ void main() {
     testWidgets('a cat gets a Behaviour group with the four simple answers', (tester) async {
       final h = harnessFor(mitzi);
       await pumpHealth(tester, harness: h);
-      await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+      await openAddRow(tester, 'quick-log');
 
       expect(find.text('Quick log for Mitzi'), findsOneWidget);
       expect(find.byKey(const ValueKey('quick-group-body')), findsOneWidget);
@@ -159,7 +159,7 @@ void main() {
 
     testWidgets('"When left alone" is answered usual, different or not sure', (tester) async {
       await pumpHealth(tester);
-      await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+      await openAddRow(tester, 'quick-log');
 
       // Kelly is a dog: barking, not meowing; no litter box.
       expect(find.widgetWithText(ChoiceChip, 'Barking'), findsOneWidget);
@@ -229,7 +229,7 @@ void main() {
 
     testWidgets('a reptile keeps its single list of categories', (tester) async {
       await pumpHealth(tester, harness: harnessFor(gil));
-      await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+      await openAddRow(tester, 'quick-log');
 
       expect(find.byKey(const ValueKey('quick-shedding')), findsOneWidget);
       expect(find.byKey(const ValueKey('quick-group-behaviour')), findsNothing);
@@ -328,7 +328,7 @@ void main() {
     testWidgets('a dog keeps its own routine kinds', (tester) async {
       await pumpHealth(tester);
       await openSection(tester, 'Schedule');
-      await tapVisible(tester, find.byKey(const Key('schedule-add')));
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
       await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
 
       expect(find.byKey(const ValueKey('routine-kind-walk')), findsOneWidget);

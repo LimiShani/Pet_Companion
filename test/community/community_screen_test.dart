@@ -36,13 +36,14 @@ void main() {
 
       expect(headerTitle('Community'), findsOneWidget);
       expect(find.text(mayaPost), findsOneWidget);
-      expect(find.text('New post'), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
 
       await openSection(tester, 'Chat');
       expect(find.text('General'), findsOneWidget);
       expect(find.text('Health questions'), findsOneWidget);
       expect(find.text(mayaPost), findsNothing);
-      expect(find.text('New post'), findsNothing);
+      // The "+" is on every section.
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
 
       await openSection(tester, 'Guides');
       expect(find.text("Your puppy's first week at home"), findsOneWidget);
@@ -136,7 +137,9 @@ void main() {
     testWidgets('compose a post with a photo from the picker', (tester) async {
       final h = await pumpCommunity(tester);
 
-      await tester.tap(find.text('New post'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-post-moment')));
       await tester.pumpAndSettle();
       expect(headerTitle('New post'), findsOneWidget);
 
@@ -165,7 +168,9 @@ void main() {
     testWidgets('a post can go out without a pet tag or a photo', (tester) async {
       final h = await pumpCommunity(tester);
 
-      await tester.tap(find.text('New post'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-post-moment')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Good morning everyone.');
       await tapVisible(tester, find.widgetWithText(ChoiceChip, 'Kelly')); // untag
@@ -183,7 +188,9 @@ void main() {
     testWidgets('leaving a half-written post asks first', (tester) async {
       await pumpCommunity(tester);
 
-      await tester.tap(find.text('New post'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-post-moment')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), 'Half a thought');
       await tester.pumpAndSettle();

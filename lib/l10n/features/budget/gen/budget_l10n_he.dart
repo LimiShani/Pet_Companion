@@ -429,4 +429,7 @@ class BudgetL10nHe extends BudgetL10n {
 
   @override
   String get formFewerDetails => 'פחות פרטים';
+
+  @override
+  String get addSheetExpense => 'הוצאה';
 }

@@ -122,8 +122,7 @@ void main() {
       testWidgets('the Quick log for a dog: an answer, a weight and a change', (tester) async {
         final h = await openInsights(tester, size: size);
 
-        await tester.tap(find.byKey(const Key('quick-log-button')));
-        await tester.pumpAndSettle();
+        await openAddRow(tester, 'quick-log');
         expect(find.text(he.quickLogFor('Kelly')), findsOneWidget);
         expect(find.text(he.whatDidYouNotice), findsOneWidget);
         expect(inSheet(find.text('גוף')), findsOneWidget);
@@ -195,7 +194,7 @@ void main() {
             harness: HealthHarness(repository: fakeHealth(seeded: false), pets: [pet], language: AppLanguage.hebrew),
             size: size,
           );
-          await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+          await openAddRow(tester, 'quick-log');
           expect(find.text(he.quickLogFor(pet.name)), findsOneWidget);
           for (final chip in chips) {
             expect(inSheet(find.widgetWithText(ChoiceChip, chip)), findsOneWidget, reason: '${pet.name}: $chip');

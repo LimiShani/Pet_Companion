@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
+
+import '../../l10n/l10n.dart';
 import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
 import '../../services/meetups/state/meetups_providers.dart';
 import '../community/members/member_screen.dart' show memberPageMeetupsSlot;
 import '../outdoors/outdoors.dart'
-    show ParkCard, ParkPageSlots, outsideNewAdSlot, outsidePartnersSlot;
+    show ParkCard, ParkPageSlots, outsidePartnersSlot;
 import 'board/partners_view.dart';
 import 'meetup_actions.dart';
 import 'slots/meetup_slots.dart';
@@ -17,11 +20,6 @@ final meetupsModule = FeatureModule(
     outsidePartnersSlot: FeatureSlot(
       capability: MeetupCapabilities.view,
       build: (c, r) => const PartnersView(),
-    ),
-    // Outside's floating "+ New ad" while Partners shows.
-    outsideNewAdSlot: FeatureSlot(
-      capability: MeetupCapabilities.post,
-      build: (c, r) => const NewAdButton(),
     ),
     ParkPageSlots.meetups: FeatureSlot(
       capability: MeetupCapabilities.view,
@@ -41,6 +39,20 @@ final meetupsModule = FeatureModule(
       build: (c, r) =>
           MemberMeetupsSection(memberId: r.value<String>('memberId')!),
     ),
+  },
+  // A new ad from the Outside tab's "+".
+  add: {
+    AddTab.outside: [
+      AddEntry(
+        id: 'plan-walk',
+        capability: MeetupCapabilities.post,
+        area: AppArea.community,
+        icon: Icons.directions_walk_rounded,
+        label: (c) => c.meetupsL10n.addPlanWalk,
+        order: 0,
+        open: (c, r) => openMeetupForm(c),
+      ),
+    ],
   },
   actions: {
     // An ad's page: {'id': '...'} (a push's 'meetup:<id>').

@@ -89,7 +89,7 @@ void main() {
       expect(find.widgetWithText(ChoiceChip, 'מזון'), findsOneWidget);
       expect(_reads('23 מבצעים עבור כלבים'), findsOneWidget);
       expect(find.text('ההנחה הגדולה ביותר'), findsOneWidget);
-      expect(find.text('שיתוף מבצע'), findsOneWidget);
+      expect(find.byTooltip('הוספה לחנות'), findsOneWidget);
 
       // Nothing of the English screen is left.
       for (final english in ['Search deals', 'For dogs', 'Food', 'Biggest discount', 'Share a deal']) {
@@ -468,6 +468,8 @@ void main() {
 
   group('sharing a deal in Hebrew', () {
     Future<void> openForm(WidgetTester tester) async {
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('שיתוף מבצע'));
       await tester.pumpAndSettle();
       expect(find.byType(ShareDealScreen), findsOneWidget);
@@ -678,7 +680,7 @@ void main() {
 
       final words = lookupStoreL10n(language == AppLanguage.hebrew ? hebrewLocale : englishLocale);
       expect(_reads(_plain(words.dealsFor(23, PetSpecies.dog))), findsOneWidget);
-      expect(find.text(words.shareADeal), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
       expect(find.byType(DealCard), findsWidgets);
       expect(
         _screenDirection(tester, find.byKey(const Key('store-screen'))),
@@ -738,6 +740,9 @@ void main() {
       expect(find.text('סל'), findsOneWidget);
 
       // The whole form, with every problem showing: step 1, then step 2.
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
       await tester.tap(find.text('שיתוף מבצע'));
       await tester.pumpAndSettle();
       final next = find.widgetWithText(PrimaryButton, 'הבא');

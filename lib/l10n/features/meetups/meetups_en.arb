@@ -340,5 +340,7 @@
   "memberAds": "Walk and play ads",
   "@memberAds": {
     "description": "A member page's section of their open ads."
-  }
+  },
+  "addPlanWalk": "Plan a walk or play date",
+  "@addPlanWalk": {"description": "Add sheet row of the Outside tab: a new partners ad."}
 }

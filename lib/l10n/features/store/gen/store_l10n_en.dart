@@ -745,4 +745,7 @@ class StoreL10nEn extends StoreL10n {
 
   @override
   String get shareNext => 'Next';
+
+  @override
+  String get addToStore => 'Add to Store';
 }

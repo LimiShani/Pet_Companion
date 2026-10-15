@@ -2272,6 +2272,36 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Invitations to a chat'**
   String get pushChatInvites;
+
+  /// The Community tab's "+" button (for a screen reader) and the title of the sheet it opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Community'**
+  String get addToCommunity;
+
+  /// Add sheet row: a post of the kind Moment.
+  ///
+  /// In en, this message translates to:
+  /// **'Share a moment'**
+  String get addMoment;
+
+  /// Add sheet row: a post of the kind Question.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask a question'**
+  String get addQuestion;
+
+  /// Add sheet row: a post of the kind Recommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommend a place or product'**
+  String get addRecommendation;
+
+  /// Add sheet row: a post of the kind Lost & found.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost or found'**
+  String get addLostFound;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

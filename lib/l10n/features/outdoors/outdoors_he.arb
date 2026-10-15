@@ -121,5 +121,6 @@
   "reviewerTools": "לבודקי הגינות",
   "reopenPark": "פתוחה שוב",
   "removeConfirm": "להסיר את הגינה מהרשימה? היא תוסתר ולא תימחק.",
-  "aboutMapData": "גינות כלבים: נתוני מפה © OpenStreetMap contributors, לפי רישיון ODbL."
+  "aboutMapData": "גינות כלבים: נתוני מפה © OpenStreetMap contributors, לפי רישיון ODbL.",
+  "addToOutside": "הוספה ל״בחוץ״"
 }

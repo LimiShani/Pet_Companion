@@ -156,7 +156,9 @@ void main() {
         await closeSheet(tester);
         await goBack(tester);
 
-        await tester.tap(find.text('New post'));
+        await tester.tap(find.byKey(const Key('add-fab')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('add-post-moment')));
         await tester.pumpAndSettle();
         expect(headerTitle('New post'), findsOneWidget);
         await tester.enterText(find.byType(TextField), 'A post from a small phone.');

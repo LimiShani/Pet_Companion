@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../access/access_provider.dart';
 import '../../../l10n/l10n.dart';
 import '../../../presentation/health_widgets.dart' show kHealthTapTarget;
 import '../../../services/community/data/audience.dart';
@@ -13,6 +12,8 @@ import '../../../services/outdoors/state/parks_providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
+import '../../../platform/feature_ui.dart' show AddTab;
+import '../../../widgets/add_sheet.dart' show AddFab;
 import '../../../widgets/empty_state.dart';
 import '../../outdoors/outdoors.dart' show ParkRadiusChip;
 import '../meetup_actions.dart';
@@ -24,14 +25,14 @@ import 'partners_filters_sheet.dart';
 /// Outside > Partners: until Outside has an area (the profile's city by
 /// default), where to look; then one row ("Filters", the distance, "My
 /// ads") and the open ads around, the soonest first. The area is the chip
-/// in the tab's header and "+ New ad" its floating button ([NewAdButton]).
+/// in the tab's header; a new ad is "Plan a walk or play date" in the tab's
+/// Add sheet (its "+").
 class PartnersView extends ConsumerWidget {
   const PartnersView({super.key});
 
   static const listKey = Key('partners-list');
   static const controlRowKey = Key('partners-controls');
   static const radiusChipKey = Key('partners-radius-chip');
-  static const newAdKey = Key('partners-new-ad');
   static const myAdsKey = Key('partners-my-ads');
   static const sampleKey = Key('partners-sample-note');
   static const retryKey = Key('partners-retry');
@@ -55,7 +56,7 @@ class PartnersView extends ConsumerWidget {
     final area = state.area;
     final outsideArea = ref.watch(outsideAreaProvider.select((s) => s.area));
     final demo = ref.watch(meetupsRepositoryProvider).isDemo;
-    final canPost = ref.watch(capabilityProvider(MeetupCapabilities.post));
+    final plus = AddFab.available(ref, AddTab.outside);
     final listing = ref.watch(partnersListingProvider);
     final filters = ref.watch(meetupFiltersProvider);
     final scope = ref.watch(meetupAnimalProvider);
@@ -145,8 +146,8 @@ class PartnersView extends ConsumerWidget {
             AppSpacing.screen,
             12,
             AppSpacing.screen,
-            // Room for the floating "+ New ad" under the last ad.
-            (canPost ? 88 : 24) + MediaQuery.paddingOf(context).bottom,
+            // Room for the tab's floating "+" under the last ad.
+            (plus ? 88 : 24) + MediaQuery.paddingOf(context).bottom,
           ),
           children: children,
         ),
@@ -241,21 +242,6 @@ class _ControlRow extends ConsumerWidget {
       ],
     );
   }
-}
-
-/// "+ New ad": the Outside tab's floating button while Partners shows
-/// (the module fills Outside's 'outside-new-ad' slot with it).
-class NewAdButton extends StatelessWidget {
-  const NewAdButton({super.key});
-
-  @override
-  Widget build(BuildContext context) => FloatingActionButton.extended(
-    key: PartnersView.newAdKey,
-    heroTag: null,
-    onPressed: () => openMeetupForm(context),
-    icon: const AppIcon(Icons.add_rounded),
-    label: Text(context.meetupsL10n.newAd),
-  );
 }
 
 class _Empty extends ConsumerWidget {

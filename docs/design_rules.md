@@ -59,6 +59,29 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 * Empty states invite with one sentence and one action, never a zero or a
   dash ("Add Soya's food and meal times to count calories." + Set up).
 
+## One plus per tab
+
+* Health, Community, Outside and Store each have exactly ONE floating "+"
+  (`AddFab`: 56 px, round, coral dark, white plus; a screen reader hears
+  "Add to Health"), on every segment of the tab. Home has none.
+* It opens the tab's **Add sheet** (`AddSheet` in `lib/widgets/`): the
+  title ("Add to Health") and 3 to 6 rows, each an `AreaDisc`, a label and
+  at most one quieter line. A row opens an existing form, sheet or page.
+* Modules contribute the rows (`FeatureModule.add[AddTab.health]`, an
+  `AddEntry` with its capability, area, icon, label and `open`); the tab
+  never imports another feature. Rows the account lacks the capability
+  for are hidden; with no row, no "+".
+* Today: Health (Quick log, Record, Appointment or due date, Medicine,
+  Care routine), Community (Share a moment, Ask a question, Recommend a
+  place or product, Lost or found, New chat), Outside (Plan a walk or play
+  date, Suggest a park), Store (Share a deal, Regular product, Expense).
+* No other "add" button on a tab's pages: the "+" replaced Quick log /
+  Add record on the Overview, the Schedule's Add, the Records' Add record,
+  New post, New chat, New ad, Share a deal and the basket's add line. An
+  empty state still invites with one action (Health's opens the Add
+  sheet); a button that carries context stays (the park page's "Post a
+  meetup here", "Log weight", the Budget page's "Add expense").
+
 ## Colour by area
 
 * Every part of the app has a colour from the brand palette (`AppArea` in

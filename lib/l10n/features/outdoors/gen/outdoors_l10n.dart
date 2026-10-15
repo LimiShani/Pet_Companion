@@ -826,6 +826,12 @@ abstract class OutdoorsL10n {
   /// In en, this message translates to:
   /// **'Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).'**
   String get aboutMapData;
+
+  /// The Outside tab's "+" button (for a screen reader) and the title of the sheet it opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Outside'**
+  String get addToOutside;
 }
 
 class _OutdoorsL10nDelegate extends LocalizationsDelegate<OutdoorsL10n> {

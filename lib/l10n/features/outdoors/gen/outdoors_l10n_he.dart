@@ -406,4 +406,7 @@ class OutdoorsL10nHe extends OutdoorsL10n {
 
   @override
   String get aboutMapData => 'גינות כלבים: נתוני מפה © OpenStreetMap contributors, לפי רישיון ODbL.';
+
+  @override
+  String get addToOutside => 'הוספה ל״בחוץ״';
 }

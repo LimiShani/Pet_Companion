@@ -11,6 +11,9 @@ import 'emergency/emergency.dart';
 import 'emergency/vets_screen.dart';
 import 'records/pet_documents_screen.dart';
 import 'records/record_form_screen.dart';
+import 'insights/quick_log_sheet.dart';
+import 'schedule/medicine_form_screen.dart';
+import '../../presentation/schedule/routine_form_screen.dart';
 import 'widgets/upcoming_card.dart';
 import '../../state/pets_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +28,66 @@ final healthModule = FeatureModule(
     routes: healthRoutes,
     area: AppArea.health,
   ),
+  // The Health tab's "+": what can be added for the pet on show.
+  add: {
+    AddTab.health: [
+      AddEntry(
+        id: 'quick-log',
+        capability: 'health.records.edit',
+        area: AppArea.health,
+        icon: Icons.edit_note_rounded,
+        label: (c) => c.healthL10n.quickLog,
+        subtitle: (c) => c.healthL10n.addQuickLogNote,
+        order: 0,
+        open: (c, r) => showQuickLog(c, requestPet(c, r)),
+      ),
+      AddEntry(
+        id: 'record',
+        capability: 'health.records.edit',
+        area: AppArea.health,
+        icon: Icons.description_rounded,
+        label: (c) => c.healthL10n.addSheetRecord,
+        subtitle: (c) => c.healthL10n.addSheetRecordNote,
+        order: 10,
+        open: (c, r) => openRecordForm(c, requestPet(c, r)),
+      ),
+      AddEntry(
+        id: 'appointment',
+        capability: 'health.records.edit',
+        area: AppArea.health,
+        icon: Icons.event_rounded,
+        label: (c) => c.healthL10n.addAppointment,
+        subtitle: (c) => c.healthL10n.addAppointmentNote,
+        order: 20,
+        open: (c, r) => openRecordForm(
+          c,
+          requestPet(c, r),
+          kind: RecordKind.checkup,
+          planned: true,
+        ),
+      ),
+      AddEntry(
+        id: 'medicine',
+        capability: 'health.schedule.edit',
+        area: AppArea.health,
+        icon: Icons.medication_rounded,
+        label: (c) => c.healthL10n.medicine,
+        subtitle: (c) => c.healthL10n.addMedicineNote,
+        order: 30,
+        open: (c, r) => openMedicineForm(c, requestPet(c, r)),
+      ),
+      AddEntry(
+        id: 'routine',
+        capability: 'health.schedule.edit',
+        area: AppArea.care,
+        icon: Icons.restaurant_rounded,
+        label: (c) => c.healthL10n.addSheetRoutine,
+        subtitle: (c) => c.healthL10n.addRoutineNote,
+        order: 40,
+        open: (c, r) => openRoutineForm(c, requestPet(c, r)),
+      ),
+    ],
+  },
   home: [
     FeatureContribution(
       id: 'upcoming-health',

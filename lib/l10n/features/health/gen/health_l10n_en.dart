@@ -995,9 +995,6 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get addRecord => 'Add record';
-
-  @override
   String get medicines => 'Medicines';
 
   @override
@@ -1021,43 +1018,25 @@ class HealthL10nEn extends HealthL10n {
   }
 
   @override
-  String get startDocument => 'Add a document you already have';
-
-  @override
-  String get startDocumentNote => 'A photo or PDF of the vaccination booklet or a vet letter';
-
-  @override
-  String get startAppointment => 'Enter an upcoming appointment';
-
-  @override
-  String get startAppointmentNote => 'So it shows under Coming up';
-
-  @override
-  String get startMedicine => 'Create a medicine reminder';
-
-  @override
-  String get startMedicineNote => 'With the vet\'s instructions and the times';
-
-  @override
   String get addToSchedule => 'Add to the schedule';
 
   @override
   String get addAppointment => 'Appointment or due date';
 
   @override
-  String get addAppointmentNote => 'A vet visit, a vaccination, a treatment';
+  String get addAppointmentNote => 'A visit, a vaccine, a treatment';
 
   @override
   String get medicine => 'Medicine';
 
   @override
-  String get addMedicineNote => 'The vet\'s instructions and the reminder times';
+  String get addMedicineNote => 'Doses and reminder times';
 
   @override
   String get routine => 'Routine';
 
   @override
-  String get addRoutineNote => 'Feeding, walks, grooming, cleaning';
+  String get addRoutineNote => 'Meals, walks, grooming';
 
   @override
   String get scheduleEmpty => 'Nothing scheduled yet';
@@ -2041,4 +2020,19 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String get formFewerDetails => 'Fewer details';
+
+  @override
+  String get addToHealth => 'Add to Health';
+
+  @override
+  String get addQuickLogNote => 'Something you noticed today';
+
+  @override
+  String get addSheetRecord => 'Record';
+
+  @override
+  String get addSheetRecordNote => 'A visit, a vaccine or a document';
+
+  @override
+  String get addSheetRoutine => 'Care routine';
 }

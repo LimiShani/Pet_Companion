@@ -8,6 +8,7 @@ import 'package:pet_companion/features/meetups/meetups.dart' show PartnersView;
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/theme/app_fonts.dart';
+import 'package:pet_companion/widgets/add_sheet.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 
 import 'outdoors_test_helpers.dart';
@@ -115,14 +116,14 @@ void main() {
       }
       expect(find.descendant(of: row, matching: find.text(meetups.filters)), findsOneWidget);
       expect(find.descendant(of: row, matching: find.text(outdoors.radiusKm(10))), findsOneWidget);
-      expectWhole(tester, find.byKey(PartnersView.newAdKey), 'New ad');
+      expectOnScreen(tester, find.byKey(AddFab.fabKey), 'the "+"');
 
       // Parks: the filters scroll sideways in one row.
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expectWhole(tester, find.byKey(ParksView.radiusChipKey), 'the radius chip');
-      expect(find.byKey(PartnersView.newAdKey), findsNothing, reason: 'New ad floats over Partners only');
+      expect(find.byKey(AddFab.fabKey), findsOneWidget, reason: 'the "+" is on both sides');
 
       // Suggest a park: one row per detail, the switch whole.
       await scrollTo(tester, find.byKey(ParksView.suggestKey));

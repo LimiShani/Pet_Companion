@@ -1002,9 +1002,6 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get addRecord => 'הוספת רשומה';
-
-  @override
   String get medicines => 'תרופות';
 
   @override
@@ -1028,43 +1025,25 @@ class HealthL10nHe extends HealthL10n {
   }
 
   @override
-  String get startDocument => 'הוספת מסמך שכבר יש לך';
-
-  @override
-  String get startDocumentNote => 'תמונה או PDF של פנקס החיסונים או של מכתב מהווטרינר';
-
-  @override
-  String get startAppointment => 'הוספת תור קרוב';
-
-  @override
-  String get startAppointmentNote => 'כדי שיופיע תחת ״בקרוב״';
-
-  @override
-  String get startMedicine => 'יצירת תזכורת לתרופה';
-
-  @override
-  String get startMedicineNote => 'עם הוראות הווטרינר והשעות';
-
-  @override
   String get addToSchedule => 'הוספה ללוח הזמנים';
 
   @override
   String get addAppointment => 'תור או תאריך יעד';
 
   @override
-  String get addAppointmentNote => 'ביקור אצל וטרינר, חיסון, טיפול';
+  String get addAppointmentNote => 'ביקור, חיסון או טיפול';
 
   @override
   String get medicine => 'תרופה';
 
   @override
-  String get addMedicineNote => 'הוראות הווטרינר ושעות התזכורת';
+  String get addMedicineNote => 'מינון ושעות תזכורת';
 
   @override
   String get routine => 'שגרה';
 
   @override
-  String get addRoutineNote => 'האכלה, טיולים, טיפוח, ניקיון';
+  String get addRoutineNote => 'האכלה, טיולים, טיפוח';
 
   @override
   String get scheduleEmpty => 'עדיין אין שום דבר בלוח הזמנים';
@@ -2051,4 +2030,19 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String get formFewerDetails => 'פחות פרטים';
+
+  @override
+  String get addToHealth => 'הוספה לבריאות';
+
+  @override
+  String get addQuickLogNote => 'משהו ששמת לב אליו היום';
+
+  @override
+  String get addSheetRecord => 'רשומה';
+
+  @override
+  String get addSheetRecordNote => 'ביקור, חיסון או מסמך';
+
+  @override
+  String get addSheetRoutine => 'שגרת טיפול';
 }

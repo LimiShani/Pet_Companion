@@ -10,6 +10,8 @@ import '../../../services/outdoors/data/park_models.dart';
 import '../../../services/outdoors/state/parks_providers.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../platform/feature_ui.dart' show AddTab;
+import '../../../widgets/add_sheet.dart' show AddFab;
 import '../../../widgets/app_icon.dart';
 import '../outdoors_words.dart';
 import '../review/parks_review_screen.dart';
@@ -143,7 +145,9 @@ class ParksView extends ConsumerWidget {
         AppSpacing.screen,
         12,
         AppSpacing.screen,
-        24 + MediaQuery.paddingOf(context).bottom,
+        // Room for the tab's floating "+" under the last row.
+        (AddFab.available(ref, AddTab.outside) ? AppSpacing.fabClearance : 24) +
+            MediaQuery.paddingOf(context).bottom,
       ),
       children: children,
     );

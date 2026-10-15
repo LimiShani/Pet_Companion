@@ -34,6 +34,7 @@ class FeatureModule {
     this.slots = const {},
     this.routes = const [],
     this.tab,
+    this.add = const {},
   });
   final String id;
   final List<FeatureContribution> home;
@@ -41,6 +42,11 @@ class FeatureModule {
   final Map<String, FeatureAction> actions;
   final Map<String, FeatureSlot> slots;
   final FeatureTab? tab;
+
+  /// The rows this module puts in a tab's Add sheet (the tab's one "+"),
+  /// by tab ([AddTab]). A tab lists the rows of every installed module, so
+  /// it never imports the features behind them.
+  final Map<String, List<AddEntry>> add;
   final List<RouteBase> routes;
 }
 

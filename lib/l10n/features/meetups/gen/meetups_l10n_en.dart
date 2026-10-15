@@ -517,4 +517,7 @@ class MeetupsL10nEn extends MeetupsL10n {
 
   @override
   String get memberAds => 'Walk and play ads';
+
+  @override
+  String get addPlanWalk => 'Plan a walk or play date';
 }

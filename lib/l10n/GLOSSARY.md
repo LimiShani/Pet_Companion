@@ -84,6 +84,9 @@ Punctuation: Hebrew quotation marks ״...״, gershayim in abbreviations
 | Looks urgent? Contact the vet | נראה דחוף? כדאי לפנות לווטרינר |
 | Quick log | רישום מהיר |
 | Add record | הוספת רשומה |
+| Add to Health · Add to Community · Add to Outside · Add to Store (the "+" and its sheet) | הוספה לבריאות · הוספה לקהילה · הוספה ל״בחוץ״ · הוספה לחנות |
+| Care routine · Share a moment · Ask a question · Lost or found | שגרת טיפול · שיתוף רגע · שאלה לקהילה · אבדה או מציאה |
+| Plan a walk or play date · Expense | תיאום טיול או משחק · הוצאה |
 | Medical records (one: record) | תיק רפואי (אחת: רשומה) |
 | Vaccinations · Vet visits · Documents | חיסונים · ביקורי וטרינר · מסמכים |
 | Medicines · Routine · Reminder | תרופות · שגרה · תזכורת |

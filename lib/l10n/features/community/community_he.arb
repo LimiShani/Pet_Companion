@@ -386,5 +386,10 @@
   "chatGoneMessage": "אולי היא נמחקה, או שיצאת ממנה.",
   "inPrivateChat": "בשיחה פרטית",
   "pushPrivateMessages": "הודעות בשיחות הפרטיות שלי",
-  "pushChatInvites": "הזמנות לשיחה"
+  "pushChatInvites": "הזמנות לשיחה",
+  "addToCommunity": "הוספה לקהילה",
+  "addMoment": "שיתוף רגע",
+  "addQuestion": "שאלה לקהילה",
+  "addRecommendation": "המלצה על מקום או מוצר",
+  "addLostFound": "אבדה או מציאה"
 }

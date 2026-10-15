@@ -5,18 +5,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
+import '../../platform/feature_ui.dart' show AddTab;
 import '../../state/pets_provider.dart';
 import '../../theme/app_theme.dart';
-import '../../widgets/app_icon.dart';
+import '../../widgets/add_sheet.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
 import '../../widgets/pet_switcher.dart';
-import '../../services/pet_records/data/health_models.dart';
 import 'emergency/emergency_button.dart';
-import 'insights/quick_log_sheet.dart';
 import 'records/record_detail_screen.dart';
-import 'records/record_form_screen.dart';
-import 'schedule/medicine_form_screen.dart';
 import 'schedule/record_dose_sheet.dart';
 import 'sections/overview_section.dart';
 import 'sections/records_section.dart';
@@ -27,9 +24,9 @@ import '../../services/pet_records/state/health_providers.dart';
 import '../../presentation/health_widgets.dart';
 
 /// The Health tab: a personal health organiser for the selected pet, in
-/// three sections (Overview, Schedule, Records). The Emergency button and
-/// the pet switcher are on every one of them, and the Quick log too (on
-/// the Overview as its first action, elsewhere as the floating button).
+/// three sections (Overview, Schedule, Records). The Emergency button, the
+/// pet switcher and the tab's one "+" (its Add sheet: Quick log, a record,
+/// an appointment, a medicine, a routine) are on every one of them.
 class HealthScreen extends ConsumerWidget {
   const HealthScreen({super.key});
 
@@ -55,25 +52,16 @@ class HealthScreen extends ConsumerWidget {
     final section = visible.contains(requested) ? requested : visible.first;
     final data = ref.watch(petHealthDataProvider(pet.id));
     final value = data.value;
-    // On the Overview the Quick log is the first quick action instead.
-    final quickLogButton =
-        value != null &&
-        section != HealthSection.overview &&
-        ref.watch(capabilityProvider('health.records.edit'));
+    // Once the pet's health has loaded (the forms build on it).
+    final plus = value != null && AddFab.available(ref, AddTab.health);
     final l10n = context.healthL10n;
 
     return HealthKeeper(
       petId: pet.id,
       keep: HealthKeep.everything,
       child: Scaffold(
-        floatingActionButton: quickLogButton
-            ? FloatingActionButton.extended(
-                key: const Key('quick-log-button'),
-                heroTag: null,
-                onPressed: () => showQuickLog(context, pet),
-                icon: const AppIcon(Icons.add_rounded),
-                label: Text(l10n.quickLog),
-              )
+        floatingActionButton: plus
+            ? AddFab(tab: AddTab.health, title: l10n.addToHealth, petId: pet.id)
             : null,
         body: Column(
           children: [
@@ -114,12 +102,12 @@ class HealthScreen extends ConsumerWidget {
                     )
                   : SingleChildScrollView(
                       key: PageStorageKey('health-${pet.id}-${section.name}'),
-                      // Room for the Quick log button under the last item.
+                      // Room for the "+" under the last item.
                       padding: EdgeInsetsDirectional.fromSTEB(
                         AppSpacing.screen,
                         16,
                         AppSpacing.screen,
-                        quickLogButton
+                        plus
                             ? AppSpacing.fabClearance +
                                   MediaQuery.paddingOf(context).bottom
                             : 24,
@@ -145,25 +133,13 @@ class HealthScreen extends ConsumerWidget {
         pet: pet,
         data: data,
         actions: OverviewActions(
-          onQuickLog: ref.watch(capabilityProvider('health.records.edit'))
-              ? () => showQuickLog(context, pet)
-              : null,
-          onAddRecord: ref.watch(capabilityProvider('health.records.edit'))
-              ? () => openRecordForm(context, pet)
-              : null,
-          onAddDocument: ref.watch(capabilityProvider('health.records.edit'))
-              ? () => openRecordForm(context, pet, kind: RecordKind.document)
-              : null,
-          onAddAppointment: ref.watch(capabilityProvider('health.records.edit'))
-              ? () => openRecordForm(
+          onAdd: AddFab.available(ref, AddTab.health)
+              ? () => showAddSheet(
                   context,
-                  pet,
-                  kind: RecordKind.checkup,
-                  planned: true,
+                  tab: AddTab.health,
+                  title: context.healthL10n.addToHealth,
+                  petId: pet.id,
                 )
-              : null,
-          onAddMedicine: ref.watch(capabilityProvider('health.schedule.edit'))
-              ? () => openMedicineForm(context, pet)
               : null,
           onRecordDose: (entry) =>
               showRecordDoseSheet(context, pet, entry: entry),

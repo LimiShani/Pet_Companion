@@ -126,8 +126,7 @@ void main() {
     testWidgets('two taps save an observation for a dog', (tester) async {
       final h = await openInsights(tester);
 
-      await tester.tap(find.byKey(const Key('quick-log-button')));
-      await tester.pumpAndSettle();
+      await openAddRow(tester, 'quick-log');
       expect(find.text('Quick log for Kelly'), findsOneWidget);
       for (final key in ['weight', 'appetite', 'energy', 'mobility', 'digestion', 'skin_coat', 'dental', 'other']) {
         expect(find.byKey(ValueKey('quick-$key')), findsOneWidget);
@@ -188,7 +187,7 @@ void main() {
       );
       await pumpHealth(tester, harness: h);
 
-      await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+      await openAddRow(tester, 'quick-log');
       expect(find.text('Quick log for Rio'), findsOneWidget);
       for (final key in ['weight', 'diet', 'droppings', 'feathers', 'activity', 'vocalisation', 'environment']) {
         expect(find.byKey(ValueKey('quick-$key')), findsOneWidget);
@@ -216,7 +215,7 @@ void main() {
 
     testWidgets('a worry that looks urgent leads to the vet, not to a form', (tester) async {
       await pumpHealth(tester);
-      await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+      await openAddRow(tester, 'quick-log');
 
       await tapVisible(tester, find.byKey(const Key('quick-urgent')));
       expect(find.text('Quick log for Kelly'), findsNothing);
@@ -226,8 +225,7 @@ void main() {
 
     testWidgets('a failed save keeps the sheet open with the reason', (tester) async {
       final h = await openInsights(tester);
-      await tester.tap(find.byKey(const Key('quick-log-button')));
-      await tester.pumpAndSettle();
+      await openAddRow(tester, 'quick-log');
       await tapVisible(tester, find.byKey(const ValueKey('quick-energy')));
       await tapVisible(tester, find.byKey(const ValueKey('level-more')));
 

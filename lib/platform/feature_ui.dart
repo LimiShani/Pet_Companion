@@ -35,6 +35,62 @@ class FeatureSlot {
   final Widget Function(BuildContext context, FeatureRequest request) build;
 }
 
+/// The tabs with a "+" button, the keys of [FeatureModule.add]. Home has
+/// none.
+abstract final class AddTab {
+  static const health = 'health';
+  static const community = 'community';
+  static const outside = 'outside';
+  static const store = 'store';
+}
+
+/// One row of a tab's Add sheet: a disc in its [area]'s colour, a label
+/// and maybe one quieter line. Tapping it closes the sheet and calls
+/// [open] with the tab's pet. Rows the account lacks [capability] for are
+/// not shown; rows sort by [order].
+class AddEntry {
+  const AddEntry({
+    required this.id,
+    required this.capability,
+    required this.area,
+    required this.icon,
+    required this.label,
+    required this.open,
+    this.subtitle,
+    this.order = 0,
+  });
+
+  /// Names the row (its key is `add-<id>`).
+  final String id;
+  final String capability;
+  final AppArea area;
+  final IconData icon;
+  final String Function(BuildContext context) label;
+  final String Function(BuildContext context)? subtitle;
+  final int order;
+  final Future<void> Function(BuildContext context, FeatureRequest request)
+  open;
+}
+
+/// The rows of [tab]'s Add sheet the account may use, in order. Watches
+/// the modules and the capabilities, so a widget rebuilds when they
+/// change.
+List<AddEntry> addEntriesFor(WidgetRef ref, String tab) => [
+  for (final module in ref.watch(featureModulesProvider))
+    for (final entry in module.add[tab] ?? const <AddEntry>[])
+      if (ref.watch(capabilityProvider(entry.capability))) entry,
+]..sort((a, b) => a.order.compareTo(b.order));
+
+/// [addEntriesFor] read once, outside a build (opening the sheet).
+List<AddEntry> readAddEntries(BuildContext context, String tab) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  return [
+    for (final module in container.read(featureModulesProvider))
+      for (final entry in module.add[tab] ?? const <AddEntry>[])
+        if (container.read(capabilityProvider(entry.capability))) entry,
+  ]..sort((a, b) => a.order.compareTo(b.order));
+}
+
 /// Whether an installed module the account may use answers [name].
 bool canOpenFeature(BuildContext context, String name) {
   final container = ProviderScope.containerOf(context, listen: false);
@@ -88,9 +144,12 @@ class _FeatureSlot extends ConsumerWidget {
   }
 }
 
-Pet requestPet(BuildContext context, FeatureRequest request) =>
-    ProviderScope.containerOf(
-      context,
-      listen: false,
-    ).read(petsStoreProvider).byId(request.petId) ??
-    Pet.none;
+/// The pet [request] is for: one of the pets the tabs show, else any pet
+/// the store holds (an archived one), else [Pet.none].
+Pet requestPet(BuildContext context, FeatureRequest request) {
+  final container = ProviderScope.containerOf(context, listen: false);
+  for (final pet in container.read(petsProvider)) {
+    if (pet.id == request.petId) return pet;
+  }
+  return container.read(petsStoreProvider).byId(request.petId) ?? Pet.none;
+}

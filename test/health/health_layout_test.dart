@@ -165,7 +165,7 @@ void main() {
           textDirection: direction,
         );
 
-        await tapVisible(tester, find.byKey(const Key('overview-quick-log')));
+        await openAddRow(tester, 'quick-log');
         expect(
           find.byKey(const ValueKey('quick-group-behaviour')),
           findsOneWidget,
@@ -177,7 +177,7 @@ void main() {
         await tester.pump(const Duration(seconds: 5));
         await tester.pumpAndSettle();
 
-        await tapVisible(tester, find.byKey(const Key('overview-add-record')));
+        await openAddRow(tester, 'record');
         await tester.enterText(
           find.byKey(const Key('record-title')),
           'Yearly check and vaccinations at the clinic',
@@ -240,8 +240,9 @@ void main() {
             findsOneWidget,
           );
 
-          await tapVisible(tester, find.byKey(const Key('schedule-add')));
-          expect(find.text('Add to the schedule'), findsOneWidget);
+          await tapVisible(tester, find.byKey(const Key('add-fab')));
+          expect(find.text('Add to Health'), findsOneWidget);
+          expect(tester.takeException(), isNull);
           await closeSheet(tester);
 
           await tapVisible(
@@ -309,8 +310,7 @@ void main() {
         await openRecords(tester, chip: 'filter-weight');
         expect(find.byKey(const Key('weight-summary')), findsOneWidget);
 
-        await tester.tap(find.byKey(const Key('quick-log-button')));
-        await tester.pumpAndSettle();
+        await openAddRow(tester, 'quick-log');
         await tapVisible(tester, find.byKey(const ValueKey('quick-skin_coat')));
         expect(find.byKey(const ValueKey('level-different')), findsOneWidget);
         await tapVisible(tester, find.byKey(const ValueKey('quick-weight')));

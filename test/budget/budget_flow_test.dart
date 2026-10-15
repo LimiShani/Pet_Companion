@@ -291,7 +291,9 @@ void main() {
       await pumpBudgetApp(tester);
       await openBasket(tester);
 
-      expect(plain('Share a deal'), findsNothing);
+      // The tab's "+" stays on the basket; its own add line does not.
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
+      expect(find.byKey(BasketView.addLineKey), findsNothing);
       expect(plain('Adult dry food · Kelly'), findsOneWidget);
       expect(plain('Dental chews · Kelly'), findsOneWidget);
       expect(plain('Poop bags · Soya'), findsOneWidget);
@@ -303,7 +305,7 @@ void main() {
       await tester.tap(plain('Deals'));
       await settle(tester);
       expect(find.byKey(BasketView.viewKey), findsNothing);
-      expect(plain('Share a deal'), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
     });
 
     testWidgets('"Bought again" updates the product and the expense appears in the budget', (tester) async {
@@ -330,7 +332,9 @@ void main() {
       await pumpBudgetApp(tester);
       await openBasket(tester);
 
-      await tapVisible(tester, plain('Regular product'));
+      // The Store's "+", then "Regular product" in its Add sheet.
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
+      await tapVisible(tester, find.byKey(const ValueKey('add-regular-product')));
       expect(plain('New regular product'), findsOneWidget);
       await tester.enterText(find.byKey(BasketItemFormScreen.nameKey), 'Pee pads');
       await tapVisible(tester, plain('Consumable'));
@@ -367,7 +371,9 @@ void main() {
       await pumpBudgetApp(tester);
       await openBasket(tester);
 
-      await tapVisible(tester, plain('Regular product'));
+      // The Store's "+", then "Regular product" in its Add sheet.
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
+      await tapVisible(tester, find.byKey(const ValueKey('add-regular-product')));
       expect(find.byKey(BasketItemFormScreen.nameKey), findsOneWidget);
       expect(plain('For'), findsOneWidget);
       expect(plain('Consumable'), findsOneWidget);
@@ -470,8 +476,13 @@ void main() {
 
       await openBasket(tester, store: 'חנות', basket: 'סל');
       expect(plain('קניתי שוב'), findsWidgets);
-      await scrollTo(tester, plain('מוצר קבוע'));
+      // A new product is a row of the Store's "+".
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
+      expect(plain('הוספה לחנות'), findsOneWidget);
       expect(plain('מוצר קבוע'), findsOneWidget);
+      expect(plain('הוצאה'), findsOneWidget);
+      Navigator.of(tester.element(plain('מוצר קבוע'))).pop();
+      await settle(tester);
     });
 
     testWidgets('the expense and product forms fit at 320 px with More details open', (tester) async {
@@ -502,6 +513,7 @@ void main() {
       await settle(tester);
 
       await openBasket(tester, store: 'חנות', basket: 'סל');
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
       await tapVisible(tester, plain('מוצר קבוע'));
       expect(plain('מוצר קבוע חדש'), findsOneWidget);
       await openMoreDetails(tester);

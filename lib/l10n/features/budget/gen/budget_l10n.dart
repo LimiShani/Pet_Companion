@@ -808,6 +808,12 @@ abstract class BudgetL10n {
   /// In en, this message translates to:
   /// **'Fewer details'**
   String get formFewerDetails;
+
+  /// Add sheet row of the Store tab: a new expense in the budget.
+  ///
+  /// In en, this message translates to:
+  /// **'Expense'**
+  String get addSheetExpense;
 }
 
 class _BudgetL10nDelegate extends LocalizationsDelegate<BudgetL10n> {

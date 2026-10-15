@@ -487,5 +487,15 @@
   "inPrivateChat": "In a private chat",
   "@inPrivateChat": {"description": "Where a reported chat message was written, when it was a private chat."},
   "pushPrivateMessages": "Messages in my private chats",
-  "pushChatInvites": "Invitations to a chat"
+  "pushChatInvites": "Invitations to a chat",
+  "addToCommunity": "Add to Community",
+  "@addToCommunity": {"description": "The Community tab's \"+\" button (for a screen reader) and the title of the sheet it opens."},
+  "addMoment": "Share a moment",
+  "@addMoment": {"description": "Add sheet row: a post of the kind Moment."},
+  "addQuestion": "Ask a question",
+  "@addQuestion": {"description": "Add sheet row: a post of the kind Question."},
+  "addRecommendation": "Recommend a place or product",
+  "@addRecommendation": {"description": "Add sheet row: a post of the kind Recommendation."},
+  "addLostFound": "Lost or found",
+  "@addLostFound": {"description": "Add sheet row: a post of the kind Lost & found."}
 }

@@ -19,6 +19,7 @@ import '../../services/store/data/deal.dart';
 import '../../services/store/data/link_opener.dart';
 import '../../services/store/state/store_providers.dart';
 import 'store_format.dart';
+import 'widgets/store_messages.dart';
 import '../../presentation/store_strings.dart';
 
 /// Checks for the "Share a deal" form, answering in the language of the
@@ -117,6 +118,20 @@ class DealValidators {
 
 /// What the sharer knows about delivery.
 enum _Delivery { notSure, free, paid }
+
+/// Opens "Share a deal" over the whole app (the Store's Add sheet) and,
+/// once the deal is stored, says it is live.
+Future<void> openShareDeal(BuildContext context) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final live = context.storeL10n.dealIsLive;
+  final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
+    MaterialPageRoute(
+      fullscreenDialog: true,
+      builder: (context) => const ShareDealScreen(),
+    ),
+  );
+  if (deal != null) showStoreMessageOn(messenger, live);
+}
 
 /// Full-screen form for sharing a bargain with other pet owners, in two
 /// steps: what the deal is and its price (checked on "Next"), then the

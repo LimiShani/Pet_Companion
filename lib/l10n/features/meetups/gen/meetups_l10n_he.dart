@@ -521,4 +521,7 @@ class MeetupsL10nHe extends MeetupsL10n {
 
   @override
   String get memberAds => 'מודעות לטיול ולמשחק';
+
+  @override
+  String get addPlanWalk => 'תיאום טיול או משחק';
 }

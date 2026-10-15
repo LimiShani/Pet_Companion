@@ -1304,4 +1304,19 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get pushChatInvites => 'Invitations to a chat';
+
+  @override
+  String get addToCommunity => 'Add to Community';
+
+  @override
+  String get addMoment => 'Share a moment';
+
+  @override
+  String get addQuestion => 'Ask a question';
+
+  @override
+  String get addRecommendation => 'Recommend a place or product';
+
+  @override
+  String get addLostFound => 'Lost or found';
 }

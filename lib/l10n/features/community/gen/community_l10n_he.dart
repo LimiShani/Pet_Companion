@@ -1310,4 +1310,19 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get pushChatInvites => 'הזמנות לשיחה';
+
+  @override
+  String get addToCommunity => 'הוספה לקהילה';
+
+  @override
+  String get addMoment => 'שיתוף רגע';
+
+  @override
+  String get addQuestion => 'שאלה לקהילה';
+
+  @override
+  String get addRecommendation => 'המלצה על מקום או מוצר';
+
+  @override
+  String get addLostFound => 'אבדה או מציאה';
 }

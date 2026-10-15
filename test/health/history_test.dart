@@ -181,7 +181,7 @@ void main() {
 
     testWidgets('a new record shows the short set, and More details the rest', (tester) async {
       await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
       for (final key in ['record-title', 'record-date', 'record-time']) {
         expect(find.byKey(Key(key)), findsOneWidget, reason: key);
@@ -225,7 +225,7 @@ void main() {
 
     testWidgets('a wrong amount in the folded cost opens More details at the cost', (tester) async {
       await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await tester.enterText(find.byKey(const Key('record-title')), 'Nail trim');
       await tapVisible(tester, find.text('More details'));
       await tester.enterText(find.byKey(const Key('record-cost')), '4.5.0');
@@ -244,7 +244,7 @@ void main() {
 
     testWidgets('a next due date before the date given opens More details', (tester) async {
       await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
       Future<void> pickDay(String day) async {
@@ -274,7 +274,7 @@ void main() {
 
     testWidgets('a vaccination is saved with a separate next due date', (tester) async {
       final h = await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       expect(find.text('New record'), findsOneWidget);
 
       // Only the title is required.
@@ -316,7 +316,7 @@ void main() {
     testWidgets('when only the next due date fails, saving again does not store the record twice', (tester) async {
       final repository = _FollowUpFailsOnce();
       final h = await openHistory(tester, harness: HealthHarness(repository: repository));
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await tapVisible(tester, find.byKey(const ValueKey('kind-vaccination')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Leptospirosis vaccine');
       await openMoreDetails(tester);
@@ -356,7 +356,7 @@ void main() {
       final h = HealthHarness();
       h.picker.pdf = testPdf('discharge-letter.pdf');
       await openHistory(tester, harness: h);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
 
       await tapVisible(tester, find.byKey(const ValueKey('kind-document')));
       await tester.enterText(find.byKey(const Key('record-title')), 'Discharge letter');
@@ -427,7 +427,7 @@ void main() {
     testWidgets('a date that is still ahead becomes an upcoming item', (tester) async {
       final h = await pumpHealth(tester);
       await switchPet(tester, 'Soya');
-      await tapVisible(tester, find.byKey(const Key('start-appointment')));
+      await openAddRow(tester, 'appointment');
       expect(find.text('New appointment'), findsOneWidget);
       expect(find.text('Planned for'), findsOneWidget);
       expect(find.text('11.06.25'), findsOneWidget);
@@ -447,7 +447,7 @@ void main() {
 
     testWidgets('a failed save keeps the form open with the reason', (tester) async {
       final h = await openHistory(tester);
-      await tapVisible(tester, find.text('Add record'));
+      await openAddRow(tester, 'record');
       await tester.enterText(find.byKey(const Key('record-title')), 'Nail trim');
 
       h.repository.failing = true;
