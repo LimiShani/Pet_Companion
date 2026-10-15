@@ -311,10 +311,10 @@ class AppL10nHe extends AppL10n {
   String get usageColumnActive => 'פעילים';
 
   @override
-  String get usageColumnTicks => 'סימונים בהיום';
+  String get usageColumnTicks => 'סימונים ב״היום״';
 
   @override
-  String get usageNote => 'פעילים: חשבונות שהשתמשו באפליקציה באותו יום. סימונים בהיום: כמה מהם סימנו שורה ברשימת היום.';
+  String get usageNote => 'פעילים: חשבונות שהשתמשו באפליקציה באותו יום. סימונים ב״היום״: כמה מהם סימנו שורה ברשימת היום.';
 
   @override
   String get usageKindsTitle => 'פעולות';
