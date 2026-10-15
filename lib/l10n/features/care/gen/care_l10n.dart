@@ -101,18 +101,6 @@ abstract class CareL10n {
   /// **'Fed'**
   String get fed;
 
-  /// Home activity card button for a dog.
-  ///
-  /// In en, this message translates to:
-  /// **'Walk'**
-  String get walkAction;
-
-  /// Home activity card button for any other pet.
-  ///
-  /// In en, this message translates to:
-  /// **'Play'**
-  String get playAction;
-
   /// Under "1/2" on the activity card.
   ///
   /// In en, this message translates to:
@@ -172,12 +160,6 @@ abstract class CareL10n {
   /// In en, this message translates to:
   /// **'Add {name}\'s food and meal times to count calories.'**
   String feedingSetUpLine(String name);
-
-  /// Button on a Home card with nothing set up yet (feeding, activity): opens the card's page.
-  ///
-  /// In en, this message translates to:
-  /// **'Set up'**
-  String get setUp;
 
   /// A walk in progress and how long it has run.
   ///

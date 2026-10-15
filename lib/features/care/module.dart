@@ -44,6 +44,21 @@ final careModule = FeatureModule(
       capability: 'care.view',
       open: (c, r) => openActivity(c, requestPet(c, r)),
     ),
+    // Home's Today rows: the "Log a meal" and walk sheets on a planned
+    // meal or walk, values {'entry': CareEntry}.
+    'log-meal': FeatureAction.task(
+      capability: 'care.view',
+      open: (c, r) => showLogMealSheet(
+        c,
+        requestPet(c, r),
+        entry: r.value<CareEntry>('entry'),
+      ),
+    ),
+    'walk-sheet': FeatureAction.task(
+      capability: 'care.view',
+      open: (c, r) =>
+          showWalkSheet(c, requestPet(c, r), entry: r.value<CareEntry>('entry')),
+    ),
     'food-settings': FeatureAction.task(
       capability: 'care.edit',
       open: (c, r) => openFoodSettings(c, requestPet(c, r)),

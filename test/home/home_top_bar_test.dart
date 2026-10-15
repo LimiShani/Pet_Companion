@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/home/widgets/home_header.dart';
+import 'package:pet_companion/features/home/widgets/pet_hero.dart';
 import 'package:pet_companion/theme/app_colors.dart';
 import 'package:pet_companion/theme/app_theme.dart';
 import 'package:pet_companion/widgets/brand.dart';
@@ -141,7 +142,7 @@ void main() {
       expect(tester.getTopLeft(petRow).dy, 0);
 
       // Pull down and hold: the page bounces away from the pinned bar.
-      final gesture = await tester.startGesture(tester.getCenter(find.text('Feeding')));
+      final gesture = await tester.startGesture(tester.getCenter(find.byType(PetHero)));
       await gesture.moveBy(const Offset(0, 40));
       await gesture.moveBy(const Offset(0, 300));
       await tester.pump();

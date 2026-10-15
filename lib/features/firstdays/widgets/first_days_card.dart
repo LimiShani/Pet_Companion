@@ -15,7 +15,8 @@ import 'first_days_keeper.dart';
 
 /// Home's "The first 30 days of Mitzi" card: the day and the progress as
 /// the title's label ("Day 10 · 2/12"), the progress bar, and the next
-/// task with "Open" at the end of its line (the `DashboardCard` contract).
+/// task. Status only: the whole card opens the page (the next step is also
+/// a row of Home's Today list).
 /// Shown for [pet] only while its path runs (day 1 to 30, not closed, not
 /// finished); otherwise it takes no room at all.
 ///
@@ -28,7 +29,6 @@ class FirstDaysHomeCard extends StatelessWidget {
   });
 
   static const cardKey = Key('first-days-card');
-  static const openKey = Key('first-days-card-open');
 
   final Pet pet;
   final EdgeInsetsGeometry margin;
@@ -61,13 +61,6 @@ class _Card extends StatelessWidget {
     final next = view.next;
     void open() => openFirstDays(context, view.pet.id);
 
-    final pill = CarePillButton(
-      key: FirstDaysHomeCard.openKey,
-      label: l10n.open,
-      filled: true,
-      onPressed: open,
-    );
-
     return DashboardCard(
       key: FirstDaysHomeCard.cardKey,
       color: AppColors.yellow,
@@ -86,16 +79,13 @@ class _Card extends StatelessWidget {
             value: view.progress,
             track: AppColors.white.withValues(alpha: 0.7),
           ),
-          const SizedBox(height: 8),
-          if (next == null)
-            CardActionRow.alone(action: pill)
-          else
-            CardActionRow(
+          if (next != null) ...[
+            const SizedBox(height: 8),
+            NextEventLine(
               text: l10n.cardNext(firstDaysTaskText(l10n, next.task.id)),
-              actionLabel: l10n.open,
-              action: pill,
-              maxLines: 3,
+              maxLines: 4,
             ),
+          ],
         ],
       ),
     );

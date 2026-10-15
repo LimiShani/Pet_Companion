@@ -8,9 +8,9 @@
 ///
 /// - `openBudget(context)` opens the budget page (the side menu's
 ///   "Budget", Home's spending card).
-/// - `SpendingCard` and `RunningLowCard` are Home's "This month's
-///   spending" and "Running low" cards; each shows only while it has
-///   something to say.
+/// - `SpendingCard` is Home's "This month's spending" card; it shows
+///   only while it has something to say. What runs low is a row of
+///   Home's Today list.
 /// - `BasketView` is the Store's "My basket"; `storeViewProvider` says
 ///   which half of the Store shows.
 ///
@@ -32,5 +32,4 @@ export '../../services/budget/state/budget_providers.dart'
         budgetRepositoryProvider,
         expensesProvider,
         storeViewProvider;
-export '../basket/running_low_card.dart' show RunningLowCard;
 export 'widgets/spending_card.dart' show SpendingCard;

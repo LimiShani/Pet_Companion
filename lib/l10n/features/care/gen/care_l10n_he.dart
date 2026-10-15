@@ -12,12 +12,6 @@ class CareL10nHe extends CareL10n {
   String get fed => 'האכלתי';
 
   @override
-  String get walkAction => 'טיול';
-
-  @override
-  String get playAction => 'משחק';
-
-  @override
   String get walksTodayLabel => 'טיולים היום';
 
   @override
@@ -54,9 +48,6 @@ class CareL10nHe extends CareL10n {
   String feedingSetUpLine(String name) {
     return 'הוסיפו את המזון ואת שעות הארוחות של \u2068$name\u2069 כדי לספור קלוריות.';
   }
-
-  @override
-  String get setUp => 'הגדרה';
 
   @override
   String walkRunning(String time) {

@@ -70,8 +70,9 @@ Future<void> postponePetReminder(BuildContext context, String petId) async {
 /// The reminder for one pet, shown while an essential is missing and the
 /// reminder was not postponed.
 ///
-/// One row for Home, the app's one essentials nag: the title, "2 of 5
-/// essentials still to add" and an "Add" pill.
+/// One row: the title, "2 of 5 essentials still to add" and an "Add" pill.
+/// Home no longer shows it: the app's one essentials nag is now a row of
+/// Home's Today list (`lib/features/today`), which opens the checklist.
 ///
 /// The pill opens the next missing item; the rest of the row opens the
 /// checklist, where "Remind me in a week" hides the reminder everywhere for

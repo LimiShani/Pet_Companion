@@ -4,14 +4,6 @@
   "@fed": {
     "description": "Home feeding card button: log a meal now."
   },
-  "walkAction": "Walk",
-  "@walkAction": {
-    "description": "Home activity card button for a dog."
-  },
-  "playAction": "Play",
-  "@playAction": {
-    "description": "Home activity card button for any other pet."
-  },
   "walksTodayLabel": "walks today",
   "@walksTodayLabel": {
     "description": "Under \"1/2\" on the activity card."
@@ -65,10 +57,6 @@
         "type": "String"
       }
     }
-  },
-  "setUp": "Set up",
-  "@setUp": {
-    "description": "Button on a Home card with nothing set up yet (feeding, activity): opens the card's page."
   },
   "walkRunning": "Walking · {time}",
   "@walkRunning": {

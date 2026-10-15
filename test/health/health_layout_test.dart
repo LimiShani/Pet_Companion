@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/data/fake_health_repository.dart';
-import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 import 'package:pet_companion/features/health/health_screen.dart';
 import 'package:pet_companion/models/pet.dart';
 
@@ -379,14 +379,14 @@ void main() {
     (tester) async {
       await pumpApp(tester);
       await signInAsDemo(tester);
-      // Soya misses her essentials: Home shows its one-line reminder.
+      // Soya misses her essentials: Home's Today list has her row.
       await tester.tap(find.text('Soya'));
       await tester.pumpAndSettle();
-      expect(find.byType(PetReminderCard), findsOneWidget);
+      expect(find.byKey(TodayCard.rowKey('essentials:soya')), findsOneWidget);
 
       await openHealthTab(tester);
       expect(find.text('Overview'), findsWidgets);
-      expect(find.byType(PetReminderCard), findsNothing);
+      expect(find.byKey(TodayCard.rowKey('essentials:soya')), findsNothing);
       expect(find.textContaining('essentials still to add'), findsNothing);
     },
   );

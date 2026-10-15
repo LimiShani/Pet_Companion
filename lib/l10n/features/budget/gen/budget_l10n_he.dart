@@ -392,12 +392,6 @@ class BudgetL10nHe extends BudgetL10n {
   String get openBudget => 'פתיחת התקציב';
 
   @override
-  String get runningLowTitle => 'מלאי נמוך';
-
-  @override
-  String get openBasket => 'פתיחת הסל שלי';
-
-  @override
   String get errorOffline => 'לא הצלחנו להתחבר לשרת. כדאי לבדוק את החיבור ולנסות שוב.';
 
   @override

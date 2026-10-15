@@ -1,0 +1,157 @@
+{
+  "@@locale": "en",
+  "title": "Today",
+  "@title": {
+    "description": "The title of Home's Today card."
+  },
+  "headerDone": "{day} · {done} of {total} done",
+  "@headerDone": {
+    "description": "The line beside the Today title: the date, and how many of the day's items are done.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "withPet": "{title} · {pet}",
+  "@withPet": {
+    "description": "A row's title with its pet's name, when the account has more than one pet: \"Breakfast · Kelly\".",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "you": "you",
+  "@you": {
+    "description": "Who logged a done row when it was the signed-in person: \"7:40 · you\"."
+  },
+  "doneBy": "{time} · {who}",
+  "@doneBy": {
+    "description": "Under a done row: when it was done and who did it (a household member's name, or \"you\").",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "notDoneBy": "{time} · {who} · not done",
+  "@notDoneBy": {
+    "description": "Under a row answered as not done (a meal not eaten, a dose not given).",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "notDoneAt": "{time} · not done",
+  "@notDoneAt": {
+    "description": "Under a row answered as not done when who answered is not known.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "runsOutIn": "{count, plural, =0{{name} runs out today} =1{{name} runs out tomorrow} other{{name} runs out in {count} days}}",
+  "@runsOutIn": {
+    "description": "A basket product that runs out soon, as a Today row: \"Dry food runs out in 4 days\".",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "ranOut": "{name} ran out",
+  "@ranOut": {
+    "description": "A basket product that already ran out, as a Today row.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "firstDaysLine": "First 30 days · day {day}",
+  "@firstDaysLine": {
+    "description": "Under the Today row of the first 30 days' next step.",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "foldDone": "{count} done",
+  "@foldDone": {
+    "description": "The row the done items fold into when there are many; tapping it shows them.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "showDone": "Show what is done",
+  "@showDone": {
+    "description": "Screen reader hint of the folded done row."
+  },
+  "hideDone": "Hide what is done",
+  "@hideDone": {
+    "description": "Screen reader hint of the open done row."
+  },
+  "markDone": "Mark {title} as done",
+  "@markDone": {
+    "description": "Screen reader label of a row's tick.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "undoDone": "Undo {title}",
+  "@undoDone": {
+    "description": "Screen reader label of a done row's tick, within the hour it can be taken back.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "doneSemantics": "{title}, done",
+  "@doneSemantics": {
+    "description": "Screen reader label of a done row's tick once it can no longer be taken back.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "empty": "Nothing planned today.",
+  "@empty": {
+    "description": "The Today card when the day has no items."
+  },
+  "setUpFeeding": "Set up feeding",
+  "@setUpFeeding": {
+    "description": "The one action of an empty Today card, for a pet with no meal times: opens the feeding page."
+  },
+  "loadFailed": "Could not load today's list. Tap to try again.",
+  "@loadFailed": {
+    "description": "The Today card when its data could not be loaded."
+  }
+}

@@ -10,15 +10,12 @@ import '../../../presentation/dashboard_card.dart';
 import 'feeding_card.dart';
 
 /// Today's walks (or play sessions for a pet that is not a dog) and
-/// active minutes, the next walk, and a "Walk" button. While a walk runs
-/// the last line shows its clock and Finish. A pet with nothing planned
-/// and nothing logged gets one invitation line and a "Set up" button
-/// instead. Tapping the card opens the activity page.
+/// active minutes, and the next walk: status only (the walks are ticked
+/// in Home's Today list). While a walk runs the last line shows its clock
+/// and Finish. A pet with nothing planned and nothing logged gets one
+/// invitation line instead. Tapping the card opens the activity page.
 class ActivityCard extends ConsumerWidget {
   const ActivityCard({super.key, required this.pet});
-
-  static const walkKey = Key('home-walk');
-  static const setUpKey = Key('home-activity-set-up');
 
   /// Nothing to follow yet: no walk (or play) time planned, today or
   /// later, and nothing logged today.
@@ -84,29 +81,13 @@ class ActivityCard extends ConsumerWidget {
                       ),
                     ],
                   ),
-                const SizedBox(height: 6),
-                if (running)
-                  RunningWalkBox(pet: pet, onCard: true)
-                else if (setUp)
-                  CardActionRow.alone(
-                    action: CarePillButton(
-                      key: setUpKey,
-                      label: care.setUp,
-                      filled: true,
-                      onPressed: () => openActivity(context, pet),
-                    ),
-                  )
-                else
-                  CardActionRow(
-                    text: _nextLine(context, day),
-                    actionLabel: walks ? care.walkAction : care.playAction,
-                    action: CarePillButton(
-                      key: walkKey,
-                      label: walks ? care.walkAction : care.playAction,
-                      filled: true,
-                      onPressed: () => showWalkSheet(context, pet),
-                    ),
-                  ),
+                if (running) ...[
+                  const SizedBox(height: 6),
+                  RunningWalkBox(pet: pet, onCard: true),
+                ] else if (!setUp) ...[
+                  const SizedBox(height: 6),
+                  NextEventLine(text: _nextLine(context, day), maxLines: 2),
+                ],
               ],
             ),
     );

@@ -82,7 +82,7 @@ void main() {
       await expectFits(tester, find.byType(FeedingCard), 'Kelly feeding');
       await expectFits(tester, find.byType(ActivityCard), 'Kelly activity');
       await expectFits(tester, find.byKey(SpendingCard.cardKey), 'spending');
-      await expectFits(tester, find.byKey(RunningLowCard.cardKey), 'running low');
+      // What runs low is a row of the Today list (test/today/today_fit_test.dart).
 
       // Soya: nothing set up, and her first 30 days. Back to the top of
       // Home, where the pet pills are.
@@ -93,8 +93,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Soya').first);
       await tester.pumpAndSettle();
-      expect(find.byKey(FeedingCard.setUpKey), findsOneWidget);
-      expect(find.byKey(ActivityCard.setUpKey), findsOneWidget);
+      expect(find.text(lookupCareL10n(language == AppLanguage.hebrew ? hebrewLocale : englishLocale).inviteWalkTimes), findsOneWidget);
       await expectFits(tester, find.byType(FeedingCard), 'Soya feeding');
       await expectFits(tester, find.byType(ActivityCard), 'Soya activity');
       await expectFits(tester, find.byKey(FirstDaysHomeCard.cardKey), 'first 30 days');

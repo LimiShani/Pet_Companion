@@ -5,6 +5,7 @@ import 'package:pet_companion/features/care/care.dart';
 import 'package:pet_companion/features/home/home_screen.dart';
 import 'package:pet_companion/features/home/widgets/activity_card.dart';
 import 'package:pet_companion/features/home/widgets/feeding_card.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import '../helpers.dart';
@@ -28,13 +29,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('"Fed" logs dinner with the usual portion and the card counts it', (tester) async {
+  // Home's Today rows of Kelly's dinner and evening walk: tapping one (not
+  // its tick) opens the sheet on that meal or walk.
+  final dinnerRow = find.byKey(TodayCard.rowKey('kelly:p-dinner'));
+  final walkRow = find.byKey(TodayCard.rowKey('kelly:p-walk'));
+
+  testWidgets('the dinner row logs dinner with the usual portion and the card counts it', (tester) async {
     await pumpHome(tester);
     expect(find.text('504'), findsOneWidget);
 
-    await tapVisible(tester, find.byKey(FeedingCard.fedKey));
+    await tapVisible(tester, dinnerRow);
     expect(find.text('Log a meal'), findsOneWidget);
-    // Dinner is the open meal closest to now; the usual portion is 140 g.
+    // The sheet is on dinner; the usual portion is 140 g.
     expect(find.text('140 g'), findsOneWidget);
     expect(find.text('= 504 cal · Adult dry food'), findsOneWidget);
 
@@ -53,7 +59,7 @@ void main() {
   testWidgets('a snack is an extra meal and "Did not eat" counts nothing', (tester) async {
     await pumpHome(tester);
 
-    await tapVisible(tester, find.byKey(FeedingCard.fedKey));
+    await tapVisible(tester, dinnerRow);
     await tapVisible(tester, find.byKey(LogMealSheet.extraKey));
     expect(find.text('Did not eat'), findsNothing); // only for a planned meal
     await tapVisible(tester, find.text('Half'));
@@ -61,7 +67,7 @@ void main() {
     await tapVisible(tester, find.byKey(LogMealSheet.saveKey));
     expect(find.text('756'), findsOneWidget);
 
-    await tapVisible(tester, find.byKey(FeedingCard.fedKey));
+    await tapVisible(tester, dinnerRow);
     await tapVisible(tester, find.text('Did not eat'));
     await tapVisible(tester, find.byKey(LogMealSheet.saveKey));
     expect(find.text('756'), findsOneWidget);
@@ -128,20 +134,19 @@ void main() {
     await tapVisible(tester, find.byKey(LogMealSheet.saveKey));
     expect(find.text('200 / 400 cal'), findsOneWidget);
 
-    // With food but no meal times, the card is the usual one: calories,
-    // "Next feeding · not set" and "Fed".
+    // With food but no meal times, the card is the usual one: calories
+    // and "Next feeding · not set" (no pill: meals are ticked in Today).
     await tester.pageBack();
     await tester.pumpAndSettle();
     expect(find.descendant(of: find.byType(FeedingCard), matching: find.text('200')), findsOneWidget);
     expect(find.text('Next feeding · not set'), findsOneWidget);
-    expect(find.byKey(FeedingCard.fedKey), findsOneWidget);
-    expect(find.byKey(FeedingCard.setUpKey), findsNothing);
+    expect(find.descendant(of: find.byType(FeedingCard), matching: find.byType(CarePillButton)), findsNothing);
   });
 
   /// The pills on [card] (a Home card's widget type).
   Finder pillsOf(Type card) => find.descendant(of: find.byType(card), matching: find.byType(CarePillButton));
 
-  testWidgets('Soya, nothing set up: one line and one "Set up" pill on Feeding and Activity, each opening its page', (
+  testWidgets('Soya, nothing set up: one line on Feeding and Activity, no pill, each card opening its page', (
     tester,
   ) async {
     await pumpHome(tester);
@@ -150,36 +155,32 @@ void main() {
 
     expect(find.text("Add Soya's food and meal times to count calories."), findsOneWidget);
     expect(find.text('Add walk times to follow the activity.'), findsOneWidget);
-    expect(find.text('Set up'), findsNWidgets(2));
-    expect(pillsOf(FeedingCard), findsOneWidget);
-    expect(pillsOf(ActivityCard), findsOneWidget);
-    // Nothing to log against yet: no "not set" lines, no Fed or Walk, no
-    // "No goal set" label.
+    expect(find.text('Set up'), findsNothing);
+    expect(pillsOf(FeedingCard), findsNothing);
+    expect(pillsOf(ActivityCard), findsNothing);
+    // Nothing to log against yet: no "not set" lines, no "No goal set"
+    // label.
     expect(find.text('Next feeding · not set'), findsNothing);
     expect(find.text('Next walk · not set'), findsNothing);
     expect(find.text('No goal set'), findsNothing);
-    expect(find.byKey(FeedingCard.fedKey), findsNothing);
-    expect(find.byKey(ActivityCard.walkKey), findsNothing);
 
-    await tapVisible(tester, find.byKey(FeedingCard.setUpKey));
+    await tapVisible(tester, find.byType(FeedingCard));
     expect(find.byKey(FeedingScreen.screenKey), findsOneWidget);
     expect(find.text('Feeding · Soya'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 
-    await tapVisible(tester, find.byKey(ActivityCard.setUpKey));
+    await tapVisible(tester, find.byType(ActivityCard));
     expect(find.byKey(ActivityScreen.screenKey), findsOneWidget);
   });
 
-  testWidgets('Kelly: the cards keep their one pill, Fed and Walk', (tester) async {
+  testWidgets('Kelly: the cards are status only, the next meal and walk on their last line', (tester) async {
     await pumpHome(tester);
 
-    expect(pillsOf(FeedingCard), findsOneWidget);
-    expect(find.descendant(of: pillsOf(FeedingCard), matching: find.text('Fed')), findsOneWidget);
-    expect(pillsOf(ActivityCard), findsOneWidget);
-    expect(find.descendant(of: pillsOf(ActivityCard), matching: find.text('Walk')), findsOneWidget);
-    expect(find.byKey(FeedingCard.setUpKey), findsNothing);
-    expect(find.byKey(ActivityCard.setUpKey), findsNothing);
+    expect(pillsOf(FeedingCard), findsNothing);
+    expect(pillsOf(ActivityCard), findsNothing);
+    expect(find.text('Next feeding · 19:30'), findsOneWidget);
+    expect(find.text('Next walk · 18:30'), findsOneWidget);
     expect(find.text('Set up'), findsNothing);
   });
 
@@ -187,7 +188,7 @@ void main() {
     await pumpHome(tester);
     expect(find.text(isolate('1/2')), findsOneWidget);
 
-    await tapVisible(tester, find.byKey(ActivityCard.walkKey));
+    await tapVisible(tester, walkRow);
     expect(find.text('Going out now'), findsOneWidget);
     await tapVisible(tester, find.text('45'));
     await tapVisible(tester, find.byKey(WalkSheet.saveKey));
@@ -200,10 +201,9 @@ void main() {
   testWidgets('a walk started now runs on the card until Finish', (tester) async {
     await pumpHome(tester);
 
-    await tapVisible(tester, find.byKey(ActivityCard.walkKey));
+    await tapVisible(tester, walkRow);
     await tapVisible(tester, find.byKey(WalkSheet.startKey));
     expect(find.textContaining('Walking ·'), findsOneWidget);
-    expect(find.byKey(ActivityCard.walkKey), findsNothing);
 
     await tapVisible(tester, find.byKey(RunningWalkBox.finishKey));
     // The test clock stands still: the shortest walk is one minute.
@@ -238,12 +238,12 @@ void main() {
     await pumpHome(tester, language: AppLanguage.hebrew);
     final he = lookupCareL10n(hebrewLocale);
 
-    await tapVisible(tester, find.byKey(FeedingCard.fedKey));
+    await tapVisible(tester, dinnerRow);
     expect(find.text(he.logMealTitle), findsOneWidget);
     expect(find.text(he.wholePortion), findsOneWidget);
     await tapVisible(tester, find.byKey(LogMealSheet.saveKey));
 
-    await tapVisible(tester, find.byKey(ActivityCard.walkKey));
+    await tapVisible(tester, walkRow);
     expect(find.text(he.startNow), findsOneWidget);
     expect(find.text(he.logPast), findsOneWidget);
   });

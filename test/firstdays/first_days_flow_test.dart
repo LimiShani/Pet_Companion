@@ -61,7 +61,7 @@ Future<void> homeOnSoya(
   await tester.pumpAndSettle();
 }
 
-Future<void> openPageFromCard(WidgetTester tester) => tapVisible(tester, find.byKey(FirstDaysHomeCard.openKey));
+Future<void> openPageFromCard(WidgetTester tester) => tapVisible(tester, card);
 
 /// What [repo] holds for [petId] (read outside the test's fake clock).
 Future<FirstDaysPath?> stored(WidgetTester tester, FakeFirstDaysRepository repo, String petId) async =>
@@ -91,23 +91,16 @@ void main() {
       expect(find.text('Next: Get the basics: a bed, bowls, a lead and food'), findsOneWidget);
     });
 
-    testWidgets('"Open" is the one pill, at the end of the "Next" line', (tester) async {
+    testWidgets('is status only: no pill, the "Next" line last, a chevron, and the card opens the page', (tester) async {
       await homeOnSoya(tester);
       await tester.ensureVisible(card);
       await tester.pumpAndSettle();
       final next = find.text('Next: Get the basics: a bed, bowls, a lead and food');
-      final open = find.byKey(FirstDaysHomeCard.openKey);
-      expect(find.descendant(of: card, matching: find.byType(CarePillButton)), findsOneWidget);
-      // The pill and the line are one CardActionRow, the last line.
-      final row = find.ancestor(of: next, matching: find.byType(CardActionRow));
-      expect(row, findsOneWidget);
-      expect(find.descendant(of: row, matching: open), findsOneWidget);
-      // At the end: its edge lines up with the progress bar's end, beside
-      // the line or (when both do not fit) under it, never above it.
+      expect(find.descendant(of: card, matching: find.byType(CarePillButton)), findsNothing);
+      expect(find.descendant(of: card, matching: find.byKey(DashboardCard.chevronKey)), findsOneWidget);
+      // The line comes under the progress bar.
       final bar = tester.getRect(find.descendant(of: card, matching: find.byType(LinearProgressIndicator)));
-      expect(tester.getRect(open).right, moreOrLessEquals(bar.right, epsilon: 1));
-      expect(tester.getRect(open).top, greaterThanOrEqualTo(tester.getRect(row).top));
-      expect(tester.getRect(open).bottom, moreOrLessEquals(tester.getRect(row).bottom, epsilon: 1));
+      expect(tester.getRect(next).top, greaterThanOrEqualTo(bar.bottom));
     });
 
     testWidgets('still shows on day 30, and is gone from day 31', (tester) async {
@@ -119,7 +112,7 @@ void main() {
       expect(card, findsNothing);
     });
 
-    testWidgets('"Open" leads to the page', (tester) async {
+    testWidgets('the card leads to the page', (tester) async {
       await homeOnSoya(tester);
       await openPageFromCard(tester);
       expect(page, findsOneWidget);
@@ -387,7 +380,8 @@ void main() {
       expect(find.text('30 הימים הראשונים של \u2068Soya\u2069'), findsOneWidget);
       expect(find.text('יום \u206810\u2069 · ${isolate('2/12')}'), findsOneWidget);
       expect(find.text('הבא בתור: \u2068לדאוג לבסיס: מיטה, קערות, רצועה ומזון\u2069'), findsOneWidget);
-      expect(find.text('פתיחה'), findsOneWidget);
+      // No pill: the whole card opens the page.
+      expect(find.descendant(of: card, matching: find.byType(CarePillButton)), findsNothing);
       expect(Directionality.of(tester.element(card)), TextDirection.rtl);
 
       await openPageFromCard(tester);

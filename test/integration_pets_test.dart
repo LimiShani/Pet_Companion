@@ -1,6 +1,7 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pet_companion/features/pets/pets.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 
 import 'helpers.dart';
 
@@ -38,18 +39,20 @@ void main() {
   testWidgets('Home reminds about missing essentials for Soya and not for Kelly', (tester) async {
     await pumpHome(tester);
 
-    // Kelly is complete: the reminder is in the tree but draws nothing.
+    // Kelly is complete; Soya's reminder is a row of the Today list,
+    // whichever pet is selected.
     expect(find.text("Finish Kelly's profile"), findsNothing);
-    expect(find.byKey(PetReminderCard.addKey), findsNothing);
-
-    await tapAndSettle(tester, find.text('Soya'));
-    expect(find.text("Finish Soya's profile"), findsOneWidget);
-    expect(find.textContaining('essentials still to add'), findsOneWidget);
-    expect(find.byKey(PetReminderCard.addKey), findsOneWidget);
+    expect(find.byKey(TodayCard.rowKey('essentials:kelly')), findsNothing);
+    final row = find.byKey(TodayCard.rowKey('essentials:soya'));
+    expect(find.descendant(of: row, matching: find.text("Finish Soya's profile")), findsOneWidget);
+    expect(find.descendant(of: row, matching: find.textContaining('essentials still to add')), findsOneWidget);
 
     // "Remind me in a week" in the checklist puts the row away; the
     // dashboard is still there.
-    await tapAndSettle(tester, find.text("Finish Soya's profile"));
+    // Centred: at the top of Home it would sit under the pinned bar.
+    await Scrollable.ensureVisible(tester.element(row), alignment: 0.5);
+    await tester.pumpAndSettle();
+    await tapAndSettle(tester, row);
     await tester.ensureVisible(find.text('Remind me in a week'));
     await tapAndSettle(tester, find.text('Remind me in a week'));
     expect(find.text("Finish Soya's profile"), findsNothing);
@@ -69,13 +72,13 @@ void main() {
   testWidgets('the Health overview has no reminder card: the one nag is on Home', (tester) async {
     await pumpHome(tester);
     await tapAndSettle(tester, find.text('Soya'));
-    expect(find.byType(PetReminderCard), findsOneWidget);
+    expect(find.byKey(TodayCard.rowKey('essentials:soya')), findsOneWidget);
 
     // "Health" is also the title of a dashboard card; the tab is the last.
     await tapAndSettle(tester, find.text('Health').last);
 
     expect(find.text('Overview'), findsWidgets);
-    expect(find.byType(PetReminderCard), findsNothing);
+    expect(find.byKey(TodayCard.rowKey('essentials:soya')), findsNothing);
     expect(find.textContaining('essentials still to add'), findsNothing);
     expect(find.text("Finish Soya's profile"), findsNothing);
   });

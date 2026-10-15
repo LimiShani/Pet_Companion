@@ -388,12 +388,6 @@ class BudgetL10nEn extends BudgetL10n {
   String get openBudget => 'Open the budget';
 
   @override
-  String get runningLowTitle => 'Running low';
-
-  @override
-  String get openBasket => 'Open my basket';
-
-  @override
   String get errorOffline => 'Could not reach the server. Check your connection and try again.';
 
   @override

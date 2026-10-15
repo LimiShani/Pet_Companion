@@ -7,6 +7,7 @@ import 'package:pet_companion/features/budget/budget.dart';
 import 'package:pet_companion/features/budget/budget_screen.dart' show BudgetEntryTile;
 import 'package:pet_companion/features/budget/expense_form_screen.dart';
 import 'package:pet_companion/features/budget/widgets/budget_widgets.dart';
+import 'package:pet_companion/features/today/today_card.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 
 import 'budget_test_helpers.dart';
@@ -61,10 +62,10 @@ void main() {
       expect(find.descendant(of: spending, matching: find.textContaining('Services')), findsNothing);
       expect(find.descendant(of: spending, matching: find.textContaining('Equipment')), findsNothing);
 
-      final low = find.byKey(RunningLowCard.cardKey);
+      // What runs low is a row of Home's Today list.
+      final low = find.byKey(TodayCard.rowKey('basket:b-kelly-food'));
       await tester.ensureVisible(low);
-      expect(find.descendant(of: low, matching: plain('runs out in 3 days')), findsOneWidget);
-      expect(find.descendant(of: low, matching: find.textContaining('Adult dry food')), findsOneWidget);
+      expect(find.descendant(of: low, matching: plain('Adult dry food runs out in 3 days · Kelly')), findsOneWidget);
 
       await tapVisible(tester, spending);
       expect(find.byKey(BudgetScreen.screenKey), findsOneWidget);
@@ -72,22 +73,26 @@ void main() {
       await tester.pageBack();
       await settle(tester);
 
-      // The title, not the middle of the card, where "Bought again" may be.
-      await tapVisible(tester, find.descendant(of: low, matching: plain('Running low')));
+      await tapVisible(tester, low);
       expect(find.byKey(BasketView.viewKey), findsOneWidget);
     });
 
-    testWidgets('"Bought again" on the card records the expense and the card goes away', (tester) async {
+    testWidgets('"Bought again" in the basket the Today row opens records the expense, and the row goes away', (
+      tester,
+    ) async {
       await pumpBudgetApp(tester);
 
-      await tapVisible(tester, find.byKey(const ValueKey('home-bought-b-kelly-food')));
+      await tapVisible(tester, find.byKey(TodayCard.rowKey('basket:b-kelly-food')));
+      await tapVisible(tester, find.byKey(const ValueKey('basket-bought-b-kelly-food')));
       expect(plain('Bought again: Adult dry food'), findsOneWidget);
       // Last time's price, ready to change.
       expect(find.widgetWithText(TextFormField, '240'), findsOneWidget);
       await tapVisible(tester, find.byKey(BoughtAgainDialog.saveKey));
 
       expect(plain('₪240 added to the budget'), findsOneWidget);
-      expect(find.byKey(RunningLowCard.cardKey), findsNothing);
+      Navigator.of(tester.element(find.byKey(BasketView.viewKey)), rootNavigator: true).pop();
+      await settle(tester);
+      expect(find.byKey(TodayCard.rowKey('basket:b-kelly-food')), findsNothing);
       final spending = find.byKey(SpendingCard.cardKey);
       expect(
         find.descendant(
@@ -103,7 +108,7 @@ void main() {
     testWidgets('neither card shows without expenses or products', (tester) async {
       await pumpBudgetApp(tester, budget: FakeBudgetRepository(latency: Duration.zero, seeded: false));
       expect(find.byKey(SpendingCard.cardKey), findsNothing);
-      expect(find.byKey(RunningLowCard.cardKey), findsNothing);
+      expect(find.byKey(TodayCard.rowKey('basket:b-kelly-food')), findsNothing);
       // The rest of Home is there as usual.
       expect(plain('Feeding'), findsOneWidget);
     });
@@ -462,8 +467,8 @@ void main() {
       await pumpBudgetApp(tester, language: AppLanguage.hebrew);
 
       expect(plain('ההוצאות החודש'), findsOneWidget);
-      expect(plain('מלאי נמוך'), findsOneWidget);
-      expect(plain('נשארו 3 ימים'), findsOneWidget);
+      // What runs low is a row of Home's Today list.
+      expect(plain('המלאי של Adult dry food ייגמר בעוד 3 ימים · Kelly'), findsOneWidget);
 
       await tapVisible(tester, find.byKey(SpendingCard.cardKey));
       expect(plain('תקציב'), findsOneWidget);

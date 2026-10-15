@@ -287,8 +287,6 @@
   },
   "spendingTitle": "This month's spending",
   "openBudget": "Open the budget",
-  "runningLowTitle": "Running low",
-  "openBasket": "Open my basket",
   "errorOffline": "Could not reach the server. Check your connection and try again.",
   "errorSessionEnded": "Your session has ended. Please sign in again.",
   "errorNotAllowed": "That is not allowed. Please sign in again.",

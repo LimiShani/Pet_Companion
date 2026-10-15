@@ -13,6 +13,8 @@ import 'records/pet_documents_screen.dart';
 import 'records/record_form_screen.dart';
 import 'insights/quick_log_sheet.dart';
 import 'schedule/medicine_form_screen.dart';
+import 'schedule/record_dose_sheet.dart';
+import '../../services/pet_records/state/schedule_logic.dart';
 import '../../presentation/schedule/routine_form_screen.dart';
 import 'widgets/upcoming_card.dart';
 import '../../state/pets_provider.dart';
@@ -119,6 +121,16 @@ final healthModule = FeatureModule(
           role: r.value<VetRole>('role') ?? VetRole.regular,
         );
       },
+    ),
+    // Home's Today dose rows: "Record dose" for one reminder, values
+    // {'entry': ScheduleEntry}.
+    'record-dose': FeatureAction.task(
+      capability: 'health.schedule.view',
+      open: (c, r) => showRecordDoseSheet(
+        c,
+        requestPet(c, r),
+        entry: r.value<ScheduleEntry>('entry'),
+      ),
     ),
     'emergency': FeatureAction.task(
       capability: 'health.emergency.view',
