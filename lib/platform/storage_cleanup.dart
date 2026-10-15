@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../auth/auth_controller.dart';
 import '../config/app_config.dart';
+import 'usage.dart';
 
 /// Core maintenance remains active even when the originating module is
 /// removed or its user permission is revoked. Jobs are stored server-side.
@@ -96,6 +97,10 @@ class _StorageMaintenanceHostState extends ConsumerState<StorageMaintenanceHost>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    // A session restored at start: count the day's opening, send the counts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(usageProvider).resumed();
+    });
   }
 
   @override
@@ -108,13 +113,16 @@ class _StorageMaintenanceHostState extends ConsumerState<StorageMaintenanceHost>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       ref.read(storageCleanupProvider)?.drain();
+      ref.read(usageProvider).resumed();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(authControllerProvider, (_, next) {
-      if (next.value != null) ref.read(storageCleanupProvider)?.drain();
+      if (next.value == null) return;
+      ref.read(storageCleanupProvider)?.drain();
+      ref.read(usageProvider).resumed();
     });
     return widget.child;
   }
