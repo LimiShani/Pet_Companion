@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../l10n/l10n.dart';
 import '../../../models/pet.dart';
 import '../../../platform/feature_ui.dart';
+import '../../../theme/app_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
@@ -21,33 +22,24 @@ import '../../../services/pet_records/state/schedule_logic.dart';
 import '../../../presentation/health_widgets.dart';
 import '../widgets/weight_trend.dart';
 
-/// What the Overview's buttons do. The tab wires them to the record form,
-/// the Quick log and so on, so this section stays a plain view.
+/// What the Overview's buttons do. The tab wires them to its Add sheet,
+/// the dose sheet and so on, so this section stays a plain view.
 class OverviewActions {
-  const OverviewActions({
-    this.onQuickLog,
-    this.onAddRecord,
-    this.onAddDocument,
-    this.onAddAppointment,
-    this.onAddMedicine,
-    this.onRecordDose,
-    this.onOpenRecord,
-  });
+  const OverviewActions({this.onAdd, this.onRecordDose, this.onOpenRecord});
 
-  final VoidCallback? onQuickLog;
-  final VoidCallback? onAddRecord;
-  final VoidCallback? onAddDocument;
-  final VoidCallback? onAddAppointment;
-  final VoidCallback? onAddMedicine;
+  /// Opens the tab's Add sheet (the getting-started invitation's action);
+  /// null when the account may add nothing.
+  final VoidCallback? onAdd;
   final void Function(ScheduleEntry entry)? onRecordDose;
   final void Function(HealthRecord record)? onOpenRecord;
 }
 
-/// What needs attention now: the next action first, then the two quick
-/// actions, the vet, and one card of rows that each open their own page
+/// What needs attention now: the next action first, then the vet, and one
+/// card of rows that each open their own page
 /// (the health profile, the weight, the records). A block with nothing in
 /// it is not shown, and there is no overall "health score". The pet is
-/// named by the header's pet chip, so there is no pet card here.
+/// named by the header's pet chip, so there is no pet card here. Adding
+/// anything is the tab's "+" (its Add sheet).
 class OverviewSection extends ConsumerWidget {
   const OverviewSection({
     super.key,
@@ -107,9 +99,7 @@ class OverviewSection extends ConsumerWidget {
           actions: actions,
           onSchedule: () => show(HealthSection.schedule),
         ),
-      if (data.isEmpty) _GettingStarted(pet: pet, actions: actions),
-      if (actions.onQuickLog != null || actions.onAddRecord != null)
-        _QuickActions(actions: actions),
+      if (data.isEmpty) _GettingStarted(pet: pet, onAdd: actions.onAdd),
       _VetCard(pet: pet, vets: data.vets),
       _OverviewRows(
         pet: pet,
@@ -181,6 +171,9 @@ class _ComingUp extends StatelessWidget {
       if (e != null)
         _ComingUpRow(
           icon: careKindIcon(e.item.kind),
+          // Daily care in Care's tint; Health's own rows sit light on
+          // the peach card.
+          care: careKindArea(e.item.kind) == AppArea.care,
           title: e.item.title,
           detail: l10n.dayAndTime(
             format.common.commonToday,
@@ -280,6 +273,7 @@ class _ComingUpRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    this.care = false,
     this.trailing,
     this.onTap,
   });
@@ -287,6 +281,9 @@ class _ComingUpRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String detail;
+
+  /// A routine of daily care (a meal, a walk), not a health item.
+  final bool care;
   final Widget? trailing;
   final VoidCallback? onTap;
 
@@ -306,7 +303,12 @@ class _ComingUpRow extends StatelessWidget {
         constraints: const BoxConstraints(minHeight: kHealthTapTarget),
         child: Row(
           children: [
-            IconDisc(icon, color: AppColors.white.withValues(alpha: 0.6)),
+            IconDisc(
+              icon,
+              color: care
+                  ? AppArea.care.disc
+                  : AppColors.white.withValues(alpha: 0.6),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -326,62 +328,6 @@ class _ComingUpRow extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// The Overview's two actions: the Quick log (the one filled button) and
-/// "Add record".
-class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.actions});
-
-  final OverviewActions actions;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.healthL10n;
-    const size = Size(kHealthTapTarget, kHealthTapTarget);
-    const padding = EdgeInsets.symmetric(horizontal: 12);
-    final buttons = [
-      if (actions.onQuickLog != null)
-        FilledButton.icon(
-          key: const Key('overview-quick-log'),
-          onPressed: actions.onQuickLog,
-          style: FilledButton.styleFrom(
-            minimumSize: size,
-            padding: padding,
-            textStyle: AppText.button(15),
-          ),
-          icon: const AppIcon(Icons.add_rounded, size: 18),
-          label: Text(
-            l10n.quickLog,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      if (actions.onAddRecord != null)
-        OutlinedButton(
-          key: const Key('overview-add-record'),
-          onPressed: actions.onAddRecord,
-          style: OutlinedButton.styleFrom(
-            minimumSize: size,
-            padding: padding,
-            textStyle: AppText.button(15),
-          ),
-          child: Text(
-            l10n.addRecord,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-    ];
-    return Row(
-      children: [
-        for (var i = 0; i < buttons.length; i++) ...[
-          if (i > 0) const SizedBox(width: 12),
-          Expanded(child: buttons[i]),
-        ],
-      ],
     );
   }
 }
@@ -716,13 +662,16 @@ class _OverviewRow extends StatelessWidget {
   }
 }
 
-/// The first steps offered for a pet with nothing entered yet. None of
-/// them is required, and the full medical history is never asked for.
+/// The invitation for a pet with nothing entered yet: one sentence and one
+/// action, the tab's Add sheet. The full medical history is never asked
+/// for.
 class _GettingStarted extends StatelessWidget {
-  const _GettingStarted({required this.pet, required this.actions});
+  const _GettingStarted({required this.pet, required this.onAdd});
+
+  static const addKey = Key('getting-started-add');
 
   final Pet pet;
-  final OverviewActions actions;
+  final VoidCallback? onAdd;
 
   @override
   Widget build(BuildContext context) => FeatureGate(
@@ -735,32 +684,6 @@ class _GettingStarted extends StatelessWidget {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.healthL10n;
-    final steps = [
-      if (actions.onAddDocument != null)
-        HealthPromptStep(
-          key: const Key('start-document'),
-          icon: Icons.description_rounded,
-          title: l10n.startDocument,
-          message: l10n.startDocumentNote,
-          onTap: actions.onAddDocument!,
-        ),
-      if (actions.onAddAppointment != null)
-        HealthPromptStep(
-          key: const Key('start-appointment'),
-          icon: Icons.event_rounded,
-          title: l10n.startAppointment,
-          message: l10n.startAppointmentNote,
-          onTap: actions.onAddAppointment!,
-        ),
-      if (actions.onAddMedicine != null)
-        HealthPromptStep(
-          key: const Key('start-medicine'),
-          icon: Icons.medication_rounded,
-          title: l10n.startMedicine,
-          message: l10n.startMedicineNote,
-          onTap: actions.onAddMedicine!,
-        ),
-    ];
     return Column(
       key: const Key('getting-started'),
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -770,60 +693,23 @@ class _GettingStarted extends StatelessWidget {
           l10n.startNote(pet.name),
           style: AppText.body.copyWith(color: AppColors.brown),
         ),
-        for (final step in steps) ...[const SizedBox(height: 10), step],
-      ],
-    );
-  }
-}
-
-/// A white step card of the getting-started list.
-class HealthPromptStep extends StatelessWidget {
-  const HealthPromptStep({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability:
-        'health.records.view|health.schedule.view|health.emergency.view',
-    hidden: true,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    return HealthCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(14),
-      child: Row(
-        children: [
-          IconDisc(icon),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: AppText.cardTitle),
-                Text(
-                  message,
-                  style: AppText.secondary.copyWith(color: AppColors.brown),
-                ),
-              ],
+        if (onAdd != null) ...[
+          const SizedBox(height: 10),
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: OutlinedButton.icon(
+              key: addKey,
+              onPressed: onAdd,
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(kHealthTapTarget, kHealthTapTarget),
+                textStyle: AppText.button(15),
+              ),
+              icon: const AppIcon(Icons.add_rounded, size: 18),
+              label: Text(l10n.addToHealth),
             ),
           ),
-          const SizedBox(width: 8),
-          const AppIcon(Icons.chevron_right_rounded, color: AppColors.brown),
         ],
-      ),
+      ],
     );
   }
 }

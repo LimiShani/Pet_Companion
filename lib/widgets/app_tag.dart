@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_area.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import 'app_icon.dart';
@@ -23,7 +24,8 @@ enum AppTagTone {
 }
 
 /// The one small tag of the app: a stadium with a short label and an
-/// optional icon, 12 px, tinted by its [tone].
+/// optional icon, 12 px, tinted by its [tone] (or by its area, see
+/// [AppTag.area]).
 ///
 /// Used for post kinds, guide marks, chat roles, park details, meetup
 /// kinds and deal states, so they all share one size and one voice.
@@ -33,19 +35,33 @@ class AppTag extends StatelessWidget {
     super.key,
     this.tone = AppTagTone.neutral,
     this.icon,
-  });
+  }) : area = null;
+
+  /// A tag in the colour of the part of the app it points to (see
+  /// [AppArea]): "Health" on a peach tag, "Store" on yellow.
+  const AppTag.area(
+    this.label, {
+    super.key,
+    required AppArea this.area,
+    this.icon,
+  }) : tone = AppTagTone.neutral;
 
   final String label;
   final AppTagTone tone;
   final IconData? icon;
 
-  Color get _background => switch (tone) {
-    AppTagTone.yellow => AppColors.yellow,
-    AppTagTone.sage => AppColors.sage,
-    AppTagTone.peach => AppColors.peach,
-    AppTagTone.neutral => const Color(0xFFFFF3D6),
-    AppTagTone.ink => AppColors.ink,
-  };
+  /// Set by [AppTag.area]: the tag takes the area's colour, not [tone]'s.
+  final AppArea? area;
+
+  Color get _background =>
+      area?.disc ??
+      switch (tone) {
+        AppTagTone.yellow => AppColors.yellow,
+        AppTagTone.sage => AppColors.sage,
+        AppTagTone.peach => AppColors.peach,
+        AppTagTone.neutral => const Color(0xFFFFF3D6),
+        AppTagTone.ink => AppColors.ink,
+      };
 
   Color get _foreground =>
       tone == AppTagTone.ink ? AppColors.white : AppColors.ink;
@@ -56,7 +72,7 @@ class AppTag extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: ShapeDecoration(
         color: _background,
-        shape: tone == AppTagTone.neutral
+        shape: tone == AppTagTone.neutral && area == null
             ? const StadiumBorder(side: BorderSide(color: Color(0xFFE7D9B5)))
             : const StadiumBorder(),
       ),

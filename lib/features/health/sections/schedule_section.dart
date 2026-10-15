@@ -7,6 +7,8 @@ import '../../../models/pet.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
+import '../../../platform/feature_ui.dart' show AddTab;
+import '../../../widgets/add_sheet.dart';
 import '../../../widgets/empty_state.dart';
 import '../../../services/pet_records/data/health_models.dart';
 import '../../../services/pet_records/data/species_settings.dart';
@@ -20,104 +22,6 @@ import '../../../presentation/schedule/routine_form_screen.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../services/pet_records/state/schedule_logic.dart';
 import '../../../presentation/health_widgets.dart';
-
-/// Opens the "what do you want to add?" sheet of the Schedule: an
-/// appointment or due date, a medicine, or a routine.
-Future<void> showScheduleAddSheet(BuildContext context, Pet pet) async {
-  final choice = await showHealthSheet<int>(context, const _AddSheet());
-  if (choice == null || !context.mounted) return;
-  switch (choice) {
-    case 0:
-      await openRecordForm(
-        context,
-        pet,
-        kind: RecordKind.checkup,
-        planned: true,
-      );
-    case 1:
-      await openMedicineForm(context, pet);
-    case 2:
-      await openRoutineForm(context, pet);
-  }
-}
-
-class _AddSheet extends StatelessWidget {
-  const _AddSheet();
-
-  @override
-  Widget build(BuildContext context) => FeatureGate(
-    capability: 'health.schedule.view',
-    hidden: false,
-    builder: (context) =>
-        Consumer(builder: (context, ref, _) => _buildAuthorized(context, ref)),
-  );
-
-  Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
-    final l10n = context.healthL10n;
-    Widget option(
-      int value,
-      String key,
-      IconData icon,
-      String title,
-      String detail,
-    ) => Padding(
-      padding: const EdgeInsetsDirectional.only(bottom: 8),
-      child: HealthCard(
-        key: ValueKey('add-$key'),
-        onTap: () => Navigator.of(context).pop(value),
-        padding: const EdgeInsets.all(14),
-        child: Row(
-          children: [
-            IconDisc(icon),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: AppText.cardTitle),
-                  Text(
-                    detail,
-                    style: AppText.secondary.copyWith(color: AppColors.brown),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SheetTitle(l10n.addToSchedule),
-        const SizedBox(height: 12),
-        option(
-          0,
-          'appointment',
-          Icons.event_rounded,
-          l10n.addAppointment,
-          l10n.addAppointmentNote,
-        ),
-        option(
-          1,
-          'medicine',
-          Icons.medication_rounded,
-          l10n.medicine,
-          l10n.addMedicineNote,
-        ),
-        option(
-          2,
-          'routine',
-          Icons.restaurant_rounded,
-          l10n.routine,
-          l10n.addRoutineNote,
-        ),
-      ],
-    );
-  }
-}
 
 /// Today, Upcoming and Needs review. Routines are ticked directly; a
 /// medicine opens "Record dose". A reminder nobody answered is never
@@ -151,7 +55,15 @@ class ScheduleSection extends ConsumerWidget {
         title: l10n.scheduleEmpty,
         message: l10n.scheduleEmptyNote(pet.name),
         actionLabel: l10n.addToSchedule,
-        onAction: () => showScheduleAddSheet(context, pet),
+        // The tab's Add sheet (an appointment, a medicine, a routine).
+        onAction: AddFab.available(ref, AddTab.health)
+            ? () => showAddSheet(
+                context,
+                tab: AddTab.health,
+                title: l10n.addToHealth,
+                petId: pet.id,
+              )
+            : null,
       );
     }
 
@@ -204,12 +116,6 @@ class ScheduleSection extends ConsumerWidget {
         HealthSectionTitle(
           context.l10n.commonToday,
           detail: l10n.sectionDetailDay(format.shortDay(now)),
-          trailing: HealthLink(
-            context.l10n.commonAdd,
-            key: const Key('schedule-add'),
-            icon: Icons.add_rounded,
-            onPressed: () => showScheduleAddSheet(context, pet),
-          ),
         ),
         if (today.isEmpty)
           Padding(
@@ -1004,7 +910,10 @@ class _RoutineCard extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          IconDisc(careKindIcon(item.kind)),
+          IconDisc(
+            careKindIcon(item.kind),
+            color: careKindArea(item.kind).disc,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

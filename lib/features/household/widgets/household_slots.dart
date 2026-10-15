@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../services/household/state/household_providers.dart';
+import '../../../theme/app_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/petloop_icon.dart';
 import '../../settings/widgets/menu_entry.dart';
@@ -32,6 +33,7 @@ class HouseholdMenuEntry extends ConsumerWidget {
     return MenuEntry(
       key: entryKey,
       icon: const PetLoopIcon(PetLoopGlyph.home),
+      area: AppArea.care,
       title: l10n.title,
       subtitle: others.isEmpty ? l10n.youRowSolo : namesOf(l10n, others),
       subtitleMaxLines: 2,

@@ -20,6 +20,7 @@ import 'package:pet_companion/features/health/state/health_providers.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
 import 'package:pet_companion/theme/app_theme.dart';
+import 'package:pet_companion/widgets/add_sheet.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
 import 'package:pet_companion/widgets/coral_segmented_control.dart';
 import 'package:pet_companion/widgets/pet_switcher.dart';
@@ -271,6 +272,16 @@ Future<void> openHealthTab(WidgetTester tester, {String label = 'Health'}) async
 }
 
 /// Scrolls [finder] into view and taps it.
+/// Opens the Health tab's "+" and taps the Add sheet's row [id]
+/// ('quick-log', 'record', 'appointment', 'medicine', 'routine').
+Future<void> openAddRow(WidgetTester tester, String id) async {
+  await tester.tap(find.byKey(AddFab.fabKey));
+  await tester.pumpAndSettle();
+  expect(find.byKey(AddSheet.sheetKey), findsOneWidget);
+  await tester.tap(find.byKey(AddSheet.rowKey(id)));
+  await tester.pumpAndSettle();
+}
+
 Future<void> tapVisible(WidgetTester tester, Finder finder) async {
   // Centred: at the top of a long Home it would sit under the pinned bar.
   await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);

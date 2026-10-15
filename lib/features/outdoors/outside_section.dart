@@ -17,10 +17,6 @@ import 'parks/parks_view.dart';
 /// module registers it, Partners shows a friendly "coming soon".
 const outsidePartnersSlot = 'outside-partners';
 
-/// The slot the meetups feature fills with the floating "+ New ad" button
-/// the Outside tab shows while Partners is on screen.
-const outsideNewAdSlot = 'outside-new-ad';
-
 /// Whether an installed module the account may use fills slot [name].
 bool slotAvailable(WidgetRef ref, String name) {
   for (final module in ref.watch(featureModulesProvider)) {

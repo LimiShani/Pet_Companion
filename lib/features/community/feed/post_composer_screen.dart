@@ -20,12 +20,17 @@ import 'post_actions.dart';
 import '../safety/safety_flows.dart';
 
 /// Opens the full-screen composer above the bottom navigation bar: for a
-/// new post, or to change [editing] (one of the member's own).
-Future<void> openPostComposer(BuildContext context, {Post? editing}) {
+/// new post (of [kind], a moment unless told), or to change [editing] (one
+/// of the member's own).
+Future<void> openPostComposer(
+  BuildContext context, {
+  Post? editing,
+  PostKind? kind,
+}) {
   return Navigator.of(context, rootNavigator: true).push(
     MaterialPageRoute<void>(
       fullscreenDialog: true,
-      builder: (context) => PostComposerScreen(editing: editing),
+      builder: (context) => PostComposerScreen(editing: editing, kind: kind),
     ),
   );
 }
@@ -33,9 +38,13 @@ Future<void> openPostComposer(BuildContext context, {Post? editing}) {
 /// Full-screen form for a post: its kind, text, an optional pet tag and one
 /// optional photo. Editing changes only the text and the kind.
 class PostComposerScreen extends ConsumerStatefulWidget {
-  const PostComposerScreen({super.key, this.editing});
+  const PostComposerScreen({super.key, this.editing, this.kind});
 
   final Post? editing;
+
+  /// The kind a new post starts as (the Add sheet's row); a moment if
+  /// null. The member can still change it.
+  final PostKind? kind;
 
   @override
   ConsumerState<PostComposerScreen> createState() => _PostComposerScreenState();
@@ -45,13 +54,13 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   final _text = TextEditingController();
   String? _petId;
   PickedPhoto? _photo;
-  var _kind = PostKind.moment;
+  late var _kind = widget.kind ?? PostKind.moment;
   var _posting = false;
 
   Post? get _editing => widget.editing;
   bool get _hasText => _text.text.trim().isNotEmpty;
   bool get _dirty => _editing == null
-      ? _hasText || _photo != null || _kind != PostKind.moment
+      ? _hasText || _photo != null || _kind != (widget.kind ?? PostKind.moment)
       : _text.text.trim() != _editing!.text || _kind != _editing!.kind;
 
   @override

@@ -99,7 +99,11 @@ void main() {
       expect(find.text('Saturday at 8 by the lifeguard tower then 🐾'), findsOneWidget);
       expect(find.text('Noa: Lovely walk today, thank you all!'), findsOneWidget);
       expect(labelled('1 unread message'), findsNWidgets(2));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
       expect(find.text('New chat'), findsOneWidget);
+      Navigator.of(tester.element(find.text('New chat'))).pop();
+      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     });
 
@@ -150,7 +154,12 @@ void main() {
       await openChatSection(tester);
       expect(find.text('My chats'), findsNothing);
       expect(find.text('Kitten playdates'), findsNothing);
-      expect(find.text('New chat'), findsNothing);
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('add-new-chat')), findsNothing);
+      expect(find.byKey(const ValueKey('add-post-moment')), findsOneWidget);
+      Navigator.of(tester.element(find.byKey(const ValueKey('add-post-moment')))).pop();
+      await tester.pumpAndSettle();
       expect(find.text('General'), findsOneWidget);
 
       GoRouter.of(tester.element(find.byType(CoralHeader).first)).push(CommunityRoutes.member('u-maya'));
@@ -204,7 +213,9 @@ void main() {
     testWidgets('an admin starts a group, renames it, adds, makes admin and removes', (tester) async {
       final h = await pumpCommunity(tester, harness: withChats(), size: const Size(390, 1000));
       await openChatSection(tester);
-      await tester.tap(find.text('New chat'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-new-chat')));
       await tester.pumpAndSettle();
 
       expect(find.text('People you talked with recently'), findsOneWidget);
@@ -303,7 +314,9 @@ void main() {
     testWidgets('one person: Next opens the chat of the two; Private message reopens it', (tester) async {
       await pumpCommunity(tester, harness: withChats());
       await openChatSection(tester);
-      await tester.tap(find.text('New chat'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-new-chat')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('person-u-maya')));
       await tester.pumpAndSettle();
@@ -451,7 +464,9 @@ void main() {
       await goBack(tester);
       await goBack(tester);
 
-      await tester.tap(find.text(he.newChat));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-new-chat')));
       await tester.pumpAndSettle();
       expect(find.text(he.recentPeople), findsOneWidget);
       await tester.tap(find.byKey(const ValueKey('person-u-noa')));

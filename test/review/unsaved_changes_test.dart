@@ -107,7 +107,7 @@ void main() {
     await openSection(tester, 'Schedule');
     final page = find.byType(MedicineFormScreen);
     Future<void> open() async {
-      await tapVisible(tester, find.byKey(const Key('schedule-add')));
+      await tapVisible(tester, find.byKey(const Key('add-fab')));
       await tapVisible(tester, find.byKey(const ValueKey('add-medicine')));
     }
 
@@ -150,7 +150,7 @@ void main() {
 
     await checkPage(
       tester,
-      open: () => tapText(tester, 'Add record'),
+      open: () => openAddRow(tester, 'record'),
       page: page,
       edit: () => tester.enterText(find.byKey(const Key('record-title')), 'Nail trim'),
       edited: find.text('Nail trim'),
@@ -194,7 +194,7 @@ void main() {
     await checkPage(
       tester,
       open: () async {
-        await tapVisible(tester, find.byKey(const Key('schedule-add')));
+        await tapVisible(tester, find.byKey(const Key('add-fab')));
         await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
       },
       page: page,
@@ -300,7 +300,10 @@ void main() {
 
     await checkPage(
       tester,
-      open: () => tapText(tester, 'Share a deal'),
+      open: () async {
+        await tapVisible(tester, find.byKey(const Key('add-fab')));
+        await tapVisible(tester, find.byKey(const ValueKey('add-share-deal')));
+      },
       page: page,
       edit: () => fill('title', 'Chicken jerky strips'),
       edited: find.text('Chicken jerky strips'),

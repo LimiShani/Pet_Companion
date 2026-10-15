@@ -180,7 +180,7 @@ class PostCard extends ConsumerWidget {
                           tone: post.kind == PostKind.lostFound
                               ? AppTagTone.peach
                               : AppTagTone.yellow,
-                          icon: _kindIcon(post.kind),
+                          icon: postKindIcon(post.kind),
                         ),
                       if (answered)
                         AppTag(
@@ -276,7 +276,8 @@ class PostCard extends ConsumerWidget {
   }
 }
 
-IconData _kindIcon(PostKind kind) => switch (kind) {
+/// The icon of a kind of post (its tag, its row in the Add sheet).
+IconData postKindIcon(PostKind kind) => switch (kind) {
   PostKind.moment => Icons.photo_camera_outlined,
   PostKind.question => Icons.help_outline_rounded,
   PostKind.tip => Icons.lightbulb_outline_rounded,

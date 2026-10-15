@@ -157,14 +157,6 @@ class _RecordsSectionState extends ConsumerState<RecordsSection> {
             ? l10n.recordsCount(history.length)
             : l10n.recordsShown(shown.length, history.length),
         onShare: widget.onShare,
-        trailing: history.isEmpty
-            ? null
-            : HealthLink(
-                l10n.addRecord,
-                icon: Icons.add_rounded,
-                padding: 4,
-                onPressed: () => openRecordForm(context, pet),
-              ),
       );
       body = [
         if (history.isEmpty)
@@ -462,13 +454,11 @@ class _HeaderRow extends StatelessWidget {
     required this.count,
     required this.onShare,
     this.leading,
-    this.trailing,
   });
 
   final String? count;
   final VoidCallback? onShare;
   final Widget? leading;
-  final Widget? trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -498,7 +488,6 @@ class _HeaderRow extends StatelessWidget {
               padding: 4,
               onPressed: onShare,
             ),
-          if (trailing != null) trailing!,
         ],
       ),
     );

@@ -8,6 +8,7 @@ import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../platform/feature_ui.dart';
 import '../../state/pets_provider.dart';
+import '../../theme/app_area.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/coral_header.dart';
@@ -76,6 +77,7 @@ class YouScreen extends ConsumerWidget {
                       MenuEntry(
                         key: myPetsKey,
                         icon: const PetLoopIcon(PetLoopGlyph.pet),
+                        area: AppArea.care,
                         title: l10n.menuMyPets,
                         subtitle: l10n.homePetCount(petCount),
                         subtitleMaxLines: 2,
@@ -91,6 +93,7 @@ class YouScreen extends ConsumerWidget {
                       MenuEntry(
                         key: budgetKey,
                         icon: const Icon(Icons.account_balance_wallet_rounded),
+                        area: AppArea.store,
                         title: context.budgetL10n.budgetTitle,
                         subtitle: context.budgetL10n.menuBudgetSummary,
                         subtitleMaxLines: 2,
@@ -117,6 +120,7 @@ class YouScreen extends ConsumerWidget {
                       MenuEntry(
                         key: safetyKey,
                         icon: const Icon(Icons.shield_outlined),
+                        area: AppArea.community,
                         title: context.communityL10n.safetyTitle,
                         subtitle: l10n.youCommunitySafetySummary,
                         subtitleMaxLines: 2,

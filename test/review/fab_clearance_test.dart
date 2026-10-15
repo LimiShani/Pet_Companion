@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/community/feed/post_card.dart';
+import 'package:pet_companion/features/health/sections/overview_section.dart';
 import 'package:pet_companion/features/health/sections/records_section.dart';
 import 'package:pet_companion/features/health/sections/schedule_section.dart';
 import 'package:pet_companion/features/store/widgets/deal_card.dart';
@@ -12,8 +13,8 @@ import '../health/health_test_helpers.dart';
 import '../helpers.dart';
 import '../store/store_test_helpers.dart' show pumpStore;
 
-/// The extended floating buttons of Health, Community and Store never sit
-/// on top of the last row once the list is scrolled to its end.
+/// The "+" of Health, Community and Store never sits on top of the last
+/// row once the list is scrolled to its end.
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
@@ -35,40 +36,41 @@ void main() {
     expect(tester.getRect(last).bottom, lessThanOrEqualTo(button.top));
   }
 
-  testWidgets('Health: every section with the Quick log button ends above it', (tester) async {
+  testWidgets('Health: every section ends above the "+"', (tester) async {
     await pumpHealth(tester);
     for (final (label, chip, section) in [
+      ('Overview', null, find.byType(OverviewSection)),
       ('Schedule', null, find.byType(ScheduleSection)),
       ('Records', 'filter-all', find.byType(RecordsSection)),
       ('Records', 'filter-journal', find.byType(RecordsSection)),
     ]) {
       await openSection(tester, label);
       if (chip != null) await tapVisible(tester, find.byKey(Key(chip)));
-      expect(find.byKey(const Key('quick-log-button')), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
       await scrollToEnd(tester, section);
       expectAboveButton(tester, section);
     }
   });
 
-  testWidgets('Community: the last post ends above "New post"', (tester) async {
+  testWidgets('Community: the last post ends above the "+"', (tester) async {
     await pumpApp(tester);
     await signInAsDemo(tester);
     await tester.tap(find.descendant(of: find.byType(AppBottomNav), matching: find.text('Community')));
     await tester.pumpAndSettle();
 
-    expect(find.text('New post'), findsOneWidget);
+    expect(find.byKey(const Key('add-fab')), findsOneWidget);
     await scrollToEnd(tester, find.byType(PostCard).first);
     expectAboveButton(tester, find.byType(PostCard).last);
   });
 
-  testWidgets('Store: the last row of deals ends above "Share a deal"', (tester) async {
+  testWidgets('Store: the last row of deals ends above the "+"', (tester) async {
     await pumpStore(tester);
 
     await scrollToEnd(tester, find.byType(DealCard).first);
     expectAboveButton(tester, find.byType(DealCard).last);
   });
 
-  testWidgets('Store: "no deals" keeps its button clear of "Share a deal" on a small phone', (tester) async {
+  testWidgets('Store: "no deals" keeps its button clear of the "+" on a small phone', (tester) async {
     await pumpStore(tester);
     tester.view.physicalSize = const Size(320, 568) * 3;
     await tester.pumpAndSettle();

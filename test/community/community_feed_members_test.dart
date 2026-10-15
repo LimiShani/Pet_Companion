@@ -47,7 +47,9 @@ Future<void> chooseKind(WidgetTester tester, String name) async {
 
 /// Writes a post from the composer, choosing [kind] when given.
 Future<void> writePost(WidgetTester tester, String text, {String? kind}) async {
-  await tester.tap(find.text('New post'));
+  await tester.tap(find.byKey(const Key('add-fab')));
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(const ValueKey('add-post-moment')));
   await tester.pumpAndSettle();
   if (kind != null) {
     await tester.tap(find.byKey(ValueKey('compose-kind-$kind')));
@@ -136,7 +138,9 @@ void main() {
   group('posts', () {
     testWidgets('a question from the composer carries its tag', (tester) async {
       await pumpCommunity(tester);
-      await tester.tap(find.text('New post'));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-post-moment')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('compose-kind-question')));
       await tester.pumpAndSettle();
@@ -341,11 +345,15 @@ void main() {
     expect(tester.takeException(), isNull);
     await goBack(tester);
 
-    await tester.tap(find.text(he.newPost));
+    // The "+": its Add sheet, then "Lost or found" opens the composer on
+    // that kind.
+    await tester.tap(find.byKey(const Key('add-fab')));
+    await tester.pumpAndSettle();
+    expect(find.text(he.addToCommunity), findsOneWidget);
+    expect(tester.takeException(), isNull);
+    await tester.tap(find.text(he.addLostFound));
     await tester.pumpAndSettle();
     expect(find.text(he.kindLostFound), findsOneWidget);
-    await tester.tap(find.text(he.kindLostFound));
-    await tester.pumpAndSettle();
     expect(find.text(he.composerHintLostFound), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

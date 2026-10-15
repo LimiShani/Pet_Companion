@@ -259,5 +259,7 @@
   "reviewerTools": "For park reviewers",
   "reopenPark": "Open again",
   "removeConfirm": "Remove this park from the list? It is hidden, not deleted.",
-  "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL)."
+  "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).",
+  "addToOutside": "Add to Outside",
+  "@addToOutside": {"description": "The Outside tab's \"+\" button (for a screen reader) and the title of the sheet it opens."}
 }

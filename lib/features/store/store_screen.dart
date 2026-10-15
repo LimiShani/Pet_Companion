@@ -8,6 +8,7 @@ import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/add_sheet.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
@@ -19,7 +20,6 @@ import '../../platform/feature_ui.dart';
 import '../../access/access_provider.dart';
 import '../../services/store/data/deal.dart';
 import '../../services/store/data/deal_filters.dart';
-import 'share_deal_screen.dart';
 import '../../services/store/state/store_providers.dart';
 import 'store_routes.dart';
 import '../../presentation/store_strings.dart';
@@ -68,18 +68,6 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final ok = await ref.read(dealsProvider.notifier).refresh();
     if (!ok && mounted) {
       showStoreMessage(context, context.storeL10n.couldNotRefresh);
-    }
-  }
-
-  Future<void> _shareDeal() async {
-    final deal = await Navigator.of(context, rootNavigator: true).push<Deal>(
-      MaterialPageRoute(
-        fullscreenDialog: true,
-        builder: (context) => const ShareDealScreen(),
-      ),
-    );
-    if (deal != null && mounted) {
-      showStoreMessage(context, context.storeL10n.dealIsLive);
     }
   }
 
@@ -142,16 +130,18 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     final hasBasket = ref.watch(capabilityProvider('basket.view'));
     final searching = _searching && !basket;
 
+    // The tab's one "+", on Deals and on the basket alike.
+    final plus = AddFab.available(ref, AddTab.store);
+
     return Scaffold(
       key: const Key('store-screen'),
-      floatingActionButton:
-          basket || !ref.watch(capabilityProvider('store.deals.share'))
-          ? null
-          : FloatingActionButton.extended(
-              onPressed: _shareDeal,
-              icon: const AppIcon(Icons.add_rounded),
-              label: Text(l10n.shareADeal),
-            ),
+      floatingActionButton: plus
+          ? AddFab(
+              tab: AddTab.store,
+              title: l10n.addToStore,
+              petId: ref.watch(selectedPetProvider).id,
+            )
+          : null,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

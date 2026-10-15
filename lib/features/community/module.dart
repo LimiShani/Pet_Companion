@@ -5,6 +5,11 @@ import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
 import '../../l10n/l10n.dart';
 import '../../widgets/petloop_icon.dart';
+import '../../services/community/data/community_models.dart' show PostKind;
+import 'chat/new_chat_screen.dart';
+import 'chat/private_chat_providers.dart' show privateChatCapability;
+import 'feed/post_card.dart' show postKindIcon;
+import 'feed/post_composer_screen.dart';
 import 'community_routes.dart';
 import 'community_screen.dart';
 import 'feed/feed_controller.dart';
@@ -18,7 +23,41 @@ final communityModule = FeatureModule(
     glyph: PetLoopGlyph.community,
     label: (c) => c.l10n.navCommunity,
     routes: communityRoutes,
+    area: AppArea.community,
   ),
+  // The Community tab's "+": a post of a chosen kind, or a new chat.
+  add: {
+    AddTab.community: [
+      for (final (i, kind, label) in [
+        (0, PostKind.moment, (BuildContext c) => c.communityL10n.addMoment),
+        (1, PostKind.question, (BuildContext c) => c.communityL10n.addQuestion),
+        (
+          2,
+          PostKind.recommendation,
+          (BuildContext c) => c.communityL10n.addRecommendation,
+        ),
+        (3, PostKind.lostFound, (BuildContext c) => c.communityL10n.addLostFound),
+      ])
+        AddEntry(
+          id: 'post-${kind.name}',
+          capability: 'community.feed.post',
+          area: AppArea.community,
+          icon: postKindIcon(kind),
+          label: label,
+          order: i * 10,
+          open: (c, r) => openPostComposer(c, kind: kind),
+        ),
+      AddEntry(
+        id: 'new-chat',
+        capability: privateChatCapability,
+        area: AppArea.community,
+        icon: Icons.add_comment_rounded,
+        label: (c) => c.communityL10n.newChat,
+        order: 40,
+        open: (c, r) => openNewChat(c),
+      ),
+    ],
+  },
   // The community's push choices, on the Settings page.
   slots: {
     'community-push-settings': FeatureSlot(

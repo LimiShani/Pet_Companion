@@ -988,6 +988,12 @@ abstract class MeetupsL10n {
   /// In en, this message translates to:
   /// **'Walk and play ads'**
   String get memberAds;
+
+  /// Add sheet row of the Outside tab: a new partners ad.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan a walk or play date'**
+  String get addPlanWalk;
 }
 
 class _MeetupsL10nDelegate extends LocalizationsDelegate<MeetupsL10n> {

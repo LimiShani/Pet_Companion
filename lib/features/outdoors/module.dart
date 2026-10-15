@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../l10n/l10n.dart';
@@ -14,6 +15,7 @@ final outdoorsModule = FeatureModule(
   tab: FeatureTab(
     capability: OutsideScreen.capability,
     glyph: PetLoopGlyph.walk,
+    area: AppArea.community,
     label: (c) => c.outdoorsL10n.sectionOutside,
     routes: [
       GoRoute(
@@ -22,6 +24,20 @@ final outdoorsModule = FeatureModule(
       ),
     ],
   ),
+  // Outside's "+" (meetups adds "Plan a walk or play date" before it).
+  add: {
+    AddTab.outside: [
+      AddEntry(
+        id: 'suggest-park',
+        capability: ParkCapabilities.suggest,
+        area: AppArea.community,
+        icon: Icons.park_rounded,
+        label: (c) => c.outdoorsL10n.suggestPark,
+        order: 10,
+        open: (c, r) => openSuggestPark(c),
+      ),
+    ],
+  },
   slots: {
     // The OpenStreetMap credit in Settings > About PetLoop. Settings shows
     // credits whatever the account may use (a licence notice).

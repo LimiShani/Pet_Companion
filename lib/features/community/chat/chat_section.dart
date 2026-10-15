@@ -8,6 +8,8 @@ import '../../../auth/auth_controller.dart';
 import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
+import '../../../platform/feature_ui.dart' show AddTab;
+import '../../../widgets/add_sheet.dart' show AddFab;
 import '../../../widgets/app_icon.dart';
 import '../community_routes.dart';
 import '../community_words.dart';
@@ -106,8 +108,11 @@ class ChatSection extends ConsumerWidget {
       },
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
-        // Room under the last card for the "New chat" button.
-        padding: EdgeInsets.only(top: 16, bottom: private ? 88 : 24),
+        // Room under the last card for the tab's "+".
+        padding: EdgeInsets.only(
+          top: 16,
+          bottom: AddFab.available(ref, AddTab.community) ? 88 : 24,
+        ),
         children: [
           if (private) const _PrivateChats(),
           // The animal menu filters only the topic rooms, so it sits on

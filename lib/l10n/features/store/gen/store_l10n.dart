@@ -1264,6 +1264,12 @@ abstract class StoreL10n {
   /// In en, this message translates to:
   /// **'Next'**
   String get shareNext;
+
+  /// The Store tab's "+" button (for a screen reader) and the title of the sheet it opens.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Store'**
+  String get addToStore;
 }
 
 class _StoreL10nDelegate extends LocalizationsDelegate<StoreL10n> {

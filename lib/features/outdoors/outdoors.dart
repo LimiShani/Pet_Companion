@@ -36,7 +36,6 @@ export 'outside_section.dart'
     show
         OutsideSection,
         OutdoorsKeeper,
-        outsideNewAdSlot,
         outsidePartnersSlot,
         slotAvailable;
 export 'outside_screen.dart' show OutsideScreen, OutsideAreaChip;

@@ -35,9 +35,11 @@ void main() {
       expect(find.text('Thu 12.06.25 · 18:20 · Park Vet Clinic'), findsOneWidget);
       expect(find.text('1 reminder needs review'), findsOneWidget);
 
-      // Two actions: the Quick log and "Add record"; Share is on Records.
-      expect(find.byKey(const Key('overview-quick-log')), findsOneWidget);
-      expect(find.byKey(const Key('overview-add-record')), findsOneWidget);
+      // No add buttons on the page: the tab's "+" holds them. Share is on
+      // Records.
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
+      expect(find.byKey(const Key('overview-quick-log')), findsNothing);
+      expect(find.byKey(const Key('overview-add-record')), findsNothing);
       expect(find.byKey(const Key('overview-share')), findsNothing);
       expect(find.text('Share'), findsNothing);
 

@@ -17,7 +17,9 @@ void main() {
   });
 
   Future<void> openForm(WidgetTester tester) async {
-    await tester.tap(find.text('Share a deal'));
+    await tester.tap(find.byKey(const Key('add-fab')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('add-share-deal')));
     await tester.pumpAndSettle();
     expect(find.byType(ShareDealScreen), findsOneWidget);
   }

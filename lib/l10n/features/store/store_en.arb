@@ -301,5 +301,7 @@
   "shareStepDetails": "Details (optional)",
   "@shareStepDetails": {"description": "Heading of step 2 of 'Share a deal': package size, delivery, description and end date, all optional."},
   "shareNext": "Next",
-  "@shareNext": {"description": "Button at the end of step 1 of 'Share a deal': checks the fields and goes on to the details."}
+  "@shareNext": {"description": "Button at the end of step 1 of 'Share a deal': checks the fields and goes on to the details."},
+  "addToStore": "Add to Store",
+  "@addToStore": {"description": "The Store tab's \"+\" button (for a screen reader) and the title of the sheet it opens."}
 }

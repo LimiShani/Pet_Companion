@@ -91,7 +91,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // The share form: both steps, with the step line under the title.
-      await tester.tap(find.text(store.shareADeal));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-share-deal')));
       await tester.pumpAndSettle();
       expect(find.byType(ShareDealScreen), findsOneWidget);
       final pets = lookupPetsL10n(locale);

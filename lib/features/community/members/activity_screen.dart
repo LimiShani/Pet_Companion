@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../l10n/l10n.dart';
 import '../../../services/community/data/community_models.dart';
 import '../../../services/community/data/community_providers.dart';
+import '../../../theme/app_area.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
@@ -142,16 +143,22 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                           PositionedDirectional(
                             end: -4,
                             bottom: -4,
+                            // The Community area's disc, ringed in white
+                            // so it stands off the avatar.
                             child: Container(
                               padding: const EdgeInsets.all(3),
-                              decoration: const BoxDecoration(
-                                color: AppColors.white,
+                              decoration: BoxDecoration(
+                                color: AppArea.community.disc,
                                 shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: AppColors.white,
+                                  width: 1.5,
+                                ),
                               ),
                               child: AppIcon(
                                 icon,
                                 size: 13,
-                                color: AppColors.coralDark,
+                                color: AppColors.ink,
                               ),
                             ),
                           ),

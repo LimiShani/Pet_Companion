@@ -22,14 +22,27 @@ class AppBottomNav extends ConsumerWidget {
   final int currentIndex;
   final ValueChanged<int> onSelect;
 
-  /// The brand pack's line icons; the selected tab is told apart by its
-  /// yellow pill and coral colour.
+  /// The pill behind the selected tab's icon, for tests.
+  static const selectedPillKey = Key('nav-selected-pill');
+
+  /// The brand pack's line icons, each in its area's colour (see
+  /// [AppArea]): the selected tab's icon sits on a pill of its area's fill,
+  /// in ink; the others are stroked in the area's deep variant.
   static const _items = [
     PetLoopGlyph.home,
     PetLoopGlyph.health,
     PetLoopGlyph.community,
     PetLoopGlyph.shop,
   ];
+  static const _areas = [
+    AppArea.care,
+    AppArea.health,
+    AppArea.community,
+    AppArea.store,
+  ];
+
+  /// Home's area: daily care.
+  static const homeArea = AppArea.care;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -38,6 +51,9 @@ class AppBottomNav extends ConsumerWidget {
     final items = registered == null
         ? _items
         : [PetLoopGlyph.home, for (final tab in registered) tab.glyph];
+    final areas = registered == null
+        ? _areas
+        : [homeArea, for (final tab in registered) tab.area];
     final visible = registered == null
         ? [
             true,
@@ -90,6 +106,7 @@ class AppBottomNav extends ConsumerWidget {
                     child: _NavItem(
                       label: labels[i],
                       icon: items[i],
+                      area: areas[i],
                       selected: i == currentIndex,
                       onTap: () => onSelect(i),
                     ),
@@ -106,12 +123,14 @@ class _NavItem extends StatelessWidget {
   const _NavItem({
     required this.label,
     required this.icon,
+    required this.area,
     required this.selected,
     required this.onTap,
   });
 
   final String label;
   final PetLoopGlyph icon;
+  final AppArea area;
   final bool selected;
   final VoidCallback onTap;
 
@@ -122,20 +141,32 @@ class _NavItem extends StatelessWidget {
       selected: selected,
       label: label,
       child: Material(
-        color: selected ? AppColors.yellow : Colors.transparent,
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 7),
+            padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                PetLoopIcon(
-                  icon,
-                  size: 22,
-                  color: selected ? AppColors.coral : AppColors.brown,
+                // The selected tab's icon on a pill of its area's colour.
+                AnimatedContainer(
+                  key: selected ? AppBottomNav.selectedPillKey : null,
+                  duration: const Duration(milliseconds: 180),
+                  width: 52,
+                  height: 30,
+                  decoration: ShapeDecoration(
+                    color: selected ? area.disc : Colors.transparent,
+                    shape: const StadiumBorder(),
+                  ),
+                  alignment: Alignment.center,
+                  child: PetLoopIcon(
+                    icon,
+                    size: 22,
+                    color: selected ? AppColors.ink : area.deep,
+                  ),
                 ),
                 const SizedBox(height: 3),
                 // Shrinks a little rather than cut a word short when the

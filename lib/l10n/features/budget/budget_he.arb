@@ -118,5 +118,6 @@
   "errorUnknown": "משהו השתבש. אפשר לנסות שוב.",
   "scopeTooltip": "בחירת חיה או כל הבית",
   "formMoreDetails": "פרטים נוספים",
-  "formFewerDetails": "פחות פרטים"
+  "formFewerDetails": "פחות פרטים",
+  "addSheetExpense": "הוצאה"
 }

@@ -4,6 +4,7 @@ import 'package:pet_companion/features/meetups/meetups.dart';
 import 'package:pet_companion/features/outdoors/outdoors.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/models/pet.dart';
+import 'package:pet_companion/widgets/add_sheet.dart';
 import 'package:pet_companion/widgets/coral_header.dart';
 
 import 'meetups_test_helpers.dart';
@@ -11,8 +12,10 @@ import 'meetups_test_helpers.dart';
 /// A tall phone, so a whole form or list is built without scrolling.
 const tall = Size(390, 3200);
 
+/// The tab's "+", then "Plan a walk or play date" in its Add sheet.
 Future<void> openForm(WidgetTester tester) async {
-  await tapOn(tester, find.byKey(PartnersView.newAdKey));
+  await tapOn(tester, find.byKey(AddFab.fabKey));
+  await tapOn(tester, find.byKey(AddSheet.rowKey('plan-walk')));
   expect(find.byKey(MeetupFormScreen.screenKey), findsOneWidget);
 }
 
@@ -264,7 +267,7 @@ void main() {
       await openPartners(tester, language: AppLanguage.hebrew, size: const Size(320, 640));
       expect(tester.takeException(), isNull);
       expect(find.text(he.safetyStrip), findsNothing, reason: 'the form keeps it, not the board');
-      expect(find.text(he.newAd), findsOneWidget);
+      expect(find.byTooltip(lookupOutdoorsL10n(hebrewLocale).addToOutside), findsOneWidget);
       expect(find.text(he.myAdsCount(2)), findsOneWidget);
       await scrollTo(tester, find.byKey(MeetupCard.joinKey('demo-meetup-noa')));
       expect(tester.takeException(), isNull);
@@ -278,8 +281,11 @@ void main() {
       Navigator.of(tester.element(find.byType(JoinMeetupSheet))).pop();
       await tester.pumpAndSettle();
 
-      // The floating button, wherever the list is.
-      await tester.tap(find.byKey(PartnersView.newAdKey));
+      // The tab's "+", wherever the list is.
+      await tester.tap(find.byKey(AddFab.fabKey));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.byKey(AddSheet.rowKey('plan-walk')));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text(he.withWhom), findsOneWidget);

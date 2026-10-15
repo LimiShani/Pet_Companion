@@ -49,7 +49,7 @@ void main() {
           find.bySemanticsLabel(RegExp(RegExp.escape(he.costSemantics(format.money(320, 'ILS'))))),
           findsOneWidget,
         );
-        expect(find.text(he.addRecord), findsOneWidget);
+        expect(find.byKey(const Key('add-fab')), findsOneWidget);
         expect(find.text(he.searchRecords('Kelly')), findsOneWidget);
         for (final chip in ['הכול', 'ביקורי וטרינר', 'חיסונים', 'טיפולים מונעים', 'טיפולים', 'מסמכים', 'משקל', 'יומן תצפיות']) {
           expect(find.widgetWithText(ChoiceChip, chip), findsOneWidget, reason: chip);
@@ -131,7 +131,7 @@ void main() {
 
       testWidgets('a new record and its checks', (tester) async {
         final h = await openHistory(tester, size: size);
-        await tapVisible(tester, find.text(he.addRecord));
+        await openAddRow(tester, 'record');
 
         expect(find.text('רשומה חדשה'), findsOneWidget);
         expect(find.text(he.whatKindOfRecord), findsOneWidget);
@@ -198,7 +198,7 @@ void main() {
 
       testWidgets('an appointment ahead, a vaccination with its next due date', (tester) async {
         await openHistory(tester, size: size);
-        await tapVisible(tester, find.text(he.addRecord));
+        await openAddRow(tester, 'record');
 
         // A vaccination given today asks for the next due date.
         await tapVisible(tester, find.widgetWithText(ChoiceChip, 'חיסון'));

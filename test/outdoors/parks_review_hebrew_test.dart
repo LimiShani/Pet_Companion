@@ -6,6 +6,7 @@ import 'package:pet_companion/features/settings/settings_routes.dart';
 import 'package:pet_companion/l10n/l10n.dart';
 import 'package:pet_companion/platform/feature_ui.dart';
 import 'package:pet_companion/services/findvet/regions/regions.dart';
+import 'package:pet_companion/widgets/add_sheet.dart';
 import 'package:pet_companion/widgets/app_bottom_nav.dart';
 
 import '../helpers.dart';
@@ -255,7 +256,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.byKey(PartnersView.controlRowKey), findsOneWidget);
-      expect(find.byKey(PartnersView.newAdKey), findsOneWidget);
+      expect(find.byKey(AddFab.fabKey), findsOneWidget);
       await tester.tap(find.byKey(OutsideSection.parksKey));
       await tester.pumpAndSettle();
       await scrollTo(tester, find.byKey(ParksView.suggestKey));

@@ -128,9 +128,11 @@ void main() {
         expect(screenDirection(tester, find.byType(CommunityScreen)), TextDirection.rtl);
         // The tab's name: once in the header, once in the bottom bar.
         expect(find.text('קהילה'), findsNWidgets(2));
-        for (final label in ['פיד', 'צ׳אט', 'מדריכים', 'פוסט חדש']) {
+        for (final label in ['פיד', 'צ׳אט', 'מדריכים']) {
           expect(find.text(label), findsOneWidget, reason: label);
         }
+        // The "+", named in Hebrew for a screen reader.
+        expect(find.byTooltip('הוספה לקהילה'), findsOneWidget);
         for (final english in ['Community', 'Feed', 'Chat', 'Guides', 'New post']) {
           expect(find.text(english), findsNothing, reason: english);
         }
@@ -223,7 +225,11 @@ void main() {
       testWidgets('the composer and its discard dialog', (tester) async {
         final h = await pumpCommunity(tester, harness: hebrew(), size: size);
 
-        await tester.tap(find.text('פוסט חדש'));
+        await tester.tap(find.byKey(const Key('add-fab')));
+        await tester.pumpAndSettle();
+        expect(find.text('שיתוף רגע'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.tap(find.text('שיתוף רגע'));
         await tester.pumpAndSettle();
         expect(headerTitle('פוסט חדש'), findsOneWidget);
         expect(find.text('הפוסט גלוי לכל הקהילה'), findsOneWidget);
@@ -607,7 +613,7 @@ void main() {
       final rtl = language == AppLanguage.hebrew;
 
       expect(headerTitle(words.tabTitle), findsOneWidget);
-      expect(find.text(words.newPost), findsOneWidget);
+      expect(find.byKey(const Key('add-fab')), findsOneWidget);
       expect(screenDirection(tester, find.byType(CommunityScreen)), rtl ? TextDirection.rtl : TextDirection.ltr);
 
       // A post card: the avatar leads, the menu closes the row.
@@ -631,7 +637,9 @@ void main() {
       await pumpCommunity(tester, harness: CommunityHarness(appLanguage: language));
       final words = language == AppLanguage.hebrew ? he : en;
 
-      await tester.tap(find.text(words.newPost));
+      await tester.tap(find.byKey(const Key('add-fab')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('add-post-moment')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byType(TextField), hebrewPost);
       await tester.pumpAndSettle();

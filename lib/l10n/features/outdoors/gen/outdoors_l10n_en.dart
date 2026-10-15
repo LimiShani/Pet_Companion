@@ -405,4 +405,7 @@ class OutdoorsL10nEn extends OutdoorsL10n {
 
   @override
   String get aboutMapData => 'Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).';
+
+  @override
+  String get addToOutside => 'Add to Outside';
 }

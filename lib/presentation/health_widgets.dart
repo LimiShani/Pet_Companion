@@ -136,13 +136,14 @@ class HealthSectionTitle extends StatelessWidget {
   }
 }
 
-/// A round icon disc, as on the home dashboard cards.
+/// A round icon disc, in the Health area's peach unless told otherwise
+/// (see `AppArea`: a routine of daily care takes Care's tint).
 class IconDisc extends StatelessWidget {
   const IconDisc(
     this.icon, {
     super.key,
     this.size = 40,
-    this.color = AppColors.yellow,
+    this.color = AppColors.peach,
     this.iconColor = AppColors.ink,
   });
 

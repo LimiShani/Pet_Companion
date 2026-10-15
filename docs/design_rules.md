@@ -59,6 +59,49 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 * Empty states invite with one sentence and one action, never a zero or a
   dash ("Add Soya's food and meal times to count calories." + Set up).
 
+## One plus per tab
+
+* Health, Community, Outside and Store each have exactly ONE floating "+"
+  (`AddFab`: 56 px, round, coral dark, white plus; a screen reader hears
+  "Add to Health"), on every segment of the tab. Home has none.
+* It opens the tab's **Add sheet** (`AddSheet` in `lib/widgets/`): the
+  title ("Add to Health") and 3 to 6 rows, each an `AreaDisc`, a label and
+  at most one quieter line. A row opens an existing form, sheet or page.
+* Modules contribute the rows (`FeatureModule.add[AddTab.health]`, an
+  `AddEntry` with its capability, area, icon, label and `open`); the tab
+  never imports another feature. Rows the account lacks the capability
+  for are hidden; with no row, no "+".
+* Today: Health (Quick log, Record, Appointment or due date, Medicine,
+  Care routine), Community (Share a moment, Ask a question, Recommend a
+  place or product, Lost or found, New chat), Outside (Plan a walk or play
+  date, Suggest a park), Store (Share a deal, Regular product, Expense).
+* No other "add" button on a tab's pages: the "+" replaced Quick log /
+  Add record on the Overview, the Schedule's Add, the Records' Add record,
+  New post, New chat, New ad, Share a deal and the basket's add line. An
+  empty state still invites with one action (Health's opens the Add
+  sheet); a button that carries context stays (the park page's "Post a
+  meetup here", "Log weight", the Budget page's "Add expense").
+
+## Colour by area
+
+* Every part of the app has a colour from the brand palette (`AppArea` in
+  `lib/theme/app_area.dart`): **Care** coral tint `#FBD0C3`
+  (`AppColors.coralTint`), **Health** peach, **Community and Outside**
+  sage, **Store, Budget and the basket** yellow, **You** (the account)
+  neutral `#EADFCB` (`AppColors.neutral`).
+* The colour sits on **icon discs** (`AreaDisc`: an ink line icon in a
+  34 px circle; `MenuEntry(area:)` on the You and Settings pages; the
+  Health and Community discs), on **tags** (`AppTag.area`) and on the
+  **bottom-bar icons**: the selected tab's icon on a pill of its area's
+  fill, in ink, with an ink bold label; the others stroked in the area's
+  deep variant (`AppArea.deep`, 3:1 on white), labels brown.
+* Text is never coloured by area: ink or brown only. The coral header
+  stays coral everywhere; yellow still means "selected" for chips and
+  segmented controls; the three illustrated Home cards (Feeding sage,
+  Activity yellow, Health peach) keep their colours.
+* A new disc goes where a row already shows a round icon, not on every
+  row.
+
 ## Pages and forms
 
 * Overview pages with small editors: a page that shows a thing lists rows
@@ -85,7 +128,8 @@ rounded cards, the illustrated Home icons, Nunito (Latin) with Fredoka
 * Sizes only from `AppText`: appTitle 23, petName 24, heading 20,
   sectionTitle 18, rowTitle 16, bodyLarge 16, cardTitle 15, body 14,
   secondary 13, label 12, navLabel 11, metric 28/30, button(size).
-* One tag (`AppTag` with tones yellow / sage / peach / neutral / ink), one
+* One tag (`AppTag` with tones yellow / sage / peach / neutral / ink, or
+  an area's colour with `AppTag.area`), one
   segmented control, one menu chip (`CoralMenuChip` on coral).
 * Tap targets at least 44 px.
 

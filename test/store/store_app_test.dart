@@ -28,7 +28,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.text('23 deals for dogs'), findsOneWidget);
     expect(find.text('Squeaky rope tug toy, 2 pack'), findsOneWidget);
-    expect(find.text('Share a deal'), findsOneWidget);
+    expect(find.byKey(const Key('add-fab')), findsOneWidget);
 
     // Tapping the tab again from a sub-page returns to the grid.
     await tester.tap(find.byTooltip('Saved deals'));
@@ -79,7 +79,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('No deals found'), findsOneWidget);
 
-    await tester.tap(find.text('Share a deal'));
+    await tester.tap(find.byKey(const Key('add-fab')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('add-share-deal')));
     await tester.pumpAndSettle();
     expect(find.byType(ShareDealScreen), findsOneWidget);
     final send = find.widgetWithText(FilledButton, 'Next');

@@ -4,6 +4,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 
 import '../l10n/l10n.dart';
 import '../models/pet.dart';
+import '../theme/app_area.dart';
 import 'pet_words.dart';
 import '../services/pet_records/data/health_models.dart';
 import 'health_strings.dart';
@@ -281,6 +282,11 @@ IconData careKindIcon(CareKind kind) => switch (kind) {
   CareKind.cageCleaning => Icons.cleaning_services_rounded,
   CareKind.other => Icons.check_circle_outline_rounded,
 };
+
+/// The part of the app a routine belongs to, for the colour of its disc:
+/// a medicine is Health, a meal, a walk or a clean-up is daily care.
+AppArea careKindArea(CareKind kind) =>
+    kind == CareKind.medication ? AppArea.health : AppArea.care;
 
 /// Whether [icon] points somewhere (a figure walking forward) and so is
 /// mirrored on a right-to-left screen. Flutter mirrors arrows and chevrons

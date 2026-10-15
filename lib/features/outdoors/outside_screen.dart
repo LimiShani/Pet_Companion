@@ -9,6 +9,8 @@ import '../../services/outdoors/data/park_area.dart';
 import '../../services/outdoors/state/parks_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
+import '../../state/pets_provider.dart';
+import '../../widgets/add_sheet.dart';
 import '../../widgets/app_icon.dart';
 import '../../widgets/coral_header.dart';
 import '../../widgets/coral_segmented_control.dart';
@@ -20,8 +22,9 @@ import 'parks/park_area_picker.dart';
 /// The Outside tab: dog parks, and walk and play partners from the meetups
 /// module, switched from the header ("Partners | Parks"). Partners shows
 /// first; an account without parks sees Partners alone, with no switch.
-/// Once an area is chosen it is a chip in the header, for both sides; while
-/// Partners shows, the meetups module may add a floating "+ New ad".
+/// Once an area is chosen it is a chip in the header, for both sides. The
+/// tab's one "+" opens its Add sheet, whose rows the modules register
+/// (meetups' "Plan a walk or play date", "Suggest a park").
 class OutsideScreen extends ConsumerWidget {
   const OutsideScreen({super.key});
 
@@ -44,13 +47,13 @@ class OutsideScreen extends ConsumerWidget {
     final parks = ref.watch(capabilityProvider(ParkCapabilities.view));
     final view = ref.watch(outsideViewProvider);
     final area = ref.watch(outsideAreaProvider.select((s) => s.area));
-    final partnersShown =
-        (!parks || view == OutsideView.partners) &&
-        slotAvailable(ref, outsidePartnersSlot);
     return Scaffold(
-      floatingActionButton:
-          partnersShown && slotAvailable(ref, outsideNewAdSlot)
-          ? featureSlot(outsideNewAdSlot, '')
+      floatingActionButton: AddFab.available(ref, AddTab.outside)
+          ? AddFab(
+              tab: AddTab.outside,
+              title: l10n.addToOutside,
+              petId: ref.watch(selectedPetProvider).id,
+            )
           : null,
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

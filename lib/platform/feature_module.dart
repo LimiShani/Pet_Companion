@@ -5,7 +5,10 @@ import '../access/access_provider.dart';
 import 'feature_ui.dart';
 import '../composition/modules.g.dart';
 import 'package:go_router/go_router.dart';
+import '../theme/app_area.dart';
 import '../widgets/petloop_icon.dart';
+
+export '../theme/app_area.dart' show AppArea;
 
 /// Feature implementations register contributions here. The app shell
 /// consumes this contract and never constructs an optional feature itself.
@@ -31,6 +34,7 @@ class FeatureModule {
     this.slots = const {},
     this.routes = const [],
     this.tab,
+    this.add = const {},
   });
   final String id;
   final List<FeatureContribution> home;
@@ -38,6 +42,11 @@ class FeatureModule {
   final Map<String, FeatureAction> actions;
   final Map<String, FeatureSlot> slots;
   final FeatureTab? tab;
+
+  /// The rows this module puts in a tab's Add sheet (the tab's one "+"),
+  /// by tab ([AddTab]). A tab lists the rows of every installed module, so
+  /// it never imports the features behind them.
+  final Map<String, List<AddEntry>> add;
   final List<RouteBase> routes;
 }
 
@@ -47,9 +56,13 @@ class FeatureTab {
     required this.glyph,
     required this.label,
     required this.routes,
+    required this.area,
   });
   final String capability;
   final PetLoopGlyph glyph;
+
+  /// The tab's colour in the bottom bar (see [AppArea]).
+  final AppArea area;
   final String Function(BuildContext context) label;
   final List<RouteBase> routes;
 }

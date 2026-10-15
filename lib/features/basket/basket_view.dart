@@ -22,10 +22,19 @@ import 'bought_again_dialog.dart';
 /// The Store's "My basket": the products the owner buys again and again,
 /// what is left of each, when it runs out, the Store's deals on it, and
 /// "Bought again".
+///
+/// In the Store tab ([inStoreTab]) a new product is "Regular product" in
+/// the tab's Add sheet (its "+"), so the list ends without its own add
+/// line and leaves room for the "+"; on its own page it keeps the line.
 class BasketView extends ConsumerWidget {
-  const BasketView({super.key});
+  const BasketView({super.key, this.inStoreTab = false});
 
   static const viewKey = Key('basket-view');
+
+  /// The key of the list's own "Regular product" line (own page only).
+  static const addLineKey = Key('basket-add-line');
+
+  final bool inStoreTab;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) => FeatureGate(
@@ -39,7 +48,9 @@ class BasketView extends ConsumerWidget {
     final l10n = context.budgetL10n;
     final value = ref.watch(basketLinesProvider);
     final pets = ref.watch(petsProvider);
-    final bottom = 24 + MediaQuery.paddingOf(context).bottom;
+    final bottom =
+        (inStoreTab ? AppSpacing.fabClearance : 24) +
+        MediaQuery.paddingOf(context).bottom;
 
     final Widget child;
     if (value.hasValue && !value.hasError) {
@@ -67,10 +78,12 @@ class BasketView extends ConsumerWidget {
           ),
           children: [
             for (final line in lines) BasketLineTile(line: line, pets: pets),
-            CareAddLine(
-              label: l10n.regularProduct,
-              onTap: () => openBasketItemForm(context),
-            ),
+            if (!inStoreTab)
+              CareAddLine(
+                key: addLineKey,
+                label: l10n.regularProduct,
+                onTap: () => openBasketItemForm(context),
+              ),
           ],
         );
       }

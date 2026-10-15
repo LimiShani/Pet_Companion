@@ -66,7 +66,7 @@ void main() {
         expect(find.text('היום'), findsOneWidget);
         expect(find.text(he.sectionDetailDay(format.shortDay(fixedNow))), findsOneWidget);
         expect(hasHebrew(format.shortDay(fixedNow)), isTrue); // יום ג׳, 10 ביוני
-        expect(find.text('הוספה'), findsOneWidget);
+        expect(find.byKey(const Key('add-fab')), findsOneWidget);
         expect(find.textContaining('בשעה \u206820:00\u2069'), findsOneWidget);
         expect(find.text(he.recordDose), findsOneWidget);
         expect(find.text(he.doneTodayCount(2)), findsOneWidget);
@@ -138,12 +138,15 @@ void main() {
       testWidgets('the add sheet, a new routine and the day chips', (tester) async {
         final h = await openSchedule(tester, size: size);
 
-        await tapVisible(tester, find.byKey(const Key('schedule-add')));
-        expect(find.text('הוספה ללוח הזמנים'), findsOneWidget);
+        await tapVisible(tester, find.byKey(const Key('add-fab')));
+        expect(find.text('הוספה לבריאות'), findsOneWidget);
+        expect(find.text('רישום מהיר'), findsOneWidget);
+        expect(find.text('רשומה'), findsOneWidget);
         expect(find.text('תור או תאריך יעד'), findsOneWidget);
         expect(find.text('תרופה'), findsOneWidget);
-        expect(find.text('שגרה'), findsOneWidget);
+        expect(find.text('שגרת טיפול'), findsOneWidget);
         expect(find.text(he.addRoutineNote), findsOneWidget);
+        expect(tester.takeException(), isNull);
 
         await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
         expect(find.text('שגרה חדשה'), findsOneWidget);
@@ -213,7 +216,7 @@ void main() {
 
       testWidgets('a new medicine, its instructions and its dose log', (tester) async {
         final h = await openSchedule(tester, size: size);
-        await tapVisible(tester, find.byKey(const Key('schedule-add')));
+        await tapVisible(tester, find.byKey(const Key('add-fab')));
         await tapVisible(tester, find.byKey(const ValueKey('add-medicine')));
 
         expect(find.text('תרופה חדשה'), findsOneWidget);
@@ -371,7 +374,7 @@ void main() {
       testWidgetsInBothLanguages('the day chips start on $name when the week does', (tester, language) async {
         final h = HealthHarness(language: language, week: week);
         await openSchedule(tester, harness: h);
-        await tapVisible(tester, find.byKey(const Key('schedule-add')));
+        await tapVisible(tester, find.byKey(const Key('add-fab')));
         await tapVisible(tester, find.byKey(const ValueKey('add-routine')));
 
         // The first day leads: on the left in English, on the right in Hebrew.

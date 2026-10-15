@@ -308,5 +308,7 @@
   "formFewerDetails": "Fewer details",
   "@formFewerDetails": {
     "description": "The same button once the optional fields are open; folds them away again."
-  }
+  },
+  "addSheetExpense": "Expense",
+  "@addSheetExpense": {"description": "Add sheet row of the Store tab: a new expense in the budget."}
 }
