@@ -21,6 +21,7 @@
 /// | `lib/l10n/features/meetups/`  | `MeetupsL10n`   | `context.meetupsL10n`   |
 /// | `lib/l10n/features/access/`   | `AccessL10n`    | `context.accessL10n`    |
 /// | `lib/l10n/features/household/`| `HouseholdL10n` | `context.householdL10n` |
+/// | `lib/l10n/features/today/`    | `TodayL10n`     | `context.todayL10n`     |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -45,6 +46,7 @@ import 'features/meetups/gen/meetups_l10n.dart';
 import 'features/outdoors/gen/outdoors_l10n.dart';
 import 'features/pets/gen/pets_l10n.dart';
 import 'features/store/gen/store_l10n.dart';
+import 'features/today/gen/today_l10n.dart';
 import '../notifications/l10n/gen/notifications_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
@@ -67,6 +69,7 @@ export 'features/outdoors/gen/outdoors_l10n.dart'
     show OutdoorsL10n, lookupOutdoorsL10n;
 export 'features/pets/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
 export 'features/store/gen/store_l10n.dart' show StoreL10n, lookupStoreL10n;
+export 'features/today/gen/today_l10n.dart' show TodayL10n, lookupTodayL10n;
 export '../notifications/l10n/gen/notifications_l10n.dart'
     show NotificationsL10n, lookupNotificationsL10n;
 export 'app_format.dart';
@@ -76,7 +79,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the fourteen strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the fifteen strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -93,6 +96,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   MeetupsL10n.delegate,
   AccessL10n.delegate,
   HouseholdL10n.delegate,
+  TodayL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -141,6 +145,9 @@ extension L10nContext on BuildContext {
   /// shown when a feature or the permissions themselves are unavailable.
   AccessL10n get accessL10n => _strings(this, lookupAccessL10n);
   HouseholdL10n get householdL10n => _strings(this, lookupHouseholdL10n);
+
+  /// Home's Today list.
+  TodayL10n get todayL10n => _strings(this, lookupTodayL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;

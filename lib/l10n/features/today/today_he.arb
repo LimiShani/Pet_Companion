@@ -1,0 +1,22 @@
+{
+  "@@locale": "he",
+  "title": "היום",
+  "headerDone": "\u2068{day}\u2069 · {done} מתוך {total} בוצעו",
+  "withPet": "\u2068{title}\u2069 · \u2068{pet}\u2069",
+  "you": "אני",
+  "doneBy": "\u2068{time}\u2069 · \u2068{who}\u2069",
+  "notDoneBy": "\u2068{time}\u2069 · \u2068{who}\u2069 · לא בוצע",
+  "notDoneAt": "\u2068{time}\u2069 · לא בוצע",
+  "runsOutIn": "{count, plural, =0{המלאי של \u2068{name}\u2069 נגמר היום} =1{המלאי של \u2068{name}\u2069 ייגמר מחר} =2{המלאי של \u2068{name}\u2069 ייגמר בעוד יומיים} other{המלאי של \u2068{name}\u2069 ייגמר בעוד {count} ימים}}",
+  "ranOut": "המלאי של \u2068{name}\u2069 נגמר",
+  "firstDaysLine": "30 הימים הראשונים · יום \u2068{day}\u2069",
+  "foldDone": "{count} בוצעו",
+  "showDone": "הצגת מה שבוצע",
+  "hideDone": "הסתרת מה שבוצע",
+  "markDone": "סימון \u2068{title}\u2069 כבוצע",
+  "undoDone": "ביטול הסימון של \u2068{title}\u2069",
+  "doneSemantics": "\u2068{title}\u2069, בוצע",
+  "empty": "אין שום דבר מתוכנן להיום.",
+  "setUpFeeding": "הגדרת האכלה",
+  "loadFailed": "לא הצלחנו לטעון את הרשימה של היום. אפשר להקיש כדי לנסות שוב."
+}

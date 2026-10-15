@@ -21,6 +21,7 @@ const _modules = {
   'outdoors': 'lib/l10n/features/outdoors',
   'meetups': 'lib/l10n/features/meetups',
   'access': 'lib/l10n/features/access',
+  'today': 'lib/l10n/features/today',
 };
 
 const _firstStrongIsolate = '\u{2068}';
