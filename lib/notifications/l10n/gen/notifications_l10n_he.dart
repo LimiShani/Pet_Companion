@@ -55,6 +55,9 @@ class NotificationsL10nHe extends NotificationsL10n {
   String get snooze => 'עוד 15 דק׳';
 
   @override
+  String get done => 'בוצע';
+
+  @override
   String get sectionTitle => 'התראות';
 
   @override
@@ -62,6 +65,9 @@ class NotificationsL10nHe extends NotificationsL10n {
 
   @override
   String get masterNote => 'PetLoop מצלצלת בזמן של כל תזכורת';
+
+  @override
+  String get masterDoneNote => 'אפשר לסמן ארוחות, טיולים ותרופות כבוצעו ישירות מההתראה';
 
   @override
   String get meals => 'ארוחות';

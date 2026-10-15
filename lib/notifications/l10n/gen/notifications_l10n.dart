@@ -155,6 +155,12 @@ abstract class NotificationsL10n {
   /// **'In 15 min'**
   String get snooze;
 
+  /// Button on a meal, walk or medicine reminder: records it as done (the dose as given now) without opening the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get done;
+
   /// Section of the Settings page.
   ///
   /// In en, this message translates to:
@@ -172,6 +178,12 @@ abstract class NotificationsL10n {
   /// In en, this message translates to:
   /// **'PetLoop rings at the time of each reminder'**
   String get masterNote;
+
+  /// Under the master switch in Settings > Notifications: the reminder's Done button records it.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals, walks and medicines can be marked done right from the notification'**
+  String get masterDoneNote;
 
   /// Switch in Settings, and the name of the phone's notification category.
   ///

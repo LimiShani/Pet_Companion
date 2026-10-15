@@ -73,7 +73,7 @@ class NotificationSettingsCard extends ConsumerWidget {
             _Switch(
               tileKey: masterKey,
               title: l10n.masterTitle,
-              subtitle: [l10n.masterNote],
+              subtitle: [l10n.masterNote, l10n.masterDoneNote],
               value: on,
               onChanged: controller.setEnabled,
               strong: true,

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'notification_done.dart';
+
 /// What a reminder is about. The owner turns each kind on or off in
 /// Settings; a [NotificationSink] drops the kinds that are off, so callers
 /// never check the settings themselves.
@@ -14,6 +16,7 @@ class PlannedNotification {
     required this.title,
     required this.body,
     this.payload,
+    this.done,
   });
 
   /// Stable within its group (e.g. `<planItemId>@2026-10-03`), so syncing
@@ -28,6 +31,10 @@ class PlannedNotification {
 
   /// Where tapping it leads, e.g. `feeding:<petId>`; see the sink.
   final String? payload;
+
+  /// What its "Done" button records; `null` for a reminder without one
+  /// (appointments, the basket).
+  final CareDone? done;
 }
 
 /// Schedules the phone's notifications.

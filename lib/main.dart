@@ -53,8 +53,8 @@ Future<void> main() async {
   }
   unawaited(crashes.flush());
 
-  // The phone's notifications (none on the web). The snooze button of iOS
-  // is named once, here, in the language the app opens in.
+  // The phone's notifications (none on the web). The snooze and "Done"
+  // buttons of iOS are named once, here, in the language the app opens in.
   final language = AppLanguage.fromCode(settings?.read(languageSettingKey));
   final locale = resolveAppLocale(
     language,
@@ -63,6 +63,7 @@ Future<void> main() async {
   );
   final notifications = await FlutterNotificationPlatform.start(
     snoozeLabel: lookupNotificationsL10n(locale).snooze,
+    doneLabel: lookupNotificationsL10n(locale).done,
   );
   // Push notifications from the community: only with Firebase settings.
   final push = await FirebasePushMessaging.start(
@@ -89,6 +90,10 @@ Future<void> main() async {
           notificationPlatformProvider.overrideWithValue(notifications),
           notificationSinkProvider.overrideWith(localNotificationSink),
           reminderSchedulerProvider.overrideWith(notificationReminderScheduler),
+          // "Done" pressed while the app was closed waits here.
+          notificationDoneQueueProvider.overrideWithValue(
+            DoneQueue(const SharedPrefsDoneQueueStore()),
+          ),
         ],
       ],
       child: const PetLoopApp(),

@@ -13,6 +13,9 @@
 /// - [ReminderCoordinator]: loads every pet's plan at sign-in, so all pets
 ///   ring and not only the one on screen, and cancels everything at
 ///   sign-out.
+/// - [NotificationDoneRecorder]: records the "Done" button of a care
+///   reminder (through the [DoneQueue] when it was pressed in the
+///   background).
 /// - `NotificationsHost` (the widget): asks for permission once, and opens
 ///   the right page when a reminder is tapped.
 library;
@@ -38,6 +41,8 @@ import 'notification_sink.dart';
 import 'reminder_planner.dart';
 
 export 'local_notification_sink.dart';
+export 'notification_done.dart';
+export 'notification_done_recorder.dart';
 export 'notification_platform.dart';
 export 'notification_reminder_scheduler.dart';
 export 'notification_settings.dart';
@@ -137,8 +142,8 @@ final notificationTapsProvider = NotifierProvider<NotificationTaps, String?>(
   NotificationTaps.new,
 );
 
-/// The phone's names of the reminder kinds, and the snooze label, in the
-/// app's language.
+/// The phone's names of the reminder kinds, and the labels of the snooze
+/// and "Done" buttons, in the app's language.
 NotificationChrome notificationChromeOf(NotificationsL10n l10n) =>
     NotificationChrome(
       channelNames: {
@@ -149,6 +154,7 @@ NotificationChrome notificationChromeOf(NotificationsL10n l10n) =>
         NotificationKind.basket: l10n.basket,
       },
       snoozeLabel: l10n.snooze,
+      doneLabel: l10n.done,
     );
 
 /// Builds the real sink; `main.dart` overrides [notificationSinkProvider]
@@ -216,12 +222,20 @@ ReminderScheduler notificationReminderScheduler(Ref ref) {
 /// A pet that is removed or archived stops ringing. Signing out, or a
 /// session that ended while the app was closed, cancels every reminder on
 /// the phone; reminders survive a restart of the app.
+///
+/// [beforeLoad] runs before the pets are loaded (the "Done" presses that
+/// wait are recorded first, so they are not reminded again).
 class ReminderCoordinator {
-  ReminderCoordinator(this._container, {DateTime Function() now = DateTime.now})
-    : _now = now;
+  ReminderCoordinator(
+    this._container, {
+    DateTime Function() now = DateTime.now,
+    Future<void> Function()? beforeLoad,
+  }) : _now = now,
+       _beforeLoad = beforeLoad;
 
   final ProviderContainer _container;
   final DateTime Function() _now;
+  final Future<void> Function()? _beforeLoad;
   final _subscriptions = <ProviderSubscription<Object?>>[];
 
   String? _userId;
@@ -302,10 +316,11 @@ class ReminderCoordinator {
     }
     final sink = _sink;
     final firstLoad = _loadedAt == null || _loaded.isEmpty;
+    Future<void>? before;
     for (final MapEntry(key: id, value: name) in pets.entries) {
       if (_loaded[id] == name) continue;
       _loaded[id] = name;
-      _load(id, name);
+      _load(id, name, before ??= _beforeLoad?.call() ?? Future.value());
     }
     if (firstLoad) {
       _loadedAt = _now();
@@ -340,8 +355,8 @@ class ReminderCoordinator {
     return sink is LocalNotificationSink ? sink : null;
   }
 
-  void _load(String petId, String petName) {
-    final previous = _loading[petId] ?? Future<void>.value();
+  void _load(String petId, String petName, Future<void> before) {
+    final previous = _loading[petId] ?? before;
     final load = previous.then((_) => _loadOnce(petId, petName));
     _loading[petId] = load;
     load.whenComplete(() {
