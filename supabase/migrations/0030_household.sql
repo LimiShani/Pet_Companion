@@ -150,6 +150,9 @@ grant usage on schema household_private to authenticated;
 grant execute on function household_private.my_household_ids() to authenticated;
 revoke all on function public.pet_role(uuid) from public, anon;
 grant execute on function public.pet_role(uuid) to authenticated;
+-- Security definer now: only signed-in accounts call it (the policies
+-- that use it are all for authenticated).
+revoke all on function public.health_owns_pet(uuid) from public, anon;
 grant execute on function public.health_owns_pet(uuid) to authenticated;
 grant execute on function public.health_owns_vet(uuid) to authenticated;
 

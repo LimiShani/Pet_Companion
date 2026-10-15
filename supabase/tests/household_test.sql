@@ -25,6 +25,9 @@ grant all on pg_temp.ids to authenticated;
 
 -- Every account owns a household of one, made at sign-up.
 do $$ begin
+ assert not has_function_privilege('anon','public.health_owns_pet(uuid)','execute'), 'Signed-out callers cannot call health_owns_pet';
+ assert not has_function_privilege('anon','public.pet_role(uuid)','execute'), 'nor pet_role';
+ assert has_function_privilege('authenticated','public.health_owns_pet(uuid)','execute'), 'Signed-in accounts can';
  assert (select count(*) from public.households h join auth.users u on u.id=h.owner_id
          where u.email like '%@example.test' and u.id::text like 'a%')=4, 'Every new account owns a household';
  assert (select count(*) from public.household_members m
