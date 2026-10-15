@@ -121,6 +121,9 @@ class AccessL10nEn extends AccessL10n {
   String get featureCommunityMeetups => 'Walk and play partners';
 
   @override
+  String get featureHousehold => 'Household';
+
+  @override
   String get featureDeals => 'Deals';
 
   @override

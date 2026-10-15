@@ -20,6 +20,7 @@
 /// | `lib/l10n/features/outdoors/` | `OutdoorsL10n`  | `context.outdoorsL10n`  |
 /// | `lib/l10n/features/meetups/`  | `MeetupsL10n`   | `context.meetupsL10n`   |
 /// | `lib/l10n/features/access/`   | `AccessL10n`    | `context.accessL10n`    |
+/// | `lib/l10n/features/household/`| `HouseholdL10n` | `context.householdL10n` |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -39,6 +40,7 @@ import 'features/community/gen/community_l10n.dart';
 import 'features/findvet/gen/findvet_l10n.dart';
 import 'features/firstdays/gen/firstdays_l10n.dart';
 import 'features/health/gen/health_l10n.dart';
+import 'features/household/gen/household_l10n.dart';
 import 'features/meetups/gen/meetups_l10n.dart';
 import 'features/outdoors/gen/outdoors_l10n.dart';
 import 'features/pets/gen/pets_l10n.dart';
@@ -57,6 +59,8 @@ export 'features/findvet/gen/findvet_l10n.dart'
 export 'features/firstdays/gen/firstdays_l10n.dart'
     show FirstDaysL10n, lookupFirstDaysL10n;
 export 'features/health/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
+export 'features/household/gen/household_l10n.dart'
+    show HouseholdL10n, lookupHouseholdL10n;
 export 'features/meetups/gen/meetups_l10n.dart'
     show MeetupsL10n, lookupMeetupsL10n;
 export 'features/outdoors/gen/outdoors_l10n.dart'
@@ -72,7 +76,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the thirteen strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the fourteen strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -88,6 +92,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   OutdoorsL10n.delegate,
   MeetupsL10n.delegate,
   AccessL10n.delegate,
+  HouseholdL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -135,6 +140,7 @@ extension L10nContext on BuildContext {
   /// Feature access: the administration screen, its audit, and the pages
   /// shown when a feature or the permissions themselves are unavailable.
   AccessL10n get accessL10n => _strings(this, lookupAccessL10n);
+  HouseholdL10n get householdL10n => _strings(this, lookupHouseholdL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;

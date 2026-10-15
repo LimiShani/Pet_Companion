@@ -2,6 +2,7 @@ import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
@@ -106,6 +107,7 @@ class _Body extends ConsumerWidget {
         if (item.kind == CareKind.walk && item.active) item,
     ]..sort((a, b) => minutesOf(a.time).compareTo(minutesOf(b.time)));
 
+    final me = ref.watch(authControllerProvider).value?.id;
     String? detail(CareEntry e) {
       final log = e.log;
       if (log == null) return null;
@@ -127,10 +129,7 @@ class _Body extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      l10n.today,
-                      style: AppText.sectionTitle,
-                    ),
+                    child: Text(l10n.today, style: AppText.sectionTitle),
                   ),
                   Text(
                     l10n.minutesOfGoal(
@@ -159,6 +158,8 @@ class _Body extends ConsumerWidget {
           CareEntryTile(
             entry: walk,
             detail: detail(walk),
+            // Who took it, when someone else of the household did.
+            loggedBy: walk.log?.loggedByOther(me),
             actionLabel: l10n.start,
             onAction: () => showWalkSheet(context, pet, entry: walk),
             onRemove: () => _remove(context, ref, walk),

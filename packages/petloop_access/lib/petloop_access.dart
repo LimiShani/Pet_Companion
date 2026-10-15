@@ -38,6 +38,8 @@ const capabilityCatalog = <String>[
   'basket.edit',
   'firstdays.view',
   'firstdays.edit',
+  'household.view',
+  'household.manage',
   'findvet.search',
   'findvet.admin',
   'access.admin',

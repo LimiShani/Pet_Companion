@@ -230,6 +230,7 @@ CareLog logFromRow(Row row) => CareLog(
   doneAt: instantFromDbOrNull(row['done_at']),
   note: _textOr(row['note']),
   loggedByName: _textOr(row['logged_by_name']),
+  loggedBy: _text(row['logged_by']),
   loggedAt: instantFromDb(row['logged_at']),
   kind: row['kind'] == null ? null : CareKind.fromDb(_text(row['kind'])),
   amountGrams: (row['amount_grams'] as num?)?.toDouble(),

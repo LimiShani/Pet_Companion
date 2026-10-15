@@ -25,6 +25,8 @@ class Pet {
     this.archivedAt,
     this.reminderSnoozedUntil,
     this.createdAt,
+    this.householdId,
+    this.ownedByMe = true,
   }) : _ageYears = ageYears;
 
   /// Stands in for "no pet" while the owner has none. The first-pet welcome
@@ -69,6 +71,15 @@ class Pet {
   /// "Not now" on the essentials reminder hides it until this moment.
   final DateTime? reminderSnoozedUntil;
   final DateTime? createdAt;
+
+  /// The household the pet lives in (`0030_household.sql`); `null` for the
+  /// sample pets and on a backend without households.
+  final String? householdId;
+
+  /// Whether the signed-in account owns the pet: only the owner archives,
+  /// deletes or moves it. `false` for a pet of someone else's household
+  /// that this account looks after as a carer.
+  final bool ownedByMe;
 
   /// An age given directly (the sample pets) rather than by a birthday.
   final double? _ageYears;
@@ -166,6 +177,7 @@ class Pet {
     PetSex? sex,
     Neutered? neutered,
     DateTime? createdAt,
+    bool? ownedByMe,
   }) {
     return Pet(
       id: id,
@@ -188,6 +200,8 @@ class Pet {
       archivedAt: archivedAt,
       reminderSnoozedUntil: reminderSnoozedUntil,
       createdAt: createdAt ?? this.createdAt,
+      householdId: householdId,
+      ownedByMe: ownedByMe ?? this.ownedByMe,
     );
   }
 
@@ -227,6 +241,8 @@ class Pet {
       archivedAt: archivedAt,
       reminderSnoozedUntil: reminderSnoozedUntil,
       createdAt: createdAt,
+      householdId: householdId,
+      ownedByMe: ownedByMe,
     );
   }
 
@@ -280,6 +296,8 @@ class Pet {
       archivedAt: setArchived ? archivedAt : this.archivedAt,
       reminderSnoozedUntil: setSnoozed ? snoozedUntil : reminderSnoozedUntil,
       createdAt: createdAt,
+      householdId: householdId,
+      ownedByMe: ownedByMe,
     );
   }
 }

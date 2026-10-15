@@ -72,6 +72,8 @@ class SupabasePetsRepository implements PetsRepository {
           ),
           activity: pet.activity,
           healthEvents: pet.healthEvents,
+          // The row that comes back carries no role (0030).
+          ownedByMe: pet.ownedByMe,
         );
       });
 
@@ -229,6 +231,10 @@ Pet petFromRow(Map<String, dynamic> row) {
     archivedAt: date(row['archived_at'])?.toLocal(),
     reminderSnoozedUntil: date(row['reminder_snoozed_until'])?.toLocal(),
     createdAt: date(row['created_at'])?.toLocal(),
+    householdId: _text(row['household_id']),
+    // Only `my_role` 'carer' marks someone else's pet (0030); a backend
+    // without households sends no role, and every pet is the owner's.
+    ownedByMe: row['my_role'] != 'carer',
     feeding: FeedingStatus(
       dailyGoal: (row['daily_calorie_goal'] as num?)?.toInt(),
     ),

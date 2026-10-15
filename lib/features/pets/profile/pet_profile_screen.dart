@@ -138,7 +138,11 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
     final l10n = context.petsL10n;
     return PetsPage(
       title: pet.name,
-      actions: [_MoreMenu(pet: pet, onRemove: _removing ? null : _remove)],
+      // Archive and delete are the owner's (0030); a carer has no ⋮.
+      actions: [
+        if (pet.ownedByMe)
+          _MoreMenu(pet: pet, onRemove: _removing ? null : _remove),
+      ],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -121,6 +121,9 @@ class AccessL10nHe extends AccessL10n {
   String get featureCommunityMeetups => 'שותפים לטיול ולמשחק';
 
   @override
+  String get featureHousehold => 'הבית';
+
+  @override
   String get featureDeals => 'מבצעים';
 
   @override

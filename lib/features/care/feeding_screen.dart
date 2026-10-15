@@ -2,6 +2,7 @@ import '../../access/feature_gate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../auth/auth_controller.dart';
 import '../../l10n/l10n.dart';
 import '../../models/pet.dart';
 import '../../state/pets_provider.dart';
@@ -110,6 +111,7 @@ class _Body extends ConsumerWidget {
     final average = (before.fold(0, (sum, d) => sum + d.value) / before.length)
         .round();
 
+    final me = ref.watch(authControllerProvider).value?.id;
     String? detail(CareEntry e) {
       final log = e.log;
       if (log == null) return null;
@@ -134,10 +136,7 @@ class _Body extends ConsumerWidget {
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      l10n.today,
-                      style: AppText.sectionTitle,
-                    ),
+                    child: Text(l10n.today, style: AppText.sectionTitle),
                   ),
                   Text(
                     goal == null
@@ -168,6 +167,8 @@ class _Body extends ConsumerWidget {
           CareEntryTile(
             entry: meal,
             detail: detail(meal),
+            // Who gave it, when someone else of the household did.
+            loggedBy: meal.log?.loggedByOther(me),
             actionLabel: l10n.fed,
             onAction: () => showLogMealSheet(context, pet, entry: meal),
             onRemove: () => _remove(context, ref, meal),

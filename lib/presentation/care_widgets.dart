@@ -299,9 +299,14 @@ class CareEntryTile extends StatelessWidget {
     required this.actionLabel,
     required this.onAction,
     required this.onRemove,
+    this.loggedBy,
   });
 
   final CareEntry entry;
+
+  /// Who logged it, when that was another member of the pet's household
+  /// ([CareLog.loggedByOther]): a small line under the title.
+  final String? loggedBy;
 
   /// What was logged: "140 g · 504 cal", "35 min", "Not eaten".
   final String? detail;
@@ -331,20 +336,33 @@ class CareEntryTile extends StatelessWidget {
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text.rich(
-              TextSpan(
-                children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text.rich(
                   TextSpan(
-                    text: isolate(format.time(entry.time)),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    children: [
+                      TextSpan(
+                        text: isolate(format.time(entry.time)),
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      const TextSpan(text: '  '),
+                      TextSpan(text: entry.title),
+                    ],
                   ),
-                  const TextSpan(text: '  '),
-                  TextSpan(text: entry.title),
-                ],
-              ),
-              style: AppText.body,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+                  style: AppText.body,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (loggedBy != null)
+                  Text(
+                    loggedBy!,
+                    style: AppText.secondary.copyWith(color: AppColors.brown),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: 8),

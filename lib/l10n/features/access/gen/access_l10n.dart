@@ -311,6 +311,12 @@ abstract class AccessL10n {
   /// **'Walk and play partners'**
   String get featureCommunityMeetups;
 
+  /// No description provided for @featureHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Household'**
+  String get featureHousehold;
+
   /// No description provided for @featureDeals.
   ///
   /// In en, this message translates to:
