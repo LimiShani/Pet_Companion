@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import '../../../services/pet_records/data/health_models.dart';
 import '../../../services/pet_records/data/species_settings.dart';
 import '../../../presentation/health_format.dart';
@@ -11,6 +13,7 @@ class HealthReportRow {
     required this.kind,
     required this.title,
     this.details = '',
+    this.photos = const [],
   });
 
   final String date;
@@ -19,6 +22,10 @@ class HealthReportRow {
 
   /// Product, clinic, next due date and notes, joined.
   final String details;
+
+  /// Photos drawn small under [details] (an entry of a followed problem);
+  /// one the PDF cannot read is left out.
+  final List<Uint8List> photos;
 }
 
 /// What goes on a shared PDF: plain text only, so it can be checked in
