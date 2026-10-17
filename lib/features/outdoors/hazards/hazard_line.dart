@@ -10,6 +10,16 @@ import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
 import '../../../widgets/area_disc.dart';
 import '../outdoors_words.dart';
+import 'hazards_screen.dart';
+
+/// The icon of a kind of hazard, in its disc.
+IconData hazardIcon(HazardKind kind) => switch (kind) {
+  HazardKind.caterpillars => Icons.bug_report_rounded,
+  HazardKind.bait => Icons.dangerous_rounded,
+  HazardKind.glass => Icons.wine_bar_rounded,
+  HazardKind.inspector => Icons.badge_rounded,
+  HazardKind.other => Icons.warning_amber_rounded,
+};
 
 /// The words of hazard reports.
 extension HazardWords on OutdoorsL10n {
@@ -34,18 +44,32 @@ extension HazardWords on OutdoorsL10n {
     final city = localityName(report.localityCode, language);
     return city == null ? kind : hazardIn(kind, city);
   }
+
+  /// Where: the park's name, else "Somewhere in Kfar Saba".
+  String hazardPlace(HazardReport report, String language) {
+    if (report.park case final park?) return parkTitle(park, language);
+    final city = localityName(report.localityCode, language) ?? '';
+    return hazardSomewhereIn(city);
+  }
+
+  /// "5 h ago", "yesterday", "3 days ago".
+  String hazardAge(BuildContext context, DateTime when, DateTime now) {
+    final elapsed = now.difference(when);
+    if (elapsed.inMinutes < 1) return hazardJustNow;
+    if (elapsed.inMinutes < 60) return hazardMinutesAgo(elapsed.inMinutes);
+    if (elapsed.inHours < 24) return hazardHoursAgo(elapsed.inHours);
+    return hazardDaysAgo(elapsed.inDays);
+  }
 }
 
 /// ONE line above the Partners and Parks lists: "2 hazard reports near you
 /// this week." and the newest one in a few words, on white with the
-/// community disc. Nothing when there is none (or no access). [onTap]
-/// opens the list of reports.
+/// community disc and a chevron. Nothing when there is none (or no
+/// access). A tap opens the list of reports.
 class HazardLine extends ConsumerWidget {
-  const HazardLine({super.key, this.onTap});
+  const HazardLine({super.key});
 
   static const lineKey = Key('outside-hazard-line');
-
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,7 +86,7 @@ class HazardLine extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: onTap,
+          onTap: () => openHazards(context),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 56),
             child: Padding(
@@ -94,8 +118,7 @@ class HazardLine extends ConsumerWidget {
                       style: AppText.secondary.copyWith(color: AppColors.ink),
                     ),
                   ),
-                  if (onTap != null)
-                    const Padding(
+                  const Padding(
                       padding: EdgeInsetsDirectional.only(start: 4),
                       child: AppIcon(
                         Icons.chevron_right_rounded,

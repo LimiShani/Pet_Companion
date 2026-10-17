@@ -52,7 +52,7 @@ void main() {
         'Add to Community',
         ['post-moment', 'post-question', 'post-recommendation', 'post-lostFound', 'new-chat'],
       ),
-      ('Outside', 'Add to Outside', ['plan-walk', 'going-now', 'suggest-park']),
+      ('Outside', 'Add to Outside', ['plan-walk', 'going-now', 'report-hazard', 'suggest-park']),
       ('Store', 'Add to Store', ['share-deal', 'regular-product', 'expense']),
     ]) {
       await _openTab(tester, tab);
@@ -86,6 +86,7 @@ void main() {
         'basket.edit': AccessRule.deny,
         'community.meetups.post': AccessRule.deny,
         'community.parks.suggest': AccessRule.deny,
+        'community.hazards.post': AccessRule.deny,
       };
     await pumpApp(tester, overrides: [accessRepositoryProvider.overrideWithValue(access)]);
     await signInAsDemo(tester);

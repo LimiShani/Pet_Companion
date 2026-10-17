@@ -37,7 +37,10 @@ export '../../services/outdoors/data/park_models.dart';
 export '../../services/outdoors/data/parks_repository.dart';
 export '../../services/outdoors/state/hazards_providers.dart';
 export '../../services/outdoors/state/parks_providers.dart';
-export 'hazards/hazard_line.dart' show HazardLine, HazardWords;
+export 'hazards/hazard_line.dart' show HazardLine, HazardWords, hazardIcon;
+export 'hazards/hazards_screen.dart' show HazardsScreen, HazardCard, openHazards;
+export 'hazards/report_hazard_sheet.dart'
+    show ReportHazardSheet, openReportHazard;
 export 'outdoors_words.dart';
 export 'outside_section.dart'
     show

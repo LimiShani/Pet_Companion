@@ -71,5 +71,29 @@ void main() {
       }
       expectWhole(tester, find.byKey(GoingNowSheet.otherParkKey), 'another park');
     });
+
+    testWidgets('320 px (${language.name}): the hazard list and the report form', (tester) async {
+      final kit = MeetupsKit(
+        hazards: FakeHazardsRepository(latency: Duration.zero, now: clock),
+        favorites: {'demo-raanana-park', 'demo-raanana-ahuza'},
+        profileCity: "Ra'anana",
+      );
+      await openPartners(tester, kit: kit, language: language, size: const Size(320, 1800));
+      await tapOn(tester, find.byKey(HazardLine.lineKey));
+      expect(tester.takeException(), isNull);
+      for (final id in ['demo-hazard-caterpillars', 'demo-hazard-bait']) {
+        expectWhole(tester, find.byKey(HazardsScreen.cardKey(id)), 'the card $id');
+        expectWhole(tester, find.byKey(HazardsScreen.stillKey(id)), 'still there');
+        expectWhole(tester, find.byKey(HazardsScreen.goneKey(id)), 'not there any more');
+      }
+      openReportHazard(tester.element(find.byKey(HazardsScreen.screenKey)));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      for (final kind in HazardKind.values) {
+        expectWhole(tester, find.byKey(ReportHazardSheet.kindKey(kind)), kind.name);
+      }
+      expectWhole(tester, find.byKey(ReportHazardSheet.elsewhereKey), 'somewhere else');
+      expectWhole(tester, find.byKey(ReportHazardSheet.reportKey), 'the report button');
+    });
   }
 }

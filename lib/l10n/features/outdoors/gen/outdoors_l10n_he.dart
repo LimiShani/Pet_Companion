@@ -451,4 +451,117 @@ class OutdoorsL10nHe extends OutdoorsL10n {
   String hazardNoted(String kind, String note) {
     return '\u2068$kind\u2069: \u2068$note\u2069';
   }
+
+  @override
+  String get hazardsTitle => 'סכנות באזור';
+
+  @override
+  String get hazardsLead => 'דיווחים של חברי הקהילה, נמחקים אחרי שבוע.';
+
+  @override
+  String hazardSomewhereIn(String city) {
+    return 'איפשהו ב־\u2068$city\u2069';
+  }
+
+  @override
+  String get hazardStillThere => 'עדיין שם';
+
+  @override
+  String get hazardGone => 'כבר לא שם';
+
+  @override
+  String hazardStillCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count אישורים שזה עדיין שם',
+      two: 'שני אישורים שזה עדיין שם',
+      one: 'אישור אחד שזה עדיין שם',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hazardYours => 'הדיווח שלך';
+
+  @override
+  String get hazardDeleteTitle => 'למחוק את הדיווח?';
+
+  @override
+  String get hazardsEmpty => 'לא דווח על כלום באזור השבוע.';
+
+  @override
+  String get hazardsLoadFailed => 'לא הצלחנו לטעון את הדיווחים';
+
+  @override
+  String get addReportHazard => 'דיווח על סכנה';
+
+  @override
+  String get hazardWhat => 'מה';
+
+  @override
+  String get hazardWhere => 'איפה';
+
+  @override
+  String get hazardOtherPark => 'גינה אחרת';
+
+  @override
+  String hazardElsewhereIn(String city) {
+    return 'מקום אחר ב־\u2068$city\u2069';
+  }
+
+  @override
+  String get hazardNoteHint => 'מה ראית? איפה בדיוק?';
+
+  @override
+  String get hazardFinePrint => 'מוצג לחברי הקהילה באזור למשך שבוע.';
+
+  @override
+  String get hazardReportButton => 'דיווח';
+
+  @override
+  String get hazardReported => 'תודה. הדיווח מוצג למשך שבוע.';
+
+  @override
+  String get hazardRateLimited => 'זה כבר חמישה היום.';
+
+  @override
+  String get hazardNeedKind => 'צריך לבחור מה ראית';
+
+  @override
+  String get hazardNeedPlace => 'צריך לבחור איפה';
+
+  @override
+  String get hazardNeedNote => 'צריך לכתוב מה זה';
+
+  @override
+  String get hazardFailed => 'לא הצלחנו לשלוח. אפשר לנסות שוב.';
+
+  @override
+  String get hazardHidden => 'תודה. הדיווח הוסתר.';
+
+  @override
+  String get hazardJustNow => 'עכשיו';
+
+  @override
+  String hazardMinutesAgo(int count) {
+    return 'לפני $count דק׳';
+  }
+
+  @override
+  String hazardHoursAgo(int count) {
+    return 'לפני $count שע׳';
+  }
+
+  @override
+  String hazardDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'לפני $count ימים',
+      two: 'לפני יומיים',
+      one: 'אתמול',
+    );
+    return '$_temp0';
+  }
 }

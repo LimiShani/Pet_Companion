@@ -886,6 +886,180 @@ abstract class OutdoorsL10n {
   /// In en, this message translates to:
   /// **'{kind}: {note}'**
   String hazardNoted(String kind, String note);
+
+  /// No description provided for @hazardsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazards near you'**
+  String get hazardsTitle;
+
+  /// No description provided for @hazardsLead.
+  ///
+  /// In en, this message translates to:
+  /// **'Reports from members, gone after a week.'**
+  String get hazardsLead;
+
+  /// No description provided for @hazardSomewhereIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Somewhere in {city}'**
+  String hazardSomewhereIn(String city);
+
+  /// Vote on a hazard report.
+  ///
+  /// In en, this message translates to:
+  /// **'Still there'**
+  String get hazardStillThere;
+
+  /// Vote on a hazard report.
+  ///
+  /// In en, this message translates to:
+  /// **'Not there any more'**
+  String get hazardGone;
+
+  /// No description provided for @hazardStillCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 says it\'s still there} other{{count} say it\'s still there}}'**
+  String hazardStillCount(int count);
+
+  /// No description provided for @hazardYours.
+  ///
+  /// In en, this message translates to:
+  /// **'Your report'**
+  String get hazardYours;
+
+  /// No description provided for @hazardDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this report?'**
+  String get hazardDeleteTitle;
+
+  /// No description provided for @hazardsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing reported around here this week.'**
+  String get hazardsEmpty;
+
+  /// No description provided for @hazardsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not load the reports'**
+  String get hazardsLoadFailed;
+
+  /// Add sheet row of the Outside tab, the report sheet's title and the empty list's button.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a hazard'**
+  String get addReportHazard;
+
+  /// No description provided for @hazardWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'What'**
+  String get hazardWhat;
+
+  /// No description provided for @hazardWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where'**
+  String get hazardWhere;
+
+  /// No description provided for @hazardOtherPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Another park'**
+  String get hazardOtherPark;
+
+  /// No description provided for @hazardElsewhereIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Somewhere else in {city}'**
+  String hazardElsewhereIn(String city);
+
+  /// No description provided for @hazardNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What did you see? Where exactly?'**
+  String get hazardNoteHint;
+
+  /// No description provided for @hazardFinePrint.
+  ///
+  /// In en, this message translates to:
+  /// **'Shown to members around here for a week.'**
+  String get hazardFinePrint;
+
+  /// The report sheet's button.
+  ///
+  /// In en, this message translates to:
+  /// **'Report'**
+  String get hazardReportButton;
+
+  /// No description provided for @hazardReported.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. Your report is up for a week.'**
+  String get hazardReported;
+
+  /// No description provided for @hazardRateLimited.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s five for today.'**
+  String get hazardRateLimited;
+
+  /// No description provided for @hazardNeedKind.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what you saw'**
+  String get hazardNeedKind;
+
+  /// No description provided for @hazardNeedPlace.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where'**
+  String get hazardNeedPlace;
+
+  /// No description provided for @hazardNeedNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Say what it is'**
+  String get hazardNeedNote;
+
+  /// No description provided for @hazardFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not send that. Please try again.'**
+  String get hazardFailed;
+
+  /// No description provided for @hazardHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Thanks. It\'s hidden now.'**
+  String get hazardHidden;
+
+  /// No description provided for @hazardJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'just now'**
+  String get hazardJustNow;
+
+  /// No description provided for @hazardMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} min ago'**
+  String hazardMinutesAgo(int count);
+
+  /// No description provided for @hazardHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} h ago'**
+  String hazardHoursAgo(int count);
+
+  /// No description provided for @hazardDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{yesterday} other{{count} days ago}}'**
+  String hazardDaysAgo(int count);
 }
 
 class _OutdoorsL10nDelegate extends LocalizationsDelegate<OutdoorsL10n> {
