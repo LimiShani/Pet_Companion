@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
-import 'package:pet_companion/platform/feature_module.dart';
-import 'package:pet_companion/platform/feature_ui.dart';
+import 'package:pet_companion/access/access_provider.dart';
 import 'package:pet_companion/presentation/health_widgets.dart';
 import 'package:pet_companion/services/safety/state/safety_providers.dart';
 import 'package:pet_companion/theme/app_colors.dart';
@@ -150,15 +149,14 @@ void main() {
       expect(find.text('Map'), findsNothing);
       expect(find.byKey(const ValueKey('map-regular')), findsNothing);
       expect(find.byKey(const ValueKey('map-contact')), findsNothing);
-      // Every row has its health disc: two contacts and three tools.
-      expect(find.descendant(of: rows, matching: find.byType(AreaDisc)), findsNWidgets(5));
+      // Every row has its health disc: two contacts and five tools.
+      expect(find.descendant(of: rows, matching: find.byType(AreaDisc)), findsNWidgets(7));
 
-      // The tools, in order, and the one line of fine print. The two lists
-      // come with the safety module's pages; Lost mode makes a card.
-      expect(find.text('Is it urgent?'), findsNothing);
-      expect(find.text('Can Kelly eat this?'), findsNothing);
+      // The tools, in order, and the one line of fine print.
+      expect(find.text('Is it urgent?'), findsOneWidget);
+      expect(find.text('Can Kelly eat this?'), findsOneWidget);
       expect(find.text('Lost mode'), findsOneWidget);
-      expect(find.text('Make a card to share'), findsOneWidget);
+      expect(find.text('Tell people nearby and share a card'), findsOneWidget);
       expect(find.text('Kelly is lost'), findsNothing);
       expect(find.text('Emergency card and kit'), findsOneWidget);
       expect(find.text('3 of 6 kit items · share as PDF'), findsOneWidget);
@@ -188,27 +186,8 @@ void main() {
       expect(h.launcher.calls.last.target, parkPhone);
     });
 
-    testWidgets('the safety tools show when their module answers, and open it', (tester) async {
-      final opened = <String>[];
-      FeatureAction tool(String name) => FeatureAction.task(
-        capability: 'safety.lists',
-        open: (c, r) async => opened.add('$name:${r.petId}'),
-      );
-      final h = HealthHarness();
-      h.extraModules.add(
-        FeatureModule(
-          id: 'safety',
-          actions: {
-            'safety-urgent': tool('urgent'),
-            'safety-food': tool('food'),
-            'lost-mode': FeatureAction.task(
-              capability: 'safety.lost',
-              open: (c, r) async => opened.add('lost:${r.petId}'),
-            ),
-          },
-        ),
-      );
-      await openSheet(tester, kelly, harness: h);
+    testWidgets('the safety tools open their pages', (tester) async {
+      await openSheet(tester, kelly);
 
       double top(String text) => tester.getTopLeft(find.text(text)).dy;
       expect(find.text('Is it urgent?'), findsOneWidget);
@@ -222,9 +201,31 @@ void main() {
       expect(top('Can Kelly eat this?'), lessThan(top('Lost mode')));
 
       await tapVisible(tester, find.text('Is it urgent?'));
+      expect(find.text('Any of these means going to a vet now. Call on the way.'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       await tapVisible(tester, find.text('Can Kelly eat this?'));
+      expect(find.text('Search a food or a plant'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
       await tapVisible(tester, find.text('Lost mode'));
-      expect(opened, ['urgent:kelly', 'food:kelly', 'lost:kelly']);
+      expect(find.text('Step 1 of 2'), findsOneWidget);
+    });
+
+    testWidgets('without the safety capabilities the lists are hidden and Lost mode makes a card', (tester) async {
+      final access = FakeAccessRepository();
+      access.groups['standard']!
+        ..remove('safety.lists')
+        ..remove('safety.lost');
+      final h = HealthHarness();
+      h.extraOverrides.add(accessRepositoryProvider.overrideWithValue(access));
+      await openSheet(tester, kelly, harness: h);
+
+      expect(find.text('Is it urgent?'), findsNothing);
+      expect(find.text('Can Kelly eat this?'), findsNothing);
+      expect(find.text('Make a card to share'), findsOneWidget);
+      await tapVisible(tester, find.text('Lost mode'));
+      expect(find.text('Kelly is lost'), findsWidgets);
     });
 
     testWidgets('an open alert turns the Lost mode row into the missing pet', (tester) async {
@@ -237,24 +238,13 @@ void main() {
       );
       h.lostAlerts.addSighting(alert.id);
       h.lostAlerts.addSighting(alert.id);
-      final opened = <Object?>[];
-      h.extraModules.add(
-        FeatureModule(
-          id: 'safety',
-          actions: {
-            'lost-alert': FeatureAction.task(
-              capability: 'safety.view',
-              open: (c, r) async => opened.add(r.value<LostAlert>('alert')?.id),
-            ),
-          },
-        ),
-      );
       await openSheet(tester, kelly, harness: h);
       expect(find.text('Kelly is missing · 2 sightings'), findsOneWidget);
       expect(find.text('Last seen Today · 15:40'), findsOneWidget);
       expect(find.text('Lost mode'), findsNothing);
-      await tapVisible(tester, find.byKey(const Key('open-lost-card')));
-      expect(opened, [alert.id]);
+      await tapVisible(tester, find.byKey(const Key('emergency-lost')));
+      expect(find.byKey(const Key('lost-alert-status')), findsOneWidget);
+      expect(find.text('Kelly is home'), findsOneWidget);
     });
 
     testWidgets('the Emergency card and kit row opens the card', (tester) async {

@@ -80,7 +80,8 @@ void main() {
       expect(find.text(he.emergencyCardAndKit), findsOneWidget);
       expect(find.text(he.emergencyCardAndKitNoteKit(3, 6)), findsOneWidget);
       expect(find.text(safetyHe.lostRow), findsOneWidget);
-      expect(find.text(safetyHe.lostRowCardNote), findsOneWidget);
+      expect(find.text(safetyHe.lostRowNote), findsOneWidget);
+      expect(find.text(safetyHe.urgentRow), findsOneWidget);
       expect(find.text(safetyHe.findClinicNote), findsOneWidget);
       expect(find.text(he.emergencySheetFinePrint), findsOneWidget);
       expect(find.text(he.safetyLine), findsNothing);

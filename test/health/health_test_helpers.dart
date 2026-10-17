@@ -170,7 +170,13 @@ PickedFile hugePdf() =>
 
 /// Everything a Health test can swap out.
 class HealthHarness {
-  HealthHarness({FakeHealthRepository? repository, this.pets, this.language = AppLanguage.english, WeekSettings? week})
+  HealthHarness({
+    FakeHealthRepository? repository,
+    this.pets,
+    this.language = AppLanguage.english,
+    WeekSettings? week,
+    FakeLostAlertsRepository? lostAlerts,
+  })
     : repository = repository ?? fakeHealth(),
       settings = MemorySettingsStore({
         languageSettingKey: ?language.code,
@@ -184,7 +190,7 @@ class HealthHarness {
       pdf = RecordingPdfBuilder(),
       cardRenderer = FakeLostCardRenderer(),
       cardPhotos = FakeLostCardPhotoSource(),
-      lostAlerts = FakeLostAlertsRepository(latency: Duration.zero, now: () => fixedNow, seeded: false);
+      lostAlerts = lostAlerts ?? FakeLostAlertsRepository(latency: Duration.zero, now: () => fixedNow, seeded: false);
 
   final FakeHealthRepository repository;
   final RecordingContactLauncher launcher;
@@ -201,6 +207,10 @@ class HealthHarness {
   /// Modules added to the app's own, set before pumping (a stand-in for a
   /// feature another tab's page reaches through an action).
   final extraModules = <FeatureModule>[];
+
+  /// More fakes, for providers no other override names (another
+  /// feature's repository a page reads).
+  final extraOverrides = <Override>[];
 
   /// Replaces the shared sample pets (to test other species).
   final List<Pet>? pets;
@@ -241,6 +251,7 @@ class HealthHarness {
     lostCardPhotoSourceProvider.overrideWithValue(cardPhotos),
     lostAlertsRepositoryProvider.overrideWithValue(lostAlerts),
     featureModulesProvider.overrideWith((ref) => [...builtInFeatureModules, ...extraModules]),
+    ...extraOverrides,
     if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
   ];
 }
