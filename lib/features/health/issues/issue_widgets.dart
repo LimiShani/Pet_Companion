@@ -19,7 +19,7 @@ import '../../../widgets/app_icon.dart';
 import '../records/attachments.dart';
 
 /// The icon of a followed problem (its Add row, Overview row and page).
-const issueIcon = Icons.timeline_rounded;
+const issueIcon = Icons.healing_rounded;
 
 /// "June 3" / "3 ביוני": a day and its month by name, in the app's
 /// language; the numeric date before the month names are loaded.
