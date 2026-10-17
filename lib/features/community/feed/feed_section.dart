@@ -14,6 +14,7 @@ import '../widgets/advice_notice.dart';
 import '../widgets/scope_menu_chip.dart';
 import '../widgets/section_state.dart';
 import 'feed_controller.dart';
+import 'near_me.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
 import 'post_composer_screen.dart';
@@ -168,19 +169,22 @@ class _FeedSectionState extends ConsumerState<FeedSection> {
   }
 }
 
-/// Above the posts: one row of filters (the animal, then the kind of post)
-/// and, until it is hidden, the line about advice. The words to look for
+/// Above the posts: one row of filters (the animal, then "All", "Near me"
+/// and the kinds of post) and, until it is hidden, the line about advice. The words to look for
 /// are typed in the tab's header.
 class _FeedHeader extends ConsumerWidget {
   const _FeedHeader();
 
   static const filterRowKey = Key('feed-filter-row');
+  static const nearMeKey = ValueKey('feed-near-me');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
     final filter = ref.watch(feedFilterProvider);
     final notifier = ref.read(feedFilterProvider.notifier);
+    // "Near me" once the member's city or Outside's area is known.
+    final nearMe = filter.nearMe || ref.watch(nearMeCodesProvider) != null;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.cardGap),
@@ -197,6 +201,15 @@ class _FeedHeader extends ConsumerWidget {
                 showCheckmark: false,
                 onSelected: (_) => notifier.kind(null),
               ),
+              if (nearMe)
+                FilterChip(
+                  key: nearMeKey,
+                  avatar: const Icon(Icons.place_rounded, size: 18),
+                  label: Text(l10n.feedNearMe),
+                  selected: filter.nearMe,
+                  showCheckmark: false,
+                  onSelected: notifier.nearMe,
+                ),
               for (final kind in PostKind.values)
                 ChoiceChip(
                   key: ValueKey('kind-${kind.name}'),

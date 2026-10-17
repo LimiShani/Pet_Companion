@@ -2302,6 +2302,12 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Lost or found'**
   String get addLostFound;
+
+  /// Feed filter chip: posts about the localities around the member.
+  ///
+  /// In en, this message translates to:
+  /// **'Near me'**
+  String get feedNearMe;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

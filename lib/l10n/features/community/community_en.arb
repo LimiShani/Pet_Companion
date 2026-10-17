@@ -497,5 +497,9 @@
   "addRecommendation": "Recommend a place or product",
   "@addRecommendation": {"description": "Add sheet row: a post of the kind Recommendation."},
   "addLostFound": "Lost or found",
-  "@addLostFound": {"description": "Add sheet row: a post of the kind Lost & found."}
+  "@addLostFound": {"description": "Add sheet row: a post of the kind Lost & found."},
+  "feedNearMe": "Near me",
+  "@feedNearMe": {
+    "description": "Feed filter chip: posts about the localities around the member."
+  }
 }

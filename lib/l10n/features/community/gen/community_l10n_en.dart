@@ -1319,4 +1319,7 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get addLostFound => 'Lost or found';
+
+  @override
+  String get feedNearMe => 'Near me';
 }

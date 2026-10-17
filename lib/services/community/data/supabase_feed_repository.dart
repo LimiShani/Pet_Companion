@@ -8,7 +8,8 @@ import 'feed_repository.dart';
 import 'supabase_community_support.dart';
 
 /// [FeedRepository] backed by Supabase (tables and policies in
-/// `supabase/migrations/0003_community.sql`).
+/// `supabase/migrations/0003_community.sql`; kinds and animals in 0022,
+/// a post's locality and a recommendation's place in 0036).
 ///
 /// Row level security holds every write to `auth.uid()`, so the user
 /// passed to a call must be the signed-in one.
@@ -45,6 +46,8 @@ class SupabaseFeedRepository implements FeedRepository {
       rows = await _feedRows(query, before, limit, kinds: true);
     } on sb.PostgrestException catch (e) {
       if (!_missingColumn(e)) rethrow;
+      // Before 0036 no post has a locality: none is near.
+      if (query.localities != null) return const [];
       // Before 0022 there are no kinds or animals: every post is a moment
       // for everyone, so a narrower kind finds nothing.
       if (query.kind != null && query.kind != PostKind.moment) return const [];
@@ -70,6 +73,10 @@ class SupabaseFeedRepository implements FeedRepository {
         request = request.inFilter('audience', [
           for (final a in audiences) a.key,
         ]);
+      }
+      if (query.localities case final localities?) {
+        if (localities.isEmpty) return const [];
+        request = request.inFilter('locality_code', localities.toList());
       }
     }
     if (query.authorId case final author?) {
@@ -120,7 +127,13 @@ class SupabaseFeedRepository implements FeedRepository {
     }
     final rows = await _client
         .from('community_posts')
-        .update({'body': body, 'kind': kind.key})
+        .update({
+          'body': body,
+          'kind': kind.key,
+          // Only a recommendation keeps a place (0036).
+          if (kind != PostKind.recommendation && post.placeName != null)
+            'place_name': null,
+        })
         .eq('id', post.id)
         .eq('author_id', viewer.id)
         .select('edited_at');
@@ -132,6 +145,7 @@ class SupabaseFeedRepository implements FeedRepository {
       text: body,
       kind: kind,
       editedAt: edited == null ? null : parseTimestamp(edited),
+      placeName: kind == PostKind.recommendation ? null : () => null,
     );
   });
 
@@ -166,12 +180,18 @@ class SupabaseFeedRepository implements FeedRepository {
     PickedPhoto? photo,
     PostKind kind = PostKind.moment,
     Audience audience = Audience.everyone,
+    String? localityCode,
+    String? placeName,
   }) => guardCommunity(() async {
     final body = text.trim();
     if (body.isEmpty) {
       throw const CommunityException(CommunityFailure.emptyPost);
     }
     final pet = petName?.trim() ?? '';
+    final trimmedPlace = placeName?.trim() ?? '';
+    final place = kind == PostKind.recommendation && trimmedPlace.isNotEmpty
+        ? trimmedPlace
+        : null;
 
     final photoPath = photo == null
         ? null
@@ -188,19 +208,28 @@ class SupabaseFeedRepository implements FeedRepository {
         .insert(values)
         .select('id, created_at')
         .single();
+    final kinds = {
+      ...values,
+      if (kind != PostKind.moment) 'kind': kind.key,
+      if (audience != Audience.everyone) 'audience': audience.key,
+    };
     final Map<String, dynamic> row;
     try {
       row =
           await insert({
-            ...values,
-            if (kind != PostKind.moment) 'kind': kind.key,
-            if (audience != Audience.everyone) 'audience': audience.key,
+            ...kinds,
+            'locality_code': ?localityCode,
+            'place_name': ?place,
           }).catchError((Object e) {
-            // Before 0022 a post has no kind or animal: post it without.
-            if (e is sb.PostgrestException && _missingColumn(e)) {
-              return insert(values);
-            }
-            throw e;
+            if (e is! sb.PostgrestException || !_missingColumn(e)) throw e;
+            // Before 0036 a post has no locality or place, and before 0022
+            // no kind or animal: post it without.
+            final withoutPlace = localityCode != null || place != null;
+            return (withoutPlace ? insert(kinds) : insert(values)).catchError(
+              (Object e) => e is sb.PostgrestException && _missingColumn(e)
+                  ? insert(values)
+                  : throw e,
+            );
           });
     } catch (_) {
       // Do not leave an orphan picture behind.
@@ -220,6 +249,8 @@ class SupabaseFeedRepository implements FeedRepository {
       createdAt: parseTimestamp(row['created_at']),
       kind: kind,
       audience: audience,
+      localityCode: localityCode,
+      placeName: place,
     );
   });
 
@@ -348,6 +379,8 @@ class SupabaseFeedRepository implements FeedRepository {
           ? null
           : parseTimestamp(row['edited_at']),
       helpfulCommentId: row['helpful_comment_id'] as String?,
+      localityCode: row['locality_code'] as String?,
+      placeName: row['place_name'] as String?,
     );
   }
 }
