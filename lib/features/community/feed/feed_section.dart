@@ -15,6 +15,7 @@ import '../widgets/scope_menu_chip.dart';
 import '../widgets/section_state.dart';
 import 'feed_controller.dart';
 import 'near_me.dart';
+import 'places_group.dart';
 import 'post_actions.dart';
 import 'post_card.dart';
 import 'post_composer_screen.dart';
@@ -128,6 +129,8 @@ class _FeedSectionState extends ConsumerState<FeedSection> {
                       child: LinearProgressIndicator(minHeight: 2),
                     ),
                   ?empty,
+                  // Searching: the places members recommend, above the posts.
+                  if (query.search.trim().isNotEmpty) PlacesGroup(posts: posts),
                 ],
               );
             }

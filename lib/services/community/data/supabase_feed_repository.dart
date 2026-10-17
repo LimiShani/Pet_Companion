@@ -43,15 +43,23 @@ class SupabaseFeedRepository implements FeedRepository {
     // are filtered out by the select policies.
     List<Map<String, dynamic>> rows;
     try {
-      rows = await _feedRows(query, before, limit, kinds: true);
+      rows = await _feedRows(query, before, limit, kinds: true, places: true);
     } on sb.PostgrestException catch (e) {
       if (!_missingColumn(e)) rethrow;
       // Before 0036 no post has a locality: none is near.
       if (query.localities != null) return const [];
-      // Before 0022 there are no kinds or animals: every post is a moment
-      // for everyone, so a narrower kind finds nothing.
-      if (query.kind != null && query.kind != PostKind.moment) return const [];
-      rows = await _feedRows(query, before, limit, kinds: false);
+      try {
+        // Before 0036 the words are looked for in the text alone.
+        rows = await _feedRows(query, before, limit, kinds: true, places: false);
+      } on sb.PostgrestException catch (e) {
+        if (!_missingColumn(e)) rethrow;
+        // Before 0022 there are no kinds or animals: every post is a moment
+        // for everyone, so a narrower kind finds nothing.
+        if (query.kind != null && query.kind != PostKind.moment) {
+          return const [];
+        }
+        rows = await _feedRows(query, before, limit, kinds: false, places: false);
+      }
     }
     final urls = await _photos.links([
       for (final row in rows)
@@ -65,6 +73,7 @@ class SupabaseFeedRepository implements FeedRepository {
     DateTime? before,
     int limit, {
     required bool kinds,
+    required bool places,
   }) async {
     var request = _client.from('community_feed').select();
     if (kinds) {
@@ -84,7 +93,13 @@ class SupabaseFeedRepository implements FeedRepository {
     }
     final words = query.search.trim();
     if (words.isNotEmpty) {
-      request = request.ilike('body', '%${_escapeLike(words)}%');
+      if (places && _plainWords.hasMatch(words)) {
+        // The text or a recommendation's place (0036).
+        final pattern = '"%$words%"';
+        request = request.or('body.ilike.$pattern,place_name.ilike.$pattern');
+      } else {
+        request = request.ilike('body', '%${_escapeLike(words)}%');
+      }
     }
     if (before != null) {
       request = request.lt('created_at', before.toUtc().toIso8601String());
@@ -165,6 +180,10 @@ class SupabaseFeedRepository implements FeedRepository {
       throw const CommunityException(CommunityFailure.notYourPost);
     }
   });
+
+  /// Words safe to put in a PostgREST `or` filter as they are (letters,
+  /// digits, spaces, apostrophes, dots and dashes).
+  static final _plainWords = RegExp(r"^[\p{L}\p{N} '.\-]+$", unicode: true);
 
   /// [words] as a literal inside an `ilike` pattern.
   static String _escapeLike(String words) => words

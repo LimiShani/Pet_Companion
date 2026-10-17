@@ -167,7 +167,9 @@ class PostCard extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (post.kind != PostKind.moment || answered)
+              if (post.kind != PostKind.moment ||
+                  answered ||
+                  post.placeName != null)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(8, 10, 8, 0),
                   child: Wrap(
@@ -181,6 +183,13 @@ class PostCard extends ConsumerWidget {
                               ? AppTagTone.peach
                               : AppTagTone.yellow,
                           icon: postKindIcon(post.kind),
+                        ),
+                      // A recommendation's place (0036).
+                      if (post.placeName case final place?)
+                        AppTag(
+                          place,
+                          key: ValueKey('post-place-${post.id}'),
+                          icon: Icons.place_rounded,
                         ),
                       if (answered)
                         AppTag(

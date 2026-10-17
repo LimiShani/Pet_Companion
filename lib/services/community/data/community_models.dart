@@ -192,7 +192,9 @@ class FeedQuery {
       return false;
     }
     final words = search.trim().toLowerCase();
-    return words.isEmpty || post.text.toLowerCase().contains(words);
+    return words.isEmpty ||
+        post.text.toLowerCase().contains(words) ||
+        (post.placeName?.toLowerCase().contains(words) ?? false);
   }
 
   @override

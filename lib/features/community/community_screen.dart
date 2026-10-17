@@ -125,6 +125,11 @@ class _CommunityScreenState extends ConsumerState<CommunityScreen> {
 
   Widget _buildAuthorized(BuildContext context, WidgetRef ref) {
     final l10n = context.communityL10n;
+    // A recommended place tapped in the results searches for it: the
+    // field shows the new words.
+    ref.listen(feedFilterProvider.select((f) => f.search), (_, words) {
+      if (_searching && _search.text.trim() != words) _search.text = words;
+    });
     final visible = [
       if (ref.watch(capabilityProvider('community.feed.view'))) 0,
       if (ref.watch(capabilityProvider('community.chat.view'))) 1,

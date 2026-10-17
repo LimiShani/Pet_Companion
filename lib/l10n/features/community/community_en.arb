@@ -501,5 +501,50 @@
   "feedNearMe": "Near me",
   "@feedNearMe": {
     "description": "Feed filter chip: posts about the localities around the member."
+  },
+  "composerNear": "Near {city}",
+  "@composerNear": {
+    "description": "The composer's chip: the city the post is about.",
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "composerEverywhere": "Everywhere",
+  "@composerEverywhere": {
+    "description": "The composer's chip: a post for everywhere."
+  },
+  "composerOtherCity": "Another city…",
+  "composerCityTitle": "Which city?",
+  "composerCitySearch": "Search a city",
+  "composerPlace": "Place (optional)",
+  "@composerPlace": {
+    "description": "A recommendation's place field."
+  },
+  "composerPlaceHelp": "Clinic, shop, trainer: the name people search for",
+  "searchPlaces": "Places",
+  "@searchPlaces": {
+    "description": "Heading of the recommended places above the posts in search."
+  },
+  "placeRecommendations": "{count, plural, =1{1 recommendation} other{{count} recommendations}}",
+  "@placeRecommendations": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchAllPlaces": "Show all places ({count})",
+  "@searchAllPlaces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchPostsHeading": "Posts",
+  "@searchPostsHeading": {
+    "description": "Heading of the posts under the places in search."
   }
 }

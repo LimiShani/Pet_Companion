@@ -12,10 +12,13 @@ import '../../../widgets/coral_header.dart';
 import '../community_words.dart';
 import '../../../services/community/data/audience.dart';
 import '../../../services/community/data/community_models.dart';
+import '../../../services/findvet/regions/regions.dart'
+    show Locality, vetRegions;
 import '../data/photo_picker.dart';
 import '../widgets/author_avatar.dart';
 import '../widgets/auto_direction_text.dart';
 import 'feed_controller.dart';
+import 'near_me.dart';
 import 'post_actions.dart';
 import '../safety/safety_flows.dart';
 
@@ -51,7 +54,16 @@ class PostComposerScreen extends ConsumerStatefulWidget {
 }
 
 class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
+  static const placeKey = ValueKey('compose-place');
+  static const localityKey = ValueKey('compose-locality');
+
   final _text = TextEditingController();
+  final _place = TextEditingController();
+
+  /// The city the post is about, once the member chose one ("Everywhere"
+  /// is `null`); until then the city of their member page.
+  String? _locality;
+  var _localityChosen = false;
   String? _petId;
   PickedPhoto? _photo;
   late var _kind = widget.kind ?? PostKind.moment;
@@ -79,7 +91,41 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
   @override
   void dispose() {
     _text.dispose();
+    _place.dispose();
     super.dispose();
+  }
+
+  /// Where the post is about: the member's choice, else their city.
+  String? get _localityCode =>
+      _localityChosen ? _locality : ref.read(myCityProvider).value?.code;
+
+  Future<void> _chooseLocality(String choice) async {
+    switch (choice) {
+      case 'everywhere':
+        setState(() {
+          _localityChosen = true;
+          _locality = null;
+        });
+      case 'other':
+        final city = await showModalBottomSheet<Locality>(
+          context: context,
+          useRootNavigator: true,
+          isScrollControlled: true,
+          useSafeArea: true,
+          builder: (_) => const _CitySheet(),
+        );
+        if (city != null && mounted) {
+          setState(() {
+            _localityChosen = true;
+            _locality = city.code;
+          });
+        }
+      default:
+        setState(() {
+          _localityChosen = true;
+          _locality = choice;
+        });
+    }
   }
 
   Future<void> _pick(PhotoSource source) async {
@@ -118,12 +164,17 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
         await feed.edit(post, text: _text.text, kind: _kind);
         showCommunitySnack(messenger, saved);
       } else {
+        final place = _place.text.trim();
         await feed.create(
           text: _text.text,
           petName: petName,
           photo: _photo,
           kind: _kind,
           audience: audience,
+          localityCode: _localityCode,
+          placeName: _kind == PostKind.recommendation && place.isNotEmpty
+              ? place
+              : null,
         );
       }
       navigator.pop();
@@ -297,6 +348,34 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
                       ),
                     ),
                   ),
+                  if (_kind == PostKind.recommendation && !editing) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      key: placeKey,
+                      controller: _place,
+                      maxLength: CommunityLimits.placeNameLength,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: InputDecoration(
+                        labelText: l10n.composerPlace,
+                        helperText: l10n.composerPlaceHelp,
+                        helperMaxLines: 2,
+                      ),
+                    ),
+                  ],
+                  if (!editing) ...[
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: _LocalityChip(
+                        key: localityKey,
+                        current: _localityChosen
+                            ? _locality
+                            : ref.watch(myCityProvider).value?.code,
+                        mine: ref.watch(myCityProvider).value,
+                        onChosen: _chooseLocality,
+                      ),
+                    ),
+                  ],
                   if (pets.isNotEmpty && !editing) ...[
                     _Label(l10n.composerAbout),
                     Wrap(
@@ -400,6 +479,146 @@ class _PostComposerScreenState extends ConsumerState<PostComposerScreen> {
     borderRadius: BorderRadius.circular(AppSpacing.surfaceRadius),
     borderSide: const BorderSide(color: Colors.transparent),
   );
+}
+
+/// "Near Petah Tikva ▾" / "Everywhere ▾": a menu of the member's city,
+/// another city and everywhere.
+class _LocalityChip extends StatelessWidget {
+  const _LocalityChip({
+    super.key,
+    required this.current,
+    required this.mine,
+    required this.onChosen,
+  });
+
+  final String? current;
+  final Locality? mine;
+  final ValueChanged<String> onChosen;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+    final language =
+        Localizations.localeOf(context).languageCode == 'he' ? 'he' : 'en';
+    final city = _localityOf(current);
+    final label = city == null
+        ? l10n.composerEverywhere
+        : l10n.composerNear(city.nameIn(language));
+    return PopupMenuButton<String>(
+      tooltip: label,
+      onSelected: onChosen,
+      itemBuilder: (context) => [
+        if (mine case final mine?)
+          PopupMenuItem(
+            value: mine.code,
+            child: Text(l10n.composerNear(mine.nameIn(language))),
+          ),
+        if (city != null && city.code != mine?.code)
+          PopupMenuItem(
+            value: city.code,
+            child: Text(l10n.composerNear(city.nameIn(language))),
+          ),
+        PopupMenuItem(
+          key: const ValueKey('compose-locality-other'),
+          value: 'other',
+          child: Text(l10n.composerOtherCity),
+        ),
+        PopupMenuItem(
+          key: const ValueKey('compose-locality-everywhere'),
+          value: 'everywhere',
+          child: Text(l10n.composerEverywhere),
+        ),
+      ],
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsetsDirectional.fromSTEB(10, 6, 12, 6),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFD9CBB3), width: 1.5),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const AppIcon(Icons.place_rounded, size: 18, color: AppColors.ink),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                '$label ▾',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.secondary.copyWith(
+                  color: AppColors.ink,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+Locality? _localityOf(String? code) {
+  if (code == null) return null;
+  for (final region in vetRegions) {
+    final locality = region.localityByCode(code);
+    if (locality != null) return locality;
+  }
+  return null;
+}
+
+/// "Which city?": a search over the app's localities.
+class _CitySheet extends StatefulWidget {
+  const _CitySheet();
+
+  @override
+  State<_CitySheet> createState() => _CitySheetState();
+}
+
+class _CitySheetState extends State<_CitySheet> {
+  var _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.communityL10n;
+    final language =
+        Localizations.localeOf(context).languageCode == 'he' ? 'he' : 'en';
+    final found = [
+      for (final region in vetRegions)
+        ...region.findLocalities(_query, limit: 8),
+    ].take(8).toList();
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screen,
+        16,
+        AppSpacing.screen,
+        16 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(l10n.composerCityTitle, style: AppText.heading),
+          const SizedBox(height: 12),
+          TextField(
+            key: const ValueKey('compose-city-field'),
+            autofocus: true,
+            decoration: InputDecoration(hintText: l10n.composerCitySearch),
+            onChanged: (text) => setState(() => _query = text),
+          ),
+          const SizedBox(height: 8),
+          for (final city in found)
+            ListTile(
+              key: ValueKey('compose-city-${city.code}'),
+              title: Text(city.nameIn(language)),
+              onTap: () => Navigator.of(context).pop(city),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _Label extends StatelessWidget {

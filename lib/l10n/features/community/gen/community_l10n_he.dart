@@ -1328,4 +1328,50 @@ class CommunityL10nHe extends CommunityL10n {
 
   @override
   String get feedNearMe => 'בסביבה שלי';
+
+  @override
+  String composerNear(String city) {
+    return 'ליד \u2068$city\u2069';
+  }
+
+  @override
+  String get composerEverywhere => 'בכל מקום';
+
+  @override
+  String get composerOtherCity => 'עיר אחרת…';
+
+  @override
+  String get composerCityTitle => 'איזו עיר?';
+
+  @override
+  String get composerCitySearch => 'חיפוש עיר';
+
+  @override
+  String get composerPlace => 'מקום (לא חובה)';
+
+  @override
+  String get composerPlaceHelp => 'מרפאה, חנות, מאלף: השם שמחפשים';
+
+  @override
+  String get searchPlaces => 'מקומות';
+
+  @override
+  String placeRecommendations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count המלצות',
+      two: 'שתי המלצות',
+      one: 'המלצה אחת',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchAllPlaces(int count) {
+    return 'כל המקומות ($count)';
+  }
+
+  @override
+  String get searchPostsHeading => 'פוסטים';
 }
