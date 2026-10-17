@@ -18,7 +18,7 @@ import 'health_repository.dart';
 /// [seedIssue] also follows one problem of Kelly's ("Limping, right front
 /// leg", since 3 June 2025, four entries, two photos). Off by default so
 /// the journal of the other tests keeps its nine entries; the app's sample
-/// data turns it on once the problem's screens are built (stage 2).
+/// data turns it on.
 class FakeHealthRepository implements HealthRepository {
   FakeHealthRepository({
     this.latency = const Duration(milliseconds: 300),
