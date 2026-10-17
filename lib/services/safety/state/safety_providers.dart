@@ -5,6 +5,10 @@ import '../../../access/access_provider.dart';
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
 import '../../../state/pets_provider.dart';
+import '../../community/data/audience.dart';
+import '../../community/data/community_models.dart' show PostKind;
+import '../../community/data/community_providers.dart';
+import '../data/lost_post.dart';
 import '../data/fake_lost_alerts_repository.dart';
 import '../data/lost_alert_models.dart';
 import '../data/lost_alerts_repository.dart';
@@ -12,6 +16,7 @@ import '../data/supabase_lost_alerts_repository.dart';
 
 export '../data/lost_alert_models.dart';
 export '../data/lost_alerts_repository.dart';
+export '../data/lost_post.dart';
 
 /// Who may use the safety tools (`0034_lost_alerts.sql`). All three are
 /// for the Beta testers until a vet has reviewed the lists.
@@ -36,6 +41,29 @@ final lostAlertsRepositoryProvider = Provider<LostAlertsRepository>(
               name: pet?.name ?? petId,
               species: pet?.species.name ?? 'other',
             );
+          },
+          // The demo writes the post into the community's fake feed, so
+          // the alert page and the feed show it as they will for real.
+          postWriter: (alert) async {
+            final user = ref.read(authControllerProvider).value;
+            if (user == null) return null;
+            final post = await ref
+                .read(feedRepositoryProvider)
+                .createPost(
+                  author: user,
+                  text: lostPostBody(
+                    language: alert.language,
+                    name: alert.petName,
+                    species: alert.petSpecies,
+                    seenAt: alert.lastSeenAt,
+                    place: alert.lastSeenPlace,
+                    note: alert.note,
+                  ),
+                  petName: alert.petName,
+                  kind: PostKind.lostFound,
+                  audience: Audience.fromKey(alert.petSpecies),
+                );
+            return post.id;
           },
         ),
 );

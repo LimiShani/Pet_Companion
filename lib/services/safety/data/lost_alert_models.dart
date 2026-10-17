@@ -148,7 +148,7 @@ class LostStart {
     this.place = '',
     this.note = '',
     this.language = 'he',
-    this.photoPath,
+    this.petPhotoPath,
     this.areaName = '',
   });
 
@@ -167,9 +167,9 @@ class LostStart {
   /// The post's fixed words: 'he' or 'en'.
   final String language;
 
-  /// A photo already uploaded for the post (community-photos, the
-  /// caller's folder); `null` posts without one.
-  final String? photoPath;
+  /// The pet's own photo (its path in the `pet-photos` bucket) to copy
+  /// onto the post; `null` posts without a photo.
+  final String? petPhotoPath;
 
   /// The locality's name in [language], for the post's text.
   final String areaName;

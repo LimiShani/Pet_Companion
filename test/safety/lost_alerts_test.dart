@@ -115,6 +115,35 @@ void main() {
     expect(of('timeout', '57014'), LostAlertFailure.unknown);
   });
 
+  test('the post says what the server writes: the facts, never a phone number', () {
+    final en = lostPostBody(
+      language: 'en',
+      name: 'Kelly',
+      species: 'dog',
+      breed: 'Labrador',
+      looks: 'Light brown, white chest',
+      seenAt: DateTime(2026, 10, 17, 14, 30),
+      place: 'Ahuza park gate',
+      area: "Ra'anana",
+      note: 'Shy',
+    );
+    expect(en.split('\n'), [
+      'Kelly is missing',
+      'Dog · Labrador',
+      'Light brown, white chest',
+      "Last seen 17.10 14:30 · Ahuza park gate, Ra'anana",
+      'Shy',
+      'Seen Kelly? Please comment with where and when.',
+    ]);
+    final he = lostPostBody(language: 'he', name: 'Kelly', species: 'cat', seenAt: DateTime(2026, 10, 17, 9, 5));
+    expect(he.split('\n'), [
+      'מחפשים את \u2068Kelly\u2069',
+      'חתול',
+      'הפעם האחרונה שראינו: 17.10 09:05',
+      'כל מראה של \u2068Kelly\u2069 עוזר: אפשר לכתוב בתגובה איפה ומתי.',
+    ]);
+  });
+
   test('alerts parse from the server\'s JSON', () {
     final alert = LostAlert.fromJson({
       'id': 'a1',

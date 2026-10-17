@@ -1,5 +1,11 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
+import '../../community/data/community_models.dart' show PickedPhoto;
+import '../../community/data/supabase_community_support.dart'
+    show CommunityPhotos;
+import '../../pets/data/supabase_pets_repository.dart'
+    show SupabasePetsRepository;
+
 import 'lost_alert_models.dart';
 import 'lost_alerts_repository.dart';
 
@@ -53,19 +59,49 @@ class SupabaseLostAlertsRepository implements LostAlertsRepository {
     await _rpc('lost_alerts_near', {'p_locality': localityCode}),
   ).map(NearbyLostAlert.fromJson).toList();
 
+  /// Copies the pet's photo into the caller's community-photos folder for
+  /// the post. A post without the photo is better than no post: any
+  /// failure gives `null`.
+  Future<String?> _copyPhoto(String? petPhotoPath) async {
+    final me = _client.auth.currentUser?.id;
+    if (petPhotoPath == null || me == null) return null;
+    try {
+      final bytes = await _client.storage
+          .from(SupabasePetsRepository.photoBucket)
+          .download(petPhotoPath);
+      return await CommunityPhotos(() => _client).upload(
+        me,
+        PickedPhoto(bytes: bytes, name: 'lost.jpg', mimeType: 'image/jpeg'),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
-  Future<LostAlert> start(LostStart request) async => _alert(
-    await _rpc('lost_start', {
-      'p_pet': request.petId,
-      'p_locality': request.localityCode,
-      'p_place': request.place,
-      'p_seen_at': request.seenAt.toUtc().toIso8601String(),
-      'p_note': request.note,
-      'p_language': request.language,
-      'p_photo_path': request.photoPath,
-      'p_area_name': request.areaName,
-    }),
-  );
+  Future<LostAlert> start(LostStart request) async {
+    final photo = await _copyPhoto(request.petPhotoPath);
+    final photos = CommunityPhotos(() => _client);
+    try {
+      final alert = _alert(
+        await _rpc('lost_start', {
+          'p_pet': request.petId,
+          'p_locality': request.localityCode,
+          'p_place': request.place,
+          'p_seen_at': request.seenAt.toUtc().toIso8601String(),
+          'p_note': request.note,
+          'p_language': request.language,
+          'p_photo_path': photo,
+          'p_area_name': request.areaName,
+        }),
+      );
+      if (photo != null) await photos.attached(photo);
+      return alert;
+    } catch (_) {
+      if (photo != null) await photos.remove(photo);
+      rethrow;
+    }
+  }
 
   @override
   Future<LostAlert> markFound(String alertId) async =>

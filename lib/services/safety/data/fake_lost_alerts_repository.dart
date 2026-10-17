@@ -10,6 +10,7 @@ class FakeLostAlertsRepository implements LostAlertsRepository {
     DateTime Function()? now,
     this.ownerId = 'demo',
     this.petFacts,
+    this.postWriter,
     bool seeded = true,
   }) : _now = now ?? DateTime.now {
     if (seeded) {
@@ -37,6 +38,10 @@ class FakeLostAlertsRepository implements LostAlertsRepository {
 
   /// The pet's name and kind, as the server copies them from `pets`.
   final ({String name, String species}) Function(String petId)? petFacts;
+
+  /// Writes the alert's post (the demo's fake feed) and gives its id;
+  /// without it the post is only an id.
+  final Future<String?> Function(LostAlert alert)? postWriter;
 
   /// Makes every call fail, for error states in tests.
   bool failing = false;
@@ -126,8 +131,25 @@ class FakeLostAlertsRepository implements LostAlertsRepository {
       postId: 'post-lost-$n',
       createdAt: now,
     );
-    _alerts.add(alert);
-    return alert;
+    final postId = await postWriter?.call(alert);
+    final posted = postId == null
+        ? alert
+        : LostAlert(
+            id: alert.id,
+            petId: alert.petId,
+            ownerId: alert.ownerId,
+            petName: alert.petName,
+            petSpecies: alert.petSpecies,
+            localityCode: alert.localityCode,
+            lastSeenAt: alert.lastSeenAt,
+            createdAt: alert.createdAt,
+            lastSeenPlace: alert.lastSeenPlace,
+            note: alert.note,
+            language: alert.language,
+            postId: postId,
+          );
+    _alerts.add(posted);
+    return posted;
   }
 
   Future<LostAlert> _close(String alertId, LostAlertStatus status) async {
