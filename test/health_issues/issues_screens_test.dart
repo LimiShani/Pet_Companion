@@ -294,7 +294,7 @@ void main() {
     final record = tester.getTopLeft(find.byKey(AddSheet.rowKey('record'))).dy;
     expect(quick, lessThan(follow));
     expect(follow, lessThan(record));
-    expect(find.text('A limp, a rash, a cough: over a few days'), findsOneWidget);
+    expect(find.text('A limp, a rash, a cough'), findsOneWidget);
   });
 
   testWidgets('in Hebrew: the row, the page and the Quick log addition', (tester) async {

@@ -3566,7 +3566,7 @@ abstract class HealthL10n {
   /// No description provided for @addFollowProblemNote.
   ///
   /// In en, this message translates to:
-  /// **'A limp, a rash, a cough: over a few days'**
+  /// **'A limp, a rash, a cough'**
   String get addFollowProblemNote;
 
   /// No description provided for @issueSheetNote.

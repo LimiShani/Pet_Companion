@@ -2060,7 +2060,7 @@ class HealthL10nEn extends HealthL10n {
   String get addFollowProblem => 'Follow a problem';
 
   @override
-  String get addFollowProblemNote => 'A limp, a rash, a cough: over a few days';
+  String get addFollowProblemNote => 'A limp, a rash, a cough';
 
   @override
   String get issueSheetNote => 'Something to watch over a few days or weeks';

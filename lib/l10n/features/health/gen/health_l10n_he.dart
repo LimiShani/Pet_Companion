@@ -2071,7 +2071,7 @@ class HealthL10nHe extends HealthL10n {
   String get addFollowProblem => 'מעקב אחרי בעיה';
 
   @override
-  String get addFollowProblemNote => 'צליעה, פריחה, שיעול: לאורך כמה ימים';
+  String get addFollowProblemNote => 'צליעה, פריחה, שיעול';
 
   @override
   String get issueSheetNote => 'משהו לעקוב אחריו כמה ימים או שבועות';
