@@ -342,5 +342,70 @@
     "description": "A member page's section of their open ads."
   },
   "addPlanWalk": "Plan a walk or play date",
-  "@addPlanWalk": {"description": "Add sheet row of the Outside tab: a new partners ad."}
+  "@addPlanWalk": {"description": "Add sheet row of the Outside tab: a new partners ad."},
+  "goingSoonTitle": "Going out soon?",
+  "@goingSoonTitle": {
+    "description": "The card at the top of Partners: post a \"going out now\" ad."
+  },
+  "goingSoonBody": "Tell people who saved your parks. Lasts 90 min.",
+  "goingNowButton": "Going now",
+  "@goingNowButton": {
+    "description": "The card's button: opens the going-now sheet."
+  },
+  "addGoingNow": "Going out now",
+  "@addGoingNow": {
+    "description": "Add sheet row of the Outside tab, and the going-now sheet's title."
+  },
+  "goingInTag": "in {minutes} min",
+  "@goingInTag": {
+    "description": "Tag on a going-now ad: how long until they leave.",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "goingOutTag": "Out now",
+  "@goingOutTag": {
+    "description": "Tag on a going-now ad once they have left."
+  },
+  "leavingAt": "Leaving {time}",
+  "@leavingAt": {
+    "description": "A going-now ad's time line: 'Leaving 17:30'.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "goingWhere": "Where to",
+  "goingOtherPark": "Another park",
+  "@goingOtherPark": {
+    "description": "Chip of the going-now sheet: choose a park from the list."
+  },
+  "goingLeavingIn": "Leaving in",
+  "goingMinutes": "{minutes} min",
+  "@goingMinutes": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "goingWith": "With {pet}",
+  "@goingWith": {
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "goingNoteHint": "Anything to add? (optional)",
+  "goingPost": "Tell them",
+  "@goingPost": {
+    "description": "The going-now sheet's button: posts the ad."
+  },
+  "goingPosted": "Posted for the next 90 minutes",
+  "goingPickPark": "Choose a park first",
+  "errNowLimit": "That's three for today. You can post again tomorrow."
 }

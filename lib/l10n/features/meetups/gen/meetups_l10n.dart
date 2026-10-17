@@ -994,6 +994,108 @@ abstract class MeetupsL10n {
   /// In en, this message translates to:
   /// **'Plan a walk or play date'**
   String get addPlanWalk;
+
+  /// The card at the top of Partners: post a "going out now" ad.
+  ///
+  /// In en, this message translates to:
+  /// **'Going out soon?'**
+  String get goingSoonTitle;
+
+  /// No description provided for @goingSoonBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell people who saved your parks. Lasts 90 min.'**
+  String get goingSoonBody;
+
+  /// The card's button: opens the going-now sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Going now'**
+  String get goingNowButton;
+
+  /// Add sheet row of the Outside tab, and the going-now sheet's title.
+  ///
+  /// In en, this message translates to:
+  /// **'Going out now'**
+  String get addGoingNow;
+
+  /// Tag on a going-now ad: how long until they leave.
+  ///
+  /// In en, this message translates to:
+  /// **'in {minutes} min'**
+  String goingInTag(int minutes);
+
+  /// Tag on a going-now ad once they have left.
+  ///
+  /// In en, this message translates to:
+  /// **'Out now'**
+  String get goingOutTag;
+
+  /// A going-now ad's time line: 'Leaving 17:30'.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaving {time}'**
+  String leavingAt(String time);
+
+  /// No description provided for @goingWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where to'**
+  String get goingWhere;
+
+  /// Chip of the going-now sheet: choose a park from the list.
+  ///
+  /// In en, this message translates to:
+  /// **'Another park'**
+  String get goingOtherPark;
+
+  /// No description provided for @goingLeavingIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaving in'**
+  String get goingLeavingIn;
+
+  /// No description provided for @goingMinutes.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min'**
+  String goingMinutes(int minutes);
+
+  /// No description provided for @goingWith.
+  ///
+  /// In en, this message translates to:
+  /// **'With {pet}'**
+  String goingWith(String pet);
+
+  /// No description provided for @goingNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything to add? (optional)'**
+  String get goingNoteHint;
+
+  /// The going-now sheet's button: posts the ad.
+  ///
+  /// In en, this message translates to:
+  /// **'Tell them'**
+  String get goingPost;
+
+  /// No description provided for @goingPosted.
+  ///
+  /// In en, this message translates to:
+  /// **'Posted for the next 90 minutes'**
+  String get goingPosted;
+
+  /// No description provided for @goingPickPark.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a park first'**
+  String get goingPickPark;
+
+  /// No description provided for @errNowLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'That\'s three for today. You can post again tomorrow.'**
+  String get errNowLimit;
 }
 
 class _MeetupsL10nDelegate extends LocalizationsDelegate<MeetupsL10n> {

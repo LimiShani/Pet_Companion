@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import '../../findvet/regions/region.dart';
+import '../../findvet/regions/regions.dart';
 
 /// How far around the chosen place to look. Shared with meetups (a city
 /// and a radius).
@@ -74,6 +74,26 @@ class CityArea extends ParkArea {
   @override
   CityArea withRadius(ParkRadius radius) =>
       CityArea(locality, radius: radius);
+}
+
+/// The locality codes in range of [area], by their centres: the city
+/// itself for "City only", else the localities within the radius (and the
+/// one "Near me" stands for). What area-wide lists ask the server for
+/// (hazard reports, posts near me); never a position.
+List<String> areaLocalityCodes(ParkArea area) {
+  final (GeoPoint centre, Locality? own) = switch (area) {
+    CityArea(:final locality) => (locality.point, locality),
+    NearMeArea(:final point, :final nearest) => (
+      point,
+      nearest ?? vetRegionAt(point)?.nearestLocality(point, maxM: 30000),
+    ),
+  };
+  final metres = area.radius.metres;
+  if (metres == null) return [?own?.code];
+  final near =
+      vetRegionAt(centre)?.localitiesWithin(centre, metres.toDouble()) ??
+      const <Locality>[];
+  return {?own?.code, for (final l in near) l.code}.toList();
 }
 
 const _earthRadiusM = 6371008.8;

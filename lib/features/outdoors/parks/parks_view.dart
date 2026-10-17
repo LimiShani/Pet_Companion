@@ -13,6 +13,7 @@ import '../../../theme/app_theme.dart';
 import '../../../platform/feature_ui.dart' show AddTab;
 import '../../../widgets/add_sheet.dart' show AddFab;
 import '../../../widgets/app_icon.dart';
+import '../hazards/hazard_line.dart';
 import '../outdoors_words.dart';
 import '../review/parks_review_screen.dart';
 import '../widgets/park_widgets.dart';
@@ -98,6 +99,7 @@ class ParksView extends ConsumerWidget {
             ),
           ),
         const SizedBox(height: 12),
+        const HazardLine(),
         ...switch (listing) {
           null || AsyncLoading() => [
             Padding(

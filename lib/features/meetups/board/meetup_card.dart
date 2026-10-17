@@ -45,6 +45,7 @@ class MeetupCard extends ConsumerWidget {
   static Key renewKey(String id) => Key('meetup-renew-$id');
   static Key againKey(String id) => Key('meetup-again-$id');
   static Key groupKey(String id) => Key('meetup-group-$id');
+  static Key goingTagKey(String id) => Key('meetup-going-$id');
   static const reportItemKey = Key('meetup-menu-report');
   static const blockItemKey = Key('meetup-menu-block');
 
@@ -75,7 +76,16 @@ class MeetupCard extends ConsumerWidget {
     final closed = ad.status == MeetupStatus.closed;
     final park = ad.park;
 
+    final goingNow = ad.time;
     final tags = [
+      // "in 25 min": a going-now ad while it is up.
+      if (goingNow is NowTime && ad.isLiveAt(now))
+        AppTag(
+          text.goingTag(goingNow, now),
+          key: goingTagKey(ad.id),
+          tone: AppTagTone.yellow,
+          icon: Icons.schedule_rounded,
+        ),
       if (own) _Tag(l10n.yourAd, tone: AppTagTone.peach),
       if (own && ad.hidden) _Tag(l10n.hiddenTag, tone: AppTagTone.yellow),
       if (closed)
@@ -388,7 +398,8 @@ class _OwnerTools extends ConsumerWidget {
       spacing: 8,
       runSpacing: 8,
       children: [
-        if (live && canPost && !ad.hidden)
+        // A going-now ad is closed and posted again, never edited.
+        if (live && canPost && !ad.hidden && !ad.isGoingNow)
           OutlinedButton.icon(
             key: MeetupCard.editKey(ad.id),
             onPressed: () => openMeetupForm(context, edit: ad),
@@ -414,7 +425,7 @@ class _OwnerTools extends ConsumerWidget {
             icon: const AppIcon(Icons.autorenew_rounded),
             label: Text(l10n.renew),
           ),
-        if (!ad.isRecurring && !live && canPost)
+        if (!ad.isRecurring && !ad.isGoingNow && !live && canPost)
           OutlinedButton.icon(
             key: MeetupCard.againKey(ad.id),
             onPressed: () => openMeetupForm(context, copyOf: ad),

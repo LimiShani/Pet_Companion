@@ -832,6 +832,60 @@ abstract class OutdoorsL10n {
   /// In en, this message translates to:
   /// **'Add to Outside'**
   String get addToOutside;
+
+  /// The line above the Partners and Parks lists.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hazard report near you this week.} other{{count} hazard reports near you this week.}}'**
+  String hazardLineCount(int count);
+
+  /// Hazard kind: pine processionary caterpillars.
+  ///
+  /// In en, this message translates to:
+  /// **'Caterpillars'**
+  String get hazardKindCaterpillars;
+
+  /// No description provided for @hazardKindBait.
+  ///
+  /// In en, this message translates to:
+  /// **'Poison bait'**
+  String get hazardKindBait;
+
+  /// No description provided for @hazardKindGlass.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken glass'**
+  String get hazardKindGlass;
+
+  /// Hazard kind: municipal inspectors handing out fines.
+  ///
+  /// In en, this message translates to:
+  /// **'Dog inspectors'**
+  String get hazardKindInspector;
+
+  /// No description provided for @hazardKindOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Something else'**
+  String get hazardKindOther;
+
+  /// No description provided for @hazardAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind} at {place}'**
+  String hazardAt(String kind, String place);
+
+  /// No description provided for @hazardIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind} in {city}'**
+  String hazardIn(String kind, String city);
+
+  /// No description provided for @hazardNoted.
+  ///
+  /// In en, this message translates to:
+  /// **'{kind}: {note}'**
+  String hazardNoted(String kind, String note);
 }
 
 class _OutdoorsL10nDelegate extends LocalizationsDelegate<OutdoorsL10n> {

@@ -38,6 +38,7 @@ final meetupsRepositoryProvider = Provider<MeetupsRepository>(
       : FakeMeetupsRepository(
           now: ref.watch(meetupsClockProvider),
           viewerId: () => ref.read(authControllerProvider).value?.id ?? 'demo',
+          goingNowSample: true,
         ),
 );
 

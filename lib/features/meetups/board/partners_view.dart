@@ -15,16 +15,20 @@ import '../../../widgets/app_icon.dart';
 import '../../../platform/feature_ui.dart' show AddTab;
 import '../../../widgets/add_sheet.dart' show AddFab;
 import '../../../widgets/empty_state.dart';
-import '../../outdoors/outdoors.dart' show ParkRadiusChip;
+import '../../outdoors/outdoors.dart'
+    show HazardLine, ParkRadiusChip, areaHazardsProvider, shownHazardsProvider;
 import '../meetup_actions.dart';
 import '../meetups_state.dart';
+import 'going_now.dart';
 import 'meetup_card.dart';
 import 'meetups_area_picker.dart';
 import 'partners_filters_sheet.dart';
 
 /// Outside > Partners: until Outside has an area (the profile's city by
 /// default), where to look; then one row ("Filters", the distance, "My
-/// ads") and the open ads around, the soonest first. The area is the chip
+/// ads") and the open ads around, the soonest first ("going out now" ads
+/// at the top, under the "Going out soon?" card and the hazard line). The
+/// area is the chip
 /// in the tab's header; a new ad is "Plan a walk or play date" in the tab's
 /// Add sheet (its "+").
 class PartnersView extends ConsumerWidget {
@@ -91,6 +95,10 @@ class PartnersView extends ConsumerWidget {
           onCity: controller.chooseCity,
         )
       else ...[
+        // "Going out soon?", then the hazard line, above the board.
+        const GoingOutCard(),
+        const SizedBox(height: 12),
+        const HazardLine(),
         _ControlRow(
           count: filterCount,
           area: outsideArea ?? CityArea(area.city, radius: area.radius),
@@ -134,7 +142,7 @@ class PartnersView extends ConsumerWidget {
     ];
 
     return MeetupsKeeper(
-      also: [parkFavoritesProvider],
+      also: [parkFavoritesProvider, areaHazardsProvider, shownHazardsProvider],
       child: RefreshIndicator(
         onRefresh: () async {
           ref.read(meetupsRevisionProvider.notifier).bump();

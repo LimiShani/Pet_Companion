@@ -604,6 +604,12 @@ abstract class AccessL10n {
   /// In en, this message translates to:
   /// **'Your account does not have access to this feature right now.'**
   String get gateMessage;
+
+  /// No description provided for @featureCommunityHazards.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazard reports'**
+  String get featureCommunityHazards;
 }
 
 class _AccessL10nDelegate extends LocalizationsDelegate<AccessL10n> {

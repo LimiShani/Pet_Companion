@@ -60,6 +60,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
     'community.guides' => _l10n.featureCommunityGuides,
     'community.parks' => _l10n.featureCommunityParks,
     'community.meetups' => _l10n.featureCommunityMeetups,
+    'community.hazards' => _l10n.featureCommunityHazards,
     'store' || 'store.deals' => _l10n.featureDeals,
     'budget' => _l10n.featureBudget,
     'basket' => _l10n.featureBasket,

@@ -18,6 +18,8 @@
 /// - `pickPark(context)`: choose a park ("My parks" first, nearest first);
 ///   answers a `PickedPark` (id, display name, tags).
 /// - `openSuggestPark`, `openParksReview`.
+/// - Hazard reports: `HazardLine` (above the Partners and Parks lists),
+///   `areaHazardsProvider`, `HazardsController` (docs/hazards.md).
 /// - Areas and radii: `ParkArea`, `NearMeArea`, `CityArea`, `ParkRadius`,
 ///   `coarseBox` (services/outdoors/data/park_area.dart) over the shared
 ///   localities (`israelLocalities`, `VetRegion.localitiesWithin`).
@@ -25,12 +27,17 @@
 /// Design, data source and owner steps: docs/dog_parks.md.
 library;
 
+export '../../services/outdoors/data/fake_hazards_repository.dart';
 export '../../services/outdoors/data/fake_parks_repository.dart';
+export '../../services/outdoors/data/hazard_models.dart';
+export '../../services/outdoors/data/hazards_repository.dart';
 export '../../services/outdoors/data/park_area.dart';
 export '../../services/outdoors/data/park_launcher.dart';
 export '../../services/outdoors/data/park_models.dart';
 export '../../services/outdoors/data/parks_repository.dart';
+export '../../services/outdoors/state/hazards_providers.dart';
 export '../../services/outdoors/state/parks_providers.dart';
+export 'hazards/hazard_line.dart' show HazardLine, HazardWords;
 export 'outdoors_words.dart';
 export 'outside_section.dart'
     show

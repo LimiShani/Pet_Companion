@@ -520,4 +520,63 @@ class MeetupsL10nEn extends MeetupsL10n {
 
   @override
   String get addPlanWalk => 'Plan a walk or play date';
+
+  @override
+  String get goingSoonTitle => 'Going out soon?';
+
+  @override
+  String get goingSoonBody => 'Tell people who saved your parks. Lasts 90 min.';
+
+  @override
+  String get goingNowButton => 'Going now';
+
+  @override
+  String get addGoingNow => 'Going out now';
+
+  @override
+  String goingInTag(int minutes) {
+    return 'in $minutes min';
+  }
+
+  @override
+  String get goingOutTag => 'Out now';
+
+  @override
+  String leavingAt(String time) {
+    return 'Leaving $time';
+  }
+
+  @override
+  String get goingWhere => 'Where to';
+
+  @override
+  String get goingOtherPark => 'Another park';
+
+  @override
+  String get goingLeavingIn => 'Leaving in';
+
+  @override
+  String goingMinutes(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String goingWith(String pet) {
+    return 'With $pet';
+  }
+
+  @override
+  String get goingNoteHint => 'Anything to add? (optional)';
+
+  @override
+  String get goingPost => 'Tell them';
+
+  @override
+  String get goingPosted => 'Posted for the next 90 minutes';
+
+  @override
+  String get goingPickPark => 'Choose a park first';
+
+  @override
+  String get errNowLimit => 'That\'s three for today. You can post again tomorrow.';
 }

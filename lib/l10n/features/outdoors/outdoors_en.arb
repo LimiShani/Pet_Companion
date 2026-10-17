@@ -261,5 +261,58 @@
   "removeConfirm": "Remove this park from the list? It is hidden, not deleted.",
   "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).",
   "addToOutside": "Add to Outside",
-  "@addToOutside": {"description": "The Outside tab's \"+\" button (for a screen reader) and the title of the sheet it opens."}
+  "@addToOutside": {"description": "The Outside tab's \"+\" button (for a screen reader) and the title of the sheet it opens."},
+  "hazardLineCount": "{count, plural, =1{1 hazard report near you this week.} other{{count} hazard reports near you this week.}}",
+  "@hazardLineCount": {
+    "description": "The line above the Partners and Parks lists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hazardKindCaterpillars": "Caterpillars",
+  "@hazardKindCaterpillars": {
+    "description": "Hazard kind: pine processionary caterpillars."
+  },
+  "hazardKindBait": "Poison bait",
+  "hazardKindGlass": "Broken glass",
+  "hazardKindInspector": "Dog inspectors",
+  "@hazardKindInspector": {
+    "description": "Hazard kind: municipal inspectors handing out fines."
+  },
+  "hazardKindOther": "Something else",
+  "hazardAt": "{kind} at {place}",
+  "@hazardAt": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardIn": "{kind} in {city}",
+  "@hazardIn": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardNoted": "{kind}: {note}",
+  "@hazardNoted": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  }
 }

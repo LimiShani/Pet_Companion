@@ -176,9 +176,11 @@ class SupabaseMeetupsRepository implements MeetupsRepository {
   );
 }
 
-/// What `meetup_save` receives for [draft].
+/// What `meetup_save` receives for [draft] ("now": a going-out-now ad,
+/// 0035).
 Map<String, Object?> draftJson(MeetupDraft draft) => {
   'kind': draft.kind.name,
+  if (draft.time is NowTime) 'now': true,
   'pet_id': draft.pet?.petId,
   'park_id': draft.parkId,
   'locality_code': draft.parkId == null ? draft.localityCode : draft.city,
@@ -210,11 +212,14 @@ Meetup meetupFromRow(Map row) {
   final end = time(row['ends_at']);
   final petName = text(row['pet_name']);
   final parkId = text(row['park_id']);
+  // 0035's "going out now" kinds: walk_now, play_now.
+  final kind = '${row['kind']}';
+  final goingNow = kind.endsWith('_now');
   return Meetup(
     id: '${row['id']}',
     authorId: '${row['author_id']}',
     authorName: '${row['author_name'] ?? ''}',
-    kind: row['kind'] == 'play' ? MeetupKind.play : MeetupKind.walk,
+    kind: kind.startsWith('play') ? MeetupKind.play : MeetupKind.walk,
     pet: petName == null
         ? null
         : MeetupPet(
@@ -249,7 +254,7 @@ Meetup meetupFromRow(Map row) {
     localityCode: '${row['locality_code']}',
     placeText: text(row['place_text']),
     time: start != null && end != null
-        ? OneOffTime(start, end)
+        ? (goingNow ? NowTime(start, end) : OneOffTime(start, end))
         : RecurringTime(
             {for (final d in (row['weekdays'] as List? ?? const [])) (d as num).toInt()},
             DayPart.values.asNameMap()['${row['day_part']}'] ?? DayPart.morning,

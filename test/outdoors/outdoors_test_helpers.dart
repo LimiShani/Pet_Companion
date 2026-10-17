@@ -37,7 +37,10 @@ class ParksKit {
     this.profileArea = false,
     FakeParksRepository? repository,
     Set<String>? favorites,
+    FakeHazardsRepository? hazards,
   }) : location = FakeLocationService(location),
+       hazards =
+           hazards ?? FakeHazardsRepository(latency: Duration.zero, seed: false),
        repo =
            repository ??
            FakeParksRepository(latency: Duration.zero, favorites: favorites);
@@ -49,6 +52,9 @@ class ParksKit {
   final meetups = FakeMeetupsRepository(latency: Duration.zero);
   final FakeLocationService location;
   final launcher = RecordingParkLauncher();
+
+  /// Hazard reports (none unless a test brings some).
+  final FakeHazardsRepository hazards;
   final bool reviewer;
 
   /// Whether Partners starts Outside on the demo profile's city (Tel
@@ -59,6 +65,7 @@ class ParksKit {
   List<Override> get overrides => [
     parksRepositoryProvider.overrideWithValue(repo),
     meetupsRepositoryProvider.overrideWithValue(meetups),
+    hazardsRepositoryProvider.overrideWithValue(hazards),
     locationServiceProvider.overrideWithValue(location),
     parkLauncherProvider.overrideWithValue(launcher),
     if (!profileArea) meetupsAreaSeedProvider.overrideWith(_NoSeed.new),

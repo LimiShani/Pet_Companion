@@ -51,6 +51,19 @@ abstract final class MeetupLimits {
 
   /// ...and starts at most this far ahead.
   static const aheadDays = 60;
+
+  /// "Going out now": three a day, apart from the planned ads' limits...
+  static const nowPerDay = 3;
+
+  /// ...leaving within this many minutes...
+  static const nowAheadMinutes = 90;
+
+  /// ...and shown for this long from posting (at most this long after
+  /// leaving).
+  static const nowLastsMinutes = 90;
+
+  /// The leaving times the sheet offers, in minutes from now.
+  static const nowLeaveOptions = [15, 30, 45, 60];
 }
 
 /// The public facts of the ad's pet, as they were when the ad was saved
@@ -149,6 +162,32 @@ class OneOffTime extends MeetupTime {
       start.year == day.year && start.month == day.month && start.day == day.day;
 }
 
+/// "Going out now": leaving at [start] (within the next 90 minutes), shown
+/// until [end] (90 minutes after posting). Server kinds `walk_now` and
+/// `play_now` (0035).
+class NowTime extends OneOffTime {
+  const NowTime(super.start, super.end);
+
+  /// The ad for leaving [minutes] from [now]: shown for
+  /// [MeetupLimits.nowLastsMinutes] from now, and at least a quarter of
+  /// an hour after leaving.
+  factory NowTime.leavingIn(int minutes, DateTime now) {
+    final leave = now.add(Duration(minutes: minutes));
+    var end = now.add(const Duration(minutes: MeetupLimits.nowLastsMinutes));
+    if (end.difference(leave) < const Duration(minutes: 15)) {
+      end = leave.add(const Duration(minutes: 15));
+    }
+    return NowTime(leave, end);
+  }
+
+  /// Whole minutes until leaving at [now] (0 once it has left).
+  int minutesUntil(DateTime now) {
+    final left = start.difference(now);
+    if (left.isNegative) return 0;
+    return (left.inSeconds / 60).ceil();
+  }
+}
+
 class RecurringTime extends MeetupTime {
   const RecurringTime(this.weekdays, this.part);
 
@@ -228,6 +267,9 @@ class Meetup {
   final DateTime expiresAt;
 
   bool get isRecurring => time is RecurringTime;
+
+  /// A "going out now" ad.
+  bool get isGoingNow => time is NowTime;
 
   /// Which animal chips show it: its pet's kind, or every chip without a
   /// pet (as posts do).
@@ -362,6 +404,18 @@ Set<MeetupDraftProblem> draftProblems(MeetupDraft draft, DateTime now) => {
     MeetupDraftProblem.place,
   if (draft.note.trim().length > MeetupLimits.note) MeetupDraftProblem.note,
   ...switch (draft.time) {
+    NowTime(:final start, :final end) => {
+      if (!end.isAfter(start) ||
+          end.difference(start) >
+              const Duration(minutes: MeetupLimits.nowLastsMinutes))
+        MeetupDraftProblem.hours,
+      if (start.isBefore(now.subtract(const Duration(minutes: 5))))
+        MeetupDraftProblem.past,
+      if (start.isAfter(
+        now.add(const Duration(minutes: MeetupLimits.nowAheadMinutes)),
+      ))
+        MeetupDraftProblem.tooFar,
+    },
     OneOffTime(:final start, :final end) => {
       if (!end.isAfter(start) ||
           end.difference(start) > const Duration(hours: MeetupLimits.maxHours))

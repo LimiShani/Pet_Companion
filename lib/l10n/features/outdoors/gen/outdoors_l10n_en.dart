@@ -408,4 +408,45 @@ class OutdoorsL10nEn extends OutdoorsL10n {
 
   @override
   String get addToOutside => 'Add to Outside';
+
+  @override
+  String hazardLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hazard reports near you this week.',
+      one: '1 hazard report near you this week.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hazardKindCaterpillars => 'Caterpillars';
+
+  @override
+  String get hazardKindBait => 'Poison bait';
+
+  @override
+  String get hazardKindGlass => 'Broken glass';
+
+  @override
+  String get hazardKindInspector => 'Dog inspectors';
+
+  @override
+  String get hazardKindOther => 'Something else';
+
+  @override
+  String hazardAt(String kind, String place) {
+    return '$kind at $place';
+  }
+
+  @override
+  String hazardIn(String kind, String city) {
+    return '$kind in $city';
+  }
+
+  @override
+  String hazardNoted(String kind, String note) {
+    return '$kind: $note';
+  }
 }

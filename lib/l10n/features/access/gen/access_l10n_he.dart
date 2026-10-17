@@ -268,4 +268,7 @@ class AccessL10nHe extends AccessL10n {
 
   @override
   String get gateMessage => 'אין לחשבון שלך גישה לתכונה הזאת כרגע.';
+
+  @override
+  String get featureCommunityHazards => 'דיווחים על סכנות';
 }

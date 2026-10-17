@@ -52,7 +52,7 @@ void main() {
         'Add to Community',
         ['post-moment', 'post-question', 'post-recommendation', 'post-lostFound', 'new-chat'],
       ),
-      ('Outside', 'Add to Outside', ['plan-walk', 'suggest-park']),
+      ('Outside', 'Add to Outside', ['plan-walk', 'going-now', 'suggest-park']),
       ('Store', 'Add to Store', ['share-deal', 'regular-product', 'expense']),
     ]) {
       await _openTab(tester, tab);

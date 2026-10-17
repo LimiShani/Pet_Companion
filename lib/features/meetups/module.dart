@@ -7,6 +7,7 @@ import '../../services/meetups/state/meetups_providers.dart';
 import '../community/members/member_screen.dart' show memberPageMeetupsSlot;
 import '../outdoors/outdoors.dart'
     show ParkCard, ParkPageSlots, outsidePartnersSlot;
+import 'board/going_now.dart';
 import 'board/partners_view.dart';
 import 'meetup_actions.dart';
 import 'slots/meetup_slots.dart';
@@ -51,6 +52,16 @@ final meetupsModule = FeatureModule(
         label: (c) => c.meetupsL10n.addPlanWalk,
         order: 0,
         open: (c, r) => openMeetupForm(c),
+      ),
+      // "Going out now": the short sheet of the Partners card.
+      AddEntry(
+        id: 'going-now',
+        capability: MeetupCapabilities.post,
+        area: AppArea.community,
+        icon: Icons.schedule_rounded,
+        label: (c) => c.meetupsL10n.addGoingNow,
+        order: 1,
+        open: (c, r) => openGoingNowSheet(c),
       ),
     ],
   },

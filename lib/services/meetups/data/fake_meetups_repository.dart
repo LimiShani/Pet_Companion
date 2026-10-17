@@ -8,7 +8,9 @@ import 'meetups_repository.dart';
 
 /// In-memory ads for development and tests, with the server's rules (the
 /// daily and open limits, editing only open ads, renewing only recurring
-/// ones, no answer to one's own ad or across a block, three reports hide).
+/// ones, no answer to one's own ad or across a block, three reports hide;
+/// "going out now" ads: three a day of their own, one open at a time,
+/// never edited).
 ///
 /// Seeded (unless [seed] is false) with made-up ads around Ra'anana, Kfar
 /// Saba and Tel Aviv-Yafo, at the fake parks and elsewhere, written by the
@@ -21,10 +23,12 @@ class FakeMeetupsRepository implements MeetupsRepository {
     String Function()? viewerId,
     List<DogPark>? parks,
     bool seed = true,
+    bool goingNowSample = false,
   }) : _now = now ?? DateTime.now,
        _viewer = viewerId ?? (() => 'demo'),
        parks = parks ?? FakeParksRepository.demoParks() {
     if (seed) _seed();
+    if (seed && goingNowSample) _seedGoingNow();
   }
 
   final Duration latency;
@@ -140,9 +144,11 @@ class FakeMeetupsRepository implements MeetupsRepository {
     return i;
   }
 
-  /// Open and not ended (hidden ones count too), as the server counts.
-  int get _openCount =>
-      ads.where((ad) => ad.authorId == _viewer() && _isOpen(ad)).length;
+  /// Planned ads open and not ended (hidden ones count too), as the server
+  /// counts.
+  int get _openCount => ads
+      .where((ad) => ad.authorId == _viewer() && !ad.isGoingNow && _isOpen(ad))
+      .length;
 
   bool _isOpen(Meetup ad) =>
       ad.status == MeetupStatus.open && ad.expiresAt.isAfter(_now());
@@ -161,23 +167,41 @@ class FakeMeetupsRepository implements MeetupsRepository {
           .firstOrNull;
       if (park == null) throw const MeetupException(MeetupFailure.invalid);
     }
+    final goingNow = draft.time is NowTime;
     Meetup? old;
     if (id != null) {
       old = ads[_index(id)];
       if (old.status != MeetupStatus.open || !old.expiresAt.isAfter(now)) {
         throw const MeetupException(MeetupFailure.notOpen);
       }
+      // A "now" ad is closed and posted again, never edited.
+      if (goingNow || old.isGoingNow) {
+        throw const MeetupException(MeetupFailure.invalid);
+      }
     } else {
       final today = ads.where(
         (ad) =>
             ad.authorId == _viewer() &&
+            ad.isGoingNow == goingNow &&
             ad.createdAt.isAfter(now.subtract(const Duration(days: 1))),
       );
-      if (today.length >= MeetupLimits.newPerDay) {
+      if (today.length >=
+          (goingNow ? MeetupLimits.nowPerDay : MeetupLimits.newPerDay)) {
         throw const MeetupException(MeetupFailure.rateLimited);
       }
-      if (_openCount >= MeetupLimits.open) {
+      if (!goingNow && _openCount >= MeetupLimits.open) {
         throw const MeetupException(MeetupFailure.tooManyOpen);
+      }
+      if (goingNow) {
+        // One at a time: the earlier one is closed.
+        for (var i = 0; i < ads.length; i++) {
+          final ad = ads[i];
+          if (ad.authorId == _viewer() &&
+              ad.isGoingNow &&
+              ad.status == MeetupStatus.open) {
+            ads[i] = ad.copyWith(status: MeetupStatus.closed);
+          }
+        }
       }
     }
     saved.add(draft);
@@ -287,6 +311,39 @@ class FakeMeetupsRepository implements MeetupsRepository {
   Future<void> setNotify(String parkId, bool on) async {
     await _wait();
     on ? notify.add(parkId) : notify.remove(parkId);
+  }
+
+  /// A sample "going out now" ad: Noa leaves for the Ra'anana park in 25
+  /// minutes (the demo app shows it; tests opt in).
+  void _seedGoingNow() {
+    final now = _now();
+    final park = parks.where((p) => p.id == 'demo-raanana-park').firstOrNull;
+    if (park == null) return;
+    ads.add(
+      Meetup(
+        id: 'demo-meetup-now',
+        authorId: 'u-noa',
+        authorName: _names['u-noa'] ?? '',
+        kind: MeetupKind.walk,
+        pet: const MeetupPet(
+          name: 'Bagel',
+          species: PetSpecies.dog,
+          breed: 'Beagle',
+          size: PetSize.small,
+          iconKey: 'dog_floppy:peach',
+        ),
+        parkId: park.id,
+        park: park,
+        localityCode: park.localityCode ?? 'raanana',
+        time: NowTime(
+          now.add(const Duration(minutes: 25)),
+          now.add(const Duration(minutes: 85)),
+        ),
+        note: 'A slow loop around the lawn.',
+        createdAt: now.subtract(const Duration(minutes: 5)),
+        expiresAt: now.add(const Duration(minutes: 85)),
+      ),
+    );
   }
 
   // -------------------------------------------------------------------------

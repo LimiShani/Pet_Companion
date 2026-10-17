@@ -524,4 +524,63 @@ class MeetupsL10nHe extends MeetupsL10n {
 
   @override
   String get addPlanWalk => 'תיאום טיול או משחק';
+
+  @override
+  String get goingSoonTitle => 'יציאה בקרוב?';
+
+  @override
+  String get goingSoonBody => 'עדכון למי ששמרו את הגינות שלך. מוצג 90 דקות.';
+
+  @override
+  String get goingNowButton => 'יציאה עכשיו';
+
+  @override
+  String get addGoingNow => 'יציאה עכשיו';
+
+  @override
+  String goingInTag(int minutes) {
+    return 'בעוד $minutes דק׳';
+  }
+
+  @override
+  String get goingOutTag => 'בחוץ עכשיו';
+
+  @override
+  String leavingAt(String time) {
+    return 'יציאה ב־\u2068$time\u2069';
+  }
+
+  @override
+  String get goingWhere => 'לאן';
+
+  @override
+  String get goingOtherPark => 'גינה אחרת';
+
+  @override
+  String get goingLeavingIn => 'יציאה בעוד';
+
+  @override
+  String goingMinutes(int minutes) {
+    return '$minutes דק׳';
+  }
+
+  @override
+  String goingWith(String pet) {
+    return 'עם \u2068$pet\u2069';
+  }
+
+  @override
+  String get goingNoteHint => 'משהו להוסיף? (לא חובה)';
+
+  @override
+  String get goingPost => 'פרסום';
+
+  @override
+  String get goingPosted => 'פורסם ל־90 הדקות הקרובות';
+
+  @override
+  String get goingPickPark => 'צריך לבחור גינה';
+
+  @override
+  String get errNowLimit => 'זה כבר שלוש היום. אפשר לפרסם שוב מחר.';
 }

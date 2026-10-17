@@ -20,6 +20,8 @@ export '../../services/meetups/data/fake_meetups_repository.dart';
 export '../../services/meetups/data/meetup_models.dart';
 export '../../services/meetups/data/meetups_repository.dart';
 export '../../services/meetups/state/meetups_providers.dart';
+export 'board/going_now.dart'
+    show GoingOutCard, GoingNowSheet, openGoingNowSheet;
 export 'board/meetup_card.dart' show MeetupCard;
 export 'board/meetups_area_picker.dart' show MeetupsAreaPicker;
 export 'board/partners_filters_sheet.dart'
