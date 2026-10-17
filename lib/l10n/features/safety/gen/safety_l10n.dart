@@ -166,6 +166,444 @@ abstract class SafetyL10n {
   /// In en, this message translates to:
   /// **'Emergency clinics near you'**
   String get findClinicNote;
+
+  /// Under the Is it urgent? page title.
+  ///
+  /// In en, this message translates to:
+  /// **'Any of these means going to a vet now. Call on the way.'**
+  String get urgentLead;
+
+  /// No description provided for @urgentSectionDog.
+  ///
+  /// In en, this message translates to:
+  /// **'Signs in dogs'**
+  String get urgentSectionDog;
+
+  /// No description provided for @urgentSectionCat.
+  ///
+  /// In en, this message translates to:
+  /// **'Signs in cats'**
+  String get urgentSectionCat;
+
+  /// Heading of the signs for a bird, rabbit, reptile or other pet.
+  ///
+  /// In en, this message translates to:
+  /// **'Signs in any animal'**
+  String get urgentSectionAny;
+
+  /// No description provided for @urgentOtherNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Signs that are only about dogs or cats are left out.'**
+  String get urgentOtherNote;
+
+  /// On the safety pages when the pet has no number to call.
+  ///
+  /// In en, this message translates to:
+  /// **'No vet saved? Find a clinic nearby'**
+  String get noVetFindClinic;
+
+  /// The folded list of the sources of a safety list.
+  ///
+  /// In en, this message translates to:
+  /// **'Where this comes from'**
+  String get sourcesTitle;
+
+  /// No description provided for @foodSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a food or a plant'**
+  String get foodSearchHint;
+
+  /// No description provided for @foodSearchClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the search'**
+  String get foodSearchClear;
+
+  /// Tooltip of the animal menu chip of the foods list.
+  ///
+  /// In en, this message translates to:
+  /// **'Which animal'**
+  String get animalMenuTooltip;
+
+  /// No description provided for @animalDog.
+  ///
+  /// In en, this message translates to:
+  /// **'Dog'**
+  String get animalDog;
+
+  /// No description provided for @animalCat.
+  ///
+  /// In en, this message translates to:
+  /// **'Cat'**
+  String get animalCat;
+
+  /// No description provided for @animalBird.
+  ///
+  /// In en, this message translates to:
+  /// **'Bird'**
+  String get animalBird;
+
+  /// No description provided for @animalOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other animals'**
+  String get animalOther;
+
+  /// No description provided for @kindFoods.
+  ///
+  /// In en, this message translates to:
+  /// **'Foods'**
+  String get kindFoods;
+
+  /// No description provided for @kindPlants.
+  ///
+  /// In en, this message translates to:
+  /// **'Plants'**
+  String get kindPlants;
+
+  /// No description provided for @kindHousehold.
+  ///
+  /// In en, this message translates to:
+  /// **'Around the house'**
+  String get kindHousehold;
+
+  /// Food answer: fine in a pet-sized portion.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe'**
+  String get levelSafe;
+
+  /// Food answer: only a little, now and then.
+  ///
+  /// In en, this message translates to:
+  /// **'A little'**
+  String get levelLittle;
+
+  /// Food answer: keep away; if eaten, call the vet.
+  ///
+  /// In en, this message translates to:
+  /// **'Dangerous'**
+  String get levelDangerous;
+
+  /// Food answer when the list says nothing for this animal.
+  ///
+  /// In en, this message translates to:
+  /// **'Ask your vet'**
+  String get levelAsk;
+
+  /// No description provided for @levelNotListed.
+  ///
+  /// In en, this message translates to:
+  /// **'not on our list'**
+  String get levelNotListed;
+
+  /// No description provided for @forDogs.
+  ///
+  /// In en, this message translates to:
+  /// **'For dogs'**
+  String get forDogs;
+
+  /// No description provided for @forCats.
+  ///
+  /// In en, this message translates to:
+  /// **'For cats'**
+  String get forCats;
+
+  /// No description provided for @forBirds.
+  ///
+  /// In en, this message translates to:
+  /// **'For birds'**
+  String get forBirds;
+
+  /// One other animal's answer in a food's sheet: "For cats: Dangerous".
+  ///
+  /// In en, this message translates to:
+  /// **'{animal}: {level}'**
+  String forAnimal(String animal, String level);
+
+  /// The other names of a food.
+  ///
+  /// In en, this message translates to:
+  /// **'Also: {names}'**
+  String foodAlso(String names);
+
+  /// No description provided for @foodCallVet.
+  ///
+  /// In en, this message translates to:
+  /// **'Call the vet'**
+  String get foodCallVet;
+
+  /// No description provided for @foodNotSure.
+  ///
+  /// In en, this message translates to:
+  /// **'Not sure? Call the vet'**
+  String get foodNotSure;
+
+  /// No description provided for @foodEatenAlready.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten already? Call even if all seems fine.'**
+  String get foodEatenAlready;
+
+  /// No description provided for @foodNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found for “{text}”.'**
+  String foodNothing(String text);
+
+  /// No description provided for @lostStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of {total}'**
+  String lostStep(int step, int total);
+
+  /// Lost mode step 1: choose another pet.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get lostChangePet;
+
+  /// Title of the sheet that picks the pet in Lost mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Who is missing?'**
+  String get lostWhichPet;
+
+  /// No description provided for @lostLastSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen'**
+  String get lostLastSeen;
+
+  /// No description provided for @lostTown.
+  ///
+  /// In en, this message translates to:
+  /// **'Town'**
+  String get lostTown;
+
+  /// No description provided for @lostTownChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the town'**
+  String get lostTownChoose;
+
+  /// No description provided for @lostTownHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a town'**
+  String get lostTownHint;
+
+  /// No description provided for @lostTownNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the town first'**
+  String get lostTownNeeded;
+
+  /// No description provided for @lostWhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Where exactly?'**
+  String get lostWhere;
+
+  /// No description provided for @lostWhereHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A public place, not an address'**
+  String get lostWhereHint;
+
+  /// No description provided for @lostNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Anything people should know?'**
+  String get lostNote;
+
+  /// No description provided for @lostNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: please do not chase, call the name'**
+  String get lostNoteHint;
+
+  /// No description provided for @lostNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get lostNext;
+
+  /// No description provided for @lostPreviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What people will see'**
+  String get lostPreviewTitle;
+
+  /// No description provided for @lostPostTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost and found'**
+  String get lostPostTag;
+
+  /// When the previewed post was written.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get lostNow;
+
+  /// No description provided for @lostUsePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {name}\'s photo'**
+  String lostUsePhoto(String name);
+
+  /// No description provided for @lostWhoHears.
+  ///
+  /// In en, this message translates to:
+  /// **'People in {town} who use PetLoop get one notification. Sightings come as comments.'**
+  String lostWhoHears(String town);
+
+  /// No description provided for @lostCardNext.
+  ///
+  /// In en, this message translates to:
+  /// **'The card to share'**
+  String get lostCardNext;
+
+  /// No description provided for @lostCardNextNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Comes next, filled in'**
+  String get lostCardNextNote;
+
+  /// No description provided for @lostStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start lost mode'**
+  String get lostStart;
+
+  /// No description provided for @lostStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost mode is on. People nearby are being told.'**
+  String get lostStarted;
+
+  /// No description provided for @lostAlertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is missing'**
+  String lostAlertTitle(String name);
+
+  /// No description provided for @lostSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {when}'**
+  String lostSince(String when);
+
+  /// No description provided for @lostSightings.
+  ///
+  /// In en, this message translates to:
+  /// **'Sightings'**
+  String get lostSightings;
+
+  /// No description provided for @lostNoSightings.
+  ///
+  /// In en, this message translates to:
+  /// **'No sightings yet. Sharing the card reaches more people.'**
+  String get lostNoSightings;
+
+  /// No description provided for @lostSightingsFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the comments'**
+  String get lostSightingsFailed;
+
+  /// No description provided for @lostOpenPost.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the post'**
+  String get lostOpenPost;
+
+  /// No description provided for @lostShareCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Share the card'**
+  String get lostShareCard;
+
+  /// The one filled button of the open alert: closes it as found.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is home'**
+  String lostHome(String name);
+
+  /// No description provided for @lostClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the alert'**
+  String get lostClose;
+
+  /// No description provided for @lostCloseQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the alert without “found”?'**
+  String get lostCloseQuestion;
+
+  /// No description provided for @lostCloseNote.
+  ///
+  /// In en, this message translates to:
+  /// **'If nobody answered yet, the post is removed too.'**
+  String get lostCloseNote;
+
+  /// No description provided for @lostCloseConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get lostCloseConfirm;
+
+  /// No description provided for @lostKeepLooking.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep looking'**
+  String get lostKeepLooking;
+
+  /// No description provided for @lostFoundDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Good news. The alert is closed.'**
+  String get lostFoundDone;
+
+  /// No description provided for @lostClosedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'The alert is closed.'**
+  String get lostClosedDone;
+
+  /// No description provided for @lostErrActive.
+  ///
+  /// In en, this message translates to:
+  /// **'There is already an open alert for {name}.'**
+  String lostErrActive(String name);
+
+  /// No description provided for @lostErrRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Three alerts today already. Please try again tomorrow.'**
+  String get lostErrRate;
+
+  /// No description provided for @lostErrInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Something here is not right. Please check the place and the time.'**
+  String get lostErrInvalid;
+
+  /// No description provided for @lostErrNotAllowed.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost mode is not available for this account.'**
+  String get lostErrNotAllowed;
+
+  /// No description provided for @lostErrGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not do that. Please try again.'**
+  String get lostErrGeneric;
 }
 
 class _SafetyL10nDelegate extends LocalizationsDelegate<SafetyL10n> {

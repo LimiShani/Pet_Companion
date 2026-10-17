@@ -119,11 +119,10 @@ class EmergencySheet extends ConsumerWidget {
   /// Opens the Emergency card (which leads on to the kit).
   static const cardKey = Key('open-emergency-card');
 
-  /// "Is it urgent?", "Can {pet} eat this?" and Lost mode (the key the
-  /// Emergency card's lost-pet button has too).
+  /// "Is it urgent?", "Can {pet} eat this?" and Lost mode.
   static const urgentKey = Key('emergency-urgent');
   static const foodKey = Key('emergency-food');
-  static const lostKey = Key('open-lost-card');
+  static const lostKey = Key('emergency-lost');
 
   /// The rows' white card.
   static const rowsKey = Key('emergency-rows');
