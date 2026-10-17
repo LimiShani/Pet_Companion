@@ -51,7 +51,7 @@ void main() {
       final launcher = await pumpHome(tester);
 
       await tapAndSettle(tester, emergencyPill);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
       expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
       // The first tap only opens the sheet: nothing is dialled yet.
       expect(launcher.calls, isEmpty);
@@ -71,19 +71,19 @@ void main() {
       expect(find.bySemanticsLabel(RegExp('^Emergency contacts for Kelly')), findsNothing);
 
       await tapAndSettle(tester, emergencyPill);
-      expect(find.text('Emergency · Soya'), findsOneWidget);
+      expect(find.text('Soya · Emergency'), findsOneWidget);
       expect(find.text('No vet saved for Soya yet'), findsOneWidget);
-      expect(find.text('Emergency · Kelly'), findsNothing);
+      expect(find.text('Kelly · Emergency'), findsNothing);
       expect(find.byKey(const ValueKey('call-regular')), findsNothing);
       await closeSheet(tester);
-      expect(find.text('Emergency · Soya'), findsNothing);
+      expect(find.text('Soya · Emergency'), findsNothing);
 
       // And back again: Kelly is the selector pill only, Soya fills the hero.
       await tapAndSettle(tester, find.text('Kelly'));
       expect(pillPetId(tester), kellyId);
       await tapAndSettle(tester, emergencyPill);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
-      expect(find.text('Emergency · Soya'), findsNothing);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
+      expect(find.text('Soya · Emergency'), findsNothing);
       expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
       expect(launcher.calls, isEmpty);
     });
@@ -121,7 +121,7 @@ void main() {
       await tapAndSettle(tester, useVet);
       await closeSheet(tester);
 
-      expect(find.text('Emergency · Soya'), findsNothing);
+      expect(find.text('Soya · Emergency'), findsNothing);
       expect(emergencyDot, findsNothing);
       expect(find.bySemanticsLabel('Emergency contacts for Soya'), findsOneWidget);
     });
@@ -148,7 +148,7 @@ void main() {
       expect(find.descendant(of: find.byType(PetSelector), matching: find.text('Kelly')).hitTestable(), findsNothing);
 
       await tapAndSettle(tester, emergencyPill);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
       await tapAndSettle(tester, find.byKey(const ValueKey('call-regular')));
       expect(launcher.calls.single.target, kellyVetPhone);
     });

@@ -5,7 +5,7 @@
   "@loginEmergencyLink": {
     "description": "Link on the sign-in screen: opens the emergency search without an account."
   },
-  "emergencySheetFindVet": "Find an emergency vet nearby",
+  "emergencySheetFindVet": "Find a clinic nearby",
   "choiceQuestion": "What do you need?",
   "emergencyChoiceTitle": "Emergency care",
   "emergencyChoiceBody": "The nearest places that advertise emergency care, with Call and Directions.",

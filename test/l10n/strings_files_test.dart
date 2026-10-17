@@ -23,6 +23,7 @@ const _modules = {
   'access': 'lib/l10n/features/access',
   'today': 'lib/l10n/features/today',
   'healthplan': 'lib/l10n/features/healthplan',
+  'safety': 'lib/l10n/features/safety',
 };
 
 const _firstStrongIsolate = '\u{2068}';

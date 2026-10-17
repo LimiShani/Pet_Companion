@@ -208,7 +208,7 @@ void main() {
 
       await tester.tap(find.byType(EmergencyButton));
       await tester.pumpAndSettle();
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
 
       await tapVisible(tester, find.text('Emergency card and kit'));
       expect(find.text('Emergency card'), findsOneWidget);

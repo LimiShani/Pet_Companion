@@ -110,7 +110,7 @@ abstract class FindVetL10n {
   /// No description provided for @emergencySheetFindVet.
   ///
   /// In en, this message translates to:
-  /// **'Find an emergency vet nearby'**
+  /// **'Find a clinic nearby'**
   String get emergencySheetFindVet;
 
   /// No description provided for @choiceQuestion.

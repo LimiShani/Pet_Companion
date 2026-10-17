@@ -159,6 +159,11 @@ final healthModule = FeatureModule(
     ),
     // Every file attached to the pet's records (the pet profile's
     // "Documents" row; the emergency kit opens the same page).
+    // The lost-pet card of the pet, to share (Lost mode opens it).
+    'lost-card': FeatureAction.task(
+      capability: 'health.emergency.view',
+      open: (c, r) => openLostPetCard(c, r.petId),
+    ),
     'pet-documents': FeatureAction.task(
       capability: 'health.records.view',
       open: (c, r) => PetDocumentsScreen.open(c, requestPet(c, r)),

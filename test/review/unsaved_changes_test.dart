@@ -234,6 +234,7 @@ void main() {
     await pumpHealth(tester);
     await tester.tap(find.byType(EmergencyButton));
     await tester.pumpAndSettle();
+    await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
     final page = find.byType(LostPetCardScreen);
 
     await checkPage(

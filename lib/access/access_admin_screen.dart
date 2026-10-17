@@ -66,6 +66,7 @@ class _AdministrationState extends ConsumerState<_Administration> {
     'firstdays' => _l10n.featureFirstDays,
     'findvet' => _l10n.featureFindVet,
     'household' => _l10n.featureHousehold,
+    'safety' => _l10n.featureSafety,
     _ => id,
   };
   String _capabilityLabel(String id) {
@@ -84,6 +85,8 @@ class _AdministrationState extends ConsumerState<_Administration> {
       'suggest' => _l10n.actionSuggest,
       'review' => _l10n.actionReview,
       'private' => _l10n.actionPrivate,
+      'lists' => _l10n.actionLists,
+      'lost' => _l10n.actionLost,
       _ => action,
     };
     return _l10n.capabilityLabel(_featureLabel(parts.join('.')), label);

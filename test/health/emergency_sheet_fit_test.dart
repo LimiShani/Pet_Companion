@@ -55,6 +55,8 @@ void main() {
     testWidgets('the emergency sheet and the Emergency card fit at 320 px (${language.name})', (tester) async {
       final h = HealthHarness(language: language);
       final l10n = h.l10n;
+      final safety = lookupSafetyL10n(h.locale);
+
       await pumpHealthHost(
         tester,
         const Row(children: [EmergencyButton(petId: 'kelly', onCoral: false)]),
@@ -65,18 +67,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
-      // The one big button and the two under it, each on one line.
+      // The one big button on one line, the round Directions beside the
+      // name, inside the screen.
       expectWhole(tester, l10n.emergencyCallNow);
-      expectWhole(tester, l10n.actionMessage);
-      expectWhole(tester, l10n.emergencyDirections);
       final callNow = tester.getRect(find.byKey(const ValueKey('call-emergency')));
       expect(callNow.height, greaterThanOrEqualTo(52));
-      final message = tester.getRect(find.byKey(const ValueKey('message-emergency')));
       final directions = tester.getRect(find.byKey(const ValueKey('map-emergency')));
-      // Side by side, each about half of Call now.
-      expect(message.top, moreOrLessEquals(directions.top));
-      expect(message.width, lessThan(callNow.width / 2 + 1));
-      expect(directions.width, lessThan(callNow.width / 2 + 1));
+      expect(directions.height, greaterThanOrEqualTo(48));
+      expect(directions.left, greaterThanOrEqualTo(0));
+      expect(directions.right, lessThanOrEqualTo(phone.width));
+      expect(find.text(safety.confirmOpen), findsOneWidget);
 
       // The rows keep both round buttons inside the screen, 48 px to tap.
       for (final tag in ['regular', 'contact']) {
@@ -94,7 +94,19 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text(l10n.emergencyCardAndKit), findsOneWidget);
       expect(find.text(l10n.emergencyCardAndKitNoteKit(3, 6)), findsOneWidget);
-      expect(find.text(l10n.petIsLost('Kelly')), findsOneWidget);
+      for (final text in [
+        safety.urgentRow,
+        safety.urgentRowNote,
+        safety.foodRow('Kelly'),
+        safety.foodRowNote,
+        safety.lostRow,
+        safety.lostRowNote,
+        safety.findClinicNote,
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+        final rect = tester.getRect(find.text(text));
+        expect(rect.right, lessThanOrEqualTo(phone.width), reason: text);
+      }
       expect(tester.takeException(), isNull);
 
       // The Emergency card.

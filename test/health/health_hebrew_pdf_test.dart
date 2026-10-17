@@ -318,6 +318,7 @@ void main() {
           final h = await pumpHealth(tester, harness: hebrewHealth(), size: size);
           await tester.tap(find.text('חירום'));
           await tester.pumpAndSettle();
+          await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
           await tapVisible(tester, find.byKey(const Key('open-lost-card')));
 
           // The page speaks the app's language.
@@ -373,6 +374,7 @@ void main() {
       await pumpHealth(tester, harness: h);
       await tester.tap(find.text(h.l10n.emergencyButton));
       await tester.pumpAndSettle();
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
       await tapVisible(tester, find.byKey(const Key('open-lost-card')));
       final card = find.byKey(const Key('lost-card-preview'));
       expect(find.descendant(of: card, matching: find.text(he.lostCardHeading('Kelly'))), findsOneWidget);

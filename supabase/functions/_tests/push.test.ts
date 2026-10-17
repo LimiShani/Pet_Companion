@@ -267,3 +267,26 @@ test('a meetup push opens the ad', async () => {
   assert.deepEqual(message.data, { target: meetup.target, kind: 'meetup' });
   assert.equal(message.android.notification.tag, meetup.target);
 });
+
+test('a pet missing nearby: a calm title, the pet and the place, opening the post', async () => {
+  const lost: ClaimedPush = { ...comment, kind: 'lost_nearby', target: 'post:p-lost', preview: 'Kelly · Ahuza park gate' };
+  assert.deepEqual(wordsFor(lost, 'en'), {
+    title: 'A pet is missing near you',
+    body: 'Kelly · Ahuza park gate. Seen it? Open PetLoop to help',
+  });
+  assert.deepEqual(wordsFor(lost, 'he'), {
+    title: 'חיה אבודה באזור שלך',
+    body: '⁨Kelly · Ahuza park gate⁩. כל מראה עוזר: הפרטים באפליקציה',
+  });
+  assert.equal(wordsFor({ ...lost, preview: ' ' }, 'en').body, 'Open PetLoop to see the alert and help look');
+  const { account } = await testAccount();
+  const sent: Record<string, unknown>[] = [];
+  const { fetcher } = backend([lost], (body) => {
+    sent.push(body);
+    return Response.json({ name: 'projects/x/messages/4' });
+  });
+  const handler = createPushHandler({ url: 'https://db.test', serviceKey: 'service', jobSecret: 'job-secret', account, fetcher, now: () => NOW });
+  assert.deepEqual(await (await handler(request())).json(), { sent: 1, dead: 0 });
+  const message = sent[0].message as Record<string, any>;
+  assert.deepEqual(message.data, { target: 'post:p-lost', kind: 'lost_nearby' });
+});

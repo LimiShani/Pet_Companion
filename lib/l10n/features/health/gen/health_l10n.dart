@@ -632,13 +632,13 @@ abstract class HealthL10n {
   /// No description provided for @emergencySheetTitle.
   ///
   /// In en, this message translates to:
-  /// **'Emergency · {name}'**
+  /// **'{name} · Emergency'**
   String emergencySheetTitle(String name);
 
   /// The one line of fine print at the foot of the emergency sheet.
   ///
   /// In en, this message translates to:
-  /// **'You place the call or send the message yourself.'**
+  /// **'Lists and signs are general guidance, not a diagnosis. When in doubt, call.'**
   String get emergencySheetFinePrint;
 
   /// The one big button of the emergency sheet: dials the first contact (the 24 h emergency vet, else the regular vet, else the emergency contact).
@@ -677,10 +677,10 @@ abstract class HealthL10n {
   /// **'Allergies, medicines, microchip'**
   String get emergencyCardAndKitNote;
 
-  /// Subtitle of the Emergency card and kit row: what the card holds, and how much of the emergency kit is ready.
+  /// Subtitle of the Emergency card and kit row: how much of the emergency kit is ready, and that the card can be shared as a PDF.
   ///
   /// In en, this message translates to:
-  /// **'Allergies, medicines, microchip · kit {ready} of {total} ready'**
+  /// **'{ready} of {total} kit items · share as PDF'**
   String emergencyCardAndKitNoteKit(int ready, int total);
 
   /// No description provided for @vetRoleRegular.

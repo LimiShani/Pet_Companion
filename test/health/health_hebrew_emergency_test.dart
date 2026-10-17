@@ -22,6 +22,7 @@ final he = lookupHealthL10n(hebrewLocale);
 final en = lookupHealthL10n(englishLocale);
 final appHe = lookupAppL10n(hebrewLocale);
 final appEn = lookupAppL10n(englishLocale);
+final safetyHe = lookupSafetyL10n(hebrewLocale);
 
 const kelly = 'kelly';
 const soya = 'soya';
@@ -66,17 +67,22 @@ void main() {
       expect(find.text('וטרינר קבוע'), findsOneWidget);
       expect(find.text('וטרינר חירום (24 שעות)'), findsOneWidget);
       expect(find.text('איש קשר לחירום'), findsOneWidget);
-      // One Call now; Message and Directions under it; the others are rows.
+      expect(find.text(safetyHe.emergencyLead), findsOneWidget);
+      // One Call now and a round Directions; the others are rows.
       expect(find.text(he.emergencyCallNow), findsOneWidget);
       expect(find.text('חיוג עכשיו'), findsOneWidget);
-      expect(find.text('הודעה'), findsOneWidget);
-      expect(find.text(he.emergencyDirections), findsOneWidget);
+      expect(find.text(safetyHe.confirmOpen), findsOneWidget);
+      expect(find.byTooltip(he.emergencyDirections), findsOneWidget);
+      expect(find.text('הודעה'), findsNothing);
       expect(find.text('מפה'), findsNothing);
       expect(find.byTooltip(he.emergencyCallNamed('Dr. Levi, Park Vet Clinic')), findsOneWidget);
       expect(find.byTooltip(he.emergencyMessageNamed('Dana (sister)')), findsOneWidget);
       expect(find.text(he.emergencyCardAndKit), findsOneWidget);
       expect(find.text(he.emergencyCardAndKitNoteKit(3, 6)), findsOneWidget);
-      expect(find.text(he.petIsLost('Kelly')), findsOneWidget);
+      expect(find.text(safetyHe.lostRow), findsOneWidget);
+      expect(find.text(safetyHe.lostRowNote), findsOneWidget);
+      expect(find.text(safetyHe.urgentRow), findsOneWidget);
+      expect(find.text(safetyHe.findClinicNote), findsOneWidget);
       expect(find.text(he.emergencySheetFinePrint), findsOneWidget);
       expect(find.text(he.safetyLine), findsNothing);
       for (final english in [
@@ -87,14 +93,14 @@ void main() {
         'REGULAR VET',
         'Emergency contact',
         'Emergency card and kit',
+        'Lost mode',
+        'Find a clinic nearby',
       ]) {
         expect(find.text(english), findsNothing, reason: english);
       }
-      // What the owner typed stays as typed; a phone number stays in one
-      // piece, left to right.
+      // What the owner typed stays as typed.
       expect(find.text('Dr. Levi, Park Vet Clinic'), findsOneWidget);
-      expect(find.text(ltr('+972 3 555 0199')), findsOneWidget);
-      expect(find.text('+972 3 555 0199'), findsNothing);
+      expect(find.text('80 Harbour Road, Tel Aviv'), findsOneWidget);
 
       // Call still dials the plain number.
       await tapVisible(tester, find.byKey(const ValueKey('call-regular')));
@@ -225,7 +231,7 @@ void main() {
       await tapVisible(tester, find.text(he.saveVet));
 
       expect(find.text('המרפאה ברחוב הירוק'), findsOneWidget);
-      expect(find.text(ltr('+972 3 555 0777')), findsOneWidget);
+      expect(find.text(safetyHe.confirmOpen), findsOneWidget);
       await tapVisible(tester, find.byKey(const ValueKey('call-regular')));
       expect(h.launcher.calls.single.target, '+972 3 555 0777');
     });
@@ -457,9 +463,11 @@ void main() {
 
   test('a Hebrew sentence keeps a Latin name in one piece', () {
     // Every text placeholder sits between U+2068 and U+2069.
-    expect(he.emergencySheetTitle('Kelly'), 'חירום · \u2068Kelly\u2069');
+    expect(he.emergencySheetTitle('Kelly'), '\u2068Kelly\u2069 · חירום');
     expect(he.addPetsVet('Kelly'), 'הוספת וטרינר עבור \u2068Kelly\u2069');
     expect(he.greetingNamed('Alex', 'Kelly'), 'שלום, כאן \u2068Alex\u2069, הבעלים של \u2068Kelly\u2069.');
-    expect(en.emergencySheetTitle('Kelly'), 'Emergency · Kelly');
+    expect(en.emergencySheetTitle('Kelly'), 'Kelly · Emergency');
+    expect(safetyHe.foodRow('Kelly'), 'זה בטוח עבור \u2068Kelly\u2069?');
+    expect(safetyHe.lostRowActive('Kelly', 2), 'מחפשים את \u2068Kelly\u2069 · שני דיווחים');
   });
 }

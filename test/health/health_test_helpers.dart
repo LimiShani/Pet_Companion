@@ -25,6 +25,10 @@ import 'package:pet_companion/widgets/app_bottom_nav.dart';
 import 'package:pet_companion/widgets/coral_segmented_control.dart';
 import 'package:pet_companion/widgets/pet_switcher.dart';
 import 'package:pet_companion/state/pets_provider.dart';
+import 'package:pet_companion/services/safety/data/fake_lost_alerts_repository.dart';
+import 'package:pet_companion/services/safety/state/safety_providers.dart';
+import 'package:pet_companion/composition/modules.g.dart';
+import 'package:pet_companion/platform/feature_module.dart';
 
 import '../helpers.dart';
 
@@ -166,7 +170,13 @@ PickedFile hugePdf() =>
 
 /// Everything a Health test can swap out.
 class HealthHarness {
-  HealthHarness({FakeHealthRepository? repository, this.pets, this.language = AppLanguage.english, WeekSettings? week})
+  HealthHarness({
+    FakeHealthRepository? repository,
+    this.pets,
+    this.language = AppLanguage.english,
+    WeekSettings? week,
+    FakeLostAlertsRepository? lostAlerts,
+  })
     : repository = repository ?? fakeHealth(),
       settings = MemorySettingsStore({
         languageSettingKey: ?language.code,
@@ -179,7 +189,8 @@ class HealthHarness {
       sharer = FakeFileSharer(),
       pdf = RecordingPdfBuilder(),
       cardRenderer = FakeLostCardRenderer(),
-      cardPhotos = FakeLostCardPhotoSource();
+      cardPhotos = FakeLostCardPhotoSource(),
+      lostAlerts = lostAlerts ?? FakeLostAlertsRepository(latency: Duration.zero, now: () => fixedNow, seeded: false);
 
   final FakeHealthRepository repository;
   final RecordingContactLauncher launcher;
@@ -189,6 +200,17 @@ class HealthHarness {
   final RecordingPdfBuilder pdf;
   final FakeLostCardRenderer cardRenderer;
   final FakeLostCardPhotoSource cardPhotos;
+
+  /// Lost mode's alerts (none open).
+  final FakeLostAlertsRepository lostAlerts;
+
+  /// Modules added to the app's own, set before pumping (a stand-in for a
+  /// feature another tab's page reaches through an action).
+  final extraModules = <FeatureModule>[];
+
+  /// More fakes, for providers no other override names (another
+  /// feature's repository a page reads).
+  final extraOverrides = <Override>[];
 
   /// Replaces the shared sample pets (to test other species).
   final List<Pet>? pets;
@@ -227,6 +249,9 @@ class HealthHarness {
     healthPdfBuilderProvider.overrideWithValue(pdf),
     lostCardRendererProvider.overrideWithValue(cardRenderer),
     lostCardPhotoSourceProvider.overrideWithValue(cardPhotos),
+    lostAlertsRepositoryProvider.overrideWithValue(lostAlerts),
+    featureModulesProvider.overrideWith((ref) => [...builtInFeatureModules, ...extraModules]),
+    ...extraOverrides,
     if (pets != null) petsProvider.overrideWith(() => _FixedPets(pets!)),
   ];
 }

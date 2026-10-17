@@ -23,6 +23,7 @@
 /// | `lib/l10n/features/household/`| `HouseholdL10n` | `context.householdL10n` |
 /// | `lib/l10n/features/today/`    | `TodayL10n`     | `context.todayL10n`     |
 /// | `lib/l10n/features/healthplan/` | `HealthPlanL10n` | `context.healthPlanL10n` |
+/// | `lib/l10n/features/safety/`   | `SafetyL10n`    | `context.safetyL10n`    |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -49,6 +50,7 @@ import 'features/outdoors/gen/outdoors_l10n.dart';
 import 'features/pets/gen/pets_l10n.dart';
 import 'features/store/gen/store_l10n.dart';
 import 'features/today/gen/today_l10n.dart';
+import 'features/safety/gen/safety_l10n.dart';
 import '../notifications/l10n/gen/notifications_l10n.dart';
 import 'app_language.dart';
 import 'gen/app_l10n.dart';
@@ -74,6 +76,7 @@ export 'features/outdoors/gen/outdoors_l10n.dart'
 export 'features/pets/gen/pets_l10n.dart' show PetsL10n, lookupPetsL10n;
 export 'features/store/gen/store_l10n.dart' show StoreL10n, lookupStoreL10n;
 export 'features/today/gen/today_l10n.dart' show TodayL10n, lookupTodayL10n;
+export 'features/safety/gen/safety_l10n.dart' show SafetyL10n, lookupSafetyL10n;
 export '../notifications/l10n/gen/notifications_l10n.dart'
     show NotificationsL10n, lookupNotificationsL10n;
 export 'app_format.dart';
@@ -102,6 +105,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   HouseholdL10n.delegate,
   TodayL10n.delegate,
   HealthPlanL10n.delegate,
+  SafetyL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -156,6 +160,8 @@ extension L10nContext on BuildContext {
 
   /// Health's yearly plan, its insights and the weekly summary.
   HealthPlanL10n get healthPlanL10n => _strings(this, lookupHealthPlanL10n);
+  /// The Emergency sheet's safety rows, Lost mode and the safety lists.
+  SafetyL10n get safetyL10n => _strings(this, lookupSafetyL10n);
 
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;

@@ -317,6 +317,12 @@ abstract class AccessL10n {
   /// **'Household'**
   String get featureHousehold;
 
+  /// No description provided for @featureSafety.
+  ///
+  /// In en, this message translates to:
+  /// **'Safety'**
+  String get featureSafety;
+
   /// No description provided for @featureDeals.
   ///
   /// In en, this message translates to:
@@ -418,6 +424,18 @@ abstract class AccessL10n {
   /// In en, this message translates to:
   /// **'Private chats'**
   String get actionPrivate;
+
+  /// No description provided for @actionLists.
+  ///
+  /// In en, this message translates to:
+  /// **'Urgent signs and foods lists'**
+  String get actionLists;
+
+  /// No description provided for @actionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'Lost mode'**
+  String get actionLost;
 
   /// No description provided for @auditIntroDemo.
   ///

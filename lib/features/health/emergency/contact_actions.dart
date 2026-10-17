@@ -7,7 +7,6 @@ import '../../../l10n/l10n.dart';
 import '../../../theme/app_colors.dart';
 import '../../../theme/app_theme.dart';
 import '../../../widgets/app_icon.dart';
-import '../../../presentation/health_format.dart';
 import '../../../presentation/health_widgets.dart';
 import '../../../platform/contact_launcher.dart';
 import 'emergency_message.dart';
@@ -128,20 +127,18 @@ class ContactActionButtons extends ConsumerWidget {
   }
 }
 
-//// Who a contact is, as the emergency sheet shows it: the role in small
-/// capitals, the name, and the phone number when [phone] is given.
+/// Who a contact is, as the emergency sheet's rows show it: the role in
+/// small capitals and the name.
 class _ContactLines extends StatelessWidget {
   const _ContactLines({
     required this.role,
     required this.name,
     required this.nameStyle,
-    this.phone,
   });
 
   final String role;
   final String name;
   final TextStyle nameStyle;
-  final String? phone;
 
   @override
   Widget build(BuildContext context) {
@@ -158,61 +155,50 @@ class _ContactLines extends StatelessWidget {
           ),
         ),
         TypedText(name, style: nameStyle),
-        // A phone number reads left to right on every screen.
-        if (phone != null)
-          Text(
-            HealthFormat.of(context).ltrInLine(phone!),
-            style: AppText.secondary.copyWith(
-              color: AppColors.brown,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
       ],
     );
   }
 }
 
-/// The one contact the emergency sheet leads with: who it is, its number,
-/// one big "Call now", and "Message" and "Directions" under it. Without a
-/// phone number, [onAddPhone] takes the place of "Call now".
+/// The one contact the emergency sheet leads with, on a peach card: who it
+/// is, where (when an address is saved, with a round Directions button),
+/// "call to confirm they are open" for a clinic or a vet, and one big
+/// "Call now". Without a phone number, [onAddPhone] takes the place of
+/// "Call now". Message is not offered here: the contact appears once, and
+/// the first contact is the one to call.
 ///
-/// The keys are `call-<tag>`, `message-<tag>`, `map-<tag>` and
-/// `add-phone-<tag>`, as on [ContactActionButtons].
+/// The keys are `call-<tag>`, `map-<tag>` and `add-phone-<tag>`, as on
+/// [ContactActionButtons].
 class EmergencyPrimaryCard extends ConsumerWidget {
   const EmergencyPrimaryCard({
     super.key,
-    required this.petId,
     required this.tag,
     required this.role,
     required this.name,
-    required this.icon,
     this.phone,
-    this.onWhatsApp = false,
     this.address,
+    this.confirmOpen = false,
     this.onAddPhone,
   });
 
-  final String petId;
   final String tag;
 
   /// "Emergency vet (24 h)", "Regular vet", "Emergency contact".
   final String role;
   final String name;
-  final IconData icon;
   final String? phone;
-  final bool onWhatsApp;
   final String? address;
+
+  /// Adds "Call to confirm they are open" (a clinic or a vet, not a person).
+  final bool confirmOpen;
   final VoidCallback? onAddPhone;
 
   static final _callNow = FilledButton.styleFrom(
     minimumSize: const Size.fromHeight(52),
     padding: const EdgeInsets.symmetric(horizontal: 16),
+    backgroundColor: AppColors.coralDark,
+    foregroundColor: AppColors.white,
     textStyle: AppText.button(16),
-  );
-  static final _half = OutlinedButton.styleFrom(
-    minimumSize: const Size.fromHeight(kHealthTapTarget),
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    textStyle: AppText.button(14),
   );
 
   @override
@@ -220,54 +206,61 @@ class EmergencyPrimaryCard extends ConsumerWidget {
     final number = phone;
     final place = address;
     final l10n = context.healthL10n;
-    final under = <Widget>[
-      if (number != null)
-        OutlinedButton(
-          key: ValueKey('message-$tag'),
-          style: _half,
-          onPressed: () => showEmergencyMessageSheet(
-            context,
-            petId: petId,
-            recipientName: name,
-            phone: number,
-            onWhatsApp: onWhatsApp,
-          ),
-          child: Text(
-            l10n.actionMessage,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      if (place != null)
-        OutlinedButton(
-          key: ValueKey('map-$tag'),
-          style: _half,
-          onPressed: () => openContactMap(context, ref, place),
-          child: Text(
-            l10n.emergencyDirections,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-    ];
+    final line = AppText.secondary.copyWith(
+      color: AppColors.ink,
+      fontWeight: FontWeight.w700,
+    );
     return HealthCard(
       key: const Key('emergency-primary'),
+      color: AppColors.peach,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconDisc(icon, size: 44),
-              const SizedBox(width: 12),
               Expanded(
-                child: _ContactLines(
-                  role: role,
-                  name: name,
-                  phone: number,
-                  nameStyle: AppText.rowTitle.copyWith(fontSize: 17),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      // Small capitals in English; Hebrew has no capitals.
+                      role.toUpperCase(),
+                      style: AppText.label.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    TypedText(
+                      name,
+                      style: AppText.rowTitle.copyWith(fontSize: 17),
+                    ),
+                    if (place != null)
+                      TypedText(
+                        place,
+                        style: line,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    if (confirmOpen)
+                      Text(
+                        context.safetyL10n.confirmOpen,
+                        style: line.copyWith(fontWeight: FontWeight.w600),
+                      ),
+                  ],
                 ),
               ),
+              if (place != null) ...[
+                const SizedBox(width: 8),
+                _RoundButton(
+                  key: ValueKey('map-$tag'),
+                  icon: Icons.directions_rounded,
+                  tooltip: l10n.emergencyDirections,
+                  onPressed: () => openContactMap(context, ref, place),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 12),
@@ -295,26 +288,16 @@ class EmergencyPrimaryCard extends ConsumerWidget {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-          if (under.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                for (var i = 0; i < under.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 10),
-                  Expanded(child: under[i]),
-                ],
-              ],
-            ),
-          ],
         ],
       ),
     );
   }
 }
 
-/// A contact after the first one on the emergency sheet: who it is, and
-/// two round buttons at the end, Message and Call. Without a phone number,
-/// one round button for [onAddPhone] instead.
+/// A contact after the first one on the emergency sheet: [leading] (the
+/// sheet's area disc), who it is, and two round buttons at the end,
+/// Message and Call. Without a phone number, one round button for
+/// [onAddPhone] instead.
 ///
 /// The keys are `message-<tag>`, `call-<tag>` and `add-phone-<tag>`.
 class EmergencyContactRow extends ConsumerWidget {
@@ -327,6 +310,7 @@ class EmergencyContactRow extends ConsumerWidget {
     this.phone,
     this.onWhatsApp = false,
     this.onAddPhone,
+    this.leading,
   });
 
   final String petId;
@@ -336,6 +320,7 @@ class EmergencyContactRow extends ConsumerWidget {
   final String? phone;
   final bool onWhatsApp;
   final VoidCallback? onAddPhone;
+  final Widget? leading;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -346,6 +331,7 @@ class EmergencyContactRow extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
+          if (leading != null) ...[leading!, const SizedBox(width: 12)],
           Expanded(
             child: _ContactLines(
               role: role,

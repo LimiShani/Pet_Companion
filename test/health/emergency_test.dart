@@ -5,7 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pet_companion/features/health/emergency/emergency.dart';
+import 'package:pet_companion/access/access_provider.dart';
+import 'package:pet_companion/presentation/health_widgets.dart';
+import 'package:pet_companion/services/safety/state/safety_providers.dart';
+import 'package:pet_companion/theme/app_colors.dart';
 import 'package:pet_companion/widgets/app_icon.dart';
+import 'package:pet_companion/widgets/area_disc.dart';
 
 import 'health_test_helpers.dart';
 
@@ -111,47 +116,59 @@ void main() {
     testWidgets('leads with one Call now for the 24 h vet; the others are rows', (tester) async {
       final h = await openSheet(tester, kelly);
       final primary = find.byKey(const Key('emergency-primary'));
-      final others = find.byKey(const Key('emergency-other-contacts'));
+      final rows = find.byKey(const Key('emergency-rows'));
 
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
-      // One obvious action: the emergency vet, in one card, with its number.
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
+      expect(find.text('Call first. The rows below help you decide and prepare.'), findsOneWidget);
+      // One obvious action: the emergency vet, on one peach card.
+      expect(tester.widget<HealthCard>(primary).color, AppColors.peach);
       expect(find.text('Call now'), findsOneWidget);
       expect(find.descendant(of: primary, matching: find.text('EMERGENCY VET (24 H)')), findsOneWidget);
       expect(find.descendant(of: primary, matching: find.text('City Animal Hospital')), findsOneWidget);
-      expect(find.descendant(of: primary, matching: find.text('+972 3 555 0199')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('80 Harbour Road, Tel Aviv')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.text('Call to confirm they are open')), findsOneWidget);
       expect(find.descendant(of: primary, matching: find.byKey(const ValueKey('call-emergency'))), findsOneWidget);
-      expect(find.descendant(of: primary, matching: find.text('Message')), findsOneWidget);
-      expect(find.descendant(of: primary, matching: find.text('Directions')), findsOneWidget);
+      expect(find.descendant(of: primary, matching: find.byKey(const ValueKey('map-emergency'))), findsOneWidget);
+      expect(find.byTooltip('Directions'), findsOneWidget);
+      // Each contact once: no Message for the first contact.
+      expect(find.byKey(const ValueKey('message-emergency')), findsNothing);
+      expect(find.text('Message'), findsNothing);
 
       // The regular vet and Dana: a row each, with round Message and Call.
-      expect(find.descendant(of: others, matching: find.text('REGULAR VET')), findsOneWidget);
-      expect(find.descendant(of: others, matching: find.text('Dr. Levi, Park Vet Clinic')), findsOneWidget);
-      expect(find.descendant(of: others, matching: find.text('EMERGENCY CONTACT')), findsOneWidget);
-      expect(find.descendant(of: others, matching: find.text('Dana (sister)')), findsOneWidget);
+      expect(find.descendant(of: rows, matching: find.text('REGULAR VET')), findsOneWidget);
+      expect(find.descendant(of: rows, matching: find.text('Dr. Levi, Park Vet Clinic')), findsOneWidget);
+      expect(find.descendant(of: rows, matching: find.text('EMERGENCY CONTACT')), findsOneWidget);
+      expect(find.descendant(of: rows, matching: find.text('Dana (sister)')), findsOneWidget);
       for (final name in ['Dr. Levi, Park Vet Clinic', 'Dana (sister)']) {
         expect(find.byTooltip('Call $name'), findsOneWidget, reason: name);
         expect(find.byTooltip('Message $name'), findsOneWidget, reason: name);
       }
       expect(find.byKey(const ValueKey('call-regular')), findsOneWidget);
       expect(find.byKey(const ValueKey('message-contact')), findsOneWidget);
-      // No more Call / Message / Map on every contact.
       expect(find.text('Call'), findsNothing);
       expect(find.text('Map'), findsNothing);
       expect(find.byKey(const ValueKey('map-regular')), findsNothing);
       expect(find.byKey(const ValueKey('map-contact')), findsNothing);
+      // Every row has its health disc: two contacts and five tools.
+      expect(find.descendant(of: rows, matching: find.byType(AreaDisc)), findsNWidgets(7));
 
-      // The three plain rows and the short fine print.
-      expect(find.text('Find an emergency vet nearby'), findsOneWidget);
+      // The tools, in order, and the one line of fine print.
+      expect(find.text('Is it urgent?'), findsOneWidget);
+      expect(find.text('Can Kelly eat this?'), findsOneWidget);
+      expect(find.text('Lost mode'), findsOneWidget);
+      expect(find.text('Tell people nearby and share a card'), findsOneWidget);
+      expect(find.text('Kelly is lost'), findsNothing);
       expect(find.text('Emergency card and kit'), findsOneWidget);
-      expect(find.text('Allergies, medicines, microchip · kit 3 of 6 ready'), findsOneWidget);
-      expect(find.text('Kelly is lost'), findsOneWidget);
-      expect(find.text('You place the call or send the message yourself.'), findsOneWidget);
-      expect(find.textContaining('never contacts anyone on its own'), findsNothing);
-      expect(find.textContaining('veterinary advice'), findsNothing);
-      expect(find.text("Open Kelly's Emergency card"), findsNothing);
-      final fine = tester.getTopLeft(find.text('You place the call or send the message yourself.')).dy;
-      expect(tester.getTopLeft(find.text('Kelly is lost')).dy, lessThan(fine));
-      expect(tester.getTopLeft(find.text('Call now')).dy, lessThan(tester.getTopLeft(others).dy));
+      expect(find.text('3 of 6 kit items · share as PDF'), findsOneWidget);
+      expect(find.text('Find a clinic nearby'), findsOneWidget);
+      expect(find.text('Emergency clinics near you'), findsOneWidget);
+      const fine = 'Lists and signs are general guidance, not a diagnosis. When in doubt, call.';
+      expect(find.text(fine), findsOneWidget);
+      double top(String text) => tester.getTopLeft(find.text(text)).dy;
+      expect(top('Lost mode'), lessThan(top('Emergency card and kit')));
+      expect(top('Emergency card and kit'), lessThan(top('Find a clinic nearby')));
+      expect(top('Find a clinic nearby'), lessThan(top(fine)));
+      expect(top('Call now'), lessThan(tester.getTopLeft(rows).dy));
 
       // Call now dials the emergency vet; Directions opens its address.
       await tapVisible(tester, find.text('Call now'));
@@ -169,11 +186,72 @@ void main() {
       expect(h.launcher.calls.last.target, parkPhone);
     });
 
+    testWidgets('the safety tools open their pages', (tester) async {
+      await openSheet(tester, kelly);
+
+      double top(String text) => tester.getTopLeft(find.text(text)).dy;
+      expect(find.text('Is it urgent?'), findsOneWidget);
+      expect(find.text('Signs that mean going to the vet now'), findsOneWidget);
+      expect(find.text('Can Kelly eat this?'), findsOneWidget);
+      expect(find.text('Foods and plants: safe, a little or dangerous'), findsOneWidget);
+      expect(find.text('Tell people nearby and share a card'), findsOneWidget);
+      // After the contacts, before Lost mode.
+      expect(top('Dana (sister)'), lessThan(top('Is it urgent?')));
+      expect(top('Is it urgent?'), lessThan(top('Can Kelly eat this?')));
+      expect(top('Can Kelly eat this?'), lessThan(top('Lost mode')));
+
+      await tapVisible(tester, find.text('Is it urgent?'));
+      expect(find.text('Any of these means going to a vet now. Call on the way.'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Can Kelly eat this?'));
+      expect(find.text('Search a food or a plant'), findsOneWidget);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+      await tapVisible(tester, find.text('Lost mode'));
+      expect(find.text('Step 1 of 2'), findsOneWidget);
+    });
+
+    testWidgets('without the safety capabilities the lists are hidden and Lost mode makes a card', (tester) async {
+      final access = FakeAccessRepository();
+      access.groups['standard']!
+        ..remove('safety.lists')
+        ..remove('safety.lost');
+      final h = HealthHarness();
+      h.extraOverrides.add(accessRepositoryProvider.overrideWithValue(access));
+      await openSheet(tester, kelly, harness: h);
+
+      expect(find.text('Is it urgent?'), findsNothing);
+      expect(find.text('Can Kelly eat this?'), findsNothing);
+      expect(find.text('Make a card to share'), findsOneWidget);
+      await tapVisible(tester, find.text('Lost mode'));
+      expect(find.text('Kelly is lost'), findsWidgets);
+    });
+
+    testWidgets('an open alert turns the Lost mode row into the missing pet', (tester) async {
+      final h = HealthHarness();
+      final alert = await real(
+        tester,
+        () => h.lostAlerts.start(
+          LostStart(petId: kelly, localityCode: 'raanana', seenAt: fixedNow.subtract(const Duration(hours: 2))),
+        ),
+      );
+      h.lostAlerts.addSighting(alert.id);
+      h.lostAlerts.addSighting(alert.id);
+      await openSheet(tester, kelly, harness: h);
+      expect(find.text('Kelly is missing · 2 sightings'), findsOneWidget);
+      expect(find.text('Last seen Today · 15:40'), findsOneWidget);
+      expect(find.text('Lost mode'), findsNothing);
+      await tapVisible(tester, find.byKey(const Key('emergency-lost')));
+      expect(find.byKey(const Key('lost-alert-status')), findsOneWidget);
+      expect(find.text('Kelly is home'), findsOneWidget);
+    });
+
     testWidgets('the Emergency card and kit row opens the card', (tester) async {
       await openSheet(tester, kelly);
       await tapVisible(tester, find.text('Emergency card and kit'));
       expect(find.text('Emergency card'), findsOneWidget);
-      expect(find.text('Emergency · Kelly'), findsNothing);
+      expect(find.text('Kelly · Emergency'), findsNothing);
     });
 
     testWidgets('with only a regular vet, the regular vet leads', (tester) async {
@@ -206,9 +284,10 @@ void main() {
 
       expect(find.descendant(of: primary, matching: find.text('EMERGENCY CONTACT')), findsOneWidget);
       expect(find.descendant(of: primary, matching: find.text('Noa')), findsOneWidget);
-      // No address: Message alone under Call now.
-      expect(find.descendant(of: primary, matching: find.text('Message')), findsOneWidget);
-      expect(find.text('Directions'), findsNothing);
+      // A person: no address, no Directions, no opening hours to confirm.
+      expect(find.byTooltip('Directions'), findsNothing);
+      expect(find.text('Call to confirm they are open'), findsNothing);
+      expect(find.byKey(const ValueKey('message-contact')), findsNothing);
       expect(find.byKey(const Key('add-vet-prompt')), findsOneWidget);
       expect(find.text("Add Soya's vet"), findsOneWidget);
 
@@ -224,10 +303,10 @@ void main() {
       expect(find.text('Call now'), findsNothing);
       expect(find.byKey(const Key('emergency-primary')), findsNothing);
       // The rows below still lead on.
-      expect(find.text('Find an emergency vet nearby'), findsOneWidget);
+      expect(find.text('Find a clinic nearby'), findsOneWidget);
       expect(find.text('Emergency card and kit'), findsOneWidget);
-      expect(find.text('Soya is lost'), findsOneWidget);
-      expect(find.text('You place the call or send the message yourself.'), findsOneWidget);
+      expect(find.text('Lost mode'), findsOneWidget);
+      expect(find.text('Lists and signs are general guidance, not a diagnosis. When in doubt, call.'), findsOneWidget);
     });
 
     testWidgets('the Emergency card has no contact list and one Share', (tester) async {
@@ -288,16 +367,16 @@ void main() {
       expect(sent.body, isNot(contains('Microchip')));
       // The message sheet closed; the emergency sheet is still there.
       expect(find.text('Message to Dr. Levi, Park Vet Clinic'), findsNothing);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
     });
 
     testWidgets('WhatsApp is offered only for numbers marked as WhatsApp', (tester) async {
       final h = await openSheet(tester, kelly);
 
-      await tapVisible(tester, find.byKey(const ValueKey('message-emergency')));
-      expect(find.text('Message to City Animal Hospital'), findsOneWidget);
+      await tapVisible(tester, find.byKey(const ValueKey('message-contact')));
+      expect(find.text('Message to Dana (sister)'), findsOneWidget);
       expect(find.text('Open in WhatsApp'), findsNothing);
-      Navigator.of(tester.element(find.text('Message to City Animal Hospital'))).pop();
+      Navigator.of(tester.element(find.text('Message to Dana (sister)'))).pop();
       await tester.pumpAndSettle();
 
       await tapVisible(tester, find.byKey(const ValueKey('message-regular')));
@@ -316,7 +395,7 @@ void main() {
       expect(find.text('Copy number'), findsOneWidget);
       await tester.tap(find.text('Close'));
       await tester.pumpAndSettle();
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
     });
 
     testWidgets('with no vet yet, a saved vet is reused with one tap', (tester) async {

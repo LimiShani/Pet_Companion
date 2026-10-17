@@ -52,9 +52,9 @@ void main() {
 
       await tester.tap(adviceLine);
       await settleHealth(tester);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
       await closeSheet(tester);
-      expect(find.text('Emergency · Kelly'), findsNothing);
+      expect(find.text('Kelly · Emergency'), findsNothing);
       expect(adviceWords, findsOneWidget); // nothing to dismiss: it stays
     });
 
@@ -88,8 +88,8 @@ void main() {
 
       await tester.tap(adviceLine);
       await settleHealth(tester);
-      expect(find.text('Emergency · Mitzi'), findsOneWidget);
-      expect(find.text('Emergency · Kelly'), findsNothing);
+      expect(find.text('Mitzi · Emergency'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsNothing);
     });
   });
 
@@ -197,7 +197,7 @@ void main() {
         await tester.pumpAndSettle();
         await tester.tap(adviceLine);
         await settleHealth(tester);
-        expect(find.text('Emergency · Mitzi'), findsOneWidget);
+        expect(find.text('Mitzi · Emergency'), findsOneWidget);
         await closeSheet(tester);
         expect(tester.takeException(), isNull);
       });

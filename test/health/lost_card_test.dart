@@ -40,6 +40,7 @@ void main() {
   /// The "is lost" page, opened from the emergency sheet.
   Future<HealthHarness> openLost(WidgetTester tester, String petId, {HealthHarness? harness}) async {
     final h = await openSheet(tester, petId, harness: harness);
+    await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
     await tapVisible(tester, find.byKey(const Key('open-lost-card')));
     return h;
   }
@@ -58,10 +59,12 @@ void main() {
   }
 
   group('"My pet is lost"', () {
-    testWidgets('opens from the emergency sheet and shows the card as it will look', (tester) async {
+    testWidgets('opens from the Emergency card and shows the card as it will look', (tester) async {
       await openSheet(tester, kelly);
-      expect(find.text('Kelly is lost'), findsOneWidget);
-
+      // The sheet's Lost mode row starts Lost mode; the card itself is on
+      // the Emergency card (and on the open alert).
+      expect(find.text('Lost mode'), findsOneWidget);
+      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
       await tapVisible(tester, find.byKey(const Key('open-lost-card')));
       expect(find.text('What goes on the card'), findsOneWidget);
       expect(find.text('This is what will be shared'), findsOneWidget);
@@ -240,8 +243,8 @@ void main() {
       await tester.pageBack();
       await tester.pumpAndSettle();
 
-      // Opened again, this time from the Emergency card.
-      await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
+      // Opened again from the Emergency card.
+      expect(find.text('Emergency card'), findsOneWidget);
       await tapVisible(tester, find.byKey(const Key('open-lost-card')));
       expect(find.widgetWithText(TextFormField, 'Florentin, Tel Aviv'), findsOneWidget);
       expect(find.widgetWithText(TextFormField, phone), findsOneWidget);

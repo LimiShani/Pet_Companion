@@ -1,0 +1,248 @@
+{
+  "@@locale": "en",
+  "emergencyLead": "Call first. The rows below help you decide and prepare.",
+  "@emergencyLead": {
+    "description": "The line under the Emergency sheet's title."
+  },
+  "confirmOpen": "Call to confirm they are open",
+  "@confirmOpen": {
+    "description": "On the Emergency sheet's first contact (a clinic or a vet): opening hours change, so call before driving."
+  },
+  "urgentRow": "Is it urgent?",
+  "@urgentRow": {
+    "description": "Emergency sheet row: opens the list of signs that mean going to a vet now."
+  },
+  "urgentRowNote": "Signs that mean going to the vet now",
+  "foodRow": "Can {name} eat this?",
+  "@foodRow": {
+    "description": "Emergency sheet row: opens the searchable list of foods and plants.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "foodRowNote": "Foods and plants: safe, a little or dangerous",
+  "lostRow": "Lost mode",
+  "@lostRow": {
+    "description": "Emergency sheet row: starts Lost mode (an alert to people nearby and a card to share)."
+  },
+  "lostRowNote": "Tell people nearby and share a card",
+  "lostRowCardNote": "Make a card to share",
+  "@lostRowCardNote": {
+    "description": "Subtitle of the Lost mode row for an account without Lost mode: it opens the lost-pet card only."
+  },
+  "lostRowActive": "{name} is missing · {count, plural, =0{no sightings yet} =1{1 sighting} other{{count} sightings}}",
+  "@lostRowActive": {
+    "description": "The Lost mode row while an alert is open: the pet and how many people commented on the post.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lostRowActiveNote": "Last seen {when}",
+  "@lostRowActiveNote": {
+    "description": "Under the open alert's row: when the pet was last seen, e.g. 'Today 14:30'.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "findClinicNote": "Emergency clinics near you",
+  "@findClinicNote": {
+    "description": "Under the Emergency sheet's Find a clinic nearby row."
+  },
+  "urgentLead": "Any of these means going to a vet now. Call on the way.",
+  "@urgentLead": {
+    "description": "Under the Is it urgent? page title."
+  },
+  "urgentSectionDog": "Signs in dogs",
+  "urgentSectionCat": "Signs in cats",
+  "urgentSectionAny": "Signs in any animal",
+  "@urgentSectionAny": {
+    "description": "Heading of the signs for a bird, rabbit, reptile or other pet."
+  },
+  "urgentOtherNote": "Signs that are only about dogs or cats are left out.",
+  "noVetFindClinic": "No vet saved? Find a clinic nearby",
+  "@noVetFindClinic": {
+    "description": "On the safety pages when the pet has no number to call."
+  },
+  "sourcesTitle": "Where this comes from",
+  "@sourcesTitle": {
+    "description": "The folded list of the sources of a safety list."
+  },
+  "foodSearchHint": "Search a food or a plant",
+  "foodSearchClear": "Clear the search",
+  "animalMenuTooltip": "Which animal",
+  "@animalMenuTooltip": {
+    "description": "Tooltip of the animal menu chip of the foods list."
+  },
+  "animalDog": "Dog",
+  "animalCat": "Cat",
+  "animalBird": "Bird",
+  "animalOther": "Other animals",
+  "kindFoods": "Foods",
+  "kindPlants": "Plants",
+  "kindHousehold": "Around the house",
+  "levelSafe": "Safe",
+  "@levelSafe": {
+    "description": "Food answer: fine in a pet-sized portion."
+  },
+  "levelLittle": "A little",
+  "@levelLittle": {
+    "description": "Food answer: only a little, now and then."
+  },
+  "levelDangerous": "Dangerous",
+  "@levelDangerous": {
+    "description": "Food answer: keep away; if eaten, call the vet."
+  },
+  "levelAsk": "Ask your vet",
+  "@levelAsk": {
+    "description": "Food answer when the list says nothing for this animal."
+  },
+  "levelNotListed": "not on our list",
+  "forDogs": "For dogs",
+  "forCats": "For cats",
+  "forBirds": "For birds",
+  "forAnimal": "{animal}: {level}",
+  "@forAnimal": {
+    "description": "One other animal's answer in a food's sheet: \"For cats: Dangerous\".",
+    "placeholders": {
+      "animal": {
+        "type": "String"
+      },
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "foodAlso": "Also: {names}",
+  "@foodAlso": {
+    "description": "The other names of a food.",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "foodCallVet": "Call the vet",
+  "foodNotSure": "Not sure? Call the vet",
+  "foodEatenAlready": "Eaten already? Call even if all seems fine.",
+  "foodNothing": "Nothing found for “{text}”.",
+  "@foodNothing": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "lostStep": "Step {step} of {total}",
+  "@lostStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lostChangePet": "Change",
+  "@lostChangePet": {
+    "description": "Lost mode step 1: choose another pet."
+  },
+  "lostWhichPet": "Who is missing?",
+  "@lostWhichPet": {
+    "description": "Title of the sheet that picks the pet in Lost mode."
+  },
+  "lostLastSeen": "Last seen",
+  "lostTown": "Town",
+  "lostTownChoose": "Choose the town",
+  "lostTownHint": "Type a town",
+  "lostTownNeeded": "Choose the town first",
+  "lostWhere": "Where exactly?",
+  "lostWhereHint": "A public place, not an address",
+  "lostNote": "Anything people should know?",
+  "lostNoteHint": "For example: please do not chase, call the name",
+  "lostNext": "Next",
+  "lostPreviewTitle": "What people will see",
+  "lostPostTag": "Lost and found",
+  "lostNow": "Now",
+  "@lostNow": {
+    "description": "When the previewed post was written."
+  },
+  "lostUsePhoto": "Use {name}'s photo",
+  "@lostUsePhoto": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lostWhoHears": "People in {town} who use PetLoop get one notification. Sightings come as comments.",
+  "@lostWhoHears": {
+    "placeholders": {
+      "town": {
+        "type": "String"
+      }
+    }
+  },
+  "lostCardNext": "The card to share",
+  "lostCardNextNote": "Comes next, filled in",
+  "lostStart": "Start lost mode",
+  "lostStarted": "Lost mode is on. People nearby are being told.",
+  "lostAlertTitle": "{name} is missing",
+  "@lostAlertTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lostSince": "Since {when}",
+  "@lostSince": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "lostSightings": "Sightings",
+  "lostNoSightings": "No sightings yet. Sharing the card reaches more people.",
+  "lostSightingsFailed": "Could not load the comments",
+  "lostOpenPost": "Open the post",
+  "lostShareCard": "Share the card",
+  "lostHome": "{name} is home",
+  "@lostHome": {
+    "description": "The one filled button of the open alert: closes it as found.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lostClose": "Close the alert",
+  "lostCloseQuestion": "Close the alert without “found”?",
+  "lostCloseNote": "If nobody answered yet, the post is removed too.",
+  "lostCloseConfirm": "Close",
+  "lostKeepLooking": "Keep looking",
+  "lostFoundDone": "Good news. The alert is closed.",
+  "lostClosedDone": "The alert is closed.",
+  "lostErrActive": "There is already an open alert for {name}.",
+  "@lostErrActive": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "lostErrRate": "Three alerts today already. Please try again tomorrow.",
+  "lostErrInvalid": "Something here is not right. Please check the place and the time.",
+  "lostErrNotAllowed": "Lost mode is not available for this account.",
+  "lostErrGeneric": "Could not do that. Please try again."
+}
