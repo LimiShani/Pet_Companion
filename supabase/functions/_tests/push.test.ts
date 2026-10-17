@@ -245,6 +245,26 @@ test("a new ad at a saved park names the park in the phone's language", () => {
   assert.equal(wordsFor({ ...meetup, park_name_he: null }, 'he').title, 'טיול חדש ב־⁨גינת כלבים · ⁨אחוזה⁩⁩');
 });
 
+test('a going-now ad says who is going where and in how long', () => {
+  const at = new Date('2026-10-17T15:00:00Z');
+  const going: ClaimedPush = {
+    ...meetup,
+    meetup_kind: 'walk_now',
+    park_name_en: 'Yarkon park',
+    preview: '',
+    actor_name: 'Dana',
+    leaves_at: '2026-10-17T15:24:10Z',
+  };
+  assert.deepEqual(wordsFor(going, 'en', at), {
+    title: 'Dana is going to Yarkon park in 25 min',
+    body: 'Open PetLoop to join',
+  });
+  assert.equal(wordsFor({ ...going, preview: 'Slow one' }, 'en', at).body, 'Slow one');
+  assert.equal(wordsFor({ ...going, leaves_at: '2026-10-17T14:58:00Z' }, 'en', at).title, 'Dana is going to Yarkon park now');
+  assert.equal(wordsFor({ ...going, leaves_at: null }, 'en', at).title, 'Dana is going to Yarkon park now');
+  assert.equal(wordsFor({ ...going, meetup_kind: 'play_now' }, 'he', at).title, '⁨Dana⁩: יציאה ל־⁨גינת אחוזה⁩ בעוד 25 דקות');
+});
+
 test('an ended ad asks its author to renew it', () => {
   const renew: ClaimedPush = { ...meetup, kind: 'meetup_renew' };
   assert.deepEqual(wordsFor(renew, 'en'), {
