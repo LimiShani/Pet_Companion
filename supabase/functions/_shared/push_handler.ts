@@ -1,7 +1,8 @@
 // Edge Function `community-push`: sends what the database queued in
 // `push_outbox` (comments on a member's posts, likes, answers to their
 // chat messages, messages in their private chats, invitations to a chat,
-// new partner ads at a saved park and the end of a member's own ad)
+// new partner ads at a saved park, the end of a member's own ad and a pet
+// gone missing nearby)
 // to their phones through FCM, in each phone's language.
 //
 // Called by the database (a trigger pokes it through pg_net) and by a
@@ -24,7 +25,7 @@ export interface PushHandlerOptions {
 export interface ClaimedDevice { token: string; platform: string; language: string }
 export interface ClaimedPush {
   id: number;
-  kind: 'comment' | 'like' | 'reply' | 'message' | 'invite' | 'meetup' | 'meetup_renew';
+  kind: 'comment' | 'like' | 'reply' | 'message' | 'invite' | 'meetup' | 'meetup_renew' | 'lost_nearby';
   target: string;
   preview: string;
   actor_name: string;
@@ -66,6 +67,9 @@ const WORDS = {
     postedBy: (name: string) => `Posted by ${name}`,
     renewTitle: 'Your partner ad has ended',
     renewBody: 'Renew it in PetLoop to show it for 30 more days',
+    lostTitle: 'A pet is missing near you',
+    lostBody: (text: string) => `${text}. Seen it? Open PetLoop to help`,
+    lostFallback: 'Open PetLoop to see the alert and help look',
   },
   he: {
     fallbackName: 'אוהבי חיות',
@@ -87,6 +91,9 @@ const WORDS = {
     postedBy: (name: string) => `פורסם על ידי ⁨${name}⁩`,
     renewTitle: 'מודעת השותפים שלך הסתיימה',
     renewBody: 'אפשר לחדש אותה באפליקציה לעוד 30 יום',
+    lostTitle: 'חיה אבודה באזור שלך',
+    lostBody: (text: string) => `⁨${text}⁩. כל מראה עוזר: הפרטים באפליקציה`,
+    lostFallback: 'הפרטים באפליקציה, וכל מראה עוזר',
   },
 };
 
@@ -118,6 +125,11 @@ export function wordsFor(item: ClaimedPush, language: string): { title: string; 
       title: item.meetup_kind === 'play' ? words.newPlay(park) : words.newWalk(park),
       body: preview ? words.fromIn(name, preview) : words.postedBy(name),
     };
+  }
+  if (item.kind === 'lost_nearby') {
+    // "A pet is missing near you" and the pet's name with where it was last
+    // seen (0034 puts both in the preview, as the owner wrote them).
+    return { title: words.lostTitle, body: preview ? words.lostBody(preview) : words.lostFallback };
   }
   if (item.kind === 'meetup_renew') {
     return { title: words.renewTitle, body: words.renewBody };
