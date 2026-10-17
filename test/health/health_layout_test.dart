@@ -63,7 +63,7 @@ void main() {
             find.bySemanticsLabel(RegExp('Emergency contacts for Kelly')),
           );
           await tester.pumpAndSettle();
-          expect(find.text('Emergency · Kelly'), findsOneWidget);
+          expect(find.text('Kelly · Emergency'), findsOneWidget);
           await tapVisible(tester, find.byKey(const Key('open-emergency-card')));
           expect(find.text('Emergency card'), findsOneWidget);
           await back(tester);

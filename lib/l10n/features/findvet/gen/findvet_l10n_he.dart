@@ -15,7 +15,7 @@ class FindVetL10nHe extends FindVetL10n {
   String get loginEmergencyLink => 'מצב חירום? חיפוש וטרינר';
 
   @override
-  String get emergencySheetFindVet => 'חיפוש וטרינר חירום קרוב';
+  String get emergencySheetFindVet => 'חיפוש מרפאה קרובה';
 
   @override
   String get choiceQuestion => 'מה צריך?';

@@ -15,7 +15,7 @@ class FindVetL10nEn extends FindVetL10n {
   String get loginEmergencyLink => 'Pet emergency? Find a vet';
 
   @override
-  String get emergencySheetFindVet => 'Find an emergency vet nearby';
+  String get emergencySheetFindVet => 'Find a clinic nearby';
 
   @override
   String get choiceQuestion => 'What do you need?';

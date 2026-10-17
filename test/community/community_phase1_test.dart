@@ -218,7 +218,7 @@ void main() {
       await tester.scrollUntilVisible(contact, 200);
       await tester.tap(contact);
       await settleHealth(tester);
-      expect(find.text('Emergency · Mitzi'), findsOneWidget);
+      expect(find.text('Mitzi · Emergency'), findsOneWidget);
     });
 
     testWidgets('no guide in the library is shown as reviewed', (tester) async {

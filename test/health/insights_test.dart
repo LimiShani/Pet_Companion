@@ -219,7 +219,7 @@ void main() {
 
       await tapVisible(tester, find.byKey(const Key('quick-urgent')));
       expect(find.text('Quick log for Kelly'), findsNothing);
-      expect(find.text('Emergency · Kelly'), findsOneWidget);
+      expect(find.text('Kelly · Emergency'), findsOneWidget);
       expect(find.byKey(const ValueKey('call-regular')), findsOneWidget);
     });
 

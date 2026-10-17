@@ -355,11 +355,11 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String emergencySheetTitle(String name) {
-    return 'Emergency · $name';
+    return '$name · Emergency';
   }
 
   @override
-  String get emergencySheetFinePrint => 'You place the call or send the message yourself.';
+  String get emergencySheetFinePrint => 'Lists and signs are general guidance, not a diagnosis. When in doubt, call.';
 
   @override
   String get emergencyCallNow => 'Call now';
@@ -385,7 +385,7 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String emergencyCardAndKitNoteKit(int ready, int total) {
-    return 'Allergies, medicines, microchip · kit $ready of $total ready';
+    return '$ready of $total kit items · share as PDF';
   }
 
   @override

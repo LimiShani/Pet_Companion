@@ -360,11 +360,11 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String emergencySheetTitle(String name) {
-    return 'חירום · \u2068$name\u2069';
+    return '\u2068$name\u2069 · חירום';
   }
 
   @override
-  String get emergencySheetFinePrint => 'החיוג והשליחה בידיים שלך.';
+  String get emergencySheetFinePrint => 'הרשימות והסימנים הם מידע כללי, לא אבחנה. בכל ספק, מתקשרים.';
 
   @override
   String get emergencyCallNow => 'חיוג עכשיו';
@@ -390,7 +390,7 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String emergencyCardAndKitNoteKit(int ready, int total) {
-    return 'אלרגיות, תרופות, שבב · ערכה: $ready מתוך $total מוכנים';
+    return '$ready מתוך $total פריטים בערכה · שיתוף כ־PDF';
   }
 
   @override

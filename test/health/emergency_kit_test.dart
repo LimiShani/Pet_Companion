@@ -46,7 +46,7 @@ void main() {
       await openSheet(tester, kelly);
 
       expect(find.text('Emergency card and kit'), findsOneWidget);
-      expect(find.text('Allergies, medicines, microchip · kit 3 of 6 ready'), findsOneWidget);
+      expect(find.text('3 of 6 kit items · share as PDF'), findsOneWidget);
       // The contacts still come first.
       final call = tester.getTopLeft(find.byKey(const ValueKey('call-regular'))).dy;
       final card = tester.getTopLeft(find.byKey(const Key('open-emergency-card'))).dy;
@@ -111,7 +111,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(EmergencyButton));
       await tester.pumpAndSettle();
-      expect(find.text('Allergies, medicines, microchip · kit 4 of 6 ready'), findsOneWidget);
+      expect(find.text('4 of 6 kit items · share as PDF'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 

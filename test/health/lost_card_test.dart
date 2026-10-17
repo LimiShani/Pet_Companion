@@ -60,7 +60,8 @@ void main() {
   group('"My pet is lost"', () {
     testWidgets('opens from the emergency sheet and shows the card as it will look', (tester) async {
       await openSheet(tester, kelly);
-      expect(find.text('Kelly is lost'), findsOneWidget);
+      expect(find.text('Lost mode'), findsOneWidget);
+      expect(find.text('Make a card to share'), findsOneWidget);
 
       await tapVisible(tester, find.byKey(const Key('open-lost-card')));
       expect(find.text('What goes on the card'), findsOneWidget);
