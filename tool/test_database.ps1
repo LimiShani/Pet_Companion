@@ -52,6 +52,8 @@ docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file
 if ($LASTEXITCODE -ne 0) { throw 'Crash report tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/usage_counts_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Usage count tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/health_plans_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Yearly plan and insights tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/delete_my_account_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Self-service account deletion tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/administration_history_test.sql

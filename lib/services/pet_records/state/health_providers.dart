@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as sb;
 
 import '../../../auth/auth_controller.dart';
 import '../../../config/app_config.dart';
+import '../../../l10n/app_language.dart';
 import '../../../models/pet.dart';
 import '../../../state/pets_provider.dart';
 import '../data/fake_health_repository.dart';
@@ -16,6 +17,7 @@ import '../data/health_models.dart';
 import '../data/health_repository.dart';
 import '../data/reminder_scheduler.dart';
 import '../data/supabase_health_repository.dart';
+import '../plans/plan_logic.dart';
 import 'schedule_logic.dart';
 
 /// The day the sample data lives on: the home dashboard shows "General
@@ -364,6 +366,13 @@ class RecordsController extends SessionSafeAsyncNotifier<List<HealthRecord>> {
   Future<HealthRecord> save(HealthRecord record) async {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'health.records.edit');
+      // A planned record of a yearly plan that is marked done gets its
+      // next due date from the plan, so the follow-up below plans it.
+      record = withPlanNextDue(
+        record,
+        before: _byId(record.id),
+        birth: _birth(),
+      );
       final saved = await _repo.saveRecord(record);
       if (record.id.isEmpty) {
         ref.read(usageProvider).count(UsageKind.recordAdded);
@@ -378,8 +387,24 @@ class RecordsController extends SessionSafeAsyncNotifier<List<HealthRecord>> {
     });
   }
 
+  HealthRecord? _byId(String id) {
+    if (id.isEmpty) return null;
+    for (final r in state.value ?? const <HealthRecord>[]) {
+      if (r.id == id) return r;
+    }
+    return null;
+  }
+
+  DateTime? _birth() {
+    final pet = _pet(ref, petId);
+    return pet == null ? null : birthOf(pet, ref.read(healthClockProvider)());
+  }
+
   /// A done vaccination or preventive treatment with a "next due" date has
-  /// one planned record on that date, so it shows in the Schedule.
+  /// one planned record on that date, so it shows in the Schedule. The
+  /// follow-up of a yearly plan's record is the plan's next step (the next
+  /// dose of a puppy series, then the yearly one), named in the app's
+  /// language.
   Future<void> _syncFollowUp(HealthRecord saved) async {
     return sessionOperation(ref, () async {
       HealthRecord? planned;
@@ -397,17 +422,25 @@ class RecordsController extends SessionSafeAsyncNotifier<List<HealthRecord>> {
         return;
       }
       if (planned == null) {
+        final plan = saved.isFromPlan
+            ? planFollowUpOf(
+                saved,
+                birth: _birth(),
+                hebrew: isHebrew(ref.read(appLocaleProvider)),
+              )
+            : null;
         _put(
           await _repo.saveRecord(
             HealthRecord(
               id: '',
               petId: petId,
               kind: saved.kind,
-              title: saved.title,
+              title: plan?.title ?? saved.title,
               scheduledAt: DateTime(due.year, due.month, due.day, 9),
               clinic: saved.clinic,
               productName: saved.productName,
               followUpOf: saved.id,
+              planItem: plan?.planItem,
             ),
           ),
         );

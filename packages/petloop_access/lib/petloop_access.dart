@@ -16,6 +16,8 @@ const capabilityCatalog = <String>[
   'health.emergency.view',
   'health.emergency.edit',
   'health.emergency.export',
+  'health.plans.view',
+  'health.insights.view',
   'community.feed.view',
   'community.feed.post',
   'community.feed.edit',
