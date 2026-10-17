@@ -14,13 +14,20 @@ import 'health_repository.dart';
 /// (General check 12.06.25 18:20, Medicine 27.07.25 19:30, 23 kg, dinner at
 /// 19:30, walk at 18:30); `soya` is left empty so the getting-started and
 /// no-vet states show.
+///
+/// [seedIssue] also follows one problem of Kelly's ("Limping, right front
+/// leg", since 3 June 2025, four entries, two photos). Off by default so
+/// the journal of the other tests keeps its nine entries; the app's sample
+/// data turns it on.
 class FakeHealthRepository implements HealthRepository {
   FakeHealthRepository({
     this.latency = const Duration(milliseconds: 300),
     DateTime Function()? now,
     bool seeded = true,
+    bool seedIssue = false,
   }) : _now = now ?? DateTime.now {
     if (seeded) _seed();
+    if (seeded && seedIssue) _seedIssue();
   }
 
   /// Simulated network delay so loading states are visible.
@@ -43,6 +50,10 @@ class FakeHealthRepository implements HealthRepository {
   final _observations = <Observation>[];
   final _kit = <String, Map<KitItem, KitCheck>>{};
   final _lostCards = <String, LostPetCard>{};
+  final _issues = <HealthIssue>[];
+
+  /// When each problem was started, for the per-day limit.
+  final _issueCreated = <String, DateTime>{};
   var _nextId = 1;
 
   String _id(String prefix) => '$prefix${_nextId++}';
@@ -96,7 +107,7 @@ class FakeHealthRepository implements HealthRepository {
     await _wait();
     return [
       for (final d in _documents)
-        if (d.petId == petId) d,
+        if (d.petId == petId && d.observationId == null) d,
     ];
   }
 
@@ -324,6 +335,11 @@ class FakeHealthRepository implements HealthRepository {
   @override
   Future<Observation> saveObservation(Observation observation) async {
     await _wait();
+    final issueId = observation.issueId;
+    if (issueId != null &&
+        !_issues.any((i) => i.id == issueId && i.petId == observation.petId)) {
+      throw HealthException.of(HealthFailure.itemGone);
+    }
     if (observation.isNew) {
       final stored = observation.copyWith(id: _id('o'));
       _observations.add(stored);
@@ -331,15 +347,162 @@ class FakeHealthRepository implements HealthRepository {
     }
     final index = _observations.indexWhere((o) => o.id == observation.id);
     if (index < 0) throw HealthException.of(HealthFailure.entryGone);
-    _observations[index] = observation;
-    return observation;
+    // As on the server: saving never clears a link (see linkEntry).
+    final stored = issueId == null
+        ? observation.withIssue(_observations[index].issueId)
+        : observation;
+    _observations[index] = stored;
+    return stored;
   }
 
   @override
   Future<void> deleteObservation(String observationId) async {
     await _wait();
     _observations.removeWhere((o) => o.id == observationId);
+    // Its photos go with it.
+    final gone = [
+      for (final d in _documents)
+        if (d.observationId == observationId) d.id,
+    ];
+    _documents.removeWhere((d) => gone.contains(d.id));
+    gone.forEach(_documentBytes.remove);
   }
+
+  // ----------------------------------------------------- followed problems
+
+  @override
+  Future<List<HealthIssue>> fetchIssues(String petId) async {
+    await _wait();
+    return [
+      for (final i in _issues)
+        if (i.petId == petId) i,
+    ];
+  }
+
+  @override
+  Future<HealthIssue> saveIssue(HealthIssue issue) async {
+    await _wait();
+    final problem = issue.failure;
+    if (problem != null) throw HealthException.of(problem);
+    final now = _now();
+    HealthIssue stored(String id, String petId, String? createdBy) =>
+        HealthIssue(
+          id: id,
+          petId: petId,
+          title: issue.title.trim(),
+          bodyArea: issue.bodyArea.trim(),
+          startedOn: dateOnly(issue.startedOn),
+          status: issue.status,
+          resolvedOn: issue.isOpen ? null : dateOnly(issue.resolvedOn ?? now),
+          createdBy: createdBy,
+        );
+    if (issue.isNew) {
+      final today = _issues
+          .where(
+            (i) =>
+                i.petId == issue.petId &&
+                now.difference(_issueCreated[i.id] ?? DateTime(0)) <
+                    const Duration(days: 1),
+          )
+          .length;
+      if (today >= HealthIssue.maxNewPerDay) {
+        throw HealthException.of(HealthFailure.tooManyIssues);
+      }
+      final created = stored(_id('i'), issue.petId, null);
+      _issues.add(created);
+      _issueCreated[created.id] = now;
+      return created;
+    }
+    final index = _issues.indexWhere((i) => i.id == issue.id);
+    if (index < 0) throw HealthException.of(HealthFailure.itemGone);
+    // The pet and who started it never change.
+    final old = _issues[index];
+    return _issues[index] = stored(old.id, old.petId, old.createdBy);
+  }
+
+  @override
+  Future<void> deleteIssue(String issueId) async {
+    await _wait();
+    _issues.removeWhere((i) => i.id == issueId);
+    _issueCreated.remove(issueId);
+    for (var i = 0; i < _observations.length; i++) {
+      if (_observations[i].issueId == issueId) {
+        _observations[i] = _observations[i].withIssue(null);
+      }
+    }
+  }
+
+  @override
+  Future<List<Observation>> fetchIssueEntries(
+    String petId,
+    String issueId,
+  ) async {
+    await _wait();
+    return [
+      for (final o in _observations)
+        if (o.petId == petId && o.issueId == issueId) o,
+    ]..sort((a, b) => a.observedAt.compareTo(b.observedAt));
+  }
+
+  @override
+  Future<Observation> linkEntry(Observation entry, String? issueId) async {
+    await _wait();
+    final index = _observations.indexWhere((o) => o.id == entry.id);
+    if (index < 0) throw HealthException.of(HealthFailure.entryGone);
+    if (issueId != null &&
+        !_issues.any((i) => i.id == issueId && i.petId == entry.petId)) {
+      throw HealthException.of(HealthFailure.itemGone);
+    }
+    return _observations[index] = _observations[index].withIssue(issueId);
+  }
+
+  @override
+  Future<List<HealthDocument>> fetchEntryPhotos(String petId) async {
+    await _wait();
+    return [
+      for (final d in _documents)
+        if (d.petId == petId && d.observationId != null) d,
+    ];
+  }
+
+  @override
+  Future<HealthDocument> addEntryPhoto({
+    required String petId,
+    required String observationId,
+    required PickedFile file,
+  }) async {
+    await _wait();
+    final problem = entryPhotoFailure(file);
+    if (problem != null) throw HealthException.of(problem);
+    if (!_observations.any((o) => o.id == observationId && o.petId == petId)) {
+      throw HealthException.of(HealthFailure.entryGone);
+    }
+    final count = _documents
+        .where((d) => d.observationId == observationId)
+        .length;
+    if (count >= HealthIssue.maxPhotosPerEntry) {
+      throw HealthException.of(HealthFailure.tooManyPhotos);
+    }
+    final doc = HealthDocument(
+      id: _id('d'),
+      petId: petId,
+      recordId: '',
+      observationId: observationId,
+      fileName: file.name,
+      mimeType: file.mimeType,
+      sizeBytes: file.bytes.length,
+    );
+    _documents.add(doc);
+    _documentBytes[doc.id] = file.bytes;
+    return doc;
+  }
+
+  @override
+  Future<void> deleteEntryPhoto(HealthDocument photo) => deleteDocument(photo);
+
+  @override
+  Future<Uint8List> entryPhotoBytes(HealthDocument photo) =>
+      documentBytes(photo);
 
   // --------------------------------------------------------- emergency kit
 
@@ -834,6 +997,91 @@ class FakeHealthRepository implements HealthRepository {
       ),
     ]);
   }
+
+  /// Kelly's followed problem: limping on the right front leg since 3 June
+  /// 2025, a week before the sample data's day, with four entries, two of
+  /// them with a photo (coloured squares standing in for photos).
+  void _seedIssue() {
+    const pet = kellyId;
+    const issueId = 'i-limp';
+    _issues.add(
+      HealthIssue(
+        id: issueId,
+        petId: pet,
+        title: 'Limping, right front leg',
+        bodyArea: 'Right front leg',
+        startedOn: DateTime(2025, 6, 3),
+      ),
+    );
+    _issueCreated[issueId] = DateTime(2025, 6, 3, 19, 10);
+    Observation entry(
+      String id,
+      DateTime at,
+      ObservationLevel level,
+      String note,
+    ) => Observation(
+      id: id,
+      petId: pet,
+      category: 'mobility',
+      level: level,
+      note: note,
+      observedAt: at,
+      issueId: issueId,
+    );
+    _observations.addAll([
+      entry(
+        'o-limp-1',
+        DateTime(2025, 6, 3, 19, 10),
+        ObservationLevel.less,
+        'Limping on the right front leg after the park',
+      ),
+      entry(
+        'o-limp-2',
+        DateTime(2025, 6, 5, 8, 30),
+        ObservationLevel.less,
+        'Holds the paw up on the stairs',
+      ),
+      entry(
+        'o-limp-3',
+        DateTime(2025, 6, 7, 18, 45),
+        ObservationLevel.less,
+        'A little better in the morning, worse after the walk',
+      ),
+      entry(
+        'o-limp-4',
+        DateTime(2025, 6, 9, 9),
+        ObservationLevel.usual,
+        'Walked 20 minutes without limping',
+      ),
+    ]);
+    void photo(String id, String entryId, Uint8List bytes) {
+      _documents.add(
+        HealthDocument(
+          id: id,
+          petId: pet,
+          recordId: '',
+          observationId: entryId,
+          fileName: '$id.png',
+          mimeType: 'image/png',
+          sizeBytes: bytes.length,
+        ),
+      );
+      _documentBytes[id] = bytes;
+    }
+
+    photo('d-limp-paw', 'o-limp-2', samplePeachPng);
+    photo('d-limp-walk', 'o-limp-3', sampleSagePng);
+  }
+
+  /// An 8 x 8 peach square standing in for a photo of an entry.
+  static final Uint8List samplePeachPng = base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGN4saYYK2IYWhIAz/aBwW+3PFIAAAAASUVORK5CYII=',
+  );
+
+  /// An 8 x 8 sage square standing in for a photo of an entry.
+  static final Uint8List sampleSagePng = base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAEUlEQVR4nGNYvqMJK2IYWhIABcl4QWx5iL8AAAAASUVORK5CYII=',
+  );
 
   /// A 1 x 1 pixel PNG standing in for a photo in the sample data.
   static final Uint8List samplePng = base64Decode(

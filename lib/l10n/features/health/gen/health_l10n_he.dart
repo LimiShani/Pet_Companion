@@ -340,6 +340,15 @@ class HealthL10nHe extends HealthL10n {
   String get errLostCard => 'לא הצלחנו להכין את הכרטיס. אפשר לנסות שוב.';
 
   @override
+  String get errPhotoType => 'אפשר להוסיף לרישום רק תמונות (JPEG, PNG, WebP).';
+
+  @override
+  String get errTooManyPhotos => 'אפשר להוסיף עד 4 תמונות לרישום.';
+
+  @override
+  String get errTooManyIssues => 'נפתחו היום הרבה בעיות חדשות. אפשר לנסות שוב מחר.';
+
+  @override
   String get emergencyButton => 'חירום';
 
   @override
@@ -2018,6 +2027,45 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String get reportPlanned => 'מתוכנן';
+
+  @override
+  String get issueStartedOn => 'תאריך התחלה';
+
+  @override
+  String get issueStatus => 'מצב';
+
+  @override
+  String get issueOngoing => 'עדיין נמשך';
+
+  @override
+  String issueResolvedOn(String date) {
+    return 'הסתדר ב־\u2068$date\u2069';
+  }
+
+  @override
+  String get issueBodyArea => 'איפה בגוף';
+
+  @override
+  String get issueEntries => 'רישומים';
+
+  @override
+  String issueEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count רישומים',
+      two: 'שני רישומים',
+      one: 'רישום אחד',
+      zero: 'עדיין אין רישומים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueColumnLevel => 'איך היה';
+
+  @override
+  String get issueColumnWhat => 'מה';
 
   @override
   String get reportColumnKind => 'סוג';

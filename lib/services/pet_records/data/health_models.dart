@@ -38,6 +38,11 @@ enum HealthFailure {
   files('Could not open your files.'),
   pdf('Could not prepare the PDF. Please try again.'),
   lostCard('Could not prepare the card. Please try again.'),
+  photoType('Only photos (JPEG, PNG, WebP) can be added to an entry.'),
+  tooManyPhotos('An entry can have up to 4 photos.'),
+  tooManyIssues(
+    'That is a lot of new problems for one day. Please try again tomorrow.',
+  ),
 
   /// Anything the app has no words of its own for.
   unknown('Something went wrong. Please try again.');
@@ -271,7 +276,8 @@ class HealthRecord {
   );
 }
 
-/// A file attached to a health record: a photo or a PDF.
+/// A file attached to a health record: a photo or a PDF. Or a photo of a
+/// Quick log entry ([observationId] is set and [recordId] is empty).
 class HealthDocument {
   const HealthDocument({
     required this.id,
@@ -281,11 +287,17 @@ class HealthDocument {
     required this.mimeType,
     required this.sizeBytes,
     this.storagePath = '',
+    this.observationId,
   });
 
   final String id;
   final String petId;
+
+  /// The record it is attached to; empty for a photo of an entry.
   final String recordId;
+
+  /// The Quick log entry it is a photo of (0033), or `null`.
+  final String? observationId;
   final String fileName;
   final String mimeType;
   final int sizeBytes;
@@ -842,9 +854,13 @@ class Observation {
     this.level,
     this.value,
     this.note = '',
+    this.issueId,
   });
 
   static const weightCategory = 'weight';
+
+  /// The followed problem this entry belongs to (`HealthIssue`), or `null`.
+  final String? issueId;
 
   final String id;
   final String petId;
@@ -869,6 +885,19 @@ class Observation {
     value: value,
     note: note,
     observedAt: observedAt,
+    issueId: issueId,
+  );
+
+  /// The same entry, part of the problem [id] (or of none when `null`).
+  Observation withIssue(String? id) => Observation(
+    id: this.id,
+    petId: petId,
+    category: category,
+    level: level,
+    value: value,
+    note: note,
+    observedAt: observedAt,
+    issueId: id,
   );
 }
 

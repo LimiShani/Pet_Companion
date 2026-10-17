@@ -335,6 +335,15 @@ class HealthL10nEn extends HealthL10n {
   String get errLostCard => 'Could not prepare the card. Please try again.';
 
   @override
+  String get errPhotoType => 'Only photos (JPEG, PNG, WebP) can be added to an entry.';
+
+  @override
+  String get errTooManyPhotos => 'An entry can have up to 4 photos.';
+
+  @override
+  String get errTooManyIssues => 'That is a lot of new problems for one day. Please try again tomorrow.';
+
+  @override
   String get emergencyButton => 'Emergency';
 
   @override
@@ -2008,6 +2017,44 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String get reportPlanned => 'Planned';
+
+  @override
+  String get issueStartedOn => 'Started on';
+
+  @override
+  String get issueStatus => 'Status';
+
+  @override
+  String get issueOngoing => 'Ongoing';
+
+  @override
+  String issueResolvedOn(String date) {
+    return 'Resolved on $date';
+  }
+
+  @override
+  String get issueBodyArea => 'Body area';
+
+  @override
+  String get issueEntries => 'Entries';
+
+  @override
+  String issueEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+      zero: 'No entries yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueColumnLevel => 'How it was';
+
+  @override
+  String get issueColumnWhat => 'What';
 
   @override
   String get reportColumnKind => 'Kind';

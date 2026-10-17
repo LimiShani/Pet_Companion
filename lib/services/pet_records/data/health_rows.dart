@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../config/app_config.dart';
 import 'health_models.dart';
+import 'issue_models.dart';
 
 /// Conversions between the Health models and the rows of the tables in
 /// `supabase/migrations/0002_health.sql`. Kept apart from the repository
@@ -95,7 +96,9 @@ Row recordToRow(HealthRecord record) => {
 HealthDocument documentFromRow(Row row) => HealthDocument(
   id: row['id'] as String,
   petId: row['pet_id'] as String,
-  recordId: row['record_id'] as String,
+  // Empty for a photo of a Quick log entry (0033).
+  recordId: _textOr(row['record_id']),
+  observationId: _text(row['observation_id']),
   fileName: _textOr(row['file_name']),
   mimeType: _textOr(row['mime_type']),
   sizeBytes: (row['size_bytes'] as num?)?.toInt() ?? 0,
@@ -268,6 +271,7 @@ Observation observationFromRow(Row row) => Observation(
   value: (row['value'] as num?)?.toDouble(),
   note: _textOr(row['note']),
   observedAt: instantFromDb(row['observed_at']),
+  issueId: _text(row['issue_id']),
 );
 
 Row observationToRow(Observation observation) => {
@@ -279,6 +283,34 @@ Row observationToRow(Observation observation) => {
   'unit': observation.isWeight ? 'kg' : null,
   'note': observation.note,
   'observed_at': instantToDb(observation.observedAt),
+  // The column of 0033_health_issues.sql, sent only when set, so a project
+  // without that migration still stores every other entry. A link is
+  // cleared with `linkEntry`, never by saving.
+  if (observation.issueId != null) 'issue_id': observation.issueId,
+};
+
+// ------------------------------------------------------------ health_issues
+
+HealthIssue issueFromRow(Row row) => HealthIssue(
+  id: row['id'] as String,
+  petId: row['pet_id'] as String,
+  title: _textOr(row['title']),
+  bodyArea: _textOr(row['body_area']),
+  startedOn: dayFromDb(row['started_on']),
+  status: IssueStatus.fromDb(_text(row['status'])),
+  resolvedOn: dayFromDbOrNull(row['resolved_on']),
+  createdBy: _text(row['created_by']),
+);
+
+/// The columns the app writes. `owner_id` and `created_by` are the
+/// server's.
+Row issueToRow(HealthIssue issue) => {
+  'pet_id': issue.petId,
+  'title': issue.title.trim(),
+  'body_area': issue.bodyArea.trim().isEmpty ? null : issue.bodyArea.trim(),
+  'started_on': dayToDb(issue.startedOn),
+  'status': issue.status.dbValue,
+  'resolved_on': issue.resolvedOn == null ? null : dayToDb(issue.resolvedOn!),
 };
 
 // ------------------------------------------------------ emergency_kit_items

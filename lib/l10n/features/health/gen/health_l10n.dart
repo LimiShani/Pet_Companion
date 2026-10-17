@@ -599,6 +599,24 @@ abstract class HealthL10n {
   /// **'Could not prepare the card. Please try again.'**
   String get errLostCard;
 
+  /// No description provided for @errPhotoType.
+  ///
+  /// In en, this message translates to:
+  /// **'Only photos (JPEG, PNG, WebP) can be added to an entry.'**
+  String get errPhotoType;
+
+  /// No description provided for @errTooManyPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'An entry can have up to 4 photos.'**
+  String get errTooManyPhotos;
+
+  /// No description provided for @errTooManyIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'That is a lot of new problems for one day. Please try again tomorrow.'**
+  String get errTooManyIssues;
+
   /// The emergency pill on Home and in the Health header.
   ///
   /// In en, this message translates to:
@@ -3484,6 +3502,60 @@ abstract class HealthL10n {
   /// In en, this message translates to:
   /// **'Planned'**
   String get reportPlanned;
+
+  /// No description provided for @issueStartedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Started on'**
+  String get issueStartedOn;
+
+  /// No description provided for @issueStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get issueStatus;
+
+  /// No description provided for @issueOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get issueOngoing;
+
+  /// No description provided for @issueResolvedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved on {date}'**
+  String issueResolvedOn(String date);
+
+  /// No description provided for @issueBodyArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Body area'**
+  String get issueBodyArea;
+
+  /// No description provided for @issueEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get issueEntries;
+
+  /// No description provided for @issueEntryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No entries yet} =1{1 entry} other{{count} entries}}'**
+  String issueEntryCount(int count);
+
+  /// No description provided for @issueColumnLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'How it was'**
+  String get issueColumnLevel;
+
+  /// No description provided for @issueColumnWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'What'**
+  String get issueColumnWhat;
 
   /// No description provided for @reportColumnKind.
   ///
