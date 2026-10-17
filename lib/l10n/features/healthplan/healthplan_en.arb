@@ -1,0 +1,60 @@
+{
+  "@@locale": "en",
+  "insightShorterWalks": "{pet}'s walks were shorter than last month. Worth a word with your vet if it goes on.",
+  "@insightShorterWalks": {
+    "description": "The insight line on the Health Overview: walk minutes of the last 4 weeks more than 20% below the 4 before. Calm, never a diagnosis.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightUp": "{pet}'s weight went up by about {percent}% in the last few weeks. Worth a word with your vet if it goes on.",
+  "@insightWeightUp": {
+    "description": "Insight: weight up more than 5% within 8 weeks.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "insightWeightDown": "{pet}'s weight went down by about {percent}% in the last few weeks. Worth a word with your vet if it goes on.",
+  "@insightWeightDown": {
+    "description": "Insight: weight down more than 5% within 8 weeks.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "insightAppetiteLess": "In the last two weeks you noted {count} times that {pet} ate less than usual. Worth a word with your vet if it goes on.",
+  "@insightAppetiteLess": {
+    "description": "Insight: three or more \"less than usual\" appetite entries in 14 days.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightSeeWalks": "See walks",
+  "@insightSeeWalks": {
+    "description": "The insight's link to the pet's activity page."
+  },
+  "insightSeeWeight": "See weight",
+  "@insightSeeWeight": {
+    "description": "The insight's link to the weight in Records."
+  },
+  "insightSeeJournal": "See journal",
+  "@insightSeeJournal": {
+    "description": "The insight's link to the journal in Records."
+  }
+}

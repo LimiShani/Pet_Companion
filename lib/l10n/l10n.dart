@@ -22,6 +22,7 @@
 /// | `lib/l10n/features/access/`   | `AccessL10n`    | `context.accessL10n`    |
 /// | `lib/l10n/features/household/`| `HouseholdL10n` | `context.householdL10n` |
 /// | `lib/l10n/features/today/`    | `TodayL10n`     | `context.todayL10n`     |
+/// | `lib/l10n/features/healthplan/` | `HealthPlanL10n` | `context.healthPlanL10n` |
 ///
 /// To add a string: add the key to `<feature>_en.arb` and its Hebrew to
 /// `<feature>_he.arb` (wording: `lib/l10n/GLOSSARY.md`), run
@@ -41,6 +42,7 @@ import 'features/community/gen/community_l10n.dart';
 import 'features/findvet/gen/findvet_l10n.dart';
 import 'features/firstdays/gen/firstdays_l10n.dart';
 import 'features/health/gen/health_l10n.dart';
+import 'features/healthplan/gen/healthplan_l10n.dart';
 import 'features/household/gen/household_l10n.dart';
 import 'features/meetups/gen/meetups_l10n.dart';
 import 'features/outdoors/gen/outdoors_l10n.dart';
@@ -61,6 +63,8 @@ export 'features/findvet/gen/findvet_l10n.dart'
 export 'features/firstdays/gen/firstdays_l10n.dart'
     show FirstDaysL10n, lookupFirstDaysL10n;
 export 'features/health/gen/health_l10n.dart' show HealthL10n, lookupHealthL10n;
+export 'features/healthplan/gen/healthplan_l10n.dart'
+    show HealthPlanL10n, lookupHealthPlanL10n;
 export 'features/household/gen/household_l10n.dart'
     show HouseholdL10n, lookupHouseholdL10n;
 export 'features/meetups/gen/meetups_l10n.dart'
@@ -79,7 +83,7 @@ export 'gen/app_l10n.dart' show AppL10n, lookupAppL10n;
 export 'settings_store.dart';
 export 'week_settings.dart';
 
-/// Everything `MaterialApp.localizationsDelegates` needs: the fifteen strings
+/// Everything `MaterialApp.localizationsDelegates` needs: the sixteen strings
 /// classes, and Flutter's own texts (date picker, "Cancel") and direction.
 const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AppL10n.delegate,
@@ -97,6 +101,7 @@ const appLocalizationsDelegates = <LocalizationsDelegate<dynamic>>[
   AccessL10n.delegate,
   HouseholdL10n.delegate,
   TodayL10n.delegate,
+  HealthPlanL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -149,6 +154,9 @@ extension L10nContext on BuildContext {
   /// Home's Today list.
   TodayL10n get todayL10n => _strings(this, lookupTodayL10n);
 
+  /// Health's yearly plan, its insights and the weekly summary.
+  HealthPlanL10n get healthPlanL10n => _strings(this, lookupHealthPlanL10n);
+
   /// Whether this part of the screen runs right to left.
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 }
@@ -172,6 +180,9 @@ final appL10nProvider = Provider<AppL10n>(
 );
 final healthL10nProvider = Provider<HealthL10n>(
   (ref) => lookupHealthL10n(ref.watch(appLocaleProvider)),
+);
+final healthPlanL10nProvider = Provider<HealthPlanL10n>(
+  (ref) => lookupHealthPlanL10n(ref.watch(appLocaleProvider)),
 );
 final communityL10nProvider = Provider<CommunityL10n>(
   (ref) => lookupCommunityL10n(ref.watch(appLocaleProvider)),

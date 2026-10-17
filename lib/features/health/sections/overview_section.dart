@@ -20,6 +20,8 @@ import '../../../presentation/health_format.dart';
 import '../../../services/pet_records/state/health_providers.dart';
 import '../../../services/pet_records/state/schedule_logic.dart';
 import '../../../presentation/health_widgets.dart';
+import '../../../services/insights/insight_providers.dart';
+import '../insights/insight_line.dart';
 import '../widgets/weight_trend.dart';
 
 /// What the Overview's buttons do. The tab wires them to its Add sheet,
@@ -87,9 +89,11 @@ class OverviewSection extends ConsumerWidget {
         recordsNeedingReview(data.records, now).length;
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
     final records = ref.watch(capabilityProvider('health.records.view'));
+    final insight = ref.watch(healthInsightProvider(pet.id)).value;
 
     // One gap between blocks.
     final blocks = <Widget>[
+      if (insight != null) HealthInsightLine(pet: pet, insight: insight),
       if (!nothingDue)
         _ComingUp(
           now: now,
