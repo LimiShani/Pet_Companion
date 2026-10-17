@@ -136,6 +136,198 @@ abstract class HealthPlanL10n {
   /// In en, this message translates to:
   /// **'See journal'**
   String get insightSeeJournal;
+
+  /// Row of the Health "+" sheet that opens the yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly plan'**
+  String get planAddRow;
+
+  /// Under the yearly plan row of the "+" sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Vaccines and treatments'**
+  String get planAddRowNote;
+
+  /// Title of the yearly plan sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{pet}\'s yearly plan'**
+  String planTitle(String pet);
+
+  /// Under the title of a dog's yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'A common plan for dogs in Israel. Your vet may suggest another.'**
+  String get planIntroDog;
+
+  /// Under the title of a cat's yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'A common plan for cats in Israel. Your vet may suggest another.'**
+  String get planIntroCat;
+
+  /// The yearly plan sheet of an animal other than a dog or a cat.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no yearly plan for this kind of animal yet.'**
+  String get planNoPlan;
+
+  /// Tag of rabies for dogs.
+  ///
+  /// In en, this message translates to:
+  /// **'Required by law'**
+  String get planRequired;
+
+  /// Tag of rabies for cats.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommended'**
+  String get planRecommended;
+
+  /// When a plan item is first planned. {date} is e.g. 31.10.26.
+  ///
+  /// In en, this message translates to:
+  /// **'First date {date}'**
+  String planFirstDate(String date);
+
+  /// A plan item planned for today.
+  ///
+  /// In en, this message translates to:
+  /// **'First date today'**
+  String get planFirstDateToday;
+
+  /// Where the first date comes from: the last time it was done.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time {date}'**
+  String planLastTime(String date);
+
+  /// The last time is longer ago than the interval.
+  ///
+  /// In en, this message translates to:
+  /// **'Last time {date} · due now'**
+  String planOverdue(String date);
+
+  /// A plan item with nothing on record: planned in two weeks.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing on record. Check the vaccination booklet first.'**
+  String get planNoHistory;
+
+  /// The pet is too young: the item starts at this age.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{From {count} weeks old}}'**
+  String planFromWeeks(int count);
+
+  /// The pet is too young: the item starts at this age.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{From 1 month old} other{From {count} months old}}'**
+  String planFromMonths(int count);
+
+  /// The next doses of the puppy or kitten series.
+  ///
+  /// In en, this message translates to:
+  /// **'Then at {first} and {second} weeks, then once a year'**
+  String planSeriesTwo(int first, int second);
+
+  /// The last dose of the series still to come.
+  ///
+  /// In en, this message translates to:
+  /// **'Then at {weeks} weeks, then once a year'**
+  String planSeriesOne(int weeks);
+
+  /// After the last dose of the series.
+  ///
+  /// In en, this message translates to:
+  /// **'Then once a year'**
+  String get planSeriesLast;
+
+  /// A plan item that is already planned: it is not planned twice.
+  ///
+  /// In en, this message translates to:
+  /// **'Already in the schedule for {date}'**
+  String planAlreadyPlanned(String date);
+
+  /// The interval chips of the flea treatment.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Every month} other{Every {count} months}}'**
+  String planEveryMonths(int count);
+
+  /// Link and page title: the sources of the yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Where this comes from'**
+  String get planSources;
+
+  /// Intro of the sources page.
+  ///
+  /// In en, this message translates to:
+  /// **'The plan follows these sources. Your vet knows {pet} best.'**
+  String planSourcesIntro(String pet);
+
+  /// Fine print of the yearly plan sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a substitute for your vet\'s advice.'**
+  String get planFinePrint;
+
+  /// Main button of the yearly plan sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add 1 date to the schedule} other{Add {count} dates to the schedule}}'**
+  String planAddDates(int count);
+
+  /// Title after the plan was added.
+  ///
+  /// In en, this message translates to:
+  /// **'In {pet}\'s schedule'**
+  String planAdded(String pet);
+
+  /// Under the title after the plan was added.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 date was added. When you mark it done, the next one is planned.} other{{count} dates were added. When you mark one done, the next one is planned.}}'**
+  String planAddedNote(int count);
+
+  /// Shares the planned dates as a calendar (.ics) file.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to my calendar'**
+  String get planAddToCalendar;
+
+  /// Under "Add to my calendar".
+  ///
+  /// In en, this message translates to:
+  /// **'Shares a calendar file. PetLoop does not read your calendar.'**
+  String get planCalendarNote;
+
+  /// Closes the yearly plan sheet after the plan was added.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get planDone;
+
+  /// The Health Overview's invitation to the yearly plan, while the pet has no vaccination on record.
+  ///
+  /// In en, this message translates to:
+  /// **'No vaccinations on record for {pet} yet. A yearly plan puts the next dates in the schedule.'**
+  String planInvite(String pet);
+
+  /// Link of the Overview invitation: opens the yearly plan.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan the year'**
+  String get planInviteAction;
+
+  /// Small line under a planned record made from the yearly plan (Coming up, the calendar file).
+  ///
+  /// In en, this message translates to:
+  /// **'From {pet}\'s yearly plan'**
+  String planFromPlan(String pet);
 }
 
 class _HealthPlanL10nDelegate extends LocalizationsDelegate<HealthPlanL10n> {

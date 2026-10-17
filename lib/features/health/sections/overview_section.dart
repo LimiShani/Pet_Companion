@@ -22,6 +22,8 @@ import '../../../services/pet_records/state/schedule_logic.dart';
 import '../../../presentation/health_widgets.dart';
 import '../../../services/insights/insight_providers.dart';
 import '../insights/insight_line.dart';
+import '../plans/plan_invite.dart';
+import '../../../services/pet_records/plans/plan_providers.dart';
 import '../widgets/weight_trend.dart';
 
 /// What the Overview's buttons do. The tab wires them to its Add sheet,
@@ -90,6 +92,11 @@ class OverviewSection extends ConsumerWidget {
     final nothingDue = nextEntry == null && nextRecord == null && review == 0;
     final records = ref.watch(capabilityProvider('health.records.view'));
     final insight = ref.watch(healthInsightProvider(pet.id)).value;
+    final invite =
+        ref.watch(capabilityProvider(plansCapability)) &&
+        ref.watch(capabilityProvider('health.records.edit')) &&
+        hasYearlyPlan(pet) &&
+        hasNoVaccinations(data.records);
 
     // One gap between blocks.
     final blocks = <Widget>[
@@ -97,6 +104,7 @@ class OverviewSection extends ConsumerWidget {
       if (!nothingDue)
         _ComingUp(
           now: now,
+          pet: pet,
           entry: nextEntry,
           record: nextRecord,
           reviewCount: review,
@@ -104,6 +112,7 @@ class OverviewSection extends ConsumerWidget {
           onSchedule: () => show(HealthSection.schedule),
         ),
       if (data.isEmpty) _GettingStarted(pet: pet, onAdd: actions.onAdd),
+      if (invite) PlanInviteCard(pet: pet),
       _VetCard(pet: pet, vets: data.vets),
       _OverviewRows(
         pet: pet,
@@ -138,6 +147,7 @@ class OverviewSection extends ConsumerWidget {
 class _ComingUp extends StatelessWidget {
   const _ComingUp({
     required this.now,
+    required this.pet,
     required this.entry,
     required this.record,
     required this.reviewCount,
@@ -146,6 +156,7 @@ class _ComingUp extends StatelessWidget {
   });
 
   final DateTime now;
+  final Pet pet;
   final ScheduleEntry? entry;
   final HealthRecord? record;
   final int reviewCount;
@@ -205,6 +216,9 @@ class _ComingUp extends StatelessWidget {
             format.relativeDayTime(r.scheduledAt, now),
             r.clinic,
           ]),
+          note: r.isFromPlan
+              ? context.healthPlanL10n.planFromPlan(pet.name)
+              : null,
           onTap: actions.onOpenRecord == null
               ? onSchedule
               : () => actions.onOpenRecord!(r),
@@ -277,6 +291,7 @@ class _ComingUpRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    this.note,
     this.care = false,
     this.trailing,
     this.onTap,
@@ -285,6 +300,9 @@ class _ComingUpRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String detail;
+
+  /// One small line more ("From Kelly's yearly plan").
+  final String? note;
 
   /// A routine of daily care (a meal, a walk), not a health item.
   final bool care;
@@ -325,6 +343,12 @@ class _ComingUpRow extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(detail, style: AppText.secondary),
+                  if (note != null)
+                    Text(
+                      note!,
+                      key: const Key('overview-from-plan'),
+                      style: AppText.label.copyWith(color: AppColors.brown),
+                    ),
                 ],
               ),
             ),

@@ -12,6 +12,7 @@ import 'emergency/vets_screen.dart';
 import 'records/pet_documents_screen.dart';
 import 'records/record_form_screen.dart';
 import 'insights/quick_log_sheet.dart';
+import 'plans/yearly_plan_sheet.dart';
 import 'schedule/medicine_form_screen.dart';
 import 'schedule/record_dose_sheet.dart';
 import '../../services/pet_records/state/schedule_logic.dart';
@@ -87,6 +88,17 @@ final healthModule = FeatureModule(
         subtitle: (c) => c.healthL10n.addRoutineNote,
         order: 40,
         open: (c, r) => openRoutineForm(c, requestPet(c, r)),
+      ),
+      // Beta testers only until a vet has reviewed the plan (0038).
+      AddEntry(
+        id: 'yearly-plan',
+        capability: 'health.plans.view',
+        area: AppArea.health,
+        icon: Icons.event_note_rounded,
+        label: (c) => c.healthPlanL10n.planAddRow,
+        subtitle: (c) => c.healthPlanL10n.planAddRowNote,
+        order: 50,
+        open: (c, r) => showYearlyPlan(c, requestPet(c, r)),
       ),
     ],
   },
