@@ -97,7 +97,6 @@ class PartnersView extends ConsumerWidget {
       else ...[
         // "Going out soon?", then the hazard line, above the board.
         const GoingOutCard(),
-        const SizedBox(height: 12),
         const HazardLine(),
         _ControlRow(
           count: filterCount,

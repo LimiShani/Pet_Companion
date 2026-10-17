@@ -35,7 +35,7 @@ export interface ClaimedPush {
   chat_name?: string;
   /** A private chat of two (0026). */
   direct?: boolean;
-  /** A partner ad's kind, 'walk' or 'play' (0028). */
+  /** A partner ad's kind, 'walk' or 'play' (0028), 'walk_now' or 'play_now' (0035). */
   meetup_kind?: string | null;
   /** The ad's park: names and nearest street in each language (0028). */
   park_name_he?: string | null;

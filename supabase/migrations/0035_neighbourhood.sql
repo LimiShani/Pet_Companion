@@ -269,7 +269,10 @@ create table if not exists public.hazard_reports (
   created_by uuid not null default auth.uid() references auth.users(id) on delete cascade,
   created_at timestamptz not null default now(),
   expires_at timestamptz not null default now() + interval '7 days',
-  hidden boolean not null default false
+  hidden boolean not null default false,
+  -- Kept by hazard_vote (members read only their own votes).
+  still_count integer not null default 0,
+  gone_count integer not null default 0
 );
 create index if not exists hazard_reports_area_idx on public.hazard_reports (locality_code, expires_at) where not hidden;
 create index if not exists hazard_reports_park_idx on public.hazard_reports (park_id) where park_id is not null;
@@ -332,8 +335,7 @@ with (security_invoker = true) as
 select
   h.id, h.locality_code, h.park_id, h.kind, h.note, h.created_by, h.created_at, h.expires_at, h.hidden,
   h.created_by = (select auth.uid()) as mine,
-  (select count(*) from public.hazard_votes v where v.report_id = h.id and not v.gone)::integer as still_count,
-  (select count(*) from public.hazard_votes v where v.report_id = h.id and v.gone)::integer as gone_count,
+  h.still_count, h.gone_count,
   (select v.gone from public.hazard_votes v where v.report_id = h.id and v.user_id = (select auth.uid())) as my_vote,
   p.name_he as park_name_he, p.name_en as park_name_en,
   p.street_he as park_street_he, p.street_en as park_street_en,
@@ -447,11 +449,12 @@ begin
   on conflict (report_id, user_id) do update set gone = excluded.gone, created_at = now();
   select count(*) into gone_votes from public.hazard_votes
    where report_id = p_id and gone and user_id <> report.created_by;
-  if gone_votes >= 2 then
-    update public.hazard_reports set hidden = true where id = p_id;
-    return false;
-  end if;
-  return true;
+  update public.hazard_reports set
+    still_count = (select count(*) from public.hazard_votes v where v.report_id = p_id and not v.gone),
+    gone_count = (select count(*) from public.hazard_votes v where v.report_id = p_id and v.gone),
+    hidden = gone_votes >= 2
+  where id = p_id;
+  return gone_votes < 2;
 end $$;
 revoke all on function public.hazard_vote(uuid, boolean) from public, anon;
 grant execute on function public.hazard_vote(uuid, boolean) to authenticated;

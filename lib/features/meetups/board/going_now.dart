@@ -72,7 +72,7 @@ class GoingOutCard extends ConsumerWidget {
       ),
     );
     const disc = AreaDisc(Icons.directions_walk_rounded, area: AppArea.community);
-    return Material(
+    final card = Material(
       key: cardKey,
       color: AppColors.white,
       borderRadius: BorderRadius.circular(AppSpacing.cardRadius),
@@ -111,6 +111,7 @@ class GoingOutCard extends ConsumerWidget {
         ),
       ),
     );
+    return Padding(padding: const EdgeInsets.only(bottom: 12), child: card);
   }
 }
 
