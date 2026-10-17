@@ -12,6 +12,8 @@ import 'emergency/vets_screen.dart';
 import 'records/pet_documents_screen.dart';
 import 'records/record_form_screen.dart';
 import 'insights/quick_log_sheet.dart';
+import 'issues/follow_problem_sheet.dart';
+import 'issues/issue_widgets.dart';
 import 'schedule/medicine_form_screen.dart';
 import 'schedule/record_dose_sheet.dart';
 import '../../services/pet_records/state/schedule_logic.dart';
@@ -42,6 +44,17 @@ final healthModule = FeatureModule(
         subtitle: (c) => c.healthL10n.addQuickLogNote,
         order: 0,
         open: (c, r) => showQuickLog(c, requestPet(c, r)),
+      ),
+      // Follow a problem (3b): right after the Quick log.
+      AddEntry(
+        id: 'follow-problem',
+        capability: 'health.records.edit',
+        area: AppArea.health,
+        icon: issueIcon,
+        label: (c) => c.healthL10n.addFollowProblem,
+        subtitle: (c) => c.healthL10n.addFollowProblemNote,
+        order: 5,
+        open: (c, r) => startFollowingProblem(c, requestPet(c, r)),
       ),
       AddEntry(
         id: 'record',

@@ -4,6 +4,7 @@ import '../../../access/access_provider.dart';
 import '../../../platform/session.dart';
 import '../data/health_models.dart';
 import '../data/health_repository.dart';
+import '../../../state/pets_provider.dart';
 import 'health_providers.dart';
 
 /// Problems followed over time (0033_health_issues.sql): the problems of a
@@ -224,3 +225,39 @@ final issueDigestsProvider = FutureProvider.autoDispose
       final photos = ref.watch(entryPhotosProvider(petId).future);
       return digestIssues(await issues, await observations, await photos);
     }, retry: _noRetry);
+
+/// The open problems, newest first, as the Overview and the Quick log
+/// offer them.
+List<IssueDigest> openIssues(List<IssueDigest> digests) => [
+  for (final d in digests)
+    if (d.issue.isOpen) d,
+];
+
+/// How long a resolved problem keeps its chip in Records.
+const resolvedChipDays = 90;
+
+/// The problems Records offers a chip for on [today]: the open ones, and
+/// the ones resolved in the last [resolvedChipDays] days.
+List<IssueDigest> recordsIssues(List<IssueDigest> digests, DateTime today) => [
+  for (final d in digests)
+    if (d.issue.isOpen ||
+        daysBetween(d.issue.resolvedOn!, dateOnly(today)) <= resolvedChipDays)
+      d,
+];
+
+/// The problem whose entries Records shows instead of its other views, or
+/// `null`. Another pet starts without one.
+class RecordsIssueController extends Notifier<String?> {
+  @override
+  String? build() {
+    ref.watch(selectedPetIdProvider);
+    return null;
+  }
+
+  void show(String issueId) => state = issueId;
+  void clear() => state = null;
+}
+
+final recordsIssueProvider = NotifierProvider<RecordsIssueController, String?>(
+  RecordsIssueController.new,
+);
