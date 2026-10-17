@@ -167,4 +167,79 @@ class NotificationsL10nHe extends NotificationsL10n {
 
   @override
   String get communityChannel => 'קהילה';
+
+  @override
+  String get weekly => 'סיכום שבועי';
+
+  @override
+  String get weeklyNote => 'הודעה אחת בשבוע לכל חיה: טיולים, מנות ומה מתוכנן בהמשך';
+
+  @override
+  String get weeklyDay => 'יום';
+
+  @override
+  String get weeklyTime => 'שעה';
+
+  @override
+  String weeklyTitle(String pet) {
+    return 'השבוע של \u2068$pet\u2069';
+  }
+
+  @override
+  String weeklyLastWeek(String numbers) {
+    return 'בשבוע שעבר: \u2068$numbers\u2069';
+  }
+
+  @override
+  String weeklyWalks(int done, int planned) {
+    return '$done מתוך $planned טיולים';
+  }
+
+  @override
+  String weeklyWalksLogged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count טיולים',
+      one: 'טיול אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyDoses(int given, int planned) {
+    return '$given מתוך $planned מנות ניתנו';
+  }
+
+  @override
+  String weeklyDueToday(String title) {
+    return '\u2068$title\u2069: היום';
+  }
+
+  @override
+  String weeklyDueTomorrow(String title) {
+    return '\u2068$title\u2069: מחר';
+  }
+
+  @override
+  String weeklyDueInDays(String title, int count) {
+    return '\u2068$title\u2069 בעוד $count ימים';
+  }
+
+  @override
+  String weeklyDueInWeeks(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '\u2068$title\u2069 בעוד $count שבועות',
+      two: '\u2068$title\u2069 בעוד שבועיים',
+      one: '\u2068$title\u2069 בעוד שבוע',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyDueOn(String title, String date) {
+    return '\u2068$title\u2069 בתאריך \u2068$date\u2069';
+  }
 }

@@ -70,6 +70,7 @@ HealthRecord recordFromRow(Row row) => HealthRecord(
   followUpOf: _text(row['follow_up_of']),
   costAmount: (row['cost_amount'] as num?)?.toDouble(),
   costCurrency: _textOr(row['cost_currency'], AppConfig.defaultCurrency),
+  planItem: _text(row['plan_item']),
 );
 
 /// The columns of a record. `id` and `owner_id` are left to the caller:
@@ -88,6 +89,9 @@ Row recordToRow(HealthRecord record) => {
   // Columns of 0006_health_phase1.sql.
   'cost_amount': record.costAmount,
   'cost_currency': record.costAmount == null ? null : record.costCurrency,
+  // Column of 0038_health_plans.sql, sent only when set, so records the
+  // owner adds by hand still save on a database without it.
+  if (record.planItem != null) 'plan_item': record.planItem,
 };
 
 // --------------------------------------------------------- health_documents

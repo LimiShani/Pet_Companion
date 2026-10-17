@@ -1,0 +1,271 @@
+{
+  "@@locale": "en",
+  "insightShorterWalks": "{pet}'s walks were shorter than last month. Worth a word with your vet if it goes on.",
+  "@insightShorterWalks": {
+    "description": "The insight line on the Health Overview: walk minutes of the last 4 weeks more than 20% below the 4 before. Calm, never a diagnosis.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "insightWeightUp": "{pet}'s weight went up by about {percent}% in the last few weeks. Worth a word with your vet if it goes on.",
+  "@insightWeightUp": {
+    "description": "Insight: weight up more than 5% within 8 weeks.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "insightWeightDown": "{pet}'s weight went down by about {percent}% in the last few weeks. Worth a word with your vet if it goes on.",
+  "@insightWeightDown": {
+    "description": "Insight: weight down more than 5% within 8 weeks.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "insightAppetiteLess": "In the last two weeks you noted {count} times that {pet} ate less than usual. Worth a word with your vet if it goes on.",
+  "@insightAppetiteLess": {
+    "description": "Insight: three or more \"less than usual\" appetite entries in 14 days.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "insightSeeWalks": "See walks",
+  "@insightSeeWalks": {
+    "description": "The insight's link to the pet's activity page."
+  },
+  "insightSeeWeight": "See weight",
+  "@insightSeeWeight": {
+    "description": "The insight's link to the weight in Records."
+  },
+  "insightSeeJournal": "See journal",
+  "@insightSeeJournal": {
+    "description": "The insight's link to the journal in Records."
+  },
+  "planAddRow": "Yearly plan",
+  "@planAddRow": {
+    "description": "Row of the Health \"+\" sheet that opens the yearly plan."
+  },
+  "planAddRowNote": "Vaccines and treatments",
+  "@planAddRowNote": {
+    "description": "Under the yearly plan row of the \"+\" sheet."
+  },
+  "planTitle": "{pet}'s yearly plan",
+  "@planTitle": {
+    "description": "Title of the yearly plan sheet.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "planIntroDog": "A common plan for dogs in Israel. Your vet may suggest another.",
+  "@planIntroDog": {
+    "description": "Under the title of a dog's yearly plan."
+  },
+  "planIntroCat": "A common plan for cats in Israel. Your vet may suggest another.",
+  "@planIntroCat": {
+    "description": "Under the title of a cat's yearly plan."
+  },
+  "planNoPlan": "There is no yearly plan for this kind of animal yet.",
+  "@planNoPlan": {
+    "description": "The yearly plan sheet of an animal other than a dog or a cat."
+  },
+  "planRequired": "Required by law",
+  "@planRequired": {
+    "description": "Tag of rabies for dogs."
+  },
+  "planRecommended": "Recommended",
+  "@planRecommended": {
+    "description": "Tag of rabies for cats."
+  },
+  "planFirstDate": "First date {date}",
+  "@planFirstDate": {
+    "description": "When a plan item is first planned. {date} is e.g. 31.10.26.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planFirstDateToday": "First date today",
+  "@planFirstDateToday": {
+    "description": "A plan item planned for today."
+  },
+  "planLastTime": "Last time {date}",
+  "@planLastTime": {
+    "description": "Where the first date comes from: the last time it was done.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planOverdue": "Last time {date} · due now",
+  "@planOverdue": {
+    "description": "The last time is longer ago than the interval.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planNoHistory": "Nothing on record. Check the vaccination booklet first.",
+  "@planNoHistory": {
+    "description": "A plan item with nothing on record: planned in two weeks."
+  },
+  "planFromWeeks": "{count, plural, other{From {count} weeks old}}",
+  "@planFromWeeks": {
+    "description": "The pet is too young: the item starts at this age.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planFromMonths": "{count, plural, =1{From 1 month old} other{From {count} months old}}",
+  "@planFromMonths": {
+    "description": "The pet is too young: the item starts at this age.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planSeriesTwo": "Then at {first} and {second} weeks, then once a year",
+  "@planSeriesTwo": {
+    "description": "The next doses of the puppy or kitten series.",
+    "placeholders": {
+      "first": {
+        "type": "int"
+      },
+      "second": {
+        "type": "int"
+      }
+    }
+  },
+  "planSeriesOne": "Then at {weeks} weeks, then once a year",
+  "@planSeriesOne": {
+    "description": "The last dose of the series still to come.",
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "planSeriesLast": "Then once a year",
+  "@planSeriesLast": {
+    "description": "After the last dose of the series."
+  },
+  "planAlreadyPlanned": "Already in the schedule for {date}",
+  "@planAlreadyPlanned": {
+    "description": "A plan item that is already planned: it is not planned twice.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "planEveryMonths": "{count, plural, =1{Every month} other{Every {count} months}}",
+  "@planEveryMonths": {
+    "description": "The interval chips of the flea treatment.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planSources": "Where this comes from",
+  "@planSources": {
+    "description": "Link and page title: the sources of the yearly plan."
+  },
+  "planSourcesIntro": "The plan follows these sources. Your vet knows {pet} best.",
+  "@planSourcesIntro": {
+    "description": "Intro of the sources page.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "planFinePrint": "Not a substitute for your vet's advice.",
+  "@planFinePrint": {
+    "description": "Fine print of the yearly plan sheet."
+  },
+  "planAddDates": "{count, plural, =1{Add 1 date to the schedule} other{Add {count} dates to the schedule}}",
+  "@planAddDates": {
+    "description": "Main button of the yearly plan sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planAdded": "In {pet}'s schedule",
+  "@planAdded": {
+    "description": "Title after the plan was added.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "planAddedNote": "{count, plural, =1{1 date was added. When you mark it done, the next one is planned.} other{{count} dates were added. When you mark one done, the next one is planned.}}",
+  "@planAddedNote": {
+    "description": "Under the title after the plan was added.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planAddToCalendar": "Add to my calendar",
+  "@planAddToCalendar": {
+    "description": "Shares the planned dates as a calendar (.ics) file."
+  },
+  "planCalendarNote": "Shares a calendar file. PetLoop does not read your calendar.",
+  "@planCalendarNote": {
+    "description": "Under \"Add to my calendar\"."
+  },
+  "planDone": "Done",
+  "@planDone": {
+    "description": "Closes the yearly plan sheet after the plan was added."
+  },
+  "planInvite": "No vaccinations on record for {pet} yet. A yearly plan puts the next dates in the schedule.",
+  "@planInvite": {
+    "description": "The Health Overview's invitation to the yearly plan, while the pet has no vaccination on record.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "planInviteAction": "Plan the year",
+  "@planInviteAction": {
+    "description": "Link of the Overview invitation: opens the yearly plan."
+  },
+  "planFromPlan": "From {pet}'s yearly plan",
+  "@planFromPlan": {
+    "description": "Small line under a planned record made from the yearly plan (Coming up, the calendar file).",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  }
+}

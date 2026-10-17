@@ -167,6 +167,7 @@ class HealthRecord {
     this.followUpOf,
     this.costAmount,
     this.costCurrency = AppConfig.defaultCurrency,
+    this.planItem,
   });
 
   /// Empty until the repository has stored the record.
@@ -188,7 +189,8 @@ class HealthRecord {
   /// Product name, batch... for vaccinations, preventive treatments, medicine.
   final String productName;
 
-  /// The next due date the vet gave, or `null`. Never computed by the app.
+  /// The next due date the vet gave, or `null`. The app computes it only
+  /// for a record of a yearly plan ([planItem]) when it is marked done.
   final DateTime? nextDueOn;
 
   /// Id of the record whose "next due" date created this planned record.
@@ -200,6 +202,13 @@ class HealthRecord {
 
   /// ISO 4217 code of [costAmount].
   final String costCurrency;
+
+  /// The yearly plan item this record was planned from (a `PlanRef` such
+  /// as `dog.rabies` or `dog.combined#2`), or `null` for a record the owner
+  /// added by hand. Copied to the next planned record when it is done.
+  final String? planItem;
+
+  bool get isFromPlan => planItem != null;
 
   bool get hasCost => costAmount != null;
 
@@ -218,6 +227,7 @@ class HealthRecord {
     String? clinic,
     String? productName,
     String? followUpOf,
+    String? planItem,
   }) {
     return HealthRecord(
       id: id ?? this.id,
@@ -233,6 +243,7 @@ class HealthRecord {
       followUpOf: followUpOf ?? this.followUpOf,
       costAmount: costAmount,
       costCurrency: costCurrency,
+      planItem: planItem ?? this.planItem,
     );
   }
 
@@ -251,6 +262,7 @@ class HealthRecord {
     followUpOf: followUpOf,
     costAmount: costAmount,
     costCurrency: costCurrency,
+    planItem: planItem,
   );
 
   /// The same record with another "next due" date (`null` clears it).
@@ -268,6 +280,7 @@ class HealthRecord {
     followUpOf: followUpOf,
     costAmount: costAmount,
     costCurrency: costCurrency,
+    planItem: planItem,
   );
 }
 

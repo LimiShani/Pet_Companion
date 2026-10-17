@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 
 import '../../l10n/l10n.dart';
 import '../../theme/app_colors.dart';
@@ -19,6 +20,8 @@ class NotificationSettingsCard extends ConsumerWidget {
   static const openSettingsKey = Key('notifications-open-settings');
   static const exactKey = Key('notifications-exact');
   static const exactAllowKey = Key('notifications-exact-allow');
+  static const weeklyDayKey = Key('notifications-weekly-day');
+  static const weeklyTimeKey = Key('notifications-weekly-time');
 
   static Key kindKey(NotificationKind kind) =>
       ValueKey('notifications-${kind.name}');
@@ -50,7 +53,15 @@ class NotificationSettingsCard extends ConsumerWidget {
       (NotificationKind.medicine, l10n.medicines, null),
       (NotificationKind.appointment, l10n.appointments, l10n.appointmentsNote),
       (NotificationKind.basket, l10n.basket, l10n.basketNote),
+      (NotificationKind.weekly, l10n.weekly, l10n.weeklyNote),
     ];
+    final week = ref.watch(weekSettingsProvider);
+    final weeklyDay = settings.weeklyDayOr(week.firstDay);
+    final weeklyTime = TimeOfDay(
+      hour: settings.weeklyMinutes ~/ 60,
+      minute: settings.weeklyMinutes % 60,
+    );
+    final weeklyOn = on && settings.weekly;
 
     return Material(
       color: AppColors.white,
@@ -89,6 +100,38 @@ class NotificationSettingsCard extends ConsumerWidget {
                     ? (value) => controller.setKind(kind, value)
                     : null,
               ),
+            if (weeklyOn) ...[
+              _Choice(
+                tileKey: weeklyDayKey,
+                title: l10n.weeklyDay,
+                value: _weekdayName(context, weeklyDay),
+                onTap: () async {
+                  final day = await _pickWeekday(
+                    context,
+                    selected: weeklyDay,
+                    firstDay: week.firstDay,
+                  );
+                  if (day != null) await controller.setWeeklyTime(day: day);
+                },
+              ),
+              _Choice(
+                tileKey: weeklyTimeKey,
+                title: l10n.weeklyTime,
+                value: AppFormat.of(context).timeOfDay(weeklyTime),
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: weeklyTime,
+                    helpText: l10n.weekly,
+                  );
+                  if (time != null) {
+                    await controller.setWeeklyTime(
+                      minutes: time.hour * 60 + time.minute,
+                    );
+                  }
+                },
+              ),
+            ],
             const Divider(height: 9, indent: 16, endIndent: 16),
             _Switch(
               tileKey: quietHoursKey,
@@ -115,6 +158,85 @@ class NotificationSettingsCard extends ConsumerWidget {
 
 TextStyle get _noteStyle =>
     AppText.label.copyWith(color: AppColors.brown, fontWeight: FontWeight.w600);
+
+/// The full name of an ISO weekday in the screen's language: "Sunday" /
+/// "יום ראשון".
+String _weekdayName(BuildContext context, int weekday) {
+  final locale = AppFormat.of(context).localeName;
+  String? known;
+  try {
+    known = DateFormat.localeExists(locale) ? locale : null;
+  } catch (_) {
+    known = null;
+  }
+  // 1 January 2024 was a Monday.
+  return DateFormat.EEEE(known).format(DateTime(2024, 1, weekday));
+}
+
+/// Asks for the weekday of the weekly summary, in the order of the week.
+Future<int?> _pickWeekday(
+  BuildContext context, {
+  required int selected,
+  required int firstDay,
+}) {
+  final l10n = context.notificationsL10n;
+  final days = [for (var i = 0; i < 7; i++) (firstDay - 1 + i) % 7 + 1];
+  return showDialog<int>(
+    context: context,
+    builder: (context) => SimpleDialog(
+      title: Text(l10n.weekly),
+      children: [
+        for (final day in days)
+          ListTile(
+            key: ValueKey('notifications-weekly-day-$day'),
+            title: Text(_weekdayName(context, day)),
+            trailing: day == selected
+                ? const Icon(Icons.check_rounded, color: AppColors.ink)
+                : null,
+            onTap: () => Navigator.of(context).pop(day),
+          ),
+      ],
+    ),
+  );
+}
+
+/// A row that shows a choice and changes it on a tap.
+class _Choice extends StatelessWidget {
+  const _Choice({
+    required this.tileKey,
+    required this.title,
+    required this.value,
+    required this.onTap,
+  });
+
+  final Key tileKey;
+  final String title;
+  final String value;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      key: tileKey,
+      onTap: onTap,
+      minTileHeight: 44,
+      contentPadding: const EdgeInsetsDirectional.only(start: 32, end: 16),
+      title: Text(title, style: AppText.body.copyWith(color: AppColors.ink)),
+      trailing: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 160),
+        child: Text(
+          value,
+          style: AppText.body.copyWith(
+            color: AppColors.coralDark,
+            fontWeight: FontWeight.w700,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    );
+  }
+}
 
 class _Switch extends StatelessWidget {
   const _Switch({

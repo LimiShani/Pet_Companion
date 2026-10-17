@@ -169,5 +169,126 @@
     "description": "Button that opens Android's Alarms & reminders screen."
   },
   "communityChannel": "Community",
-  "@communityChannel": {"description": "The phone's name for the notifications of community activity (comments, likes, answers)."}
+  "@communityChannel": {"description": "The phone's name for the notifications of community activity (comments, likes, answers)."},
+  "weekly": "Weekly summary",
+  "@weekly": {
+    "description": "Settings switch and the phone's channel name of the weekly summary of each pet."
+  },
+  "weeklyNote": "One note a week for each pet: walks, doses and what is due next",
+  "@weeklyNote": {
+    "description": "Under the weekly summary switch."
+  },
+  "weeklyDay": "Day",
+  "@weeklyDay": {
+    "description": "Row of the weekly summary: the weekday it comes on."
+  },
+  "weeklyTime": "Time",
+  "@weeklyTime": {
+    "description": "Row of the weekly summary: the time it comes at."
+  },
+  "weeklyTitle": "{pet}'s week",
+  "@weeklyTitle": {
+    "description": "Title of the weekly summary notification.",
+    "placeholders": {
+      "pet": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyLastWeek": "Last week: {numbers}",
+  "@weeklyLastWeek": {
+    "description": "First line of the weekly summary. {numbers} is e.g. \"9 of 12 walks · 14 of 14 doses given\".",
+    "placeholders": {
+      "numbers": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyWalks": "{done} of {planned} walks",
+  "@weeklyWalks": {
+    "description": "Walks done of those planned last week.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyWalksLogged": "{count, plural, =1{1 walk} other{{count} walks}}",
+  "@weeklyWalksLogged": {
+    "description": "Walks logged last week when no walks are planned.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyDoses": "{given} of {planned} doses given",
+  "@weeklyDoses": {
+    "description": "Medicine reminders of last week answered \"given\", of those planned.",
+    "placeholders": {
+      "given": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyDueToday": "{title} is due today",
+  "@weeklyDueToday": {
+    "description": "Second line of the weekly summary: the next planned record.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyDueTomorrow": "{title} is due tomorrow",
+  "@weeklyDueTomorrow": {
+    "description": "The next planned record is tomorrow.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "weeklyDueInDays": "{title} due in {count} days",
+  "@weeklyDueInDays": {
+    "description": "The next planned record, 2 to 13 days ahead.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyDueInWeeks": "{count, plural, =1{{title} due in 1 week} other{{title} due in {count} weeks}}",
+  "@weeklyDueInWeeks": {
+    "description": "The next planned record, 2 to 8 weeks ahead.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyDueOn": "{title} due on {date}",
+  "@weeklyDueOn": {
+    "description": "The next planned record, more than 8 weeks ahead. {date} is e.g. 14.03.27.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -382,6 +382,90 @@ abstract class NotificationsL10n {
   /// In en, this message translates to:
   /// **'Community'**
   String get communityChannel;
+
+  /// Settings switch and the phone's channel name of the weekly summary of each pet.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly summary'**
+  String get weekly;
+
+  /// Under the weekly summary switch.
+  ///
+  /// In en, this message translates to:
+  /// **'One note a week for each pet: walks, doses and what is due next'**
+  String get weeklyNote;
+
+  /// Row of the weekly summary: the weekday it comes on.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get weeklyDay;
+
+  /// Row of the weekly summary: the time it comes at.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get weeklyTime;
+
+  /// Title of the weekly summary notification.
+  ///
+  /// In en, this message translates to:
+  /// **'{pet}\'s week'**
+  String weeklyTitle(String pet);
+
+  /// First line of the weekly summary. {numbers} is e.g. "9 of 12 walks · 14 of 14 doses given".
+  ///
+  /// In en, this message translates to:
+  /// **'Last week: {numbers}'**
+  String weeklyLastWeek(String numbers);
+
+  /// Walks done of those planned last week.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {planned} walks'**
+  String weeklyWalks(int done, int planned);
+
+  /// Walks logged last week when no walks are planned.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 walk} other{{count} walks}}'**
+  String weeklyWalksLogged(int count);
+
+  /// Medicine reminders of last week answered "given", of those planned.
+  ///
+  /// In en, this message translates to:
+  /// **'{given} of {planned} doses given'**
+  String weeklyDoses(int given, int planned);
+
+  /// Second line of the weekly summary: the next planned record.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is due today'**
+  String weeklyDueToday(String title);
+
+  /// The next planned record is tomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} is due tomorrow'**
+  String weeklyDueTomorrow(String title);
+
+  /// The next planned record, 2 to 13 days ahead.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} due in {count} days'**
+  String weeklyDueInDays(String title, int count);
+
+  /// The next planned record, 2 to 8 weeks ahead.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{title} due in 1 week} other{{title} due in {count} weeks}}'**
+  String weeklyDueInWeeks(String title, int count);
+
+  /// The next planned record, more than 8 weeks ahead. {date} is e.g. 14.03.27.
+  ///
+  /// In en, this message translates to:
+  /// **'{title} due on {date}'**
+  String weeklyDueOn(String title, String date);
 }
 
 class _NotificationsL10nDelegate extends LocalizationsDelegate<NotificationsL10n> {

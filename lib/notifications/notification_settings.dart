@@ -18,9 +18,15 @@ class NotificationSettings {
     this.appointments = true,
     this.basket = true,
     this.quietHours = false,
+    this.weekly = true,
+    this.weeklyDay,
+    this.weeklyMinutes = defaultWeeklyMinutes,
   });
 
   static const defaults = NotificationSettings();
+
+  /// The weekly summary rings at 09:00 by default.
+  static const defaultWeeklyMinutes = 9 * 60;
 
   /// Quiet hours run from 22:00 to 07:00, in minutes since midnight.
   static const quietStart = 22 * 60;
@@ -38,6 +44,19 @@ class NotificationSettings {
   /// until 07:00. Medicines and appointments still ring.
   final bool quietHours;
 
+  /// The weekly summary of each pet ("Kelly's week").
+  final bool weekly;
+
+  /// The ISO weekday it rings on (Monday = 1 ... Sunday = 7); `null`: the
+  /// first day of the week (Settings > Week).
+  final int? weeklyDay;
+
+  /// The time it rings at, in minutes since midnight.
+  final int weeklyMinutes;
+
+  /// [weeklyDay], or [firstDay] when none was chosen.
+  int weeklyDayOr(int firstDay) => weeklyDay ?? firstDay;
+
   /// The switch of one kind, ignoring the master switch.
   bool kindOn(NotificationKind kind) => switch (kind) {
     NotificationKind.meal => meals,
@@ -45,6 +64,7 @@ class NotificationSettings {
     NotificationKind.medicine => medicines,
     NotificationKind.appointment => appointments,
     NotificationKind.basket => basket,
+    NotificationKind.weekly => weekly,
   };
 
   /// Whether reminders of [kind] ring at all.
@@ -55,7 +75,8 @@ class NotificationSettings {
   static bool waitsInQuietHours(NotificationKind kind) =>
       kind == NotificationKind.meal ||
       kind == NotificationKind.walk ||
-      kind == NotificationKind.basket;
+      kind == NotificationKind.basket ||
+      kind == NotificationKind.weekly;
 
   /// Whether [at] is within quiet hours (22:00 included, 07:00 not).
   static bool isQuiet(DateTime at) {
@@ -87,6 +108,9 @@ class NotificationSettings {
     bool? appointments,
     bool? basket,
     bool? quietHours,
+    bool? weekly,
+    int? weeklyDay,
+    int? weeklyMinutes,
   }) {
     return NotificationSettings(
       enabled: enabled ?? this.enabled,
@@ -96,6 +120,9 @@ class NotificationSettings {
       appointments: appointments ?? this.appointments,
       basket: basket ?? this.basket,
       quietHours: quietHours ?? this.quietHours,
+      weekly: weekly ?? this.weekly,
+      weeklyDay: weeklyDay ?? this.weeklyDay,
+      weeklyMinutes: weeklyMinutes ?? this.weeklyMinutes,
     );
   }
 
@@ -107,6 +134,7 @@ class NotificationSettings {
         NotificationKind.medicine => copyWith(medicines: on),
         NotificationKind.appointment => copyWith(appointments: on),
         NotificationKind.basket => copyWith(basket: on),
+        NotificationKind.weekly => copyWith(weekly: on),
       };
 
   @override
@@ -118,7 +146,10 @@ class NotificationSettings {
       other.medicines == medicines &&
       other.appointments == appointments &&
       other.basket == basket &&
-      other.quietHours == quietHours;
+      other.quietHours == quietHours &&
+      other.weekly == weekly &&
+      other.weeklyDay == weeklyDay &&
+      other.weeklyMinutes == weeklyMinutes;
 
   @override
   int get hashCode => Object.hash(
@@ -129,6 +160,9 @@ class NotificationSettings {
     appointments,
     basket,
     quietHours,
+    weekly,
+    weeklyDay,
+    weeklyMinutes,
   );
 }
 
@@ -137,6 +171,10 @@ const notificationsSettingKey = 'notifications_on';
 const quietHoursSettingKey = 'notifications_quiet_hours';
 String notificationKindSettingKey(NotificationKind kind) =>
     'notifications_${kind.name}';
+
+/// The weekly summary's day (`1`..`7`, an ISO weekday) and time (`HH:mm`).
+const weeklyDaySettingKey = 'notifications_weekly_day';
+const weeklyTimeSettingKey = 'notifications_weekly_time';
 
 /// Set once the owner has been asked for permission to show notifications
 /// (the explanation sheet was shown): the app never asks again by itself.
@@ -171,7 +209,41 @@ class NotificationSettingsController extends Notifier<NotificationSettings> {
         d.basket,
       ),
       quietHours: read(quietHoursSettingKey, d.quietHours),
+      weekly: read(notificationKindSettingKey(NotificationKind.weekly), d.weekly),
+      weeklyDay: switch (int.tryParse(store.read(weeklyDaySettingKey) ?? '')) {
+        final day? when day >= 1 && day <= 7 => day,
+        _ => null,
+      },
+      weeklyMinutes: _minutesFrom(store.read(weeklyTimeSettingKey)) ??
+          d.weeklyMinutes,
     );
+  }
+
+  static int? _minutesFrom(String? value) {
+    final parts = value?.split(':');
+    if (parts == null || parts.length != 2) return null;
+    final h = int.tryParse(parts[0]);
+    final m = int.tryParse(parts[1]);
+    if (h == null || m == null || h < 0 || h > 23 || m < 0 || m > 59) {
+      return null;
+    }
+    return h * 60 + m;
+  }
+
+  /// When the weekly summary rings: an ISO weekday and a time of day.
+  Future<void> setWeeklyTime({int? day, int? minutes}) async {
+    state = state.copyWith(weeklyDay: day, weeklyMinutes: minutes);
+    try {
+      final store = ref.read(settingsStoreProvider);
+      if (day != null) await store.write(weeklyDaySettingKey, '$day');
+      if (minutes != null) {
+        final h = (minutes ~/ 60).toString().padLeft(2, '0');
+        final m = (minutes % 60).toString().padLeft(2, '0');
+        await store.write(weeklyTimeSettingKey, '$h:$m');
+      }
+    } catch (_) {
+      // The choice holds for this session; it just is not remembered.
+    }
   }
 
   /// Turns every reminder on or off.

@@ -39,6 +39,7 @@ import 'notification_reminder_scheduler.dart';
 import 'notification_settings.dart';
 import 'notification_sink.dart';
 import 'reminder_planner.dart';
+import 'weekly_summary_planner.dart';
 
 export 'local_notification_sink.dart';
 export 'notification_done.dart';
@@ -49,6 +50,7 @@ export 'notification_settings.dart';
 export 'notification_sink.dart';
 export 'push.dart';
 export 'reminder_planner.dart';
+export 'weekly_summary_planner.dart';
 
 /// The phone's notifications; `null` when the app runs without them (the
 /// default: tests, the web).
@@ -152,6 +154,7 @@ NotificationChrome notificationChromeOf(NotificationsL10n l10n) =>
         NotificationKind.medicine: l10n.medicines,
         NotificationKind.appointment: l10n.appointments,
         NotificationKind.basket: l10n.basket,
+        NotificationKind.weekly: l10n.weekly,
       },
       snoozeLabel: l10n.snooze,
       doneLabel: l10n.done,
@@ -313,6 +316,7 @@ class ReminderCoordinator {
         in _loaded.keys.where((id) => !pets.containsKey(id)).toList()) {
       _loaded.remove(id);
       scheduler?.forget(id);
+      _container.read(weeklySummarySchedulerProvider).forget(id);
     }
     final sink = _sink;
     final firstLoad = _loadedAt == null || _loaded.isEmpty;
@@ -332,6 +336,9 @@ class ReminderCoordinator {
       sink?.retainGroups('basket:', {
         for (final id in pets.keys) basketGroup(id),
       });
+      sink?.retainGroups('week:', {
+        for (final id in pets.keys) weeklyGroupOf(id),
+      });
     }
   }
 
@@ -341,6 +348,7 @@ class ReminderCoordinator {
     _loadedAt = null;
     _clearedSignedOut = true;
     _scheduler?.clear();
+    _container.read(weeklySummarySchedulerProvider).clear();
     final sink = _container.read(notificationSinkProvider);
     if (sink is LocalNotificationSink) sink.cancelAll();
   }
@@ -396,6 +404,17 @@ class ReminderCoordinator {
               records: results[1] as List<HealthRecord>?,
               now: _container.read(healthClockProvider)(),
             ),
+          );
+      if (_disposed || userId != _userId || !_loaded.containsKey(petId)) return;
+      // "Kelly's week", from the same plan and records.
+      await _container
+          .read(weeklySummarySchedulerProvider)
+          .sync(
+            petId: petId,
+            petName: petName,
+            plan: results[0] as CarePlan?,
+            records: results[1] as List<HealthRecord>?,
+            dataToday: _container.read(healthClockProvider)(),
           );
       if (_disposed || userId != _userId || !_loaded.containsKey(petId)) return;
       // The basket's "running low" reminders, planned again for the same

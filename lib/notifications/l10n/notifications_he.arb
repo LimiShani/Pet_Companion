@@ -47,5 +47,19 @@
   "askLater": "לא עכשיו",
   "askExactTitle": "ועוד דבר: בדקה המדויקת",
   "askExactAllow": "פתיחת ״שעונים מעוררים ותזכורות״",
-  "communityChannel": "קהילה"
+  "communityChannel": "קהילה",
+  "weekly": "סיכום שבועי",
+  "weeklyNote": "הודעה אחת בשבוע לכל חיה: טיולים, מנות ומה מתוכנן בהמשך",
+  "weeklyDay": "יום",
+  "weeklyTime": "שעה",
+  "weeklyTitle": "השבוע של \u2068{pet}\u2069",
+  "weeklyLastWeek": "בשבוע שעבר: \u2068{numbers}\u2069",
+  "weeklyWalks": "{done} מתוך {planned} טיולים",
+  "weeklyWalksLogged": "{count, plural, =1{טיול אחד} other{{count} טיולים}}",
+  "weeklyDoses": "{given} מתוך {planned} מנות ניתנו",
+  "weeklyDueToday": "\u2068{title}\u2069: היום",
+  "weeklyDueTomorrow": "\u2068{title}\u2069: מחר",
+  "weeklyDueInDays": "\u2068{title}\u2069 בעוד {count} ימים",
+  "weeklyDueInWeeks": "{count, plural, =1{\u2068{title}\u2069 בעוד שבוע} =2{\u2068{title}\u2069 בעוד שבועיים} other{\u2068{title}\u2069 בעוד {count} שבועות}}",
+  "weeklyDueOn": "\u2068{title}\u2069 בתאריך \u2068{date}\u2069"
 }
