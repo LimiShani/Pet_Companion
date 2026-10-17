@@ -390,7 +390,7 @@
       }
     }
   },
-  "hazardDaysAgo": "{count, plural, =1{yesterday} other{{count} days ago}}",
+  "hazardDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
   "@hazardDaysAgo": {
     "placeholders": {
       "count": {

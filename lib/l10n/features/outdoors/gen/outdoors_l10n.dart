@@ -1058,7 +1058,7 @@ abstract class OutdoorsL10n {
   /// No description provided for @hazardDaysAgo.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{yesterday} other{{count} days ago}}'**
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
   String hazardDaysAgo(int count);
 }
 

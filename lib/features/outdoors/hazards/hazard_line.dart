@@ -58,6 +58,7 @@ extension HazardWords on OutdoorsL10n {
     if (elapsed.inMinutes < 1) return hazardJustNow;
     if (elapsed.inMinutes < 60) return hazardMinutesAgo(elapsed.inMinutes);
     if (elapsed.inHours < 24) return hazardHoursAgo(elapsed.inHours);
+    if (elapsed.inDays == 1) return context.l10n.commonYesterday.toLowerCase();
     return hazardDaysAgo(elapsed.inDays);
   }
 }

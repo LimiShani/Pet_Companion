@@ -556,7 +556,7 @@ class OutdoorsL10nEn extends OutdoorsL10n {
       count,
       locale: localeName,
       other: '$count days ago',
-      one: 'yesterday',
+      one: '1 day ago',
     );
     return '$_temp0';
   }
