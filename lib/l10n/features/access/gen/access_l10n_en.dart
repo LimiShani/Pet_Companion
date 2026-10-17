@@ -124,6 +124,9 @@ class AccessL10nEn extends AccessL10n {
   String get featureHousehold => 'Household';
 
   @override
+  String get featureSafety => 'Safety';
+
+  @override
   String get featureDeals => 'Deals';
 
   @override
@@ -173,6 +176,12 @@ class AccessL10nEn extends AccessL10n {
 
   @override
   String get actionPrivate => 'Private chats';
+
+  @override
+  String get actionLists => 'Urgent signs and foods lists';
+
+  @override
+  String get actionLost => 'Lost mode';
 
   @override
   String get auditIntroDemo => 'Demo history resets when the app closes. Tap an entry for details.';

@@ -1,0 +1,15 @@
+{
+  "@@locale": "he",
+  "emergencyLead": "קודם מתקשרים. השורות למטה עוזרות להחליט ולהתכונן.",
+  "confirmOpen": "כדאי להתקשר ולוודא שפתוח",
+  "urgentRow": "זה דחוף?",
+  "urgentRowNote": "סימנים שמחייבים לנסוע לווטרינר עכשיו",
+  "foodRow": "זה בטוח עבור \u2068{name}\u2069?",
+  "foodRowNote": "מזונות וצמחים: בטוח, רק מעט או מסוכן",
+  "lostRow": "מצב אבדה",
+  "lostRowNote": "הודעה לשכנים וכרטיס לשיתוף",
+  "lostRowCardNote": "כרטיס לשיתוף",
+  "lostRowActive": "מחפשים את \u2068{name}\u2069 · {count, plural, =0{עוד אין דיווחים} =1{דיווח אחד} =2{שני דיווחים} other{{count} דיווחים}}",
+  "lostRowActiveNote": "הפעם האחרונה שראינו: \u2068{when}\u2069",
+  "findClinicNote": "מרפאות חירום באזור"
+}

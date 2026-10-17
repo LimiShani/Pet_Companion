@@ -124,6 +124,9 @@ class AccessL10nHe extends AccessL10n {
   String get featureHousehold => 'הבית';
 
   @override
+  String get featureSafety => 'בטיחות';
+
+  @override
   String get featureDeals => 'מבצעים';
 
   @override
@@ -173,6 +176,12 @@ class AccessL10nHe extends AccessL10n {
 
   @override
   String get actionPrivate => 'שיחות פרטיות';
+
+  @override
+  String get actionLists => 'רשימות סימני חירום ומזונות';
+
+  @override
+  String get actionLost => 'מצב אבדה';
 
   @override
   String get auditIntroDemo => 'היסטוריית ההדגמה מתאפסת בסגירת האפליקציה. לחצו על רשומה לפרטים.';

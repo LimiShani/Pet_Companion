@@ -1,0 +1,60 @@
+{
+  "@@locale": "en",
+  "emergencyLead": "Call first. The rows below help you decide and prepare.",
+  "@emergencyLead": {
+    "description": "The line under the Emergency sheet's title."
+  },
+  "confirmOpen": "Call to confirm they are open",
+  "@confirmOpen": {
+    "description": "On the Emergency sheet's first contact (a clinic or a vet): opening hours change, so call before driving."
+  },
+  "urgentRow": "Is it urgent?",
+  "@urgentRow": {
+    "description": "Emergency sheet row: opens the list of signs that mean going to a vet now."
+  },
+  "urgentRowNote": "Signs that mean going to the vet now",
+  "foodRow": "Can {name} eat this?",
+  "@foodRow": {
+    "description": "Emergency sheet row: opens the searchable list of foods and plants.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "foodRowNote": "Foods and plants: safe, a little or dangerous",
+  "lostRow": "Lost mode",
+  "@lostRow": {
+    "description": "Emergency sheet row: starts Lost mode (an alert to people nearby and a card to share)."
+  },
+  "lostRowNote": "Tell people nearby and share a card",
+  "lostRowCardNote": "Make a card to share",
+  "@lostRowCardNote": {
+    "description": "Subtitle of the Lost mode row for an account without Lost mode: it opens the lost-pet card only."
+  },
+  "lostRowActive": "{name} is missing · {count, plural, =0{no sightings yet} =1{1 sighting} other{{count} sightings}}",
+  "@lostRowActive": {
+    "description": "The Lost mode row while an alert is open: the pet and how many people commented on the post.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lostRowActiveNote": "Last seen {when}",
+  "@lostRowActiveNote": {
+    "description": "Under the open alert's row: when the pet was last seen, e.g. 'Today 14:30'.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "findClinicNote": "Emergency clinics near you",
+  "@findClinicNote": {
+    "description": "Under the Emergency sheet's Find a clinic nearby row."
+  }
+}
