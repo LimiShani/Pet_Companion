@@ -47,9 +47,11 @@ do $$ begin
 end $$;
 
 -- Any owner's records may carry a plan item; the check keeps its shape.
-with p as (insert into public.pets(name, species) values ('Kelly','dog') returning id)
+-- Two statements: a policy check inside one statement cannot see a pet
+-- inserted by a data-modifying CTE of that same statement.
+insert into public.pets(name, species) values ('Kelly','dog') returning id as plan_pet \gset
 insert into public.health_events(pet_id, kind, title, scheduled_at, plan_item)
-select p.id, k, t, now() + interval '30 days', i from p,
+select :'plan_pet'::uuid, k, t, now() + interval '30 days', i from
  (values ('vaccination','Rabies vaccine','dog.rabies'),
          ('vaccination','Combined vaccine, puppy dose 2 of 3','dog.combined#2'),
          ('preventive','Flea and tick treatment','dog.flea@3m'),

@@ -133,7 +133,7 @@ begin
     raise exception 'push_outbox_kind_check is missing: run 0028_meetups.sql first.';
   end if;
   if not ('lost_nearby' = any(kinds)) then
-    kinds := kinds || 'lost_nearby';
+    kinds := array_append(kinds, 'lost_nearby');
     alter table public.push_outbox drop constraint if exists push_outbox_kind_check;
     execute format('alter table public.push_outbox add constraint push_outbox_kind_check check (kind = any (%L::text[]))', kinds);
   end if;

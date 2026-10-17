@@ -160,11 +160,13 @@ begin
  -- Pushes: Maya (a saved park there) and Tom (an ad there); not Noa, not
  -- Eli (the household), not Gil (blocked Noa), not Rina (switched off),
  -- not Omer (no phone).
+ perform set_config('role','postgres',true); -- read the push queue as its owner
  assert (select array_agg(recipient_id::text order by recipient_id) from public.push_outbox
          where kind = 'lost_nearby' and target = 'post:' || a.post_id)
    = array['c3333333-3333-4333-8333-333333333333','c4444444-4444-4444-8444-444444444444'],
    'Members nearby are told: ' || coalesce((select string_agg(recipient_id::text, ',') from public.push_outbox where kind='lost_nearby'), 'nobody');
  assert (select preview from public.push_outbox where kind = 'lost_nearby' limit 1) = 'Kelly · Ahuza park gate', 'The push names the pet and the place';
+ perform set_config('role','authenticated',true);
  -- One open alert per pet.
  begin
   perform public.lost_start('dddddd01-0000-4000-8000-000000000001', 'raanana', 'Park', now());
@@ -186,8 +188,10 @@ begin
  assert (select photo_path from public.community_posts where id = (alert->>'post_id')::uuid) is null, 'No photo';
  assert (select audience from public.community_posts where id = (alert->>'post_id')::uuid) = 'cat', 'For the cats chip';
  -- A second alert is a second push, each alert once.
+ perform set_config('role','postgres',true); -- read the push queue as its owner
  assert (select count(*) from public.push_outbox where kind = 'lost_nearby'
          and recipient_id = 'c3333333-3333-4333-8333-333333333333') = 2, 'One push per alert';
+ perform set_config('role','authenticated',true);
 end $$;
 reset role;
 
@@ -239,8 +243,10 @@ begin
                 and c.body like 'Good news: Kelly is home%'), 'A closing comment in the post''s language';
  assert (select found_at from public.lost_pet_cards where pet_id = 'dddddd01-0000-4000-8000-000000000001') is not null,
    'The lost card knows Kelly is home';
+ perform set_config('role','postgres',true); -- read the push queue as its owner
  assert not exists (select 1 from public.push_outbox where kind = 'lost_nearby' and sent_at is null
                     and target = 'post:' || (select id from ids where name='kelly_post')), 'No push is left to send';
+ perform set_config('role','authenticated',true);
  -- Closing twice changes nothing.
  assert public.lost_found((select id from ids where name='kelly_alert'))->>'status' = 'found', 'Found again: no change';
  assert (select count(*) from public.community_comments c where c.post_id = (select id from ids where name='kelly_post')
@@ -268,9 +274,11 @@ update public.lost_alerts set created_at = now() - interval '2 days';
 select pg_temp.act_as('c1111111-1111-4111-8111-111111111111');
 insert into ids select 'third', (public.lost_start('dddddd01-0000-4000-8000-000000000001','raanana','Park',now(),'','he')->>'id')::uuid;
 reset role;
+-- A neighbour cannot read the household's alert row, only the post.
+insert into ids select 'third_post', post_id from public.lost_alerts where id = (select id from ids where name='third');
 select pg_temp.act_as('c3333333-3333-4333-8333-333333333333');
 insert into public.community_comments(post_id, body)
-select post_id, 'Is she still missing?' from public.lost_alerts where id = (select id from ids where name='third');
+select id, 'Is she still missing?' from ids where name='third_post';
 reset role;
 select pg_temp.act_as('c1111111-1111-4111-8111-111111111111');
 do $$
