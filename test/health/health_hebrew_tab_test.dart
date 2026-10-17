@@ -176,7 +176,8 @@ void main() {
     await openSection(tester, 'רשומות');
     expect(find.text('12 רשומות'), findsOneWidget);
     await tapVisible(tester, find.byKey(const Key('filter-journal')));
-    expect(find.text(he.recordsEntries(9)), findsOneWidget);
+    // The nine sample entries and the four of Kelly's followed problem.
+    expect(find.text(he.recordsEntries(13)), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

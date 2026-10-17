@@ -19,6 +19,9 @@ import '../../../services/pet_records/state/health_providers.dart';
 import '../../../services/pet_records/state/schedule_logic.dart';
 import '../../../presentation/health_widgets.dart';
 import '../widgets/weight_trend.dart';
+import '../../../services/pet_records/state/health_issues.dart';
+import '../issues/issue_page.dart';
+import '../issues/issue_widgets.dart';
 
 /// Everything on record, under one search field and one row of chips: the
 /// timeline of visits, vaccinations, preventive treatments, procedures,
@@ -106,11 +109,53 @@ class _RecordsSectionState extends ConsumerState<RecordsSection> {
             (history.any((r) => r.kind == kind) || filter.kind == kind))
           kind,
     ];
-    final timelineAll = timeline && filter.kind == null && !filter.documentsOnly;
+    // A chip per followed problem (3b): open ones, and ones resolved in
+    // the last 90 days. Its chip shows the problem's entries instead.
+    final issueChips = recordsIssues(
+      ref.watch(issueDigestsProvider(pet.id)).value ?? const [],
+      ref.watch(currentDayProvider),
+    );
+    final issueId = ref.watch(recordsIssueProvider);
+    IssueDigest? issue;
+    for (final d in issueChips) {
+      if (d.issue.id == issueId) issue = d;
+    }
+    final noIssue = issue == null;
+    void pick(VoidCallback show) {
+      ref.read(recordsIssueProvider.notifier).clear();
+      show();
+    }
+
+    final timelineAll =
+        noIssue && timeline && filter.kind == null && !filter.documentsOnly;
 
     final List<Widget> body;
     final Widget header;
-    if (weight) {
+    if (issue != null) {
+      header = _HeaderRow(
+        count: l10n.issueEntryCount(issue.entries.length),
+        onShare: widget.onShare,
+      );
+      body = [
+        for (final entry in issue.entries.reversed) ...[
+          IssueEntryCard(
+            entry: entry,
+            photos: issue.photosOf(entry.id),
+            settings: settings,
+            onTap: () => showQuickLog(context, pet, observation: entry),
+          ),
+          const SizedBox(height: 8),
+        ],
+        Center(
+          child: HealthLink(
+            l10n.issueOpenPage,
+            key: const Key('records-issue-open'),
+            icon: issueIcon,
+            onPressed: () => IssuePage.open(context, pet, issue!.issue.id),
+          ),
+        ),
+      ];
+    } else if (weight) {
       final weights = weightEntries(data.observations);
       header = _HeaderRow(
         count: weights.isEmpty ? null : l10n.weighIns(weights.length),
@@ -226,33 +271,41 @@ class _RecordsSectionState extends ConsumerState<RecordsSection> {
                 chipKey: const Key('filter-all'),
                 label: l10n.filterAll,
                 selected: timelineAll,
-                onSelected: controller.showAll,
+                onSelected: () => pick(controller.showAll),
               ),
               for (final kind in kinds)
                 _FilterChip(
                   chipKey: ValueKey('filter-${kind.name}'),
                   label: l10n.recordKinds(kind),
-                  selected: timeline && filter.kind == kind,
-                  onSelected: () => controller.showKind(kind),
+                  selected: noIssue && timeline && filter.kind == kind,
+                  onSelected: () => pick(() => controller.showKind(kind)),
                 ),
               _FilterChip(
                 chipKey: const Key('filter-documents'),
                 label: l10n.documents,
-                selected: timeline && filter.documentsOnly,
-                onSelected: controller.showDocuments,
+                selected: noIssue && timeline && filter.documentsOnly,
+                onSelected: () => pick(controller.showDocuments),
               ),
               _FilterChip(
                 chipKey: const Key('filter-weight'),
                 label: l10n.weight,
-                selected: weight,
-                onSelected: controller.showWeight,
+                selected: noIssue && weight,
+                onSelected: () => pick(controller.showWeight),
               ),
               _FilterChip(
                 chipKey: const Key('filter-journal'),
                 label: l10n.recordsJournal,
-                selected: journal,
-                onSelected: controller.showJournal,
+                selected: noIssue && journal,
+                onSelected: () => pick(controller.showJournal),
               ),
+              for (final d in issueChips)
+                _FilterChip(
+                  chipKey: ValueKey('filter-issue-${d.issue.id}'),
+                  label: d.issue.title,
+                  selected: issue?.issue.id == d.issue.id,
+                  onSelected: () =>
+                      ref.read(recordsIssueProvider.notifier).show(d.issue.id),
+                ),
             ],
           ),
         ),

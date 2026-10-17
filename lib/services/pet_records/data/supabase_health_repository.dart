@@ -34,6 +34,7 @@ class SupabaseHealthRepository implements HealthRepository {
   static const _observations = 'health_observations';
   static const _kit = 'emergency_kit_items';
   static const _lostCards = 'lost_pet_cards';
+  static const _issues = 'health_issues';
   static const _bucket = 'pet-documents';
 
   /// How long a link to a document stays valid: long enough to open it.
@@ -133,9 +134,20 @@ class SupabaseHealthRepository implements HealthRepository {
 
   // ------------------------------------------------------------- documents
 
+  /// The files of the pet's records; the photos of Quick log entries
+  /// (0033) are [fetchEntryPhotos].
   @override
   Future<List<HealthDocument>> fetchDocuments(String petId) =>
-      _list(_documents, petId, documentFromRow, orderBy: 'created_at');
+      _guard(() async {
+        if (!isStored(petId)) return <HealthDocument>[];
+        final rows = await _client
+            .from(_documents)
+            .select()
+            .eq('pet_id', petId)
+            .not('record_id', 'is', null)
+            .order('created_at');
+        return [for (final row in rows) documentFromRow(row)];
+      });
 
   static String _extension(String mimeType) => switch (mimeType) {
     'image/jpeg' => 'jpg',
@@ -400,9 +412,137 @@ class SupabaseHealthRepository implements HealthRepository {
     petId: observation.petId,
   );
 
+  /// Its photos go with it (the database cascades and queues their files;
+  /// they are removed here too, as for a record).
   @override
-  Future<void> deleteObservation(String observationId) =>
-      _delete(_observations, observationId);
+  Future<void> deleteObservation(String observationId) => _guard(() async {
+    if (!isStored(observationId)) return;
+    var paths = const <String>[];
+    try {
+      final rows = await _client
+          .from(_documents)
+          .select('storage_path')
+          .eq('observation_id', observationId);
+      paths = [for (final row in rows) row['storage_path'] as String];
+    } on sb.PostgrestException {
+      // A project without 0033 has no entry photos.
+    }
+    await _client.from(_observations).delete().eq('id', observationId);
+    await _removeOrphanedFiles(paths);
+  });
+
+  // ----------------------------------------------------- followed problems
+
+  @override
+  Future<List<HealthIssue>> fetchIssues(String petId) =>
+      _list(_issues, petId, issueFromRow, orderBy: 'started_on');
+
+  @override
+  Future<HealthIssue> saveIssue(HealthIssue issue) {
+    final problem = issue.failure;
+    if (problem != null) return Future.error(HealthException.of(problem));
+    return _save(
+      _issues,
+      issue.id,
+      issueToRow(issue),
+      issueFromRow,
+      gone: HealthFailure.itemGone,
+      petId: issue.petId,
+    );
+  }
+
+  /// Its entries stay: the database only clears their link.
+  @override
+  Future<void> deleteIssue(String issueId) => _delete(_issues, issueId);
+
+  @override
+  Future<List<Observation>> fetchIssueEntries(String petId, String issueId) =>
+      _guard(() async {
+        if (!isStored(petId) || !isStored(issueId)) return <Observation>[];
+        final rows = await _client
+            .from(_observations)
+            .select()
+            .eq('pet_id', petId)
+            .eq('issue_id', issueId)
+            .order('observed_at');
+        return [for (final row in rows) observationFromRow(row)];
+      });
+
+  @override
+  Future<Observation> linkEntry(Observation entry, String? issueId) =>
+      _guard(() async {
+        final updated = await _client
+            .from(_observations)
+            .update({'issue_id': issueId})
+            .eq('id', entry.id)
+            .select()
+            .maybeSingle();
+        if (updated == null) throw HealthException.of(HealthFailure.entryGone);
+        return observationFromRow(updated);
+      });
+
+  @override
+  Future<List<HealthDocument>> fetchEntryPhotos(String petId) =>
+      _guard(() async {
+        if (!isStored(petId)) return <HealthDocument>[];
+        final rows = await _client
+            .from(_documents)
+            .select()
+            .eq('pet_id', petId)
+            .not('observation_id', 'is', null)
+            .order('created_at');
+        return [for (final row in rows) documentFromRow(row)];
+      });
+
+  @override
+  Future<HealthDocument> addEntryPhoto({
+    required String petId,
+    required String observationId,
+    required PickedFile file,
+  }) {
+    return _guard(() async {
+      _requireStored(petId);
+      final problem = entryPhotoFailure(file);
+      if (problem != null) throw HealthException.of(problem);
+      // <user id>/<pet id>/<entry id>/<random>.<ext>, as for a record.
+      final path =
+          '$_userId/$petId/$observationId/${const Uuid().v4()}.${_extension(file.mimeType)}';
+      await StorageCleanup(_client).reserve(_bucket, path);
+      await _files.uploadBinary(
+        path,
+        file.bytes,
+        fileOptions: sb.FileOptions(contentType: file.mimeType),
+      );
+      try {
+        final row = await _client
+            .from(_documents)
+            .insert({
+              'pet_id': petId,
+              'observation_id': observationId,
+              'storage_path': path,
+              'file_name': file.name,
+              'mime_type': file.mimeType,
+              'size_bytes': file.bytes.length,
+            })
+            .select()
+            .single();
+        try {
+          await StorageCleanup(_client).attached(_bucket, path);
+        } catch (_) {}
+        return documentFromRow(row);
+      } catch (_) {
+        await _removeOrphanedFiles([path]);
+        rethrow;
+      }
+    });
+  }
+
+  @override
+  Future<void> deleteEntryPhoto(HealthDocument photo) => deleteDocument(photo);
+
+  @override
+  Future<Uint8List> entryPhotoBytes(HealthDocument photo) =>
+      documentBytes(photo);
 
   // --------------------------------------------------------- emergency kit
 
@@ -479,6 +619,13 @@ class SupabaseHealthRepository implements HealthRepository {
     }
     if (e.code == 'PGRST301' || message.contains('jwt')) {
       return HealthFailure.sessionEnded;
+    }
+    // P0001: a rule of a server function or trigger (0033's limits).
+    if (e.code == 'P0001' && message.contains('rate_limited')) {
+      return HealthFailure.tooManyIssues;
+    }
+    if (e.code == 'P0001' && message.contains('too_many_photos')) {
+      return HealthFailure.tooManyPhotos;
     }
     if (e.code == '23514') return HealthFailure.invalid;
     if (e.code == '23503') return HealthFailure.itemGone;

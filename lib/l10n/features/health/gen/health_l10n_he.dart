@@ -340,6 +340,15 @@ class HealthL10nHe extends HealthL10n {
   String get errLostCard => 'לא הצלחנו להכין את הכרטיס. אפשר לנסות שוב.';
 
   @override
+  String get errPhotoType => 'אפשר להוסיף לרישום רק תמונות (JPEG, PNG, WebP).';
+
+  @override
+  String get errTooManyPhotos => 'אפשר להוסיף עד 4 תמונות לרישום.';
+
+  @override
+  String get errTooManyIssues => 'נפתחו היום הרבה בעיות חדשות. אפשר לנסות שוב מחר.';
+
+  @override
   String get emergencyButton => 'חירום';
 
   @override
@@ -2018,6 +2027,219 @@ class HealthL10nHe extends HealthL10n {
 
   @override
   String get reportPlanned => 'מתוכנן';
+
+  @override
+  String get issueStartedOn => 'תאריך התחלה';
+
+  @override
+  String get issueStatus => 'מצב';
+
+  @override
+  String get issueOngoing => 'עדיין נמשכת';
+
+  @override
+  String issueResolvedOn(String date) {
+    return 'נפתרה ב־\u2068$date\u2069';
+  }
+
+  @override
+  String get issueBodyArea => 'איפה בגוף';
+
+  @override
+  String get issueEntries => 'רישומים';
+
+  @override
+  String issueEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count רישומים',
+      two: 'שני רישומים',
+      one: 'רישום אחד',
+      zero: 'עדיין אין רישומים',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueColumnLevel => 'איך היה';
+
+  @override
+  String get issueColumnWhat => 'מה';
+
+  @override
+  String get addFollowProblem => 'מעקב אחרי בעיה';
+
+  @override
+  String get addFollowProblemNote => 'צליעה, פריחה, שיעול';
+
+  @override
+  String get issueSheetNote => 'משהו לעקוב אחריו כמה ימים או שבועות';
+
+  @override
+  String get issueRenameTitle => 'שינוי שם הבעיה';
+
+  @override
+  String get issueFieldTitle => 'מה הבעיה?';
+
+  @override
+  String get issueFieldTitleHint => 'לדוגמה: צליעה ברגל ימין קדמית';
+
+  @override
+  String get issueFieldBodyArea => 'איפה בגוף (לא חובה)';
+
+  @override
+  String get issueFieldBodyAreaHint => 'לדוגמה: רגל ימין קדמית';
+
+  @override
+  String get issueStart => 'התחלת מעקב';
+
+  @override
+  String get issueFinePrint => 'תיעוד של מה ששמת לב אליו, כדי להראות לווטרינר. האפליקציה לא מפרשת אותו.';
+
+  @override
+  String get issueResolved => 'נפתרה';
+
+  @override
+  String issueSince(String date) {
+    return 'מאז \u2068$date\u2069';
+  }
+
+  @override
+  String issueDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ימים',
+      two: 'יומיים',
+      one: 'יום אחד',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String issueSpan(String start, String end) {
+    return '\u2068$start\u2069 עד \u2068$end\u2069';
+  }
+
+  @override
+  String issuePhotoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count תמונות',
+      two: 'שתי תמונות',
+      one: 'תמונה אחת',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueAddEntry => 'הוספת רישום';
+
+  @override
+  String get issueResolve => 'סימון כנפתרה';
+
+  @override
+  String get issueReopen => 'פתיחה מחדש';
+
+  @override
+  String get issueShare => 'שיתוף דוח';
+
+  @override
+  String get issueMore => 'עוד';
+
+  @override
+  String get issueRename => 'שינוי שם';
+
+  @override
+  String get issueStop => 'הפסקת מעקב';
+
+  @override
+  String get issueStopTitle => 'להפסיק לעקוב אחרי הבעיה?';
+
+  @override
+  String issueStopMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count הרישומים שלה והתמונות יישארו ביומן.',
+      one: 'הרישום שלה והתמונות יישארו ביומן.',
+      zero: 'עדיין לא נרשם עליה דבר.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueNoEntries => 'עדיין אין רישומים';
+
+  @override
+  String get issueNoEntriesNote => 'אפשר להוסיף את הראשון כשמשהו בולט.';
+
+  @override
+  String get issueResolvedDone => 'סומנה כנפתרה.';
+
+  @override
+  String get issueStopped => 'המעקב הופסק. הרישומים נשארו ביומן.';
+
+  @override
+  String get issueGone => 'כבר לא עוקבים אחרי הבעיה הזו.';
+
+  @override
+  String get loadFailedIssue => 'לא הצלחנו לטעון את הבעיה';
+
+  @override
+  String issueOverviewOngoing(String date) {
+    return 'עדיין נמשכת מאז \u2068$date\u2069';
+  }
+
+  @override
+  String issueMoreProblems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'עוד $count בעיות',
+      two: 'עוד שתי בעיות',
+      one: 'עוד בעיה אחת',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueMoreProblemsNote => 'אפשר לראות אותן ברשומות';
+
+  @override
+  String get issuePartOf => 'חלק מבעיה';
+
+  @override
+  String get issueNone => 'בלי';
+
+  @override
+  String issueFor(String title) {
+    return 'עבור: \u2068$title\u2069';
+  }
+
+  @override
+  String issuePhotos(int count) {
+    return 'תמונות (עד $count)';
+  }
+
+  @override
+  String get issueAddPhoto => 'הוספת תמונה';
+
+  @override
+  String get issueRemovePhoto => 'הסרת התמונה';
+
+  @override
+  String get issueOpenPhoto => 'פתיחת התמונה';
+
+  @override
+  String issuePhotoNotSaved(String reason) {
+    return 'הרישום נשמר, אבל תמונה לא נשמרה: \u2068$reason\u2069';
+  }
+
+  @override
+  String get issueOpenPage => 'לעמוד הבעיה';
 
   @override
   String get reportColumnKind => 'סוג';

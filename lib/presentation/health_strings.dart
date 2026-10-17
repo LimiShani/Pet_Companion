@@ -185,6 +185,9 @@ extension HealthWords on HealthL10n {
     HealthFailure.files => errFiles,
     HealthFailure.pdf => errPdf,
     HealthFailure.lostCard => errLostCard,
+    HealthFailure.photoType => errPhotoType,
+    HealthFailure.tooManyPhotos => errTooManyPhotos,
+    HealthFailure.tooManyIssues => errTooManyIssues,
     HealthFailure.unknown => app.errorGeneric,
   };
 }

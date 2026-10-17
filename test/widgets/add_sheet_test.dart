@@ -46,7 +46,7 @@ void main() {
     expect(find.byKey(AddFab.fabKey), findsNothing, reason: 'Home has no plus');
 
     for (final (tab, title, rows) in [
-      ('Health', 'Add to Health', ['quick-log', 'record', 'appointment', 'medicine', 'routine', 'yearly-plan']),
+      ('Health', 'Add to Health', ['quick-log', 'follow-problem', 'record', 'appointment', 'medicine', 'routine', 'yearly-plan']),
       (
         'Community',
         'Add to Community',

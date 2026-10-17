@@ -167,6 +167,7 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
           kind: plainPunctuation(row.kind),
           title: plainPunctuation(row.title),
           details: plainPunctuation(row.details),
+          photos: row.photos,
         ),
     ],
     footer: plainPunctuation(r.footer),
@@ -185,6 +186,44 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       children: [for (final piece in pdfPieces(text)) pw.TextSpan(text: piece)],
     ),
   );
+
+  /// The side of a photo's thumbnail, in PDF points.
+  static const _thumb = 64.0;
+
+  static pw.MemoryImage? _image(Uint8List bytes) {
+    try {
+      return pw.MemoryImage(bytes);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// [cell], with the row's photos as small thumbnails under it.
+  static pw.Widget _withPhotos(pw.Widget cell, HealthReportRow row) {
+    final images = [for (final bytes in row.photos) ?_image(bytes)];
+    if (images.isEmpty) return cell;
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        cell,
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(left: 3, right: 3, bottom: 5),
+          child: pw.Wrap(
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              for (final image in images)
+                pw.SizedBox(
+                  width: _thumb,
+                  height: _thumb,
+                  child: pw.Image(image, fit: pw.BoxFit.cover),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Future<Uint8List> _textPdf(HealthReport report, HealthPdfFonts fonts) {
     final rtl = report.rightToLeft;
@@ -317,7 +356,7 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
                       cell(record.date, cellStyle),
                       cell(record.kind, cellStyle),
                       cell(record.title, cellStyle),
-                      cell(record.details, cellStyle),
+                      _withPhotos(cell(record.details, cellStyle), record),
                     ]),
                   ),
               ],
@@ -388,7 +427,9 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     String line(List<String> parts) =>
         parts.where((p) => p.isNotEmpty).join(' · ');
 
-    // Every block with the gap above it.
+    // Every block with the gap above it. A row's photos, decoded small, go
+    // under its last block.
+    final photosUnder = <TextPainter, List<ui.Image>>{};
     final blocks = <(double, TextPainter)>[
       (0, block(report.title, size: 22, bold: true)),
       (4, block(report.subtitle, size: 12)),
@@ -402,7 +443,9 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       ],
       if (report.records.isNotEmpty)
         (20, block(report.recordsTitle, size: 14, bold: true)),
-      for (final row in report.records) ...[
+    ];
+    for (final row in report.records) {
+      blocks.addAll([
         (
           10,
           block(
@@ -413,22 +456,36 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
         ),
         (1, block(row.title, bold: true)),
         if (row.details.isNotEmpty) (1, block(row.details, size: 10)),
-      ],
-      (24, block(report.footer, size: 9, color: _mutedColor)),
-    ];
+      ]);
+      final images = [
+        for (final bytes in row.photos) ?await _decode(bytes),
+      ];
+      if (images.isNotEmpty) photosUnder[blocks.last.$2] = images;
+    }
+    blocks.add((24, block(report.footer, size: 9, color: _mutedColor)));
+
+    const thumb = _thumb;
+    const gap = 4.0;
+    final perLine = ((width + gap) / (thumb + gap)).floor();
+    double heightOf(TextPainter painter) {
+      final images = photosUnder[painter];
+      if (images == null) return painter.height;
+      final lines = (images.length / perLine).ceil();
+      return painter.height + lines * (thumb + gap);
+    }
 
     // Blocks are never split; a new page starts when one does not fit.
     final pages = <List<(double, TextPainter)>>[[]];
     var y = _margin;
-    for (final (gap, painter) in blocks) {
-      var top = pages.last.isEmpty ? y : y + gap;
-      if (pages.last.isNotEmpty &&
-          top + painter.height > _pageHeight - _margin) {
+    for (final (above, painter) in blocks) {
+      var top = pages.last.isEmpty ? y : y + above;
+      final height = heightOf(painter);
+      if (pages.last.isNotEmpty && top + height > _pageHeight - _margin) {
         pages.add([]);
         top = _margin;
       }
       pages.last.add((top, painter));
-      y = top + painter.height;
+      y = top + height;
     }
 
     final doc = pw.Document(
@@ -445,6 +502,29 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
       );
       for (final (top, painter) in page) {
         painter.paint(canvas, ui.Offset(_margin, top));
+        final images = photosUnder[painter] ?? const <ui.Image>[];
+        for (var i = 0; i < images.length; i++) {
+          final image = images[i];
+          final across = (i % perLine) * (thumb + gap);
+          final x = report.rightToLeft
+              ? _pageWidth - _margin - thumb - across
+              : _margin + across;
+          final dst = ui.Rect.fromLTWH(
+            x,
+            top + painter.height + gap + (i ~/ perLine) * (thumb + gap),
+            thumb,
+            thumb,
+          );
+          // Like a cover: the middle square of the photo.
+          final side = image.width < image.height ? image.width : image.height;
+          final src = ui.Rect.fromLTWH(
+            (image.width - side) / 2,
+            (image.height - side) / 2,
+            side.toDouble(),
+            side.toDouble(),
+          );
+          canvas.drawImageRect(image, src, dst, ui.Paint());
+        }
       }
       final picture = recorder.endRecording();
       final image = await picture.toImage(
@@ -471,6 +551,26 @@ class PdfHealthPdfBuilder implements HealthPdfBuilder {
     for (final (_, painter) in blocks) {
       painter.dispose();
     }
+    for (final images in photosUnder.values) {
+      for (final image in images) {
+        image.dispose();
+      }
+    }
     return doc.save();
+  }
+
+  /// [bytes] as a small picture, or `null` when it is not one.
+  static Future<ui.Image?> _decode(Uint8List bytes) async {
+    try {
+      final codec = await ui.instantiateImageCodec(
+        bytes,
+        targetWidth: (_thumb * _scale).round(),
+      );
+      final frame = await codec.getNextFrame();
+      codec.dispose();
+      return frame.image;
+    } catch (_) {
+      return null;
+    }
   }
 }

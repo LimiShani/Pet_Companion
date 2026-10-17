@@ -599,6 +599,24 @@ abstract class HealthL10n {
   /// **'Could not prepare the card. Please try again.'**
   String get errLostCard;
 
+  /// No description provided for @errPhotoType.
+  ///
+  /// In en, this message translates to:
+  /// **'Only photos (JPEG, PNG, WebP) can be added to an entry.'**
+  String get errPhotoType;
+
+  /// No description provided for @errTooManyPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'An entry can have up to 4 photos.'**
+  String get errTooManyPhotos;
+
+  /// No description provided for @errTooManyIssues.
+  ///
+  /// In en, this message translates to:
+  /// **'That is a lot of new problems for one day. Please try again tomorrow.'**
+  String get errTooManyIssues;
+
   /// The emergency pill on Home and in the Health header.
   ///
   /// In en, this message translates to:
@@ -3484,6 +3502,312 @@ abstract class HealthL10n {
   /// In en, this message translates to:
   /// **'Planned'**
   String get reportPlanned;
+
+  /// No description provided for @issueStartedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Started on'**
+  String get issueStartedOn;
+
+  /// No description provided for @issueStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get issueStatus;
+
+  /// No description provided for @issueOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing'**
+  String get issueOngoing;
+
+  /// No description provided for @issueResolvedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved on {date}'**
+  String issueResolvedOn(String date);
+
+  /// No description provided for @issueBodyArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Body area'**
+  String get issueBodyArea;
+
+  /// No description provided for @issueEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Entries'**
+  String get issueEntries;
+
+  /// No description provided for @issueEntryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No entries yet} =1{1 entry} other{{count} entries}}'**
+  String issueEntryCount(int count);
+
+  /// No description provided for @issueColumnLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'How it was'**
+  String get issueColumnLevel;
+
+  /// No description provided for @issueColumnWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'What'**
+  String get issueColumnWhat;
+
+  /// No description provided for @addFollowProblem.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow a problem'**
+  String get addFollowProblem;
+
+  /// No description provided for @addFollowProblemNote.
+  ///
+  /// In en, this message translates to:
+  /// **'A limp, a rash, a cough'**
+  String get addFollowProblemNote;
+
+  /// No description provided for @issueSheetNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Something to watch over a few days or weeks'**
+  String get issueSheetNote;
+
+  /// No description provided for @issueRenameTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename the problem'**
+  String get issueRenameTitle;
+
+  /// No description provided for @issueFieldTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What is it?'**
+  String get issueFieldTitle;
+
+  /// No description provided for @issueFieldTitleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Limping, right front leg'**
+  String get issueFieldTitleHint;
+
+  /// No description provided for @issueFieldBodyArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Where on the body (optional)'**
+  String get issueFieldBodyArea;
+
+  /// No description provided for @issueFieldBodyAreaHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: Right front leg'**
+  String get issueFieldBodyAreaHint;
+
+  /// No description provided for @issueStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start following'**
+  String get issueStart;
+
+  /// No description provided for @issueFinePrint.
+  ///
+  /// In en, this message translates to:
+  /// **'A record of what you notice, to show your vet. The app does not interpret it.'**
+  String get issueFinePrint;
+
+  /// No description provided for @issueResolved.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolved'**
+  String get issueResolved;
+
+  /// No description provided for @issueSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String issueSince(String date);
+
+  /// No description provided for @issueDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String issueDays(int count);
+
+  /// No description provided for @issueSpan.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}'**
+  String issueSpan(String start, String end);
+
+  /// No description provided for @issuePhotoCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 photo} other{{count} photos}}'**
+  String issuePhotoCount(int count);
+
+  /// No description provided for @issueAddEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an entry'**
+  String get issueAddEntry;
+
+  /// No description provided for @issueResolve.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as resolved'**
+  String get issueResolve;
+
+  /// No description provided for @issueReopen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open again'**
+  String get issueReopen;
+
+  /// No description provided for @issueShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share report'**
+  String get issueShare;
+
+  /// No description provided for @issueMore.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get issueMore;
+
+  /// No description provided for @issueRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get issueRename;
+
+  /// No description provided for @issueStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop following'**
+  String get issueStop;
+
+  /// No description provided for @issueStopTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop following this problem?'**
+  String get issueStopTitle;
+
+  /// No description provided for @issueStopMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Nothing was logged for it yet.} =1{Its entry and its photos stay in the journal.} other{Its {count} entries and their photos stay in the journal.}}'**
+  String issueStopMessage(int count);
+
+  /// No description provided for @issueNoEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'No entries yet'**
+  String get issueNoEntries;
+
+  /// No description provided for @issueNoEntriesNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Add the first one when you notice something.'**
+  String get issueNoEntriesNote;
+
+  /// No description provided for @issueResolvedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Marked as resolved.'**
+  String get issueResolvedDone;
+
+  /// No description provided for @issueStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'No longer followed. Its entries stay in the journal.'**
+  String get issueStopped;
+
+  /// No description provided for @issueGone.
+  ///
+  /// In en, this message translates to:
+  /// **'This problem is no longer followed.'**
+  String get issueGone;
+
+  /// No description provided for @loadFailedIssue.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the problem'**
+  String get loadFailedIssue;
+
+  /// No description provided for @issueOverviewOngoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Ongoing since {date}'**
+  String issueOverviewOngoing(String date);
+
+  /// No description provided for @issueMoreProblems.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 more problem} other{{count} more problems}}'**
+  String issueMoreProblems(int count);
+
+  /// No description provided for @issueMoreProblemsNote.
+  ///
+  /// In en, this message translates to:
+  /// **'See them in Records'**
+  String get issueMoreProblemsNote;
+
+  /// No description provided for @issuePartOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of a problem'**
+  String get issuePartOf;
+
+  /// No description provided for @issueNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get issueNone;
+
+  /// No description provided for @issueFor.
+  ///
+  /// In en, this message translates to:
+  /// **'For: {title}'**
+  String issueFor(String title);
+
+  /// No description provided for @issuePhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos (up to {count})'**
+  String issuePhotos(int count);
+
+  /// No description provided for @issueAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a photo'**
+  String get issueAddPhoto;
+
+  /// No description provided for @issueRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this photo'**
+  String get issueRemovePhoto;
+
+  /// No description provided for @issueOpenPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the photo'**
+  String get issueOpenPhoto;
+
+  /// No description provided for @issuePhotoNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The entry is saved; a photo was not: {reason}'**
+  String issuePhotoNotSaved(String reason);
+
+  /// No description provided for @issueOpenPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the problem\'s page'**
+  String get issueOpenPage;
 
   /// No description provided for @reportColumnKind.
   ///

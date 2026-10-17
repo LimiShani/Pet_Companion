@@ -1,4 +1,5 @@
 export 'contracts.dart';
+export 'issue_models.dart';
 import 'contracts.dart';
 
 /// Compatibility aggregate. Each service can be replaced independently
@@ -8,4 +9,5 @@ abstract class HealthRepository
         MedicalRecordsRepository,
         EmergencyRepository,
         ScheduleRepository,
-        ObservationsRepository {}
+        ObservationsRepository,
+        HealthIssuesRepository {}

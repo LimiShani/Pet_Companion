@@ -25,6 +25,8 @@ import '../insights/insight_line.dart';
 import '../plans/plan_invite.dart';
 import '../../../services/pet_records/plans/plan_providers.dart';
 import '../widgets/weight_trend.dart';
+import '../../../services/pet_records/state/health_issues.dart';
+import '../issues/issue_rows.dart';
 
 /// What the Overview's buttons do. The tab wires them to its Add sheet,
 /// the dose sheet and so on, so this section stays a plain view.
@@ -129,6 +131,14 @@ class OverviewSection extends ConsumerWidget {
                 show(HealthSection.records);
               }
             : null,
+        // Followed problems (3b): a row per open one.
+        issues: records
+            ? ref.watch(issueDigestsProvider(pet.id)).value ?? const []
+            : const [],
+        onMoreIssues: (issueId) {
+          ref.read(recordsIssueProvider.notifier).show(issueId);
+          show(HealthSection.records);
+        },
       ),
     ];
 
@@ -504,12 +514,18 @@ class _OverviewRows extends StatelessWidget {
     required this.data,
     required this.onWeight,
     required this.onRecords,
+    this.issues = const [],
+    this.onMoreIssues,
   });
 
   final Pet pet;
   final PetHealthData data;
   final VoidCallback? onWeight;
   final VoidCallback? onRecords;
+
+  /// The pet's followed problems; the open ones get a row each.
+  final List<IssueDigest> issues;
+  final ValueChanged<String>? onMoreIssues;
 
   @override
   Widget build(BuildContext context) {
@@ -522,6 +538,7 @@ class _OverviewRows extends StatelessWidget {
         detail: _profileLine(format, data.profile),
         onTap: () => HealthProfileScreen.open(context, pet),
       ),
+      ...issueOverviewRows(context, pet, issues, onMore: onMoreIssues),
       if (onWeight != null) _weightRow(format),
       if (onRecords != null)
         _OverviewRow(

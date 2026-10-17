@@ -58,6 +58,8 @@ docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file
 if ($LASTEXITCODE -ne 0) { throw 'Lost mode tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/neighbourhood_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Neighbourhood tests failed.' }
+docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/health_issues_test.sql
+if ($LASTEXITCODE -ne 0) { throw 'Health issue tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/delete_my_account_test.sql
 if ($LASTEXITCODE -ne 0) { throw 'Self-service account deletion tests failed.' }
 docker exec $ContainerName psql --username postgres --set ON_ERROR_STOP=1 --file /tests/tests/administration_history_test.sql

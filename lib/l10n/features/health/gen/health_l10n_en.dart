@@ -335,6 +335,15 @@ class HealthL10nEn extends HealthL10n {
   String get errLostCard => 'Could not prepare the card. Please try again.';
 
   @override
+  String get errPhotoType => 'Only photos (JPEG, PNG, WebP) can be added to an entry.';
+
+  @override
+  String get errTooManyPhotos => 'An entry can have up to 4 photos.';
+
+  @override
+  String get errTooManyIssues => 'That is a lot of new problems for one day. Please try again tomorrow.';
+
+  @override
   String get emergencyButton => 'Emergency';
 
   @override
@@ -2008,6 +2017,215 @@ class HealthL10nEn extends HealthL10n {
 
   @override
   String get reportPlanned => 'Planned';
+
+  @override
+  String get issueStartedOn => 'Started on';
+
+  @override
+  String get issueStatus => 'Status';
+
+  @override
+  String get issueOngoing => 'Ongoing';
+
+  @override
+  String issueResolvedOn(String date) {
+    return 'Resolved on $date';
+  }
+
+  @override
+  String get issueBodyArea => 'Body area';
+
+  @override
+  String get issueEntries => 'Entries';
+
+  @override
+  String issueEntryCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count entries',
+      one: '1 entry',
+      zero: 'No entries yet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueColumnLevel => 'How it was';
+
+  @override
+  String get issueColumnWhat => 'What';
+
+  @override
+  String get addFollowProblem => 'Follow a problem';
+
+  @override
+  String get addFollowProblemNote => 'A limp, a rash, a cough';
+
+  @override
+  String get issueSheetNote => 'Something to watch over a few days or weeks';
+
+  @override
+  String get issueRenameTitle => 'Rename the problem';
+
+  @override
+  String get issueFieldTitle => 'What is it?';
+
+  @override
+  String get issueFieldTitleHint => 'For example: Limping, right front leg';
+
+  @override
+  String get issueFieldBodyArea => 'Where on the body (optional)';
+
+  @override
+  String get issueFieldBodyAreaHint => 'For example: Right front leg';
+
+  @override
+  String get issueStart => 'Start following';
+
+  @override
+  String get issueFinePrint => 'A record of what you notice, to show your vet. The app does not interpret it.';
+
+  @override
+  String get issueResolved => 'Resolved';
+
+  @override
+  String issueSince(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String issueDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String issueSpan(String start, String end) {
+    return '$start to $end';
+  }
+
+  @override
+  String issuePhotoCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count photos',
+      one: '1 photo',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueAddEntry => 'Add an entry';
+
+  @override
+  String get issueResolve => 'Mark as resolved';
+
+  @override
+  String get issueReopen => 'Open again';
+
+  @override
+  String get issueShare => 'Share report';
+
+  @override
+  String get issueMore => 'More';
+
+  @override
+  String get issueRename => 'Rename';
+
+  @override
+  String get issueStop => 'Stop following';
+
+  @override
+  String get issueStopTitle => 'Stop following this problem?';
+
+  @override
+  String issueStopMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Its $count entries and their photos stay in the journal.',
+      one: 'Its entry and its photos stay in the journal.',
+      zero: 'Nothing was logged for it yet.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueNoEntries => 'No entries yet';
+
+  @override
+  String get issueNoEntriesNote => 'Add the first one when you notice something.';
+
+  @override
+  String get issueResolvedDone => 'Marked as resolved.';
+
+  @override
+  String get issueStopped => 'No longer followed. Its entries stay in the journal.';
+
+  @override
+  String get issueGone => 'This problem is no longer followed.';
+
+  @override
+  String get loadFailedIssue => 'Could not load the problem';
+
+  @override
+  String issueOverviewOngoing(String date) {
+    return 'Ongoing since $date';
+  }
+
+  @override
+  String issueMoreProblems(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count more problems',
+      one: '1 more problem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get issueMoreProblemsNote => 'See them in Records';
+
+  @override
+  String get issuePartOf => 'Part of a problem';
+
+  @override
+  String get issueNone => 'None';
+
+  @override
+  String issueFor(String title) {
+    return 'For: $title';
+  }
+
+  @override
+  String issuePhotos(int count) {
+    return 'Photos (up to $count)';
+  }
+
+  @override
+  String get issueAddPhoto => 'Add a photo';
+
+  @override
+  String get issueRemovePhoto => 'Remove this photo';
+
+  @override
+  String get issueOpenPhoto => 'Open the photo';
+
+  @override
+  String issuePhotoNotSaved(String reason) {
+    return 'The entry is saved; a photo was not: $reason';
+  }
+
+  @override
+  String get issueOpenPage => 'Open the problem\'s page';
 
   @override
   String get reportColumnKind => 'Kind';
