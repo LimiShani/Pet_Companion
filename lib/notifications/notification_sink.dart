@@ -4,8 +4,9 @@ import 'notification_done.dart';
 
 /// What a reminder is about. The owner turns each kind on or off in
 /// Settings; a [NotificationSink] drops the kinds that are off, so callers
-/// never check the settings themselves.
-enum NotificationKind { meal, walk, medicine, appointment, basket }
+/// never check the settings themselves. [weekly] is the weekly summary of
+/// each pet ("Kelly's week").
+enum NotificationKind { meal, walk, medicine, appointment, basket, weekly }
 
 /// One notification the phone should show at [at].
 class PlannedNotification {

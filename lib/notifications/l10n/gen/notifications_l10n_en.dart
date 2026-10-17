@@ -167,4 +167,78 @@ class NotificationsL10nEn extends NotificationsL10n {
 
   @override
   String get communityChannel => 'Community';
+
+  @override
+  String get weekly => 'Weekly summary';
+
+  @override
+  String get weeklyNote => 'One note a week for each pet: walks, doses and what is due next';
+
+  @override
+  String get weeklyDay => 'Day';
+
+  @override
+  String get weeklyTime => 'Time';
+
+  @override
+  String weeklyTitle(String pet) {
+    return '$pet\'s week';
+  }
+
+  @override
+  String weeklyLastWeek(String numbers) {
+    return 'Last week: $numbers';
+  }
+
+  @override
+  String weeklyWalks(int done, int planned) {
+    return '$done of $planned walks';
+  }
+
+  @override
+  String weeklyWalksLogged(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count walks',
+      one: '1 walk',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyDoses(int given, int planned) {
+    return '$given of $planned doses given';
+  }
+
+  @override
+  String weeklyDueToday(String title) {
+    return '$title is due today';
+  }
+
+  @override
+  String weeklyDueTomorrow(String title) {
+    return '$title is due tomorrow';
+  }
+
+  @override
+  String weeklyDueInDays(String title, int count) {
+    return '$title due in $count days';
+  }
+
+  @override
+  String weeklyDueInWeeks(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$title due in $count weeks',
+      one: '$title due in 1 week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String weeklyDueOn(String title, String date) {
+    return '$title due on $date';
+  }
 }
