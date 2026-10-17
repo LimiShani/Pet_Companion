@@ -11,17 +11,23 @@ import '../../../services/community/data/community_providers.dart';
 import '../../../services/community/data/audience.dart';
 import '../../../services/community/data/feed_repository.dart';
 import '../safety/safety_providers.dart';
+import 'near_me.dart';
 
 /// No automatic retries: a failed load shows an error block with a "Try
 /// again" button instead of retrying behind the user's back.
 Duration? noRetry(int retryCount, Object error) => null;
 
-/// What the member narrowed the feed to: a kind of post, words in it.
+/// What the member narrowed the feed to: a kind of post, words in it,
+/// the posts near them.
 class FeedFilter {
-  const FeedFilter({this.kind, this.search = ''});
+  const FeedFilter({this.kind, this.search = '', this.nearMe = false});
 
   final PostKind? kind;
   final String search;
+
+  /// "Near me": only posts about the localities around the member
+  /// ([nearMeCodesProvider]).
+  final bool nearMe;
 }
 
 class FeedFilterNotifier extends Notifier<FeedFilter> {
@@ -29,10 +35,16 @@ class FeedFilterNotifier extends Notifier<FeedFilter> {
   FeedFilter build() => const FeedFilter();
 
   void kind(PostKind? kind) =>
-      state = FeedFilter(kind: kind, search: state.search);
+      state = FeedFilter(kind: kind, search: state.search, nearMe: state.nearMe);
 
-  void search(String words) =>
-      state = FeedFilter(kind: state.kind, search: words.trim());
+  void search(String words) => state = FeedFilter(
+    kind: state.kind,
+    search: words.trim(),
+    nearMe: state.nearMe,
+  );
+
+  void nearMe(bool on) =>
+      state = FeedFilter(kind: state.kind, search: state.search, nearMe: on);
 }
 
 final feedFilterProvider = NotifierProvider<FeedFilterNotifier, FeedFilter>(
@@ -48,6 +60,9 @@ final feedQueryProvider = Provider<FeedQuery>((ref) {
   return FeedQuery(
     kind: filter.kind,
     search: filter.search,
+    localities: filter.nearMe
+        ? (ref.watch(nearMeCodesProvider) ?? const <String>{})
+        : null,
     audiences: switch (scope) {
       CommunityScope.dogs => const {Audience.everyone, Audience.dogs},
       CommunityScope.cats => const {Audience.everyone, Audience.cats},
@@ -218,6 +233,8 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
     PickedPhoto? photo,
     PostKind kind = PostKind.moment,
     Audience audience = Audience.everyone,
+    String? localityCode,
+    String? placeName,
   }) async {
     return sessionOperation(ref, () async {
       requireCapability(ref, 'community.feed.post');
@@ -228,6 +245,8 @@ class FeedController extends SessionSafeAsyncNotifier<List<Post>> {
         photo: photo,
         kind: kind,
         audience: audience,
+        localityCode: localityCode,
+        placeName: placeName,
       );
       ref.read(usageProvider).count(UsageKind.postCreated);
       state = AsyncData([post, ..._posts]);

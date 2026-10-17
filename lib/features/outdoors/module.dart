@@ -24,9 +24,19 @@ final outdoorsModule = FeatureModule(
       ),
     ],
   ),
-  // Outside's "+" (meetups adds "Plan a walk or play date" before it).
+  // Outside's "+" (meetups adds "Plan a walk or play date" and "Going out
+  // now" before these).
   add: {
     AddTab.outside: [
+      AddEntry(
+        id: 'report-hazard',
+        capability: HazardCapabilities.post,
+        area: AppArea.community,
+        icon: Icons.warning_amber_rounded,
+        label: (c) => c.outdoorsL10n.addReportHazard,
+        order: 5,
+        open: (c, r) => openReportHazard(c),
+      ),
       AddEntry(
         id: 'suggest-park',
         capability: ParkCapabilities.suggest,
@@ -63,6 +73,11 @@ final outdoorsModule = FeatureModule(
     'suggest-park': FeatureAction.task(
       capability: ParkCapabilities.suggest,
       open: (c, r) => openSuggestPark(c),
+    ),
+    // The hazard reports around Outside's area.
+    'hazards': FeatureAction.task(
+      capability: HazardCapabilities.view,
+      open: (c, r) => openHazards(c),
     ),
     'parks-review': FeatureAction.task(
       capability: ParkCapabilities.review,

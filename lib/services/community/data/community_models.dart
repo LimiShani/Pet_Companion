@@ -84,6 +84,9 @@ abstract final class CommunityLimits {
   static const commentLength = 1000;
   static const messageLength = 1000;
   static const petNameLength = 60;
+
+  /// A recommendation's place (0036).
+  static const placeNameLength = 80;
 }
 
 /// Where a post's picture comes from. The UI renders each kind differently
@@ -154,9 +157,16 @@ enum PostKind {
 }
 
 /// What the feed is asked for: one kind of post, the posts about some
-/// animals, words in the text, one member's posts. Empty means everything.
+/// animals, words in the text, one member's posts, the posts about some
+/// localities ("Near me"). Empty means everything.
 class FeedQuery {
-  const FeedQuery({this.kind, this.audiences, this.search = '', this.authorId});
+  const FeedQuery({
+    this.kind,
+    this.audiences,
+    this.search = '',
+    this.authorId,
+    this.localities,
+  });
 
   final PostKind? kind;
 
@@ -165,16 +175,26 @@ class FeedQuery {
   final String search;
   final String? authorId;
 
-  /// Whether the member narrowed the feed themselves (a kind or words);
-  /// the animal follows the selected pet and does not count.
-  bool get narrowed => kind != null || search.trim().isNotEmpty;
+  /// "Near me": the locality codes around the member (0036); `null` for
+  /// everywhere. Posts for everywhere do not show under it.
+  final Set<String>? localities;
+
+  /// Whether the member narrowed the feed themselves (a kind, words, near
+  /// me); the animal follows the selected pet and does not count.
+  bool get narrowed =>
+      kind != null || search.trim().isNotEmpty || localities != null;
 
   bool matches(Post post) {
     if (kind != null && post.kind != kind) return false;
     if (audiences != null && !audiences!.contains(post.audience)) return false;
     if (authorId != null && post.authorId != authorId) return false;
+    if (localities != null && !localities!.contains(post.localityCode)) {
+      return false;
+    }
     final words = search.trim().toLowerCase();
-    return words.isEmpty || post.text.toLowerCase().contains(words);
+    return words.isEmpty ||
+        post.text.toLowerCase().contains(words) ||
+        (post.placeName?.toLowerCase().contains(words) ?? false);
   }
 
   @override
@@ -183,7 +203,8 @@ class FeedQuery {
       other.kind == kind &&
       other.search == search &&
       other.authorId == authorId &&
-      _sameSet(other.audiences, audiences);
+      _sameSet(other.audiences, audiences) &&
+      _sameSet(other.localities, localities);
 
   @override
   int get hashCode => Object.hash(
@@ -191,9 +212,10 @@ class FeedQuery {
     search,
     authorId,
     audiences == null ? null : Object.hashAllUnordered(audiences!),
+    localities == null ? null : Object.hashAllUnordered(localities!),
   );
 
-  static bool _sameSet(Set<Audience>? a, Set<Audience>? b) => a == null
+  static bool _sameSet<T>(Set<T>? a, Set<T>? b) => a == null
       ? b == null
       : b != null && a.length == b.length && a.containsAll(b);
 }
@@ -215,6 +237,8 @@ class Post {
     this.audience = Audience.everyone,
     this.editedAt,
     this.helpfulCommentId,
+    this.localityCode,
+    this.placeName,
   });
 
   final String id;
@@ -242,6 +266,14 @@ class Post {
   /// The comment the author of a question marked as the helpful answer.
   final String? helpfulCommentId;
 
+  /// Where the post is about (a locality code, "petah-tikva"); `null` for
+  /// everywhere (0036).
+  final String? localityCode;
+
+  /// The place a recommendation is about ("Dr. Levi's clinic"), up to 80
+  /// characters; only recommendations carry one (0036).
+  final String? placeName;
+
   String get authorInitial => initialOf(authorName);
 
   Post copyWith({
@@ -252,6 +284,7 @@ class Post {
     PostKind? kind,
     DateTime? editedAt,
     String? Function()? helpfulCommentId,
+    String? Function()? placeName,
   }) {
     return Post(
       id: id,
@@ -270,6 +303,8 @@ class Post {
       helpfulCommentId: helpfulCommentId == null
           ? this.helpfulCommentId
           : helpfulCommentId(),
+      localityCode: localityCode,
+      placeName: placeName == null ? this.placeName : placeName(),
     );
   }
 }

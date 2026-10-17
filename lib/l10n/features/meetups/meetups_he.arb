@@ -149,5 +149,22 @@
   "cardMeetupsWeek": "{count, plural, =1{מפגש אחד השבוע} =2{שני מפגשים השבוע} other{{count} מפגשים השבוע}}",
   "cardMeetupToday": "מפגש היום",
   "memberAds": "מודעות לטיול ולמשחק",
-  "addPlanWalk": "תיאום טיול או משחק"
+  "addPlanWalk": "תיאום טיול או משחק",
+  "goingSoonTitle": "יציאה בקרוב?",
+  "goingSoonBody": "עדכון למי ששמרו את הגינות שלך. מוצג 90 דקות.",
+  "goingNowButton": "יציאה עכשיו",
+  "addGoingNow": "יציאה עכשיו",
+  "goingInTag": "בעוד {minutes} דק׳",
+  "goingOutTag": "בחוץ עכשיו",
+  "leavingAt": "יציאה ב־\u2068{time}\u2069",
+  "goingWhere": "לאן",
+  "goingOtherPark": "גינה אחרת",
+  "goingLeavingIn": "יציאה בעוד",
+  "goingMinutes": "{minutes} דק׳",
+  "goingWith": "עם \u2068{pet}\u2069",
+  "goingNoteHint": "משהו להוסיף? (לא חובה)",
+  "goingPost": "פרסום",
+  "goingPosted": "פורסם ל־90 הדקות הקרובות",
+  "goingPickPark": "צריך לבחור גינה",
+  "errNowLimit": "זה כבר שלוש היום. אפשר לפרסם שוב מחר."
 }

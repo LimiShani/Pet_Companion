@@ -391,5 +391,17 @@
   "addMoment": "שיתוף רגע",
   "addQuestion": "שאלה לקהילה",
   "addRecommendation": "המלצה על מקום או מוצר",
-  "addLostFound": "אבדה או מציאה"
+  "addLostFound": "אבדה או מציאה",
+  "feedNearMe": "בסביבה שלי",
+  "composerNear": "ליד \u2068{city}\u2069",
+  "composerEverywhere": "בכל מקום",
+  "composerOtherCity": "עיר אחרת…",
+  "composerCityTitle": "איזו עיר?",
+  "composerCitySearch": "חיפוש עיר",
+  "composerPlace": "מקום (לא חובה)",
+  "composerPlaceHelp": "מרפאה, חנות, מאלף: השם שמחפשים",
+  "searchPlaces": "מקומות",
+  "placeRecommendations": "{count, plural, =1{המלצה אחת} =2{שתי המלצות} other{{count} המלצות}}",
+  "searchAllPlaces": "כל המקומות ({count})",
+  "searchPostsHeading": "פוסטים"
 }

@@ -1319,4 +1319,52 @@ class CommunityL10nEn extends CommunityL10n {
 
   @override
   String get addLostFound => 'Lost or found';
+
+  @override
+  String get feedNearMe => 'Near me';
+
+  @override
+  String composerNear(String city) {
+    return 'Near $city';
+  }
+
+  @override
+  String get composerEverywhere => 'Everywhere';
+
+  @override
+  String get composerOtherCity => 'Another city…';
+
+  @override
+  String get composerCityTitle => 'Which city?';
+
+  @override
+  String get composerCitySearch => 'Search a city';
+
+  @override
+  String get composerPlace => 'Place (optional)';
+
+  @override
+  String get composerPlaceHelp => 'Clinic, shop, trainer: the name people search for';
+
+  @override
+  String get searchPlaces => 'Places';
+
+  @override
+  String placeRecommendations(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recommendations',
+      one: '1 recommendation',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String searchAllPlaces(int count) {
+    return 'Show all places ($count)';
+  }
+
+  @override
+  String get searchPostsHeading => 'Posts';
 }

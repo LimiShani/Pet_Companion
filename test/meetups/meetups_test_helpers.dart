@@ -51,7 +51,11 @@ class MeetupsKit {
     ),
     this.profileCity,
     this.access,
-  }) : repo =
+    FakeHazardsRepository? hazards,
+  }) : hazards =
+           hazards ??
+           FakeHazardsRepository(latency: Duration.zero, now: clock, seed: false),
+       repo =
            repo ??
            FakeMeetupsRepository(
              latency: Duration.zero,
@@ -66,6 +70,9 @@ class MeetupsKit {
 
   final FakeMeetupsRepository repo;
   final FakeParksRepository parks;
+
+  /// Hazard reports (none unless a test brings some).
+  final FakeHazardsRepository hazards;
   final FakeLocationService location;
   final feed = FakeFeedRepository(latency: Duration.zero, now: clock);
   final chat = FakeChatRepository(latency: Duration.zero, now: clock);
@@ -86,6 +93,8 @@ class MeetupsKit {
   List<Override> get overrides => [
     meetupsRepositoryProvider.overrideWithValue(repo),
     meetupsClockProvider.overrideWithValue(clock),
+    hazardsRepositoryProvider.overrideWithValue(hazards),
+    hazardsClockProvider.overrideWithValue(clock),
     parksRepositoryProvider.overrideWithValue(parks),
     locationServiceProvider.overrideWithValue(location),
     parkLauncherProvider.overrideWithValue(RecordingParkLauncher()),

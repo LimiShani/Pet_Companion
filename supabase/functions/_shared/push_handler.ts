@@ -36,7 +36,7 @@ export interface ClaimedPush {
   chat_name?: string;
   /** A private chat of two (0026). */
   direct?: boolean;
-  /** A partner ad's kind, 'walk' or 'play' (0028). */
+  /** A partner ad's kind, 'walk' or 'play' (0028), 'walk_now' or 'play_now' (0035). */
   meetup_kind?: string | null;
   /** The ad's park: names and nearest street in each language (0028). */
   park_name_he?: string | null;
@@ -45,6 +45,8 @@ export interface ClaimedPush {
   park_street_en?: string | null;
   /** The ad's place when it is not at a park (0028). */
   place?: string | null;
+  /** When a "going out now" ad (meetup_kind 'walk_now' / 'play_now') leaves (0035). */
+  leaves_at?: string | null;
 }
 
 const WORDS = {
@@ -65,6 +67,9 @@ const WORDS = {
     newWalk: (place: string) => `A new walk at ${place}`,
     newPlay: (place: string) => `A new playdate at ${place}`,
     postedBy: (name: string) => `Posted by ${name}`,
+    goingIn: (name: string, place: string, minutes: number) => `${name} is going to ${place} in ${minutes} min`,
+    goingNow: (name: string, place: string) => `${name} is going to ${place} now`,
+    goingBody: 'Open PetLoop to join',
     renewTitle: 'Your partner ad has ended',
     renewBody: 'Renew it in PetLoop to show it for 30 more days',
     lostTitle: 'A pet is missing near you',
@@ -89,6 +94,9 @@ const WORDS = {
     newWalk: (place: string) => `טיול חדש ב־⁨${place}⁩`,
     newPlay: (place: string) => `מפגש משחק חדש ב־⁨${place}⁩`,
     postedBy: (name: string) => `פורסם על ידי ⁨${name}⁩`,
+    goingIn: (name: string, place: string, minutes: number) => `⁨${name}⁩: יציאה ל־⁨${place}⁩ בעוד ${minutes} דקות`,
+    goingNow: (name: string, place: string) => `⁨${name}⁩: יציאה ל־⁨${place}⁩ עכשיו`,
+    goingBody: 'אפשר להצטרף באפליקציה',
     renewTitle: 'מודעת השותפים שלך הסתיימה',
     renewBody: 'אפשר לחדש אותה באפליקציה לעוד 30 יום',
     lostTitle: 'חיה אבודה באזור שלך',
@@ -98,7 +106,7 @@ const WORDS = {
 };
 
 /** The notification's title and text in [language] (Hebrew unless English). */
-export function wordsFor(item: ClaimedPush, language: string): { title: string; body: string } {
+export function wordsFor(item: ClaimedPush, language: string, now: Date = new Date()): { title: string; body: string } {
   const words = language === 'en' ? WORDS.en : WORDS.he;
   const name = item.actor_name.trim() || words.fallbackName;
   const preview = item.preview.trim();
@@ -121,6 +129,15 @@ export function wordsFor(item: ClaimedPush, language: string): { title: string; 
     const other = (he ? item.park_name_en : item.park_name_he)?.trim();
     const street = ((he ? item.park_street_he : item.park_street_en) ?? (he ? item.park_street_en : item.park_street_he))?.trim();
     const park = own || other || (street ? words.parkOnStreet(street) : words.dogPark);
+    if (item.meetup_kind === 'walk_now' || item.meetup_kind === 'play_now') {
+      // "Dana is going to Yarkon park in 25 min" (0035), rounded to 5.
+      const leaves = item.leaves_at ? Date.parse(item.leaves_at) : NaN;
+      const minutes = Number.isNaN(leaves) ? 0 : Math.round((leaves - now.getTime()) / 300000) * 5;
+      return {
+        title: minutes > 0 ? words.goingIn(name, park, minutes) : words.goingNow(name, park),
+        body: preview || words.goingBody,
+      };
+    }
     return {
       title: item.meetup_kind === 'play' ? words.newPlay(park) : words.newWalk(park),
       body: preview ? words.fromIn(name, preview) : words.postedBy(name),
@@ -202,7 +219,7 @@ export function createPushHandler(options: PushHandlerOptions) {
     for (const item of claimed) {
       const outcomes: SendOutcome[] = [];
       for (const device of item.devices ?? []) {
-        const { title, body } = wordsFor(item, device.language);
+        const { title, body } = wordsFor(item, device.language, now());
         try {
           const outcome = await sendMessage(account, token, {
             token: device.token,

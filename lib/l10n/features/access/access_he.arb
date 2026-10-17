@@ -87,5 +87,6 @@
   "signOut": "יציאה מהחשבון",
   "gateTitle": "גישה לתכונה",
   "gateUnavailable": "התכונה אינה זמינה",
-  "gateMessage": "אין לחשבון שלך גישה לתכונה הזאת כרגע."
+  "gateMessage": "אין לחשבון שלך גישה לתכונה הזאת כרגע.",
+  "featureCommunityHazards": "דיווחים על סכנות"
 }

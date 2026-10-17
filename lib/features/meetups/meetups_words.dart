@@ -116,8 +116,10 @@ class MeetupText {
     return ad.placeText ?? localityName(ad.localityCode, language) ?? '';
   }
 
-  /// "Today 18:00–19:00", "Sat 10:00–12:00", "Sun–Thu · Morning".
+  /// "Today 18:00–19:00", "Sat 10:00–12:00", "Sun–Thu · Morning";
+  /// "Leaving 17:30" for a going-now ad.
   String when(MeetupTime time, DateTime now) => switch (time) {
+    NowTime(:final start) => l10n.leavingAt(ltr(format.time(start))),
     OneOffTime(:final start, :final end) =>
       '${_day(start, now)} ${ltr('${format.time(start)}–${format.time(end)}')}',
     RecurringTime(:final weekdays, :final part) =>
@@ -161,6 +163,12 @@ class MeetupText {
         else
           ...run.map(name),
     ].join(', ');
+  }
+
+  /// The tag of a going-now ad: "in 25 min", then "Out now".
+  String goingTag(NowTime time, DateTime now) {
+    final minutes = time.minutesUntil(now);
+    return minutes > 0 ? l10n.goingInTag(minutes) : l10n.goingOutTag;
   }
 
   /// "about 5 km" between the area's centre and the ad.

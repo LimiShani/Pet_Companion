@@ -2302,6 +2302,78 @@ abstract class CommunityL10n {
   /// In en, this message translates to:
   /// **'Lost or found'**
   String get addLostFound;
+
+  /// Feed filter chip: posts about the localities around the member.
+  ///
+  /// In en, this message translates to:
+  /// **'Near me'**
+  String get feedNearMe;
+
+  /// The composer's chip: the city the post is about.
+  ///
+  /// In en, this message translates to:
+  /// **'Near {city}'**
+  String composerNear(String city);
+
+  /// The composer's chip: a post for everywhere.
+  ///
+  /// In en, this message translates to:
+  /// **'Everywhere'**
+  String get composerEverywhere;
+
+  /// No description provided for @composerOtherCity.
+  ///
+  /// In en, this message translates to:
+  /// **'Another city…'**
+  String get composerOtherCity;
+
+  /// No description provided for @composerCityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which city?'**
+  String get composerCityTitle;
+
+  /// No description provided for @composerCitySearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a city'**
+  String get composerCitySearch;
+
+  /// A recommendation's place field.
+  ///
+  /// In en, this message translates to:
+  /// **'Place (optional)'**
+  String get composerPlace;
+
+  /// No description provided for @composerPlaceHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Clinic, shop, trainer: the name people search for'**
+  String get composerPlaceHelp;
+
+  /// Heading of the recommended places above the posts in search.
+  ///
+  /// In en, this message translates to:
+  /// **'Places'**
+  String get searchPlaces;
+
+  /// No description provided for @placeRecommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recommendation} other{{count} recommendations}}'**
+  String placeRecommendations(int count);
+
+  /// No description provided for @searchAllPlaces.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all places ({count})'**
+  String searchAllPlaces(int count);
+
+  /// Heading of the posts under the places in search.
+  ///
+  /// In en, this message translates to:
+  /// **'Posts'**
+  String get searchPostsHeading;
 }
 
 class _CommunityL10nDelegate extends LocalizationsDelegate<CommunityL10n> {

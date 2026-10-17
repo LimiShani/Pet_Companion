@@ -26,7 +26,9 @@ abstract class FeedRepository {
   /// One post, or `null` when it is gone or hidden from [viewer].
   Future<Post?> fetchPost({required AppUser viewer, required String postId});
 
-  /// Publishes a post and returns it as the author sees it.
+  /// Publishes a post and returns it as the author sees it. [localityCode]
+  /// is where it is about (`null`: everywhere); [placeName] the place a
+  /// recommendation is about (ignored for other kinds).
   Future<Post> createPost({
     required AppUser author,
     required String text,
@@ -34,9 +36,12 @@ abstract class FeedRepository {
     PickedPhoto? photo,
     PostKind kind = PostKind.moment,
     Audience audience = Audience.everyone,
+    String? localityCode,
+    String? placeName,
   });
 
-  /// Changes the text and kind of the viewer's own post.
+  /// Changes the text and kind of the viewer's own post (a post that is no
+  /// longer a recommendation loses its place).
   Future<Post> updatePost({
     required AppUser viewer,
     required Post post,

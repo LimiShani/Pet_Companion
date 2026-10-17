@@ -261,5 +261,141 @@
   "removeConfirm": "Remove this park from the list? It is hidden, not deleted.",
   "aboutMapData": "Dog parks: map data © OpenStreetMap contributors, available under the Open Database License (ODbL).",
   "addToOutside": "Add to Outside",
-  "@addToOutside": {"description": "The Outside tab's \"+\" button (for a screen reader) and the title of the sheet it opens."}
+  "@addToOutside": {"description": "The Outside tab's \"+\" button (for a screen reader) and the title of the sheet it opens."},
+  "hazardLineCount": "{count, plural, =1{1 hazard report near you this week.} other{{count} hazard reports near you this week.}}",
+  "@hazardLineCount": {
+    "description": "The line above the Partners and Parks lists.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hazardKindCaterpillars": "Caterpillars",
+  "@hazardKindCaterpillars": {
+    "description": "Hazard kind: pine processionary caterpillars."
+  },
+  "hazardKindBait": "Poison bait",
+  "hazardKindGlass": "Broken glass",
+  "hazardKindInspector": "Dog inspectors",
+  "@hazardKindInspector": {
+    "description": "Hazard kind: municipal inspectors handing out fines."
+  },
+  "hazardKindOther": "Something else",
+  "hazardAt": "{kind} at {place}",
+  "@hazardAt": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardIn": "{kind} in {city}",
+  "@hazardIn": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardNoted": "{kind}: {note}",
+  "@hazardNoted": {
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      },
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardsTitle": "Hazards near you",
+  "hazardsLead": "Reports from members, gone after a week.",
+  "hazardSomewhereIn": "Somewhere in {city}",
+  "@hazardSomewhereIn": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardStillThere": "Still there",
+  "@hazardStillThere": {
+    "description": "Vote on a hazard report."
+  },
+  "hazardGone": "Not there any more",
+  "@hazardGone": {
+    "description": "Vote on a hazard report."
+  },
+  "hazardStillCount": "{count, plural, =1{1 says it's still there} other{{count} say it's still there}}",
+  "@hazardStillCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hazardYours": "Your report",
+  "hazardDeleteTitle": "Delete this report?",
+  "hazardsEmpty": "Nothing reported around here this week.",
+  "hazardsLoadFailed": "We could not load the reports",
+  "addReportHazard": "Report a hazard",
+  "@addReportHazard": {
+    "description": "Add sheet row of the Outside tab, the report sheet's title and the empty list's button."
+  },
+  "hazardWhat": "What",
+  "hazardWhere": "Where",
+  "hazardOtherPark": "Another park",
+  "hazardElsewhereIn": "Somewhere else in {city}",
+  "@hazardElsewhereIn": {
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "hazardNoteHint": "What did you see? Where exactly?",
+  "hazardFinePrint": "Shown to members around here for a week.",
+  "hazardReportButton": "Report",
+  "@hazardReportButton": {
+    "description": "The report sheet's button."
+  },
+  "hazardReported": "Thanks. Your report is up for a week.",
+  "hazardRateLimited": "That's five for today.",
+  "hazardNeedKind": "Choose what you saw",
+  "hazardNeedPlace": "Choose where",
+  "hazardNeedNote": "Say what it is",
+  "hazardFailed": "We could not send that. Please try again.",
+  "hazardHidden": "Thanks. It's hidden now.",
+  "hazardJustNow": "just now",
+  "hazardMinutesAgo": "{count} min ago",
+  "@hazardMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hazardHoursAgo": "{count} h ago",
+  "@hazardHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hazardDaysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@hazardDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

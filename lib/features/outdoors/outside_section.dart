@@ -7,6 +7,7 @@ import '../../l10n/l10n.dart';
 import '../../platform/feature_module.dart';
 import '../../platform/feature_ui.dart';
 import '../../presentation/health_widgets.dart' show kHealthTapTarget;
+import '../../services/outdoors/state/hazards_providers.dart';
 import '../../services/outdoors/state/parks_providers.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_theme.dart';
@@ -156,6 +157,8 @@ class _OutdoorsKeeperState extends State<OutdoorsKeeper> {
       keep(parksListingProvider);
       keep(parkReviewQueueProvider);
       keep(outsideViewProvider);
+      keep(areaHazardsProvider);
+      keep(shownHazardsProvider);
     }
   }
 

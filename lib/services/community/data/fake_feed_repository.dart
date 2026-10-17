@@ -98,6 +98,7 @@ class FakeFeedRepository implements FeedRepository {
     record
       ..text = body
       ..kind = kind;
+    if (kind != PostKind.recommendation) record.placeName = null;
     return record.toPost(viewer.id);
   }
 
@@ -145,11 +146,17 @@ class FakeFeedRepository implements FeedRepository {
     PickedPhoto? photo,
     PostKind kind = PostKind.moment,
     Audience audience = Audience.everyone,
+    String? localityCode,
+    String? placeName,
   }) async {
     await _wait();
     final body = text.trim();
     if (body.isEmpty) {
       throw const CommunityException(CommunityFailure.emptyPost);
+    }
+    final place = placeName?.trim() ?? '';
+    if (place.length > CommunityLimits.placeNameLength) {
+      throw const CommunityException(CommunityFailure.textInvalid);
     }
     final pet = petName?.trim() ?? '';
     final record = _PostRecord(
@@ -162,6 +169,10 @@ class FakeFeedRepository implements FeedRepository {
       createdAt: _now(),
       kind: kind,
       audience: audience,
+      localityCode: localityCode,
+      placeName: kind == PostKind.recommendation && place.isNotEmpty
+          ? place
+          : null,
     );
     _posts.add(record);
     return record.toPost(author.id);
@@ -255,6 +266,7 @@ class FakeFeedRepository implements FeedRepository {
       int otherLikes = 0,
       PostKind kind = PostKind.moment,
       Audience audience = Audience.everyone,
+      String? locality,
       List<(String authorId, String authorName, Duration ago, String text)>
           comments =
           const [],
@@ -271,6 +283,7 @@ class FakeFeedRepository implements FeedRepository {
           otherLikes: otherLikes,
           kind: kind,
           audience: audience,
+          localityCode: locality,
         )
         ..comments.addAll([
           for (final c in comments)
@@ -290,6 +303,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'u-maya',
         authorName: 'Maya',
         petName: 'Biscuit',
+        locality: 'haifa',
         ago: const Duration(minutes: 12),
         text:
             'First full night without a toilet trip! Four months old and we both finally slept. '
@@ -314,6 +328,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'demo',
         authorName: 'Alex',
         petName: 'Kelly',
+        locality: 'tel-aviv-yafo',
         ago: const Duration(hours: 2),
         text:
             'Kelly is thirteen and still insists on carrying the biggest stick in the park. '
@@ -335,6 +350,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'u-jonas',
         authorName: 'Jonas',
         petName: 'Luna',
+        locality: 'tel-aviv-yafo',
         kind: PostKind.tip,
         ago: const Duration(hours: 5),
         text:
@@ -350,6 +366,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'u-dana',
         authorName: 'Dana',
         petName: 'Luli',
+        locality: 'raanana',
         ago: const Duration(hours: 9),
         text:
             'Luli finally scratched the new post instead of the sofa. All it took was moving the post '
@@ -415,6 +432,7 @@ class FakeFeedRepository implements FeedRepository {
         authorId: 'u-noa',
         authorName: 'Noa',
         petName: 'Milo',
+        locality: 'jerusalem',
         ago: const Duration(days: 6),
         text:
             'One year since we adopted Milo from the shelter. He was scared of the stairs for a month '
@@ -437,6 +455,8 @@ class _PostRecord {
     this.otherLikes = 0,
     this.kind = PostKind.moment,
     this.audience = Audience.everyone,
+    this.localityCode,
+    this.placeName,
   });
 
   final String id;
@@ -446,6 +466,8 @@ class _PostRecord {
   String text;
   PostKind kind;
   final Audience audience;
+  final String? localityCode;
+  String? placeName;
   DateTime? editedAt;
   String? helpfulCommentId;
   final PostPhoto? photo;
@@ -472,5 +494,7 @@ class _PostRecord {
     audience: audience,
     editedAt: editedAt,
     helpfulCommentId: helpfulCommentId,
+    localityCode: localityCode,
+    placeName: placeName,
   );
 }

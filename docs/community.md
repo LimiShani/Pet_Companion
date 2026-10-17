@@ -31,6 +31,15 @@ Walk and play partners (after 0026 and 0027): backup, run
 `supabase/migrations/0028_meetups.sql`, then deploy `community-push` again
 as in step 5. Details: [meetups.md](meetups.md).
 
+Near me, places and hazard reports (October 2026): backup, run
+`supabase/migrations/0035_neighbourhood.sql` and
+`supabase/migrations/0036_posts_locality.sql`, optionally schedule
+`supabase/scheduling/hazards_housekeeping.sql`, and deploy
+`community-push` again as in step 5. Details: [hazards.md](hazards.md),
+[meetups.md](meetups.md) ("Going out now"). Before 0036 the feed works as
+before: "Near me" finds nothing and posts are written without a city or
+a place.
+
 Before 0026 the app still works: the server does not grant
 `community.chat.private` yet, so nothing of private chats shows (no My
 chats, no New chat, no Private message, no new push switches); the topic
@@ -54,6 +63,30 @@ kind or animal, edits, helpful answers, profiles and activity need it.
 
 - A post's animal comes from the tagged pet (`audienceOfSpecies`); posts
   without a pet are for everyone and show under every chip.
+- **Near me** (0036): a toggle chip after "All" (`FeedFilter.nearMe`,
+  `FeedQuery.localities`): only posts about the localities within 10 km of
+  "me", the member-page city (`myCityProvider`, when the localities list
+  knows it), else Outside's area (`nearMeCodesProvider` in
+  `feed/near_me.dart`). Posts for everywhere do not show under it. No
+  city and no area: no chip. Guides have none (they have no place).
+- **A post's city** (`Post.localityCode`): the composer's chip under the
+  text, "Near Petah Tikva ▾" (the member's city) or "Everywhere ▾", with
+  a menu: the member's city, another city (a search of the localities
+  list), everywhere. New posts only; an edit keeps it. Posts written
+  before 0036, and posts written by other functions (lost and found,
+  0034), have none.
+- **A recommendation's place** (`Post.placeName`, 80 characters): the
+  composer's "Place (optional)" field, "Clinic, shop, trainer: the name
+  people search for", for recommendations only; the card shows it as a
+  tag. A post edited into another kind loses it (the database allows a
+  place on recommendations only).
+- **Places people recommend** (`feed/places_group.dart`): while searching,
+  the recommendations among the results are grouped by place and city
+  under **Places** (up to three, "Show all places (5)"), the most
+  recommended first, then **Posts**. The search matches the text or the
+  place. A place with one recommendation opens it; with more, the search
+  looks for that place (the header's field shows the words). No ratings,
+  no booking, no map.
 - Paging uses `created_at` of the last post shown (`before`).
 - Double tap likes only on a photo: on the whole card it would make every
   button wait for a possible second tap.
@@ -250,6 +283,13 @@ feature.
   two (New chat, Private message, a draft from another feature, blocks),
   the push switches, the capability switched off, Hebrew at 320 px.
 - `test/community/private_chats_repository_test.dart`: the fake's rules.
+- `test/community/near_me_test.dart`: near me (the query, the chip, no
+  chip without a city), a post's city and place;
+  `test/community/places_composer_test.dart`: places in search, the
+  composer's chip and place field, Hebrew;
+  `test/community/near_me_fit_test.dart`: both with real fonts at 320 px.
+- `supabase/tests/neighbourhood_test.sql`: a post's city and place in the
+  feed and their checks.
 - `supabase/tests/community_chat_safety_test.sql`,
   `supabase/tests/community_feed_profiles_test.sql` and
   `supabase/tests/private_chats_test.sql`, run by

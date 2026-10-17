@@ -45,6 +45,13 @@ List<MeetupListing> buildMeetupListing({
         ),
   ];
   list.sort((a, b) {
+    // "Going out now" ads first, the soonest to leave first.
+    final (aNow, bNow) = (a.meetup.time, b.meetup.time);
+    if (aNow is NowTime || bNow is NowTime) {
+      if (aNow is! NowTime) return 1;
+      if (bNow is! NowTime) return -1;
+      return aNow.start.compareTo(bNow.start);
+    }
     final day = (a.meetup.time.nextDay(now) ?? far).compareTo(
       b.meetup.time.nextDay(now) ?? far,
     );

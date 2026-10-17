@@ -408,4 +408,156 @@ class OutdoorsL10nEn extends OutdoorsL10n {
 
   @override
   String get addToOutside => 'Add to Outside';
+
+  @override
+  String hazardLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count hazard reports near you this week.',
+      one: '1 hazard report near you this week.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hazardKindCaterpillars => 'Caterpillars';
+
+  @override
+  String get hazardKindBait => 'Poison bait';
+
+  @override
+  String get hazardKindGlass => 'Broken glass';
+
+  @override
+  String get hazardKindInspector => 'Dog inspectors';
+
+  @override
+  String get hazardKindOther => 'Something else';
+
+  @override
+  String hazardAt(String kind, String place) {
+    return '$kind at $place';
+  }
+
+  @override
+  String hazardIn(String kind, String city) {
+    return '$kind in $city';
+  }
+
+  @override
+  String hazardNoted(String kind, String note) {
+    return '$kind: $note';
+  }
+
+  @override
+  String get hazardsTitle => 'Hazards near you';
+
+  @override
+  String get hazardsLead => 'Reports from members, gone after a week.';
+
+  @override
+  String hazardSomewhereIn(String city) {
+    return 'Somewhere in $city';
+  }
+
+  @override
+  String get hazardStillThere => 'Still there';
+
+  @override
+  String get hazardGone => 'Not there any more';
+
+  @override
+  String hazardStillCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count say it\'s still there',
+      one: '1 says it\'s still there',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get hazardYours => 'Your report';
+
+  @override
+  String get hazardDeleteTitle => 'Delete this report?';
+
+  @override
+  String get hazardsEmpty => 'Nothing reported around here this week.';
+
+  @override
+  String get hazardsLoadFailed => 'We could not load the reports';
+
+  @override
+  String get addReportHazard => 'Report a hazard';
+
+  @override
+  String get hazardWhat => 'What';
+
+  @override
+  String get hazardWhere => 'Where';
+
+  @override
+  String get hazardOtherPark => 'Another park';
+
+  @override
+  String hazardElsewhereIn(String city) {
+    return 'Somewhere else in $city';
+  }
+
+  @override
+  String get hazardNoteHint => 'What did you see? Where exactly?';
+
+  @override
+  String get hazardFinePrint => 'Shown to members around here for a week.';
+
+  @override
+  String get hazardReportButton => 'Report';
+
+  @override
+  String get hazardReported => 'Thanks. Your report is up for a week.';
+
+  @override
+  String get hazardRateLimited => 'That\'s five for today.';
+
+  @override
+  String get hazardNeedKind => 'Choose what you saw';
+
+  @override
+  String get hazardNeedPlace => 'Choose where';
+
+  @override
+  String get hazardNeedNote => 'Say what it is';
+
+  @override
+  String get hazardFailed => 'We could not send that. Please try again.';
+
+  @override
+  String get hazardHidden => 'Thanks. It\'s hidden now.';
+
+  @override
+  String get hazardJustNow => 'just now';
+
+  @override
+  String hazardMinutesAgo(int count) {
+    return '$count min ago';
+  }
+
+  @override
+  String hazardHoursAgo(int count) {
+    return '$count h ago';
+  }
+
+  @override
+  String hazardDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days ago',
+      one: '1 day ago',
+    );
+    return '$_temp0';
+  }
 }

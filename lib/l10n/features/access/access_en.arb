@@ -146,5 +146,6 @@
     "description": "Header of the page shown instead of a feature the account may not use."
   },
   "gateUnavailable": "Feature unavailable",
-  "gateMessage": "Your account does not have access to this feature right now."
+  "gateMessage": "Your account does not have access to this feature right now.",
+  "featureCommunityHazards": "Hazard reports"
 }

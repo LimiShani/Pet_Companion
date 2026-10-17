@@ -34,6 +34,13 @@ Nothing here costs money.
    existing five-minute schedule (`supabase/scheduling/community_push.sql`):
    no new schedule.
 
+3. **Going out now** (later, October 2026): back up, run
+   `supabase/migrations/0035_neighbourhood.sql` (after 0030; it also
+   creates hazard reports, see [hazards.md](hazards.md)) and deploy
+   `community-push` again as in step 2. It replaces `meetup_save` and
+   patches one line of `push_claim`: if 0028 is ever run again, run 0035
+   again after it.
+
 Before 0028 is run the app still works: the server does not grant
 `community.meetups.view`, so Outside opens on Parks and Partners shows the
 "coming soon" card, as before.
@@ -228,6 +235,49 @@ security-definer functions with `search_path = ''`):
 - **Accounts.** Deleting an account deletes its ads, answers and reports
   (cascades).
 
+## Going out now (0035)
+
+"I'm leaving for the park in 25 minutes": a partner ad that lives for an
+hour and a half.
+
+- **Where:** the white card at the top of Partners, "Going out soon? Tell
+  people who saved your parks. Lasts 90 min." with an outlined **Going
+  now** (`GoingOutCard`, for `community.meetups.post`; under the text on a
+  phone narrower than about 330 px), and the Outside "+" row **Going out
+  now** (`going-now`). Under the card, the hazard line
+  ([hazards.md](hazards.md)), then the board.
+- **The sheet** (`GoingNowSheet`, `openGoingNowSheet`): "With Kelly" (the
+  selected pet), **Where to** (up to four saved parks, the first chosen,
+  and **Another park**, the park picker), **Leaving in** 15 · 30 · 45 · 60
+  min, Walk · Play, one optional line (100 characters), **Tell them**.
+  Then "Posted for the next 90 minutes"; the fourth of a day: "That's
+  three for today. You can post again tomorrow."
+- **On the board:** a live going-now ad leads the list (the soonest to
+  leave first), with a yellow "in 25 min" tag (then "Out now"), "Leaving
+  17:30" as its time and the usual **I want to join**. Its author can
+  close it; it is never edited, renewed or posted again (a new one is a
+  new ad).
+- **Model:** `NowTime` (a `OneOffTime`: leaving at `start`, shown until
+  `end`; `NowTime.leavingIn(minutes, now)` ends 90 minutes after posting,
+  at least a quarter of an hour after leaving), `Meetup.isGoingNow`,
+  `MeetupLimits.now*`. The Supabase repository sends `"now": true` and
+  reads the kinds `walk_now` / `play_now`. The demo app shows one sample
+  (Noa leaving for the Ra'anana park); tests opt in with
+  `FakeMeetupsRepository(goingNowSample: true)`.
+- **Database:** the kinds `walk_now` and `play_now` of
+  `community_meetups` (always one-off). `meetup_save(null, p)` with
+  `"now": true`: leaving from 5 minutes ago to 90 minutes ahead, ending
+  after leaving and at most 90 minutes after it; **three a day** of their
+  own (`rate_limited`), apart from the planned ads' three a day and five
+  open; a new one closes the author's earlier open one; an edit is
+  `invalid_meetup`. The board view is unchanged (the kind tells).
+- **Push:** the existing new-ad-at-a-saved-park push (members who saved
+  the park and switched on "Tell me about new meetups here", three a day,
+  owner decision October 2026). The claim also carries `leaves_at`, and
+  the function says "Dana is going to Yarkon park in 25 min" (rounded to
+  5 minutes; "now" once left) / "Dana: יציאה ל־פארק הירקון בעוד 25
+  דקות", with the note, else "Open PetLoop to join".
+
 ## Tests
 
 - `test/meetups/meetups_logic_test.dart`: sizes, times, the form's checks,
@@ -251,7 +301,14 @@ security-definer functions with `search_path = ''`):
   answers and responders, blocks, editing, closing, renewing, reports and
   moderation, the pushes, the housekeeping, account deletion.
 - `supabase/functions/_tests/push.test.ts`: the words of `meetup` and
-  `meetup_renew` and the tap target.
+  `meetup_renew` and the tap target, and of a going-now ad.
+- `test/meetups/going_now_test.dart`: the rules (times, three a day, one at
+  a time, no edits), the server's words, the board's order, the card and
+  the sheet, the "+" row, the tag, no card without posting, Hebrew;
+  `test/meetups/neighbourhood_fit_test.dart`: the card, the tag and the
+  sheet with real fonts at 320 px.
+- `supabase/tests/neighbourhood_test.sql`: the going-now rules, the push
+  and the claim's leaving time.
 
 ## Limits and open questions
 
