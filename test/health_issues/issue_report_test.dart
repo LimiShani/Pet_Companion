@@ -117,7 +117,7 @@ void main() {
     expect(report.columns, ['תאריך', 'איך היה', 'מה', 'הערות']);
     final facts = {for (final f in report.facts) f.$1: stripBidiMarks(f.$2)};
     expect(facts['תאריך התחלה'], '03.06.25');
-    expect(facts['מצב'], 'עדיין נמשך');
+    expect(facts['מצב'], 'עדיין נמשכת');
     expect(facts['איפה בגוף'], 'Right front leg');
     expect(facts['רישומים'], '4 רישומים');
     expect(report.records.first.kind, 'פחות מהרגיל');

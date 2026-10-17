@@ -2035,11 +2035,11 @@ class HealthL10nHe extends HealthL10n {
   String get issueStatus => 'מצב';
 
   @override
-  String get issueOngoing => 'עדיין נמשך';
+  String get issueOngoing => 'עדיין נמשכת';
 
   @override
   String issueResolvedOn(String date) {
-    return 'הסתדר ב־\u2068$date\u2069';
+    return 'נפתרה ב־\u2068$date\u2069';
   }
 
   @override
