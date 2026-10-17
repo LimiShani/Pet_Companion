@@ -86,10 +86,7 @@ final currentDayProvider = NotifierProvider<CurrentDay, DateTime>(
 final healthRepositoryProvider = Provider<HealthRepository>(
   (ref) => AppConfig.hasSupabase
       ? SupabaseHealthRepository(sb.Supabase.instance.client)
-      : FakeHealthRepository(
-          now: ref.watch(healthClockProvider),
-          seedIssue: true,
-        ),
+      : FakeHealthRepository(now: ref.watch(healthClockProvider)),
 );
 
 final medicalRecordsRepositoryProvider = Provider<MedicalRecordsRepository>(
