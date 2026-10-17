@@ -128,7 +128,7 @@ begin
     select (regexp_matches(pg_get_constraintdef(c.oid), '''([a-z_]+)''', 'g'))[1] as k
     from pg_constraint c
     where c.conrelid = 'public.push_outbox'::regclass and c.conname = 'push_outbox_kind_check'
-  ) found;
+  ) current_kinds;
   if cardinality(kinds) = 0 then
     raise exception 'push_outbox_kind_check is missing: run 0028_meetups.sql first.';
   end if;
